@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mirage · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f8f6f2; --bg2: #f2efe9; --bg3: #eae6de;
+    --dark: #1a1714; --dim: rgba(26,23,20,0.55); --muted: rgba(26,23,20,0.32);
+    --border: rgba(26,23,20,0.08); --border-md: rgba(26,23,20,0.13);
+    --green: #2a6640; --gold: #a07840; --red: #b03025;
+    --sidebar: 220px;
+  }
+  body { font-family: 'DM Sans', sans-serif; font-weight: 300; background: var(--bg); color: var(--dark); height: 100vh; overflow: hidden; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
+  .serif { font-family: 'Playfair Display', serif; font-style: italic; }
+  ::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-thumb { background: var(--border-md); }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── LOGIN ── */
+  #login-screen {
+    position: fixed; inset: 0; background: var(--dark); z-index: 999;
+    display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 0;
+  }
+  .login-box {
+    width: 360px; padding: 48px 40px;
+    background: rgba(248,246,242,0.04); border: 1px solid rgba(248,246,242,0.08); border-radius: 2px;
+    animation: fadeIn 0.5s ease both;
+  }
+  .login-logo { font-family: 'Playfair Display', serif; font-style: italic; font-size: 32px; color: var(--bg); margin-bottom: 6px; }
+  .login-sub { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(248,246,242,0.25); margin-bottom: 32px; }
+  .login-input {
+    width: 100%; padding: 12px 14px; background: rgba(248,246,242,0.05);
+    border: 1px solid rgba(248,246,242,0.12); border-radius: 2px;
+    font-size: 13px; color: var(--bg); outline: none; font-family: 'DM Sans', sans-serif;
+    margin-bottom: 10px; transition: border-color 0.15s;
+  }
+  .login-input::placeholder { color: rgba(248,246,242,0.25); }
+  .login-input:focus { border-color: rgba(248,246,242,0.3); }
+  .login-btn {
+    width: 100%; padding: 12px; background: var(--bg); color: var(--dark);
+    border: none; border-radius: 2px; font-size: 10px; letter-spacing: 0.2em;
+    text-transform: uppercase; font-family: 'DM Sans', sans-serif; cursor: pointer;
+    margin-top: 6px; transition: opacity 0.15s;
+  }
+  .login-btn:hover { opacity: 0.9; }
+  .login-err { font-size: 11px; color: #d05048; margin-top: 10px; display: none; }
+
+  /* ── SHELL ── */
+  #app { display: none; flex: 1; overflow: hidden; flex-direction: row; }
+  #app.visible { display: flex; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar); background: var(--dark); display: flex; flex-direction: column;
+    flex-shrink: 0; border-right: 1px solid rgba(248,246,242,0.05);
+  }
+  .sidebar-logo {
+    padding: 20px 20px 16px;
+    font-family: 'Playfair Display', serif; font-style: italic; font-size: 22px; color: var(--bg);
+    border-bottom: 1px solid rgba(248,246,242,0.06); flex-shrink: 0;
+  }
+  .sidebar-logo span { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(248,246,242,0.25); display: block; font-family: 'DM Sans', sans-serif; font-style: normal; margin-top: 2px; }
+  .sidebar-nav { flex: 1; overflow-y: auto; padding: 12px 0; }
+  .nav-section { padding: 12px 16px 4px; font-size: 8px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(248,246,242,0.2); }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 9px 16px;
+    font-size: 12px; color: rgba(248,246,242,0.5); cursor: pointer; transition: all 0.12s;
+    border-left: 2px solid transparent;
+  }
+  .nav-item:hover { color: rgba(248,246,242,0.85); background: rgba(248,246,242,0.04); }
+  .nav-item.active { color: var(--bg); border-left-color: var(--bg); background: rgba(248,246,242,0.06); }
+  .nav-item-icon { font-size: 14px; width: 18px; text-align: center; flex-shrink: 0; }
+  .nav-badge { margin-left: auto; background: rgba(248,246,242,0.12); border-radius: 999px; padding: 1px 7px; font-size: 9px; color: rgba(248,246,242,0.5); }
+  .sidebar-user { padding: 14px 16px; border-top: 1px solid rgba(248,246,242,0.06); flex-shrink: 0; display: flex; align-items: center; gap: 9px; }
+  .sidebar-user-dot { width: 26px; height: 26px; border-radius: 50%; background: rgba(248,246,242,0.1); display: flex; align-items: center; justify-content: center; font-size: 11px; color: rgba(248,246,242,0.6); flex-shrink: 0; }
+  .sidebar-user-name { font-size: 11px; color: rgba(248,246,242,0.5); }
+  .sidebar-logout { margin-left: auto; font-size: 10px; color: rgba(248,246,242,0.2); cursor: pointer; padding: 4px; }
+  .sidebar-logout:hover { color: rgba(248,246,242,0.5); }
+
+  /* ── MAIN ── */
+  .main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    height: 52px; background: var(--bg); border-bottom: 1px solid var(--border-md);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px; flex-shrink: 0;
+  }
+  .topbar-title { font-family: 'Playfair Display', serif; font-style: italic; font-size: 20px; }
+  .topbar-actions { display: flex; align-items: center; gap: 10px; }
+  .btn { padding: 7px 16px; border-radius: 2px; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; cursor: pointer; font-family: 'DM Sans', sans-serif; border: none; transition: opacity 0.15s; }
+  .btn-primary { background: var(--dark); color: var(--bg); }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-outline { background: transparent; border: 1px solid var(--border-md); color: var(--dim); }
+  .btn-outline:hover { border-color: var(--dark); color: var(--dark); }
+
+  /* ── CONTENT AREA ── */
+  .content { flex: 1; overflow-y: auto; padding: 28px 32px; }
+
+  /* ── STAT CARDS ── */
+  .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 28px; }
+  .stat-card { background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; padding: 18px 20px; }
+  .stat-val { font-family: 'Playfair Display', serif; font-style: italic; font-size: 34px; line-height: 1; margin-bottom: 4px; }
+  .stat-label { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+  .stat-delta { font-size: 10px; color: var(--green); margin-top: 4px; }
+
+  /* ── TABLES ── */
+  .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .section-title { font-family: 'Playfair Display', serif; font-style: italic; font-size: 18px; }
+  .table-wrap { background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; overflow: hidden; margin-bottom: 28px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { padding: 10px 16px; text-align: left; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); font-weight: 400; }
+  td { padding: 12px 16px; font-size: 12px; color: var(--dim); border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(26,23,20,0.02); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 1px; font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; }
+  .badge-green { background: rgba(42,102,64,0.1); color: var(--green); }
+  .badge-gold { background: rgba(160,120,64,0.1); color: var(--gold); }
+  .badge-red { background: rgba(176,48,37,0.08); color: var(--red); }
+  .badge-gray { background: var(--bg3); color: var(--muted); }
+
+  /* ── ICON GRID ── */
+  .icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-bottom: 28px; }
+  .icon-card {
+    background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px;
+    padding: 16px; cursor: pointer; transition: border-color 0.15s;
+  }
+  .icon-card:hover { border-color: var(--dark); }
+  .icon-card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .icon-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-style: italic; font-size: 15px; color: #fff; flex-shrink: 0; }
+  .icon-name { font-family: 'Playfair Display', serif; font-style: italic; font-size: 17px; }
+  .icon-arch { font-size: 9px; letter-spacing: 0.1em; color: var(--muted); margin-top: 1px; }
+  .icon-stats { display: flex; gap: 12px; }
+  .icon-stat { font-size: 10px; color: var(--muted); }
+  .icon-stat strong { color: var(--dark); font-weight: 400; }
+
+  /* ── CONTENT ITEMS ── */
+  .content-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin-bottom: 28px; }
+  .content-card {
+    position: relative; border-radius: 2px; overflow: hidden; cursor: pointer;
+    background: var(--bg3); border: 1px solid var(--border-md); aspect-ratio: 3/4;
+    transition: border-color 0.15s;
+  }
+  .content-card:hover { border-color: var(--dark); }
+  .content-card img { width: 100%; height: 100%; object-fit: cover; filter: saturate(0.75) contrast(1.05); }
+  .content-card-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 10px 10px 8px; background: linear-gradient(to top, rgba(26,23,20,0.8), transparent); }
+  .content-card-name { font-family: 'Playfair Display', serif; font-style: italic; font-size: 16px; color: var(--bg); }
+  .content-card-type { position: absolute; top: 7px; right: 7px; padding: 2px 7px; background: rgba(248,246,242,0.9); border-radius: 1px; font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dark); }
+
+  /* ── PERSONA EDITOR ── */
+  .persona-editor { background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; padding: 24px; margin-bottom: 28px; }
+  .field-group { margin-bottom: 18px; }
+  .field-label { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .field-input {
+    width: 100%; padding: 9px 12px; background: var(--bg); border: 1px solid var(--border-md);
+    border-radius: 2px; font-size: 13px; color: var(--dark); outline: none;
+    font-family: 'DM Sans', sans-serif; transition: border-color 0.15s;
+  }
+  .field-input:focus { border-color: rgba(26,23,20,0.3); }
+  .field-textarea { min-height: 80px; resize: vertical; line-height: 1.6; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .chip {
+    padding: 5px 11px; border-radius: 2px; font-size: 11px; cursor: pointer;
+    border: 1px solid var(--border); color: var(--muted); transition: all 0.12s;
+    font-family: 'DM Sans', sans-serif; background: transparent;
+  }
+  .chip.selected { background: var(--dark); color: var(--bg); border-color: var(--dark); }
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  /* ── NOTIFICATION ── */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 999;
+    padding: 12px 20px; background: var(--dark); color: var(--bg);
+    border-radius: 2px; font-size: 12px; letter-spacing: 0.06em;
+    display: none; animation: fadeIn 0.3s ease;
+  }
+
+  /* ── LOADING ── */
+  .spinner { width: 16px; height: 16px; border: 1.5px solid var(--border-md); border-top-color: var(--dark); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; }
+  .empty-state { padding: 60px; text-align: center; color: var(--muted); }
+  .empty-state .serif { font-size: 24px; margin-bottom: 8px; color: rgba(26,23,20,0.15); }
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Mirage</div>
+    <div class="login-sub">Admin Panel</div>
+    <input class="login-input" id="login-email" type="email" placeholder="Email" onkeydown="if(event.key==='Enter')doAdminLogin()" />
+    <input class="login-input" id="login-pass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')doAdminLogin()" />
+    <button class="login-btn" onclick="doAdminLogin()">Sign In →</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">Mirage <span>Admin Panel</span></div>
+    <div class="sidebar-nav">
+      <div class="nav-section">Content</div>
+      <div class="nav-item active" onclick="switchView('dashboard')"><span class="nav-item-icon">◈</span>Dashboard</div>
+      <div class="nav-item" onclick="switchView('icons')"><span class="nav-item-icon">✦</span>Icons <span class="nav-badge" id="nav-icons-count">3</span></div>
+      <div class="nav-item" onclick="switchView('content')"><span class="nav-item-icon">⊡</span>Content <span class="nav-badge" id="nav-content-count">0</span></div>
+      <div class="nav-item" onclick="switchView('personas')"><span class="nav-item-icon">◎</span>Personas</div>
+      <div class="nav-section">Subscribers</div>
+      <div class="nav-item" onclick="switchView('subscribers')"><span class="nav-item-icon">○</span>Subscribers <span class="nav-badge" id="nav-subs-count">0</span></div>
+      <div class="nav-item" onclick="switchView('messages')"><span class="nav-item-icon">◻</span>Messages</div>
+      <div class="nav-item" onclick="switchView('requests')"><span class="nav-item-icon">◇</span>Requests</div>
+      <div class="nav-section">Platform</div>
+      <div class="nav-item" onclick="switchView('waitlist')"><span class="nav-item-icon">◌</span>Waitlist <span class="nav-badge" id="nav-waitlist-count">0</span></div>
+      <div class="nav-item" onclick="switchView('revenue')"><span class="nav-item-icon">◈</span>Revenue</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-user-dot" id="user-initial">N</div>
+      <div class="sidebar-user-name" id="user-email">admin</div>
+      <div class="sidebar-logout" onclick="doLogout()" title="Sign out">↩</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-actions" id="topbar-actions"></div>
+    </div>
+    <div class="content" id="main-content">
+      <div class="empty-state"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── SUPABASE ──────────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://gmyenvnfuailickepvax.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let currentUser = null;
+let currentView = 'dashboard';
+let iconsData = [];
+
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    showApp();
+  }
+}
+
+async function doAdminLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-err');
+  if (!email || !pass) { err.textContent = 'Fill in all fields'; err.style.display='block'; return; }
+  err.style.display = 'none';
+  document.querySelector('.login-btn').textContent = 'Signing in...';
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    err.textContent = error.message;
+    err.style.display = 'block';
+    document.querySelector('.login-btn').textContent = 'Sign In →';
+    return;
+  }
+  currentUser = data.user;
+  showApp();
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+  const email = currentUser?.email || 'admin';
+  document.getElementById('user-email').textContent = email.split('@')[0];
+  document.getElementById('user-initial').textContent = email[0].toUpperCase();
+  loadIcons().then(() => switchView('dashboard'));
+}
+
+function doLogout() {
+  sb.auth.signOut();
+  currentUser = null;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').classList.remove('visible');
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+function switchView(view) {
+  currentView = view;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const navEl = document.querySelector(`.nav-item[onclick*="${view}"]`);
+  if (navEl) navEl.classList.add('active');
+  document.getElementById('topbar-title').textContent = {
+    dashboard: 'Dashboard', icons: 'Icons', content: 'Content',
+    personas: 'Personas', subscribers: 'Subscribers', messages: 'Messages',
+    requests: 'Requests', waitlist: 'Waitlist', revenue: 'Revenue',
+  }[view] || view;
+  document.getElementById('topbar-actions').innerHTML = '';
+  const views = { dashboard, icons, content, personas, subscribers, messages, requests, waitlist, revenue };
+  if (views[view]) views[view]();
+}
+
+// ── DATA LOADERS ──────────────────────────────────────────────────────────────
+async function loadIcons() {
+  const { data } = await sb.from('icons').select('*').order('name');
+  iconsData = data || [];
+  document.getElementById('nav-icons-count').textContent = iconsData.length;
+  return iconsData;
+}
+
+async function loadContent() {
+  const { data } = await sb.from('content').select('*, icons(name)').order('published_at', { ascending: false }).limit(50);
+  document.getElementById('nav-content-count').textContent = data?.length || 0;
+  return data || [];
+}
+
+async function loadSubscribers() {
+  const { data } = await sb.from('profiles').select('*').order('created_at', { ascending: false });
+  document.getElementById('nav-subs-count').textContent = data?.length || 0;
+  return data || [];
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.style.display = 'block';
+  clearTimeout(el._t); el._t = setTimeout(() => el.style.display='none', 3000);
+}
+
+// ── VIEWS ─────────────────────────────────────────────────────────────────────
+async function dashboard() {
+  const c = document.getElementById('main-content');
+  c.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+
+  const [subs, contents] = await Promise.all([loadSubscribers(), loadContent()]);
+
+  // Waitlist from localStorage (before Supabase waitlist table)
+  const waitlist = JSON.parse(localStorage.getItem('mirage-waitlist') || '[]');
+  document.getElementById('nav-waitlist-count').textContent = waitlist.length;
+
+  c.innerHTML = `
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-val">${subs.length}</div>
+        <div class="stat-label">Subscribers</div>
+        <div class="stat-delta">↑ Growing</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">${contents.length}</div>
+        <div class="stat-label">Content Drops</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">${iconsData.length}</div>
+        <div class="stat-label">Active Icons</div>
+        <div class="stat-delta">Luna · Vera · Aria</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">${waitlist.length}</div>
+        <div class="stat-label">Waitlist</div>
+        <div class="stat-delta">↑ Pre-launch</div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <div class="section-title">Icons</div>
+      <button class="btn btn-outline" onclick="switchView('icons')">Manage →</button>
+    </div>
+    <div class="icon-grid">
+      ${iconsData.map(icon => `
+        <div class="icon-card" onclick="switchView('personas')">
+          <div class="icon-card-top">
+            <div class="icon-avatar" style="background:${iconColor(icon.slug)}">${icon.name[0]}</div>
+            <div>
+              <div class="icon-name">${icon.name}</div>
+              <div class="icon-arch">${icon.archetype}</div>
+            </div>
+          </div>
+          <div class="icon-stats">
+            <div class="icon-stat"><strong>${icon.subscriber_count || 0}</strong> subs</div>
+            <div class="icon-stat"><span style="width:6px;height:6px;border-radius:50%;background:${icon.online?'#4a9960':'#ccc'};display:inline-block;margin-right:4px"></span>${icon.online?'Online':'Offline'}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="section-head">
+      <div class="section-title">Recent Content</div>
+      <button class="btn btn-outline" onclick="switchView('content')">All →</button>
+    </div>
+    ${contents.length ? `
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Icon</th><th>Caption</th><th>Type</th><th>Likes</th><th>Published</th></tr></thead>
+          <tbody>
+            ${contents.slice(0, 8).map(item => `
+              <tr>
+                <td><span class="serif">${item.icons?.name || '—'}</span></td>
+                <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"${item.caption || '—'}"</td>
+                <td><span class="badge ${item.type==='ppv'?'badge-gold':'badge-green'}">${item.type==='ppv'?`PPV · $${item.ppv_price}`:'Free'}</span></td>
+                <td>${item.likes || 0}</td>
+                <td>${new Date(item.published_at).toLocaleDateString()}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    ` : `<div class="empty-state"><div class="serif">No content yet</div><div>Generate images in Icon Studio and publish them</div></div>`}
+  `;
+}
+
+async function icons() {
+  const c = document.getElementById('main-content');
+  document.getElementById('topbar-actions').innerHTML = `<button class="btn btn-primary" onclick="toggleIconOnline()">Toggle Online</button>`;
+  c.innerHTML = `
+    <div class="icon-grid">
+      ${iconsData.map(icon => `
+        <div class="icon-card" onclick="editIcon('${icon.id}')">
+          <div class="icon-card-top">
+            <div class="icon-avatar" style="background:${iconColor(icon.slug)}">${icon.name[0]}</div>
+            <div>
+              <div class="icon-name">${icon.name}</div>
+              <div class="icon-arch">${icon.archetype}</div>
+            </div>
+          </div>
+          <div class="icon-stats">
+            <div class="icon-stat"><strong>${icon.subscriber_count || 0}</strong> subscribers</div>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:6px">
+            <span class="badge ${icon.online?'badge-green':'badge-gray'}">${icon.online?'Online':'Offline'}</span>
+          </div>
+          <div style="margin-top:8px;font-size:11px;color:var(--muted);line-height:1.6">${icon.bio || '—'}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+async function content() {
+  const c = document.getElementById('main-content');
+  c.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+  document.getElementById('topbar-actions').innerHTML = `<button class="btn btn-primary" onclick="toast('Use Icon Studio to generate content')">+ New Drop</button>`;
+  const data = await loadContent();
+  if (!data.length) {
+    c.innerHTML = `<div class="empty-state"><div class="serif">No content yet</div><div>Generate images in Icon Studio and they'll appear here once connected to Supabase</div></div>`;
+    return;
+  }
+  c.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Icon</th><th>Caption</th><th>Type</th><th>Price</th><th>Likes</th><th>Published</th><th></th></tr></thead>
+        <tbody>
+          ${data.map(item => `
+            <tr>
+              <td><span class="serif">${item.icons?.name || '—'}</span></td>
+              <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.caption || '—'}</td>
+              <td><span class="badge ${item.type==='ppv'?'badge-gold':'badge-green'}">${item.type}</span></td>
+              <td>${item.ppv_price ? '$'+item.ppv_price : '—'}</td>
+              <td>${item.likes || 0}</td>
+              <td>${new Date(item.published_at).toLocaleDateString()}</td>
+              <td><button class="btn btn-outline" style="padding:4px 10px;font-size:8px" onclick="deleteContent('${item.id}')">Delete</button></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+async function personas() {
+  const c = document.getElementById('main-content');
+  document.getElementById('topbar-actions').innerHTML = `<button class="btn btn-primary" onclick="savePersonaEdit()">Save All ✦</button>`;
+
+  const pillars = ['Late nights','Morning light','Intimacy','Solitude','Fashion','Music','Art','Books','Coffee','Travel','Nostalgia','Desire'];
+  const archetypes = ['The Muse','The Rebel','The Intellectual','The Wanderer','The Sensualist','The Dreamer','The Warrior','The Artist'];
+  const clusters = ['Downtown','Wild','Soft','Edge','Global'];
+
+  const savedPersonas = JSON.parse(localStorage.getItem('mirage_personas_v1') || '{}');
+
+  c.innerHTML = `
+    <div style="margin-bottom:20px;font-size:12px;color:var(--muted)">
+      Persona data currently saves to localStorage — wires to Supabase in the next build.
+      Export from Icon Studio and import here to sync Anna's work.
+    </div>
+    ${iconsData.map(icon => {
+      const p = savedPersonas[icon.id] || {};
+      return `
+        <div style="margin-bottom:12px">
+          <div class="section-head" style="cursor:pointer" onclick="togglePersonaSection('ps-${icon.id}')">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="icon-avatar" style="background:${iconColor(icon.slug)};width:32px;height:32px;font-size:13px">${icon.name[0]}</div>
+              <div class="section-title">${icon.name}</div>
+              ${p.smsDesc?'<span class="badge badge-green">✦ Persona set</span>':'<span class="badge badge-gray">Not configured</span>'}
+            </div>
+            <span style="color:var(--muted);font-size:12px">▼</span>
+          </div>
+          <div class="persona-editor" id="ps-${icon.id}" style="display:none">
+            <div class="field-grid">
+              <div class="field-group">
+                <div class="field-label">Signature Phrase 1</div>
+                <input class="field-input" id="p1-${icon.id}" value="${p.phrase1||''}" placeholder="can't sleep. you up?">
+              </div>
+              <div class="field-group">
+                <div class="field-label">Signature Phrase 2</div>
+                <input class="field-input" id="p2-${icon.id}" value="${p.phrase2||''}" placeholder="fire escape. 3am. bring coffee.">
+              </div>
+            </div>
+            <div class="field-group">
+              <div class="field-label">SMS Character Description</div>
+              <textarea class="field-input field-textarea" id="psms-${icon.id}" placeholder="How she texts. Voice rules. What she never says...">${p.smsDesc||''}</textarea>
+            </div>
+            <div class="field-group">
+              <div class="field-label">Content Pillars</div>
+              <div class="chips">
+                ${pillars.map(pl=>`<button class="chip ${(p.contentPillars||[]).includes(pl)?'selected':''}" onclick="toggleChip(this,'p-pillars-${icon.id}','${pl}')">${pl}</button>`).join('')}
+              </div>
+              <input type="hidden" id="p-pillars-${icon.id}" value="${JSON.stringify(p.contentPillars||[])}">
+            </div>
+            <div class="field-group">
+              <div class="field-label">Cluster</div>
+              <div class="chips">
+                ${clusters.map(cl=>`<button class="chip ${p.cluster===cl?'selected':''}" onclick="selectChip(this,'p-cluster-${icon.id}','${cl}')">${cl}</button>`).join('')}
+              </div>
+              <input type="hidden" id="p-cluster-${icon.id}" value="${p.cluster||''}">
+            </div>
+            <button class="btn btn-primary" style="margin-top:6px" onclick="saveIconPersona('${icon.id}','${icon.name}')">Save ${icon.name}</button>
+          </div>
+        </div>
+      `;
+    }).join('')}
+  `;
+}
+
+function togglePersonaSection(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function toggleChip(btn, hiddenId, val) {
+  const hidden = document.getElementById(hiddenId);
+  let arr = JSON.parse(hidden.value || '[]');
+  const idx = arr.indexOf(val);
+  if (idx > -1) { arr.splice(idx, 1); btn.classList.remove('selected'); }
+  else { arr.push(val); btn.classList.add('selected'); }
+  hidden.value = JSON.stringify(arr);
+}
+
+function selectChip(btn, hiddenId, val) {
+  const hidden = document.getElementById(hiddenId);
+  hidden.value = val;
+  btn.closest('.chips').querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function saveIconPersona(iconId, iconName) {
+  const saved = JSON.parse(localStorage.getItem('mirage_personas_v1') || '{}');
+  saved[iconId] = {
+    phrase1: document.getElementById(`p1-${iconId}`)?.value || '',
+    phrase2: document.getElementById(`p2-${iconId}`)?.value || '',
+    smsDesc: document.getElementById(`psms-${iconId}`)?.value || '',
+    contentPillars: JSON.parse(document.getElementById(`p-pillars-${iconId}`)?.value || '[]'),
+    cluster: document.getElementById(`p-cluster-${iconId}`)?.value || '',
+  };
+  localStorage.setItem('mirage_personas_v1', JSON.stringify(saved));
+  toast(`${iconName} persona saved ✦`);
+}
+
+function savePersonaEdit() {
+  iconsData.forEach(icon => saveIconPersona(icon.id, icon.name));
+}
+
+async function subscribers() {
+  const c = document.getElementById('main-content');
+  c.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+  const data = await loadSubscribers();
+  if (!data.length) {
+    c.innerHTML = `<div class="empty-state"><div class="serif">No subscribers yet</div><div>They'll appear here after signing up at mirageicons.com</div></div>`;
+    return;
+  }
+  c.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>User</th><th>Tier</th><th>Joined</th></tr></thead>
+        <tbody>
+          ${data.map(u => `
+            <tr>
+              <td>${u.display_name || u.id.slice(0,8)+'...'}</td>
+              <td><span class="badge badge-green">${u.tier}</span></td>
+              <td>${new Date(u.created_at).toLocaleDateString()}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+async function messages() {
+  const c = document.getElementById('main-content');
+  c.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+  const { data } = await sb.from('messages').select('*, profiles(display_name), icons(name)').order('created_at', { ascending: false }).limit(50);
+  if (!data?.length) {
+    c.innerHTML = `<div class="empty-state"><div class="serif">No messages yet</div></div>`;
+    return;
+  }
+  c.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Icon</th><th>User</th><th>Sender</th><th>Message</th><th>Sent</th></tr></thead>
+        <tbody>
+          ${data.map(m => `
+            <tr>
+              <td><span class="serif">${m.icons?.name||'—'}</span></td>
+              <td>${m.profiles?.display_name||m.user_id.slice(0,8)+'...'}</td>
+              <td><span class="badge ${m.sender==='icon'?'badge-gold':'badge-gray'}">${m.sender}</span></td>
+              <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.body||'[image]'}</td>
+              <td>${new Date(m.created_at).toLocaleDateString()}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+async function requests() {
+  const c = document.getElementById('main-content');
+  c.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+  const { data } = await sb.from('requests').select('*, profiles(display_name), icons(name)').order('created_at', { ascending: false });
+  if (!data?.length) {
+    c.innerHTML = `<div class="empty-state"><div class="serif">No requests yet</div></div>`;
+    return;
+  }
+  c.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Icon</th><th>User</th><th>Description</th><th>Status</th><th>Submitted</th><th></th></tr></thead>
+        <tbody>
+          ${data.map(r => `
+            <tr>
+              <td><span class="serif">${r.icons?.name||'—'}</span></td>
+              <td>${r.profiles?.display_name||r.user_id.slice(0,8)}</td>
+              <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.description}</td>
+              <td><span class="badge badge-${r.status==='completed'?'green':r.status==='pending'?'gold':'gray'}">${r.status}</span></td>
+              <td>${new Date(r.created_at).toLocaleDateString()}</td>
+              <td>
+                ${r.status==='pending'?`<button class="btn btn-outline" style="padding:4px 10px;font-size:8px" onclick="updateRequestStatus('${r.id}','in_progress')">Accept</button>`:''}
+                ${r.status==='in_progress'?`<button class="btn btn-primary" style="padding:4px 10px;font-size:8px" onclick="updateRequestStatus('${r.id}','completed')">Complete</button>`:''}
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+async function updateRequestStatus(id, status) {
+  await sb.from('requests').update({ status }).eq('id', id);
+  toast('Request updated');
+  requests();
+}
+
+function waitlist() {
+  const c = document.getElementById('main-content');
+  const list = JSON.parse(localStorage.getItem('mirage-waitlist') || '[]');
+  document.getElementById('nav-waitlist-count').textContent = list.length;
+  if (!list.length) {
+    c.innerHTML = `<div class="empty-state"><div class="serif">Waitlist empty</div><div>Emails collected from mirageicons.com splash page will appear here</div></div>`;
+    return;
+  }
+  c.innerHTML = `
+    <div style="margin-bottom:16px">
+      <button class="btn btn-outline" onclick="exportWaitlist()">↓ Export CSV</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Email</th><th>Signed Up</th></tr></thead>
+        <tbody>
+          ${list.map((entry, i) => `
+            <tr>
+              <td style="color:var(--muted)">${i+1}</td>
+              <td>${entry.email}</td>
+              <td>${new Date(entry.ts).toLocaleDateString()}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function exportWaitlist() {
+  const list = JSON.parse(localStorage.getItem('mirage-waitlist') || '[]');
+  const csv = 'email,signed_up\n' + list.map(e => `${e.email},${e.ts}`).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='mirage-waitlist.csv'; a.click();
+}
+
+function revenue() {
+  const c = document.getElementById('main-content');
+  c.innerHTML = `
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-val">$0</div>
+        <div class="stat-label">MRR</div>
+        <div class="stat-delta">Pre-launch</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">0</div>
+        <div class="stat-label">Active Subs</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">$0</div>
+        <div class="stat-label">PPV Revenue</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">84.5%</div>
+        <div class="stat-label">Target Margin</div>
+        <div class="stat-delta">At 10K subs</div>
+      </div>
+    </div>
+    <div class="empty-state">
+      <div class="serif">Revenue tracking</div>
+      <div>Wires to Segpay when payments are integrated.<br>Target: $145K net/month at 10K subscribers.</div>
+    </div>
+  `;
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function iconColor(slug) {
+  return {luna:'#8a8a9a', vera:'#c4763a', aria:'#a0b4b8'}[slug] || '#888';
+}
+
+async function deleteContent(id) {
+  if (!confirm('Delete this content?')) return;
+  await sb.from('content').delete().eq('id', id);
+  toast('Deleted');
+  content();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
