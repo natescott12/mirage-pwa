@@ -285,6 +285,9 @@ tbody tr:hover td { background: var(--bg); }
       <div class="sidebar-item" onclick="showPane('pnl')">
         <span class="icon">$</span> P&amp;L Dashboard
       </div>
+      <div class="sidebar-item" onclick="showPane('projdash')">
+        <span class="icon">◈</span> Project Dashboard
+      </div>
     </div>
 
     <!-- CONTENT PANES -->
@@ -421,6 +424,770 @@ tbody tr:hover td { background: var(--bg); }
             </tbody>
           </table>
         </div>
+      </div>
+
+
+      <!-- PROJECT DASHBOARD -->
+      <div class="pane" id="pane-projdash" style="padding:0;height:calc(100vh - 48px);display:none">
+        <iframe
+          id="projdash-frame"
+          srcdoc="<!DOCTYPE html>
+<html lang=&quot;en&quot;>
+<head>
+<meta charset=&quot;UTF-8&quot;>
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
+<title>Mirage · Project Dashboard</title>
+<link href=&quot;https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400;1,500&amp;family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&amp;display=swap&quot; rel=&quot;stylesheet&quot;>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f8f6f2; --bg2: #f2efe9; --bg3: #eae6de;
+    --dark: #1a1714; --dim: rgba(26,23,20,0.55); --muted: rgba(26,23,20,0.32);
+    --border: rgba(26,23,20,0.08); --border-md: rgba(26,23,20,0.13);
+    --gold: #a07840; --green: #2a6640; --red: #b03025;
+  }
+  body { font-family: 'DM Sans', sans-serif; font-weight: 300; background: var(--bg); color: var(--dark); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+  .serif { font-family: 'Playfair Display', serif; font-style: italic; }
+
+  /* Grain */
+  body::after {
+    content: ''; position: fixed; inset: -50%; width: 200%; height: 200%;
+    background-image: url(&quot;data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E&quot;);
+    pointer-events: none; z-index: 9998; opacity: 0.4;
+  }
+
+  /* Header */
+  header { background: var(--dark); padding: 0 48px; display: flex; align-items: center; justify-content: space-between; height: 64px; position: sticky; top: 0; z-index: 100; }
+  .logo { font-family: 'Playfair Display', serif; font-style: italic; font-size: 26px; color: var(--bg); }
+  .header-meta { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(248,246,242,0.3); }
+  .header-status { display: flex; align-items: center; gap: 20px; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; margin-right: 5px; animation: pulse 2.5s ease infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* Shell */
+  .shell { max-width: 1200px; margin: 0 auto; padding: 40px 48px 80px; }
+
+  /* Section */
+  .section { margin-bottom: 48px; }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .section-title { font-family: 'Playfair Display', serif; font-style: italic; font-size: 22px; }
+  .section-count { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+
+  /* File grid */
+  .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+
+  /* File card */
+  .file-card {
+    background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px;
+    padding: 16px; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+    text-decoration: none; color: inherit; display: block; position: relative;
+  }
+  .file-card:hover { border-color: rgba(26,23,20,0.3); background: var(--bg3); }
+  .file-card.dark { background: var(--dark); border-color: rgba(248,246,242,0.06); }
+  .file-card.dark:hover { border-color: rgba(248,246,242,0.15); }
+  .file-card.dark .file-name { color: var(--bg); }
+  .file-card.dark .file-desc { color: rgba(248,246,242,0.4); }
+  .file-card.dark .file-meta { color: rgba(248,246,242,0.2); }
+  .file-card.dark .file-type-badge { background: rgba(248,246,242,0.07); color: rgba(248,246,242,0.4); }
+
+  .file-type-badge {
+    display: inline-block; padding: 2px 8px; background: rgba(26,23,20,0.06);
+    border-radius: 1px; font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 8px;
+  }
+  .file-type-badge.html { background: rgba(42,102,64,0.1); color: var(--green); }
+  .file-type-badge.sql { background: rgba(160,120,64,0.1); color: var(--gold); }
+  .file-type-badge.md { background: rgba(26,23,20,0.06); color: var(--muted); }
+  .file-type-badge.pdf { background: rgba(176,48,37,0.08); color: var(--red); }
+  .file-type-badge.json { background: rgba(42,102,64,0.08); color: var(--green); }
+  .file-type-badge.js { background: rgba(160,120,64,0.08); color: var(--gold); }
+
+  .file-name { font-family: 'Playfair Display', serif; font-style: italic; font-size: 16px; margin-bottom: 5px; color: var(--dark); line-height: 1.2; }
+  .file-desc { font-size: 11px; color: var(--dim); line-height: 1.6; margin-bottom: 10px; }
+  .file-meta { font-size: 9px; color: var(--muted); letter-spacing: 0.08em; display: flex; align-items: center; justify-content: space-between; }
+  .file-path { font-size: 9px; color: var(--muted); font-family: monospace; background: var(--bg3); padding: 3px 7px; border-radius: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; margin-top: 8px; }
+  .file-card.dark .file-path { background: rgba(248,246,242,0.04); color: rgba(248,246,242,0.2); }
+
+  .open-btn { position: absolute; top: 14px; right: 14px; font-size: 14px; color: var(--muted); opacity: 0; transition: opacity 0.15s; }
+  .file-card:hover .open-btn { opacity: 1; }
+
+  /* Status badges */
+  .status-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; padding: 2px 7px; border-radius: 1px; }
+  .status-badge.done { background: rgba(42,102,64,0.1); color: var(--green); }
+  .status-badge.wip { background: rgba(160,120,64,0.1); color: var(--gold); }
+  .status-badge.todo { background: rgba(26,23,20,0.06); color: var(--muted); }
+
+  /* Priority list */
+  .priority-list { display: flex; flex-direction: column; gap: 0; }
+  .priority-item {
+    display: flex; align-items: flex-start; gap: 16px; padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .priority-num { font-family: 'Playfair Display', serif; font-style: italic; font-size: 22px; color: var(--muted); flex-shrink: 0; width: 28px; line-height: 1; }
+  .priority-content { flex: 1; }
+  .priority-title { font-size: 13px; font-weight: 500; color: var(--dark); margin-bottom: 3px; }
+  .priority-detail { font-size: 11px; color: var(--dim); line-height: 1.6; }
+  .priority-status { flex-shrink: 0; }
+
+  /* Stats row */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 40px; }
+  .stat-card { background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; padding: 18px; }
+  .stat-value { font-family: 'Playfair Display', serif; font-style: italic; font-size: 32px; color: var(--dark); margin-bottom: 4px; }
+  .stat-label { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+
+  /* Eyebrow */
+  .eyebrow { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+
+  /* Domain + keys bar */
+  .info-bar { background: var(--dark); border-radius: 2px; padding: 16px 20px; display: flex; gap: 32px; align-items: center; margin-bottom: 40px; flex-wrap: wrap; }
+  .info-item { }
+  .info-label { font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(248,246,242,0.3); margin-bottom: 4px; }
+  .info-value { font-size: 12px; color: rgba(248,246,242,0.8); font-family: monospace; }
+  .info-value.gold { color: var(--gold); font-family: 'DM Sans', sans-serif; font-weight: 500; }
+  .info-value.green { color: #4a9960; font-family: 'DM Sans', sans-serif; }
+  .info-value.red { color: #d05048; font-family: 'DM Sans', sans-serif; }
+
+  /* Last updated */
+  .last-updated { font-size: 9px; color: var(--muted); text-align: center; margin-top: 48px; letter-spacing: 0.1em; }
+
+  /* Add file form */
+  .add-section { background: var(--bg2); border: 1px dashed var(--border-md); border-radius: 2px; padding: 20px; margin-top: 12px; }
+  .add-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .add-input { flex: 1; min-width: 160px; padding: 9px 12px; background: var(--bg); border: 1px solid var(--border-md); border-radius: 2px; font-size: 12px; color: var(--dark); outline: none; font-family: 'DM Sans', sans-serif; }
+  .add-input:focus { border-color: rgba(26,23,20,0.3); }
+  .add-select { padding: 9px 12px; background: var(--bg); border: 1px solid var(--border-md); border-radius: 2px; font-size: 12px; color: var(--dark); outline: none; font-family: 'DM Sans', sans-serif; cursor: pointer; }
+  .add-btn { padding: 9px 18px; background: var(--dark); color: var(--bg); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; border: none; border-radius: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
+  .add-label { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+
+  /* Hide standalone header when in admin iframe */
+  body.in-admin header { display: none !important; }
+  body.in-admin .shell { padding-top: 32px !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class=&quot;logo&quot;>Mirage</div>
+  <div class=&quot;header-status&quot;>
+    <div style=&quot;font-size:9px;letter-spacing:0.14em;color:rgba(248,246,242,0.3)&quot;><span class=&quot;status-dot&quot;></span>Proxy live · railway.app</div>
+    <div class=&quot;header-meta&quot;>Project Dashboard · April 2026</div>
+  </div>
+</header>
+
+<div class=&quot;shell&quot;>
+
+  <!-- STATS -->
+  <div class=&quot;stats-row&quot;>
+    <div class=&quot;stat-card&quot;>
+      <div class=&quot;stat-value&quot; id=&quot;stat-files&quot;>20</div>
+      <div class=&quot;stat-label&quot;>Files Built</div>
+    </div>
+    <div class=&quot;stat-card&quot;>
+      <div class=&quot;stat-value&quot;>100</div>
+      <div class=&quot;stat-label&quot;>Icon Archetypes</div>
+    </div>
+    <div class=&quot;stat-card&quot;>
+      <div class=&quot;stat-value&quot;>$145K</div>
+      <div class=&quot;stat-label&quot;>Net Monthly at 10K Subs</div>
+    </div>
+    <div class=&quot;stat-card&quot;>
+      <div class=&quot;stat-value&quot;>84.5%</div>
+      <div class=&quot;stat-label&quot;>Net Margin</div>
+    </div>
+  </div>
+
+  <!-- INFO BAR -->
+  <div class=&quot;info-bar&quot;>
+    <div class=&quot;info-item&quot;>
+      <div class=&quot;info-label&quot;>Domain</div>
+      <div class=&quot;info-value gold&quot;>mirageicons.com ✓</div>
+    </div>
+    <div class=&quot;info-item&quot;>
+      <div class=&quot;info-label&quot;>Proxy · Railway</div>
+      <div class=&quot;info-value green&quot;>mirage-proxy-production.up.railway.app ✓</div>
+    </div>
+    <div class=&quot;info-item&quot;>
+      <div class=&quot;info-label&quot;>GitHub</div>
+      <div class=&quot;info-value green&quot;>natescott12/mirage-proxy ✓</div>
+    </div>
+    <div class=&quot;info-item&quot;>
+      <div class=&quot;info-label&quot;>Supabase</div>
+      <div class=&quot;info-value green&quot;>gmyenvnfuailickepvax · Schema deployed ✓</div>
+    </div>
+    <div class=&quot;info-item&quot;>
+      <div class=&quot;info-label&quot;>Vercel / PWA</div>
+      <div class=&quot;info-value green&quot;>mirage-pwa.vercel.app ✓ Live</div>
+    </div>
+    <div class=&quot;info-item&quot;>
+      <div class=&quot;info-label&quot;>mirageicons.com</div>
+      <div class=&quot;info-value green&quot;>Live · DNS propagated ✓</div>
+    </div>
+    <div class=&quot;info-item&quot;>
+      <div class=&quot;info-label&quot;>Segpay</div>
+      <div class=&quot;info-value red&quot;>Not yet integrated</div>
+    </div>
+  </div>
+
+  <!-- NEXT PRIORITIES -->
+  <div class=&quot;section&quot;>
+    <div class=&quot;section-head&quot;>
+      <div class=&quot;section-title&quot;>Next Priorities</div>
+      <div class=&quot;section-count&quot;>6 tasks</div>
+    </div>
+    <div class=&quot;priority-list&quot; id=&quot;priority-list&quot;>
+      <div class=&quot;priority-item&quot;>
+        <div class=&quot;priority-num&quot;>1</div>
+        <div class=&quot;priority-content&quot;>
+          <div class=&quot;priority-title&quot;>Deploy PWA to Vercel ✓</div>
+          <div class=&quot;priority-detail&quot;>Live at mirage-pwa.vercel.app. mirageicons.com DNS propagating — will be live within 30 min.</div>
+        </div>
+        <div class=&quot;priority-status&quot;><span class=&quot;status-badge done&quot;>Done</span></div>
+      </div>
+      <div class=&quot;priority-item&quot;>
+        <div class=&quot;priority-num&quot;>2</div>
+        <div class=&quot;priority-content&quot;>
+          <div class=&quot;priority-title&quot;>Generate icon content library</div>
+          <div class=&quot;priority-detail&quot;>Anna building personas (admin panel live). You generate images via Icon Studio — 15 free + 10 PPV per icon. Luna first.</div>
+        </div>
+        <div class=&quot;priority-status&quot;><span class=&quot;status-badge wip&quot;>In Progress</span></div>
+      </div>
+      <div class=&quot;priority-item&quot;>
+        <div class=&quot;priority-num&quot;>3</div>
+        <div class=&quot;priority-content&quot;>
+          <div class=&quot;priority-title&quot;>Figma design — marketing site</div>
+          <div class=&quot;priority-detail&quot;>Wireframes ready. Drop real photos on top. Big italic serif names. White bg. American Apparel editorial.</div>
+        </div>
+        <div class=&quot;priority-status&quot;><span class=&quot;status-badge todo&quot;>To Do</span></div>
+      </div>
+      <div class=&quot;priority-item&quot;>
+        <div class=&quot;priority-num&quot;>4</div>
+        <div class=&quot;priority-content&quot;>
+          <div class=&quot;priority-title&quot;>Wire shop into PWA</div>
+          <div class=&quot;priority-detail&quot;>Drop currency, wardrobe tab, purchase flow. Supabase is live — can start now.</div>
+        </div>
+        <div class=&quot;priority-status&quot;><span class=&quot;status-badge todo&quot;>To Do</span></div>
+      </div>
+      <div class=&quot;priority-item&quot;>
+        <div class=&quot;priority-num&quot;>5</div>
+        <div class=&quot;priority-content&quot;>
+          <div class=&quot;priority-title&quot;>Segpay integration</div>
+          <div class=&quot;priority-detail&quot;>Wire payment flow into signup. 12% processing — biggest cost. Needs PWA deployed first.</div>
+        </div>
+        <div class=&quot;priority-status&quot;><span class=&quot;status-badge todo&quot;>To Do</span></div>
+      </div>
+      <div class=&quot;priority-item&quot;>
+        <div class=&quot;priority-num&quot;>6</div>
+        <div class=&quot;priority-content&quot;>
+          <div class=&quot;priority-title&quot;>Twilio SMS setup</div>
+          <div class=&quot;priority-detail&quot;>3 numbers at $1.15/mo each. Persona tab already built in Studio. Wire after 1K subscribers.</div>
+        </div>
+        <div class=&quot;priority-status&quot;><span class=&quot;status-badge todo&quot;>To Do</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CORE PRODUCT FILES -->
+  <div class=&quot;section&quot;>
+    <div class=&quot;section-head&quot;>
+      <div class=&quot;section-title&quot;>Core Product</div>
+      <div class=&quot;section-count&quot; id=&quot;count-product&quot;></div>
+    </div>
+    <div class=&quot;file-grid&quot; id=&quot;grid-product&quot;></div>
+  </div>
+
+  <!-- STRATEGY &amp; DOCS -->
+  <div class=&quot;section&quot;>
+    <div class=&quot;section-head&quot;>
+      <div class=&quot;section-title&quot;>Strategy &amp; Docs</div>
+      <div class=&quot;section-count&quot; id=&quot;count-strategy&quot;></div>
+    </div>
+    <div class=&quot;file-grid&quot; id=&quot;grid-strategy&quot;></div>
+  </div>
+
+  <!-- DESIGN -->
+  <div class=&quot;section&quot;>
+    <div class=&quot;section-head&quot;>
+      <div class=&quot;section-title&quot;>Design</div>
+      <div class=&quot;section-count&quot; id=&quot;count-design&quot;></div>
+    </div>
+    <div class=&quot;file-grid&quot; id=&quot;grid-design&quot;></div>
+  </div>
+
+  <!-- INVESTOR -->
+  <div class=&quot;section&quot;>
+    <div class=&quot;section-head&quot;>
+      <div class=&quot;section-title&quot;>Investor</div>
+      <div class=&quot;section-count&quot; id=&quot;count-investor&quot;></div>
+    </div>
+    <div class=&quot;file-grid&quot; id=&quot;grid-investor&quot;></div>
+  </div>
+
+  <!-- INFRASTRUCTURE -->
+  <div class=&quot;section&quot;>
+    <div class=&quot;section-head&quot;>
+      <div class=&quot;section-title&quot;>Infrastructure</div>
+      <div class=&quot;section-count&quot;>6 services</div>
+    </div>
+    <div class=&quot;file-grid&quot;>
+
+      <div class=&quot;file-card dark&quot;>
+        <div style=&quot;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px&quot;>
+          <span class=&quot;file-type-badge&quot; style=&quot;background:rgba(42,102,64,0.2);color:#4a9960&quot;>Live</span>
+          <span class=&quot;status-badge done&quot;>Online</span>
+        </div>
+        <div class=&quot;file-name&quot;>Railway · Proxy</div>
+        <div class=&quot;file-desc&quot;>Node.js proxy. Flux generation, Claude voice, image fetch. Full CORS for hosted access.</div>
+        <div class=&quot;file-meta&quot;><span>mirage-proxy-production.up.railway.app</span></div>
+        <div class=&quot;file-path&quot; onclick=&quot;window.open('https://railway.com/project/3f900a6d-0b6b-4c72-9c37-c26db7ef68c3','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>railway.com → perpetual-patience</div>
+      </div>
+
+      <div class=&quot;file-card dark&quot;>
+        <div style=&quot;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px&quot;>
+          <span class=&quot;file-type-badge&quot; style=&quot;background:rgba(42,102,64,0.2);color:#4a9960&quot;>Live</span>
+          <span class=&quot;status-badge done&quot;>Deployed</span>
+        </div>
+        <div class=&quot;file-name&quot;>GitHub · Proxy Repo</div>
+        <div class=&quot;file-desc&quot;>Private repo. Auto-deploys to Railway on every push to main. server.js, package.json, railway.json.</div>
+        <div class=&quot;file-meta&quot;><span>natescott12/mirage-proxy</span></div>
+        <div class=&quot;file-path&quot; onclick=&quot;window.open('https://github.com/natescott12/mirage-proxy','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>github.com/natescott12/mirage-proxy</div>
+      </div>
+
+      <div class=&quot;file-card dark&quot;>
+        <div style=&quot;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px&quot;>
+          <span class=&quot;file-type-badge&quot; style=&quot;background:rgba(42,102,64,0.2);color:#4a9960&quot;>Live</span>
+          <span class=&quot;status-badge done&quot;>Schema Deployed</span>
+        </div>
+        <div class=&quot;file-name&quot;>Supabase · Database</div>
+        <div class=&quot;file-desc&quot;>Postgres DB. Profiles, subscriptions, icons (Luna/Vera/Aria seeded), content, messages, requests, PPV unlocks. RLS enabled.</div>
+        <div class=&quot;file-meta&quot;><span>gmyenvnfuailickepvax.supabase.co</span></div>
+        <div class=&quot;file-path&quot; onclick=&quot;window.open('https://supabase.com/dashboard/project/gmyenvnfuailickepvax','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>Mirage Icons · Mirage org</div>
+      </div>
+
+      <div class=&quot;file-card dark&quot;>
+        <div style=&quot;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px&quot;>
+          <span class=&quot;file-type-badge&quot; style=&quot;background:rgba(42,102,64,0.2);color:#4a9960&quot;>Live</span>
+          <span class=&quot;status-badge done&quot;>Active</span>
+        </div>
+        <div class=&quot;file-name&quot;>Flux Pro 1.1</div>
+        <div class=&quot;file-desc&quot;>Image generation. $0.04/image. Key rotated Apr 5. Regional cluster routing fix in proxy. ~$6K/mo at 10K subs scale.</div>
+        <div class=&quot;file-meta&quot;><span>api.bfl.ai</span></div>
+        <div class=&quot;file-path&quot; onclick=&quot;window.open('https://dashboard.bfl.ai','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>dashboard.bfl.ai</div>
+      </div>
+
+      <div class=&quot;file-card dark&quot;>
+        <div style=&quot;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px&quot;>
+          <span class=&quot;file-type-badge&quot; style=&quot;background:rgba(160,120,64,0.2);color:var(--gold)&quot;>Pending</span>
+          <span class=&quot;status-badge todo&quot;>To Do</span>
+        </div>
+        <div class=&quot;file-name&quot;>Vercel · PWA</div>
+        <div class=&quot;file-desc&quot;>Deploy mirage-pwa.html. Free tier. Point mirageicons.com DNS to Vercel. PWA is Supabase-connected and ready.</div>
+        <div class=&quot;file-meta&quot;><span>mirageicons.com</span></div>
+        <div class=&quot;file-path&quot; onclick=&quot;window.open('https://vercel.com','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>vercel.com → next step</div>
+      </div>
+
+      <div class=&quot;file-card dark&quot;>
+        <div style=&quot;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px&quot;>
+          <span class=&quot;file-type-badge&quot; style=&quot;background:rgba(160,120,64,0.2);color:var(--gold)&quot;>Pending</span>
+          <span class=&quot;status-badge todo&quot;>To Do</span>
+        </div>
+        <div class=&quot;file-name&quot;>Segpay · Payments</div>
+        <div class=&quot;file-desc&quot;>12% processing — biggest cost driver. Wire into signup flow post-Vercel deploy. Dominant adult content processor.</div>
+        <div class=&quot;file-meta&quot;><span>segpay.com</span></div>
+        <div class=&quot;file-path&quot; onclick=&quot;window.open('https://segpay.com','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>segpay.com → after Vercel</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ PROJECT SUMMARY ══════════════════════════════════════════════════ -->
+  <div class=&quot;section&quot;>
+    <div class=&quot;section-head&quot;>
+      <div class=&quot;section-title&quot;>Project Summary</div>
+      <div class=&quot;section-count&quot;>Full context · Apr 2026</div>
+    </div>
+
+    <div style=&quot;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px&quot;>
+
+      <div style=&quot;background:var(--bg2);border:1px solid var(--border-md);border-radius:2px;padding:20px&quot;>
+        <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px&quot;>What Mirage Is</div>
+        <div style=&quot;font-size:12px;color:var(--dim);line-height:1.8&quot;>
+          AI content platform featuring editorial AI characters called Icons. American Apparel 2000s aesthetic — film grain, desaturated, natural light, tight crops, no studio. Think Corinne Day, Juergen Teller. Content is non-explicit and clearly labeled as AI-generated. PWA to avoid app store fees.
+        </div>
+      </div>
+
+      <div style=&quot;background:var(--bg2);border:1px solid var(--border-md);border-radius:2px;padding:20px&quot;>
+        <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px&quot;>Financials (Target)</div>
+        <div style=&quot;font-size:12px;color:var(--dim);line-height:1.8&quot;>
+          At 10K subs / 500 Icons / 30-55-15 tier mix:<br>
+          $172K gross · $26.7K costs · <strong>$145K net (84.5% margin)</strong> · $1.74M annual.<br>
+          Flux costs ~$6K/mo at scale (150K images · $0.04/img).<br>
+          Segpay 12% processing — dominant cost driver.
+        </div>
+      </div>
+
+    </div>
+
+    <div style=&quot;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px&quot;>
+
+      <div style=&quot;background:var(--bg2);border:1px solid var(--border-md);border-radius:2px;padding:20px&quot;>
+        <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px&quot;>Launch Icons</div>
+        <div style=&quot;font-size:12px;color:var(--dim);line-height:2&quot;>
+          <span style=&quot;font-family:'Playfair Display',serif;font-style:italic;font-size:14px&quot;>Luna</span> — Downtown Intellectual. Cool grey. Direct stare.<br>
+          <span style=&quot;font-family:'Playfair Display',serif;font-style:italic;font-size:14px&quot;>Vera</span> — Unapologetic Bold. Warm gold. Owns every room.<br>
+          <span style=&quot;font-family:'Playfair Display',serif;font-style:italic;font-size:14px&quot;>Aria</span> — Soft Sadcore. Melancholy. Never eye contact.
+        </div>
+      </div>
+
+      <div style=&quot;background:var(--bg2);border:1px solid var(--border-md);border-radius:2px;padding:20px&quot;>
+        <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px&quot;>Pricing Tiers</div>
+        <div style=&quot;font-size:12px;color:var(--dim);line-height:2&quot;>
+          Glimpse · <strong>$4.99/mo</strong><br>
+          Illusion · <strong>$14.99/mo</strong> (most popular)<br>
+          Mirage VIP · <strong>$39.99/mo</strong><br>
+          Devoted · <strong>$79.99/mo</strong>
+        </div>
+      </div>
+
+      <div style=&quot;background:var(--bg2);border:1px solid var(--border-md);border-radius:2px;padding:20px&quot;>
+        <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px&quot;>Design System</div>
+        <div style=&quot;font-size:12px;color:var(--dim);line-height:2&quot;>
+          Icon names: Playfair Display italic<br>
+          UI: DM Sans light<br>
+          Warm white backgrounds<br>
+          Film grain overlays · Desaturated
+        </div>
+      </div>
+
+    </div>
+
+    <div style=&quot;display:grid;grid-template-columns:1fr 1fr;gap:12px&quot;>
+
+      <div style=&quot;background:var(--dark);border:1px solid rgba(248,246,242,0.06);border-radius:2px;padding:20px&quot;>
+        <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(248,246,242,0.3);margin-bottom:12px&quot;>Infrastructure · All Live</div>
+        <div style=&quot;font-size:11px;color:rgba(248,246,242,0.5);line-height:2.2&quot;>
+          <span style=&quot;color:rgba(42,162,64,0.9)&quot;>✓</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Railway Proxy</strong> · mirage-proxy-production.up.railway.app<br>
+          <span style=&quot;color:rgba(42,162,64,0.9)&quot;>✓</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>GitHub</strong> · natescott12/mirage-proxy · natescott12/mirage-pwa<br>
+          <span style=&quot;color:rgba(42,162,64,0.9)&quot;>✓</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Supabase</strong> · gmyenvnfuailickepvax.supabase.co · Schema deployed<br>
+          <span style=&quot;color:rgba(42,162,64,0.9)&quot;>✓</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Vercel</strong> · mirageicons.com · mirage-pwa.vercel.app<br>
+          <span style=&quot;color:rgba(42,162,64,0.9)&quot;>✓</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Flux Pro 1.1</strong> · api.bfl.ai · Key rotated Apr 5<br>
+          <span style=&quot;color:rgba(176,48,37,0.9)&quot;>◌</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Segpay</strong> · Payments · After content generation<br>
+          <span style=&quot;color:rgba(176,48,37,0.9)&quot;>◌</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Twilio SMS</strong> · After 1K subscribers
+        </div>
+      </div>
+
+      <div style=&quot;background:var(--dark);border:1px solid rgba(248,246,242,0.06);border-radius:2px;padding:20px&quot;>
+        <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(248,246,242,0.3);margin-bottom:12px&quot;>URLs · Credentials</div>
+        <div style=&quot;font-size:11px;color:rgba(248,246,242,0.5);line-height:2.2&quot;>
+          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>mirageicons.com</strong> → Splash page (coming soon)<br>
+          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>mirageicons.com/admin</strong> → Admin panel<br>
+          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Nate login:</strong> natescott12 GitHub → Supabase<br>
+          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Anna login:</strong> <a href=&quot;/cdn-cgi/l/email-protection&quot; class=&quot;__cf_email__&quot; data-cfemail=&quot;84e5eaeae5c4f3e1e5f6e1e7f1f6f6e1eaf0aaeae1f0&quot;>[email&amp;#160;protected]</a> · Mirage2026!<br>
+          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Supabase org:</strong> Mirage → Mirage Icons project<br>
+          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Railway:</strong> perpetual-patience project<br>
+          <em style=&quot;color:rgba(248,246,242,0.2)&quot;>Full API keys stored in private secure note</em>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ TEAM ══════════════════════════════════════════════════════════════ -->
+  <!-- COLLABORATORS -->
+  <div class=&quot;section&quot;>
+    <div class=&quot;section-head&quot;>
+      <div class=&quot;section-title&quot;>Team</div>
+      <div class=&quot;section-count&quot;>2 people</div>
+    </div>
+    <div class=&quot;file-grid&quot;>
+      <div class=&quot;file-card&quot;>
+        <div style=&quot;display:flex;align-items:center;gap:12px;margin-bottom:10px&quot;>
+          <div style=&quot;width:36px;height:36px;border-radius:50%;background:var(--dark);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-style:italic;font-size:15px;color:var(--bg)&quot;>N</div>
+          <div>
+            <div class=&quot;file-name&quot; style=&quot;margin-bottom:2px&quot;>Nate</div>
+            <div style=&quot;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)&quot;>Executive Design Director</div>
+          </div>
+        </div>
+        <div class=&quot;file-desc&quot;>Product direction, generation, deployment, strategy. Owns the proxy, GitHub, Railway, Supabase, Vercel.</div>
+        <div class=&quot;file-meta&quot;><span>natescott12 on GitHub</span></div>
+      </div>
+      <div class=&quot;file-card&quot;>
+        <div style=&quot;display:flex;align-items:center;gap:12px;margin-bottom:10px&quot;>
+          <div style=&quot;width:36px;height:36px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-style:italic;font-size:15px;color:var(--bg)&quot;>A</div>
+          <div>
+            <div class=&quot;file-name&quot; style=&quot;margin-bottom:2px&quot;>Anna</div>
+            <div style=&quot;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)&quot;>Icon Profile Builder</div>
+          </div>
+        </div>
+        <div class=&quot;file-desc&quot;>Building persona profiles for all 100 icon archetypes. Voice lines, SMS character, content pillars, cluster. Starting with Luna, Vera, Aria.</div>
+        <div class=&quot;file-meta&quot;><span>Google Drive access · Studio via download</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD NEW FILE -->
+  <div class=&quot;section&quot;>
+    <div class=&quot;section-head&quot;>
+      <div class=&quot;section-title&quot;>Add a File</div>
+    </div>
+    <div class=&quot;add-section&quot;>
+      <div class=&quot;add-label&quot;>Track a new file</div>
+      <div class=&quot;add-row&quot;>
+        <input class=&quot;add-input&quot; id=&quot;add-name&quot; placeholder=&quot;File name (e.g. Admin Panel)&quot;>
+        <input class=&quot;add-input&quot; id=&quot;add-path&quot; placeholder=&quot;Path (e.g. mirage-admin.html)&quot;>
+        <input class=&quot;add-input&quot; id=&quot;add-desc&quot; placeholder=&quot;What it does&quot;>
+        <select class=&quot;add-select&quot; id=&quot;add-type&quot;>
+          <option value=&quot;html&quot;>HTML</option>
+          <option value=&quot;sql&quot;>SQL</option>
+          <option value=&quot;md&quot;>MD</option>
+          <option value=&quot;pdf&quot;>PDF</option>
+          <option value=&quot;json&quot;>JSON</option>
+          <option value=&quot;js&quot;>JS</option>
+        </select>
+        <select class=&quot;add-select&quot; id=&quot;add-section&quot;>
+          <option value=&quot;product&quot;>Core Product</option>
+          <option value=&quot;strategy&quot;>Strategy &amp; Docs</option>
+          <option value=&quot;design&quot;>Design</option>
+          <option value=&quot;investor&quot;>Investor</option>
+        </select>
+        <select class=&quot;add-select&quot; id=&quot;add-status&quot;>
+          <option value=&quot;done&quot;>Done</option>
+          <option value=&quot;wip&quot;>In Progress</option>
+          <option value=&quot;todo&quot;>To Do</option>
+        </select>
+        <button class=&quot;add-btn&quot; onclick=&quot;addFile()&quot;>Add File</button>
+      </div>
+    </div>
+  </div>
+
+  <div class=&quot;last-updated&quot; id=&quot;last-updated&quot;></div>
+
+</div>
+
+<script data-cfasync=&quot;false&quot; src=&quot;/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js&quot;></script><script>
+// Detect iframe context
+if(window.self !== window.top){document.body.classList.add(&quot;in-admin&quot;);}
+
+// ── FILE DATA ────────────────────────────────────────────────────
+const BASE = '';
+
+let FILES = JSON.parse(localStorage.getItem('mirage-files') || 'null') || [
+  // CORE PRODUCT
+  {
+    id: 'pwa', section: 'product', type: 'html', status: 'done',
+    name: 'Subscriber PWA',
+    path: 'mirage-pwa.html',
+    desc: 'Full subscriber app — all screens. Supabase auth wired (real signIn/signUp/signOut/session check). Ready to deploy to Vercel.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'studio', section: 'product', type: 'html', status: 'done',
+    name: 'Icon Studio',
+    path: 'mirage-icon-studio.html',
+    desc: 'Admin content dashboard. Persona tab, Wardrobe prompt layer, Voice Preview, Cluster filter, Export/Import buttons. Flux + Claude API. Hosted proxy.',
+    date: 'Apr 4 2026'
+  },
+  {
+    id: 'shop', section: 'product', type: 'html', status: 'done',
+    name: 'Shop UI',
+    path: 'mirage-shop-ui.html',
+    desc: 'Full shop PWA screen — Drops tab, Wardrobe tab, Get Drops tab. Interactive with live balance, purchase modal, wardrobe grid.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'shop-arch', section: 'product', type: 'html', status: 'done',
+    name: 'Shop Architecture',
+    path: 'mirage-shop.html',
+    desc: 'Drop currency system, wardrobe, product catalog, purchase modal, transaction log, revenue projections, Supabase schema.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'sms', section: 'product', type: 'html', status: 'done',
+    name: 'SMS Architecture',
+    path: 'mirage-sms.html',
+    desc: 'Twilio integration, icon profile builder, live system prompt preview, TCPA compliance, full schema, interactive phone mockup.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'proxy', section: 'product', type: 'js', status: 'done',
+    name: 'Proxy Server',
+    path: 'mirage-proxy/server.js',
+    desc: 'Node.js proxy on port 3579. Routes: /flux/generate, /flux/result/:id, /claude/extract, /fetch-image. Regional cluster routing fix included.',
+    date: 'Apr 4 2026'
+  },
+  {
+    id: 'personas', section: 'product', type: 'json', status: 'done',
+    name: 'Icon Archetypes',
+    path: 'personas.json',
+    desc: '100 icon archetypes with full character profiles. Name, archetype, vibe, aesthetic, setting, energy. Covers Afrofuturist to Scandinavian Minimalist.',
+    date: 'Apr 4 2026'
+  },
+  {
+    id: 'admin', section: 'product', type: 'html', status: 'done',
+    name: 'Admin Panel',
+    path: 'mirage-pwa/admin/index.html',
+    desc: 'Full web CMS. Supabase auth. Dashboard, Icons, Content, Personas, Subscribers, Messages, Requests, Waitlist, Revenue. Live at mirageicons.com/admin.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'splash', section: 'product', type: 'html', status: 'done',
+    name: 'Splash Page',
+    path: 'mirage-pwa/index.html',
+    desc: 'Coming soon page. Mirage logo, tagline, email capture with waitlist localStorage. Live at mirageicons.com.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'pwa-repo', section: 'product', type: 'js', status: 'done',
+    name: 'PWA GitHub Repo',
+    path: 'mirage-pwa/index.html',
+    desc: 'Deployed to Vercel via natescott12/mirage-pwa. Auto-deploys on push. index.html = mirage-pwa.html with Supabase auth wired.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'schema', section: 'product', type: 'sql', status: 'todo',
+    name: 'Supabase Schema',
+    path: 'mirage-supabase-schema.sql',
+    desc: 'Complete SQL schema. Profiles, subscriptions, icons (pre-seeded), content, messages, requests, comments, PPV unlocks, likes/saves. Full RLS policies.',
+    date: 'Apr 5 2026'
+  },
+
+  // STRATEGY &amp; DOCS
+  {
+    id: 'digital-goods', section: 'strategy', type: 'md', status: 'done',
+    name: 'Digital Goods Strategy',
+    path: 'mirage-digital-goods-strategy.md',
+    desc: 'Full drop economy strategy — currency mechanics, scarcity, wardrobe psychology, rollout phases, whale segment math, Supabase schema, revenue projections.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'content-brief', section: 'strategy', type: 'md', status: 'done',
+    name: 'Content Brief',
+    path: 'mirage-content-brief.md',
+    desc: '25 shots per icon (15 free + 10 PPV). Scene, lighting, crop, and prompt direction for every shot. Ready to use as a generation queue in Icon Studio.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'summary', section: 'strategy', type: 'pdf', status: 'done',
+    name: 'Full Project Summary',
+    path: 'mirage-full-summary.pdf',
+    desc: 'Complete session summary — all sessions, every bug fixed, every file built, shop and SMS systems, financial model, competitive research.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'pl', section: 'strategy', type: 'html', status: 'done',
+    name: 'P&amp;L Model',
+    path: 'mirage-pl-model.html',
+    desc: 'Interactive financial model with sliders to 10K subs / 500 icons. $145K net monthly, 84.5% margin, $1.74M annual at scale.',
+    date: 'Apr 4 2026'
+  },
+
+  // DESIGN
+  {
+    id: 'wireframes', section: 'design', type: 'html', status: 'done',
+    name: 'Wireframes',
+    path: 'mirage-wireframes.html',
+    desc: 'Marketing site (4 screens) + PWA (8 screens). Full Mirage design system — Playfair italic, DM Sans, warm white, grain overlays. Ready for Figma.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'website', section: 'design', type: 'html', status: 'done',
+    name: 'Marketing Website',
+    path: 'mirage-website.html',
+    desc: 'Desktop marketing site. Hero, icons page, pricing, manifesto.',
+    date: 'Apr 5 2026'
+  },
+
+  // INVESTOR
+  {
+    id: 'deck', section: 'investor', type: 'pdf', status: 'done',
+    name: 'Investor Deck v4',
+    path: 'mirage-investor-deck-v4.pdf',
+    desc: '16 slides. Cover, manifesto, problem, why Mirage, icons, experience, digital goods economy, pricing, competitive, market, audience, financials, roadmap, tech, ask, close.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'deck-pptx', section: 'investor', type: 'js', status: 'done',
+    name: 'Deck Source (pptxgenjs)',
+    path: 'mirage-deck-v2.js',
+    desc: 'PptxGenJS script to regenerate the investor deck. Edit and run: node mirage-deck-v2.js',
+    date: 'Apr 5 2026'
+  },
+];
+
+// ── RENDER ───────────────────────────────────────────────────────
+function renderAll() {
+  const sections = ['product', 'strategy', 'design', 'investor'];
+  sections.forEach(sec => {
+    const items = FILES.filter(f => f.section === sec);
+    const grid = document.getElementById('grid-' + sec);
+    const count = document.getElementById('count-' + sec);
+    count.textContent = items.length + ' file' + (items.length !== 1 ? 's' : '');
+    grid.innerHTML = items.map(f => renderCard(f)).join('');
+  });
+  document.getElementById('stat-files').textContent = FILES.length;
+  document.getElementById('last-updated').textContent =
+    'Last updated: ' + new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+
+function renderCard(f) {
+  const isDark = f.section === 'investor' &amp;&amp; f.type === 'pdf';
+  const statusMap = { done: 'Done', wip: 'In Progress', todo: 'To Do' };
+  return `
+    <div class=&quot;file-card ${isDark ? 'dark' : ''}&quot; onclick=&quot;openFile('${f.id}')&quot;>
+      <span class=&quot;open-btn&quot;>↗</span>
+      <div style=&quot;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px&quot;>
+        <span class=&quot;file-type-badge ${f.type}&quot;>${f.type.toUpperCase()}</span>
+        <span class=&quot;status-badge ${f.status}&quot;>${statusMap[f.status]}</span>
+      </div>
+      <div class=&quot;file-name&quot;>${f.name}</div>
+      <div class=&quot;file-desc&quot;>${f.desc}</div>
+      <div class=&quot;file-meta&quot;>
+        <span>${f.date}</span>
+        <span onclick=&quot;removeFile(event,'${f.id}')&quot; style=&quot;cursor:pointer;opacity:0.4;font-size:11px&quot; title=&quot;Remove&quot;>✕</span>
+      </div>
+      <div class=&quot;file-path&quot; title=&quot;${f.path}&quot;>${f.path}</div>
+    </div>`;
+}
+
+function openFile(id) {
+  const f = FILES.find(x => x.id === id);
+  if (!f) return;
+  // Try to open local file
+  const link = document.createElement('a');
+  link.href = f.path;
+  link.target = '_blank';
+  link.click();
+}
+
+function removeFile(e, id) {
+  e.stopPropagation();
+  if (!confirm('Remove this file from the dashboard?')) return;
+  FILES = FILES.filter(f => f.id !== id);
+  save();
+  renderAll();
+}
+
+function addFile() {
+  const name = document.getElementById('add-name').value.trim();
+  const path = document.getElementById('add-path').value.trim();
+  const desc = document.getElementById('add-desc').value.trim();
+  const type = document.getElementById('add-type').value;
+  const section = document.getElementById('add-section').value;
+  const status = document.getElementById('add-status').value;
+  if (!name || !path) { alert('Name and path are required.'); return; }
+
+  const fullPath = path;
+  FILES.push({
+    id: 'file-' + Date.now(),
+    section, type, status, name, desc,
+    path: fullPath,
+    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  });
+  save();
+  renderAll();
+  // Clear i"
+          style="width:100%;height:100%;border:none;display:block"
+          sandbox="allow-scripts allow-same-origin allow-downloads allow-forms"
+        ></iframe>
       </div>
 
       <div class="pane" id="pane-studio" style="padding:0;height:calc(100vh - 48px);display:none">
@@ -700,6 +1467,60 @@ tbody tr:hover td { background: var(--bg); }
   .mb-extracted { padding: 10px 12px; background: rgba(42,102,64,0.06); border: 1px solid rgba(42,102,64,0.2); border-radius: 2px; font-size: 10px; color: var(--dim); line-height: 1.7; font-style: italic; margin-top: 8px; display: none; }
   .mb-extracted.visible { display: block; }
 
+
+  /* PERSONA BUILDER */
+  .persona-builder { background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; margin-bottom: 20px; overflow: hidden; }
+  .persona-builder-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .persona-builder.collapsed .persona-builder-body { display: none; }
+  .persona-builder-body { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .persona-phrase-row { display: flex; gap: 6px; align-items: center; }
+  .persona-phrase-num { font-family: 'Playfair Display', serif; font-style: italic; font-size: 14px; color: var(--muted); width: 16px; flex-shrink: 0; }
+  .persona-input { width: 100%; padding: 7px 10px; background: var(--bg); border: 1px solid var(--border-md); border-radius: 2px; font-size: 12px; color: var(--text); outline: none; font-family: 'DM Sans', sans-serif; transition: border-color 0.15s; }
+  .persona-input:focus { border-color: var(--border-strong); }
+  .persona-textarea { width: 100%; padding: 8px 10px; background: var(--bg); border: 1px solid var(--border-md); border-radius: 2px; font-size: 12px; color: var(--text); outline: none; font-family: 'DM Sans', sans-serif; resize: vertical; min-height: 68px; line-height: 1.6; transition: border-color 0.15s; }
+  .persona-textarea:focus { border-color: var(--border-strong); }
+  .persona-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .persona-chip { padding: 5px 11px; border-radius: 2px; font-size: 11px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all 0.12s; font-family: 'DM Sans', sans-serif; }
+  .persona-chip.selected { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .persona-cluster-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .persona-cluster-chip { padding: 5px 11px; border-radius: 2px; font-size: 11px; cursor: pointer; border: 1px solid var(--border-md); background: transparent; color: var(--dim); transition: all 0.12s; font-family: 'DM Sans', sans-serif; font-weight: 400; }
+  .persona-cluster-chip.selected { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .persona-save-btn { width: 100%; padding: 9px; background: transparent; border: 1px solid var(--border-strong); color: var(--dim); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+  .persona-save-btn:hover { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .persona-system-preview { padding: 10px 12px; background: rgba(26,23,20,0.03); border: 1px solid var(--border); border-radius: 2px; font-size: 9.5px; color: var(--muted); line-height: 1.75; font-style: italic; margin-top: 6px; max-height: 80px; overflow-y: auto; }
+
+  /* WARDROBE CHIPS */
+  .wardrobe-chip { padding: 5px 11px; border-radius: 2px; font-size: 11px; cursor: pointer; border: 1px solid var(--border-md); background: transparent; color: var(--dim); transition: all 0.12s; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
+  .wardrobe-chip.selected { background: var(--gold); color: #f8f6f2; border-color: var(--gold); }
+  .wardrobe-add-row { display: flex; gap: 6px; margin-top: 8px; }
+  .wardrobe-add-input { flex: 1; padding: 6px 10px; background: var(--bg); border: 1px solid var(--border-md); border-radius: 2px; font-size: 11px; color: var(--text); outline: none; font-family: 'DM Sans', sans-serif; }
+  .wardrobe-add-btn { padding: 6px 12px; background: transparent; border: 1px solid var(--border-md); border-radius: 2px; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; color: var(--muted); font-family: 'DM Sans', sans-serif; transition: all 0.15s; white-space: nowrap; }
+  .wardrobe-add-btn:hover { border-color: var(--border-strong); color: var(--text); }
+
+  /* VOICE PREVIEW */
+  .voice-preview { background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; margin-bottom: 16px; overflow: hidden; }
+  .voice-preview-header { padding: 11px 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .voice-preview.collapsed .voice-preview-body { display: none; }
+  .voice-preview-body { padding: 12px 14px; }
+  .voice-msgs { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; min-height: 60px; max-height: 200px; overflow-y: auto; }
+  .voice-msg-icon { padding: 8px 12px; background: var(--bg3); border-radius: 10px 10px 10px 2px; font-size: 12px; color: var(--dim); line-height: 1.5; max-width: 90%; align-self: flex-start; font-style: italic; }
+  .voice-msg-user { padding: 8px 12px; background: var(--text); color: var(--bg); border-radius: 10px 10px 2px 10px; font-size: 12px; line-height: 1.5; max-width: 90%; align-self: flex-end; }
+  .voice-msg-thinking { padding: 8px 12px; background: var(--bg3); border-radius: 10px 10px 10px 2px; font-size: 11px; color: var(--muted); font-style: italic; align-self: flex-start; }
+  .voice-input-row { display: flex; gap: 6px; }
+  .voice-input { flex: 1; padding: 8px 10px; background: var(--bg); border: 1px solid var(--border-md); border-radius: 2px; font-size: 12px; color: var(--text); outline: none; font-family: 'DM Sans', sans-serif; }
+  .voice-send-btn { padding: 8px 14px; background: var(--text); color: var(--bg); border: none; border-radius: 2px; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: opacity 0.15s; white-space: nowrap; }
+  .voice-send-btn:disabled { opacity: 0.4; cursor: default; }
+
+  /* ICONS CLUSTER FILTER */
+  .cluster-filter { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  .cluster-btn { padding: 6px 14px; border-radius: 2px; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; border: 1px solid var(--border-md); background: transparent; color: var(--muted); transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+  .cluster-btn:hover { border-color: var(--border-strong); color: var(--text); }
+  .cluster-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .icon-cluster-badge { display: inline-block; padding: 2px 7px; border-radius: 1px; font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 5px; border: 1px solid var(--border-md); color: var(--muted); }
+
+  /* Admin embed: hide header in iframe */
+  body.in-admin #header { display: none !important; }
+  body.in-admin #app { height: 100vh !important; }
 </style>
 </head>
 <body>
@@ -955,6 +1776,48 @@ tbody tr:hover td { background: var(--bg); }
           <button class=&quot;char-save-btn&quot; onclick=&quot;saveCharacter()&quot;>Save Character Profile</button>
         </div>
       </div>
+
+      <!-- Persona Builder -->
+      <div class=&quot;persona-builder collapsed&quot; id=&quot;persona-builder&quot;>
+        <div class=&quot;persona-builder-header&quot; onclick=&quot;togglePersonaBuilder()&quot;>
+          <div class=&quot;char-builder-title&quot;>Persona · Voice &amp; Identity</div>
+          <div style=&quot;display:flex;align-items:center;gap:8px&quot;>
+            <div style=&quot;font-size:10px;color:var(--muted)&quot; id=&quot;persona-summary&quot;>Click to expand</div>
+            <div id=&quot;persona-chevron&quot; style=&quot;font-size:10px;color:var(--muted)&quot;>▼</div>
+          </div>
+        </div>
+        <div class=&quot;persona-builder-body&quot;>
+          <div class=&quot;char-field&quot;>
+            <div class=&quot;char-section-label&quot;>Brand Voice · 3 Signature Phrases</div>
+            <div style=&quot;display:flex;flex-direction:column;gap:5px&quot;>
+              <div class=&quot;persona-phrase-row&quot;><span class=&quot;persona-phrase-num&quot;>1</span><input class=&quot;persona-input&quot; id=&quot;pv-phrase1&quot; placeholder=&quot;e.g. can't sleep. you up?&quot; oninput=&quot;updatePersona('phrase1',this.value)&quot; /></div>
+              <div class=&quot;persona-phrase-row&quot;><span class=&quot;persona-phrase-num&quot;>2</span><input class=&quot;persona-input&quot; id=&quot;pv-phrase2&quot; placeholder=&quot;e.g. fire escape. 3am. bring coffee.&quot; oninput=&quot;updatePersona('phrase2',this.value)&quot; /></div>
+              <div class=&quot;persona-phrase-row&quot;><span class=&quot;persona-phrase-num&quot;>3</span><input class=&quot;persona-input&quot; id=&quot;pv-phrase3&quot; placeholder=&quot;e.g. thought about you today. weird.&quot; oninput=&quot;updatePersona('phrase3',this.value)&quot; /></div>
+            </div>
+          </div>
+          <div class=&quot;char-field&quot;>
+            <div class=&quot;char-section-label&quot;>SMS Character Description</div>
+            <textarea class=&quot;persona-textarea&quot; id=&quot;pv-sms-desc&quot; placeholder=&quot;How she texts. Voice rules. What she never says. What she always does. This feeds directly into Claude for in-character responses...&quot; oninput=&quot;updatePersona('smsDesc',this.value)&quot;></textarea>
+          </div>
+          <div class=&quot;char-field&quot;>
+            <div class=&quot;char-section-label&quot;>Content Pillars</div>
+            <div class=&quot;persona-chips&quot; id=&quot;persona-pillar-chips&quot;></div>
+          </div>
+          <div class=&quot;char-field&quot;>
+            <div class=&quot;char-section-label&quot;>Female Archetype</div>
+            <div class=&quot;persona-chips&quot; id=&quot;persona-archetype-chips&quot;></div>
+          </div>
+          <div class=&quot;char-field&quot;>
+            <div class=&quot;char-section-label&quot;>Cluster</div>
+            <div class=&quot;persona-cluster-chips&quot; id=&quot;persona-cluster-chips&quot;></div>
+          </div>
+          <div class=&quot;char-field&quot;>
+            <div class=&quot;char-section-label&quot; style=&quot;display:flex;justify-content:space-between&quot;><span>Claude System Prompt Preview</span><span style=&quot;color:var(--green);font-size:9px&quot;>Auto-generated ✦</span></div>
+            <div class=&quot;persona-system-preview&quot; id=&quot;persona-system-preview&quot;>Fill in the fields above to generate the system prompt...</div>
+          </div>
+          <button class=&quot;persona-save-btn&quot; onclick=&quot;savePersona()&quot;>Save Persona ✦</button>
+        </div>
+      </div>
       <div style=&quot;margin-bottom:20px&quot;>
         <div class=&quot;section-label&quot;>Scene · Time of Day</div>
         <div style=&quot;display:flex;gap:5px;margin-bottom:10px&quot; id=&quot;time-tabs&quot;></div>
@@ -963,6 +1826,14 @@ tbody tr:hover td { background: var(--bg); }
       <div style=&quot;margin-bottom:20px&quot;>
         <div class=&quot;section-label&quot;>Style Parameters</div>
         <div style=&quot;display:grid;grid-template-columns:1fr 1fr;gap:16px&quot; id=&quot;params-grid&quot;></div>
+      </div>
+      <div style=&quot;margin-bottom:20px&quot;>
+        <div class=&quot;section-label&quot; style=&quot;display:flex;justify-content:space-between;align-items:center&quot;><span>Wardrobe · Inject into Prompt</span><span style=&quot;font-size:9px;color:var(--gold)&quot;>✦ Prompt layer</span></div>
+        <div style=&quot;display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px&quot; id=&quot;wardrobe-chips&quot;></div>
+        <div class=&quot;wardrobe-add-row&quot;>
+          <input class=&quot;wardrobe-add-input&quot; id=&quot;wardrobe-add-input&quot; placeholder=&quot;Add wardrobe item e.g. fitted black leather jacket, Schott...&quot; onkeydown=&quot;if(event.key==='Enter')addWardrobeItem()&quot; />
+          <button class=&quot;wardrobe-add-btn&quot; onclick=&quot;addWardrobeItem()&quot;>+ Add</button>
+        </div>
       </div>
       <div class=&quot;prompt-area&quot;>
         <div class=&quot;section-label&quot; style=&quot;margin-bottom:8px;display:flex;align-items:center;gap:8px&quot;>
@@ -989,6 +1860,25 @@ tbody tr:hover td { background: var(--bg); }
       <div class=&quot;panel-right-head&quot;>
         <div class=&quot;eyebrow&quot;>Output · <span id=&quot;output-count&quot;>0</span></div>
         <div style=&quot;font-size:10px;color:var(--muted);cursor:pointer&quot; onclick=&quot;clearOutput()&quot;>Clear</div>
+      </div>
+      <!-- Voice Preview -->
+      <div class=&quot;voice-preview collapsed&quot; id=&quot;voice-preview&quot; style=&quot;margin:10px 13px 0;flex-shrink:0&quot;>
+        <div class=&quot;voice-preview-header&quot; onclick=&quot;toggleVoicePreview()&quot;>
+          <div style=&quot;display:flex;align-items:center;gap:8px&quot;>
+            <div style=&quot;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)&quot;>Voice Preview</div>
+            <div style=&quot;width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s ease infinite&quot;></div>
+          </div>
+          <div style=&quot;font-size:9px;color:var(--muted)&quot; id=&quot;voice-chevron&quot;>▼ Test in-character SMS</div>
+        </div>
+        <div class=&quot;voice-preview-body&quot;>
+          <div class=&quot;voice-msgs&quot; id=&quot;voice-msgs&quot;>
+            <div class=&quot;voice-msg-icon&quot; id=&quot;voice-welcome&quot;>Select an icon and fill out the Persona tab to test her voice...</div>
+          </div>
+          <div class=&quot;voice-input-row&quot;>
+            <input class=&quot;voice-input&quot; id=&quot;voice-input&quot; placeholder=&quot;Type a message...&quot; onkeydown=&quot;if(event.key==='Enter')sendVoiceMessage()&quot; />
+            <button class=&quot;voice-send-btn&quot; id=&quot;voice-send-btn&quot; onclick=&quot;sendVoiceMessage()&quot;>Send</button>
+          </div>
+        </div>
       </div>
       <div id=&quot;output-list&quot;><div style=&quot;padding:70px 20px;text-align:center&quot;><div class=&quot;serif&quot; style=&quot;font-size:20px;color:rgba(26,23,20,0.18);margin-bottom:8px&quot;>No drops yet</div><div style=&quot;font-size:11px;color:rgba(26,23,20,0.28);line-height:1.8&quot;>Select an icon and generate<br>your first drop</div></div></div>
     </div>
@@ -1036,6 +1926,14 @@ tbody tr:hover td { background: var(--bg); }
         <div class=&quot;serif&quot; style=&quot;font-size:32px;margin-bottom:4px&quot;>The Icons</div>
         <div style=&quot;font-size:11px;color:var(--muted)&quot;>100 archetypes · American Apparel direction</div></div>
       <input class=&quot;search-input&quot; style=&quot;width:220px;margin-top:0&quot; placeholder=&quot;Search...&quot; oninput=&quot;filterIconsGrid(this.value)&quot; />
+    </div>
+    <div class=&quot;cluster-filter&quot; id=&quot;cluster-filter&quot;>
+      <div class=&quot;cluster-btn active&quot; onclick=&quot;setCluster('all',this)&quot;>All Icons</div>
+      <div class=&quot;cluster-btn&quot; onclick=&quot;setCluster('Downtown',this)&quot;>Downtown</div>
+      <div class=&quot;cluster-btn&quot; onclick=&quot;setCluster('Wild',this)&quot;>Wild</div>
+      <div class=&quot;cluster-btn&quot; onclick=&quot;setCluster('Soft',this)&quot;>Soft</div>
+      <div class=&quot;cluster-btn&quot; onclick=&quot;setCluster('Edge',this)&quot;>Edge</div>
+      <div class=&quot;cluster-btn&quot; onclick=&quot;setCluster('Global',this)&quot;>Global</div>
     </div>
     <div class=&quot;icons-grid&quot; id=&quot;icons-grid&quot;></div>
   </div>
@@ -1378,7 +2276,11 @@ function loadMoodboardForIcon() {
 }
 
 // ── PROXY ─────────────────────────────────────────────────────────────────────
-const PROXY = &quot;https://mirage-proxy-production.up.railway.app&quot;;
+// Proxy URL — tries hosted Railway instance first, falls back to localhost
+// Update HOSTED_PROXY once Railway is deployed
+const HOSTED_PROXY = &quot;https://mirage-proxy-production.up.railway.app&quot;;
+const LOCAL_PROXY  = &quot;http://localhost:3579&quot;;
+const PROXY = HOSTED_PROXY; // Switch to LOCAL_PROXY if running locally
 let proxyOk = false;
 async function checkProxy() {
   try { const r=await fetch(PROXY+&quot;/health&quot;,{signal:AbortSignal.timeout(3000)}); proxyOk=(await r.json()).status===&quot;ok&quot;; }
@@ -1432,13 +2334,14 @@ function buildCharDesc() {
 function buildPrompt() {
   const charDesc = buildCharDesc();
   const mbAesthetic = getMoodboardAesthetic();
-  // Use scene time of day as a simple lighting/mood cue
   const sceneDesc = scene ? scene + &quot; light&quot; : &quot;&quot;;
+  const wardrobeDesc = getSelectedWardrobePrompt ? getSelectedWardrobePrompt() : &quot;&quot;;
   const parts = [
     &quot;editorial fashion photography, American Apparel 2000s aesthetic, 35mm film, natural light only, intimate and raw, no studio, Corinne Day style, Juergen Teller&quot;,
     selectedIcon.name.toLowerCase()+&quot;, &quot;+selectedIcon.archetype.toLowerCase(),
     charDesc,
     mbAesthetic,
+    wardrobeDesc,
     selectedIcon.style,
     selectedIcon.energy,
     sceneDesc,
@@ -1716,19 +2619,28 @@ function renderLibrary() {
 
 function renderIconsGrid(filter=&quot;&quot;) {
   const el=$(&quot;icons-grid&quot;); if(!el) return;
-  const f=ICONS_DATA.filter(i=>i.name.toLowerCase().includes(filter.toLowerCase())||i.archetype.toLowerCase().includes(filter.toLowerCase()));
+  const clusterFilter = window.activeCluster || &quot;all&quot;;
+  let f=ICONS_DATA.filter(i=>i.name.toLowerCase().includes(filter.toLowerCase())||i.archetype.toLowerCase().includes(filter.toLowerCase()));
+  if(clusterFilter !== &quot;all&quot;) f = f.filter(i => (i.cluster||&quot;Downtown&quot;) === clusterFilter);
   el.innerHTML=f.map(icon=>{
     const cnt=getCount(icon.id);
+    const persona = getPersona(icon.id);
+    const cluster = icon.cluster || inferCluster(icon);
     return `<div class=&quot;icon-grid-card&quot; onclick=&quot;selectIconAndGenerate(${icon.id})&quot;>
       <div class=&quot;icon-grid-avatar&quot; style=&quot;background:${icon.color}&quot;>${icon.name[0]}</div>
       <div style=&quot;flex:1;min-width:0&quot;>
         <div style=&quot;font-family:'Playfair Display',serif;font-style:italic;font-size:17px;margin-bottom:2px&quot;>${icon.name}</div>
         <div style=&quot;font-size:10px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px&quot;>${icon.archetype}</div>
         <div style=&quot;font-size:12px;color:var(--dim);line-height:1.6&quot;>${icon.vibe}</div>
+        <div style=&quot;display:flex;gap:5px;margin-top:6px;flex-wrap:wrap&quot;>
+          <span class=&quot;icon-cluster-badge&quot;>${cluster}</span>
+          ${persona.contentPillars&amp;&amp;persona.contentPillars.length?persona.contentPillars.slice(0,2).map(p=>`<span class=&quot;icon-cluster-badge&quot; style=&quot;color:var(--gold);border-color:rgba(160,120,64,0.3)&quot;>${p}</span>`).join(''):''}
+          ${persona.smsDesc?`<span class=&quot;icon-cluster-badge&quot; style=&quot;color:var(--green);border-color:rgba(42,102,64,0.3)&quot;>✦ Voice set</span>`:''}
+        </div>
         ${cnt>0?`<div style=&quot;font-size:9px;color:var(--muted);margin-top:5px&quot;>📸 ${cnt} in library</div>`:&quot;&quot;}
       </div>
     </div>`;
-  }).join(&quot;&quot;);
+  }).join(&quot;&quot;)||`<div style=&quot;grid-column:1/-1;padding:40px;text-align:center;color:var(--muted);font-size:12px&quot;>No icons in this cluster</div>`;
 }
 
 function renderQueue() {
@@ -1796,7 +2708,7 @@ $(&quot;lightbox&quot;).addEventListener(&quot;click&quot;,function(e){if(e.targ
 function notify(msg,type=&quot;success&quot;) { const el=$(&quot;notification&quot;);if(!el)return;el.textContent=msg;el.className=type;el.style.display=&quot;block&quot;;clearTimeout(el._t);el._t=setTimeout(()=>{el.style.display=&quot;none&quot;;},3500); }
 function updateQueueCount() { const c=queue.length;setText(&quot;queue-count&quot;,c);setText(&quot;queue-sub&quot;,`${c} ${c===1?&quot;drop&quot;:&quot;drops&quot;} scheduled`); }
 function updateLibCount() { const c=getTotalCount();setText(&quot;lib-total&quot;,c);setText(&quot;lib-subtitle&quot;,`${c} total images · saved automatically per icon`); }
-function selectIcon(id) { selectedIcon=ICONS_DATA.find(i=>i.id===id);renderIconList();renderIconCard();renderSceneTabs();renderParams();refreshPrompt();loadCharIntoBuilder();loadMoodboardForIcon(); }
+function selectIcon(id) { selectedIcon=ICONS_DATA.find(i=>i.id===id);renderIconList();renderIconCard();renderSceneTabs();renderParams();refreshPrompt();loadCharIntoBuilder();loadMoodboardForIcon();if(typeof loadPersonaForIcon===&quot;function&quot;)loadPersonaForIcon();if(typeof loadWardrobeForIcon===&quot;function&quot;)loadWardrobeForIcon();if(typeof resetVoicePreview===&quot;function&quot;)resetVoicePreview(); }
 function setScene(t) {
   scene=t;
   // Use the first scene prompt for consistency, moodboard handles the visual direction
@@ -1888,26 +2800,26 @@ async function handleGenerate() {
 
     // Convert Flux's temporary signed URL to base64 so it persists in localStorage
     notify(`✦ Saving ${selectedIcon.name} to library...`);
-    let persistentUrl = imageUrl;
-    try {
-      const imgRes = await fetch(PROXY + &quot;/fetch-image?url=&quot; + encodeURIComponent(imageUrl));
-      if (imgRes.ok) {
-        const blob = await imgRes.blob();
-        persistentUrl = await new Promise(resolve => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.readAsDataURL(blob);
-        });
-      }
-    } catch(e) {
-      console.warn(&quot;Could not convert to base64, using temp URL:&quot;, e.message);
-    }
-
+    // Show immediately — don't block on base64 conversion
     const idx=generatedContent.findIndex(c=>c.id===id);
-    if(idx>-1){generatedContent[idx].imageUrl=persistentUrl;generatedContent[idx].status=&quot;pending&quot;;generatedContent[idx].savedToLib=true;}
-    addToLib(selectedIcon.id,{id,imageUrl:persistentUrl,caption,contentType,suggestedPrice,tags,dropTime,series:item.series,fluxPrompt,favourite:false,createdAt:now});
+    if(idx>-1){generatedContent[idx].imageUrl=imageUrl;generatedContent[idx].status=&quot;pending&quot;;generatedContent[idx].savedToLib=true;}
+    addToLib(selectedIcon.id,{id,imageUrl,caption,contentType,suggestedPrice,tags,dropTime,series:item.series,fluxPrompt,favourite:false,createdAt:now});
     updateLibCount();renderOutput();renderIconList();renderIconCard();
-    notify(`✦ ${selectedIcon.name} · Saved to library`);
+    notify(`✦ ${selectedIcon.name} · Generated`);
+    // Background base64 for persistence
+    setTimeout(async()=>{
+      try{
+        const r=await fetch(PROXY+&quot;/fetch-image?url=&quot;+encodeURIComponent(imageUrl),{signal:AbortSignal.timeout(25000)});
+        if(r.ok){
+          const blob=await r.blob();
+          const b64=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(blob);});
+          const lib=load(LIB_KEY);
+          if(lib[selectedIcon.id]){const img=lib[selectedIcon.id].find(i=>i.id===id);if(img){img.imageUrl=b64;save(LIB_KEY,lib);}}
+          const ci=generatedContent.find(c=>c.id===id);if(ci){ci.imageUrl=b64;renderOutput();}
+          notify(`✦ ${selectedIcon.name} · Saved to library`);
+        }
+      }catch(e){/* temp URL stays — image still visible */}
+    },100);
   } catch(err) {
     notify(`Failed — ${err.message}`,&quot;error&quot;);
     generatedContent=generatedContent.filter(c=>c.id!==id);
@@ -1980,6 +2892,283 @@ function clearLibraryConfirm() {
   notify(&quot;Library cleared&quot;);
 }
 
+// ── PERSONA ───────────────────────────────────────────────────────────────────
+const PERSONA_KEY = &quot;mirage_personas_v1&quot;;
+const WARDROBE_KEY = &quot;mirage_wardrobe_v1&quot;;
+
+const CONTENT_PILLARS = [&quot;Late nights&quot;,&quot;Morning light&quot;,&quot;Intimacy&quot;,&quot;Solitude&quot;,&quot;Fashion&quot;,&quot;Music&quot;,&quot;Art&quot;,&quot;Books&quot;,&quot;Coffee&quot;,&quot;Travel&quot;,&quot;Nostalgia&quot;,&quot;Desire&quot;,&quot;Quiet moments&quot;,&quot;Urban life&quot;,&quot;Domesticity&quot;,&quot;Film&quot;,&quot;Photography&quot;,&quot;Writing&quot;];
+const FEMALE_ARCHETYPES = [&quot;The Muse&quot;,&quot;The Rebel&quot;,&quot;The Intellectual&quot;,&quot;The Wanderer&quot;,&quot;The Sensualist&quot;,&quot;The Dreamer&quot;,&quot;The Warrior&quot;,&quot;The Healer&quot;,&quot;The Artist&quot;,&quot;The Mystic&quot;,&quot;The Socialite&quot;,&quot;The Loner&quot;,&quot;The Romantic&quot;,&quot;The Pragmatist&quot;,&quot;The Wild One&quot;,&quot;The Nurturer&quot;];
+const CLUSTERS = [&quot;Downtown&quot;,&quot;Wild&quot;,&quot;Soft&quot;,&quot;Edge&quot;,&quot;Global&quot;];
+
+let currentPersona = {};
+let currentWardrobe = [];
+window.activeCluster = &quot;all&quot;;
+
+function getPersona(iconId) {
+  try { return JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}')[iconId]||{}; } catch { return {}; }
+}
+function savePersonaToStorage(iconId, persona) {
+  try { const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}'); p[iconId]={...persona}; localStorage.setItem(PERSONA_KEY,JSON.stringify(p)); } catch(e) { console.warn(e); }
+}
+function getWardrobe(iconId) {
+  try { return JSON.parse(localStorage.getItem(WARDROBE_KEY)||'{}')[iconId]||[]; } catch { return []; }
+}
+function saveWardrobeToStorage(iconId, items) {
+  try { const w=JSON.parse(localStorage.getItem(WARDROBE_KEY)||'{}'); w[iconId]=items; localStorage.setItem(WARDROBE_KEY,JSON.stringify(w)); } catch(e) { console.warn(e); }
+}
+
+function inferCluster(icon) {
+  const arch = (icon.archetype||'').toLowerCase();
+  const vibe = (icon.vibe||'').toLowerCase();
+  if(/downtown|intellectual|artist|noir|jazz|academic|fashion|club|rooftop|urban/.test(arch+vibe)) return 'Downtown';
+  if(/wild|wilderness|west|surf|skate|punk|techno|fighter/.test(arch+vibe)) return 'Wild';
+  if(/soft|dreamer|healer|sadcore|tender|gentle|domestic|poet/.test(arch+vibe)) return 'Soft';
+  if(/gothic|goth|dark|edge|rebel|mysterious|occult|tattoo/.test(arch+vibe)) return 'Edge';
+  if(/tokyo|paris|berlin|latina|afro|global|international|eastern|nordic/.test(arch+vibe)) return 'Global';
+  return 'Downtown';
+}
+
+function updatePersona(field, val) {
+  currentPersona[field] = val;
+  updatePersonaSummary();
+  updateSystemPromptPreview();
+}
+
+function selectPersonaChip(group, val, el) {
+  if(group === 'contentPillars') {
+    if(!currentPersona.contentPillars) currentPersona.contentPillars = [];
+    const idx = currentPersona.contentPillars.indexOf(val);
+    if(idx > -1) currentPersona.contentPillars.splice(idx,1);
+    else currentPersona.contentPillars.push(val);
+    el.classList.toggle('selected', currentPersona.contentPillars.includes(val));
+  } else {
+    currentPersona[group] = currentPersona[group]===val ? '' : val;
+    const container = el.closest('.persona-chips');
+    if(container) container.querySelectorAll('.persona-chip').forEach(c=>c.classList.toggle('selected',c.dataset.val===currentPersona[group]));
+  }
+  updatePersonaSummary();
+  updateSystemPromptPreview();
+}
+
+function selectPersonaCluster(val, el) {
+  currentPersona.cluster = val;
+  document.querySelectorAll('.persona-cluster-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  updatePersonaSummary();
+}
+
+function renderPersonaChips() {
+  const pillarEl = $('persona-pillar-chips');
+  if(pillarEl) pillarEl.innerHTML = CONTENT_PILLARS.map(p=>`<div class=&quot;persona-chip ${(currentPersona.contentPillars||[]).includes(p)?'selected':''}&quot; data-val=&quot;${p}&quot; onclick=&quot;selectPersonaChip('contentPillars','${p}',this)&quot;>${p}</div>`).join('');
+  const archEl = $('persona-archetype-chips');
+  if(archEl) archEl.innerHTML = FEMALE_ARCHETYPES.map(a=>`<div class=&quot;persona-chip ${currentPersona.femaleArchetype===a?'selected':''}&quot; data-val=&quot;${a}&quot; onclick=&quot;selectPersonaChip('femaleArchetype','${a}',this)&quot;>${a}</div>`).join('');
+  const clusterEl = $('persona-cluster-chips');
+  if(clusterEl) clusterEl.innerHTML = CLUSTERS.map(c=>`<div class=&quot;persona-cluster-chip ${currentPersona.cluster===c?'selected':''}&quot; data-val=&quot;${c}&quot; onclick=&quot;selectPersonaCluster('${c}',this)&quot;>${c}</div>`).join('');
+}
+
+function updatePersonaSummary() {
+  const parts = [currentPersona.femaleArchetype, currentPersona.cluster, (currentPersona.contentPillars||[]).slice(0,2).join(' · ')].filter(Boolean);
+  setText('persona-summary', parts.length ? parts.join(' · ') : 'Not configured');
+}
+
+function buildSystemPrompt() {
+  const icon = selectedIcon;
+  const p = currentPersona;
+  const char = currentChar;
+  return `You are ${icon.name}, ${icon.archetype.toLowerCase()}. You are an AI character on Mirage, a content platform. You are NOT a bot — you are ${icon.name}.
+
+PERSONALITY: ${icon.vibe}
+AESTHETIC: ${icon.aesthetic}
+ENERGY: ${icon.energy}
+STYLE: ${icon.style}
+SETTING: ${icon.setting}
+
+${p.smsDesc ? 'HOW YOU TEXT:\n' + p.smsDesc : ''}
+
+${p.phrase1||p.phrase2||p.phrase3 ? 'YOUR SIGNATURE PHRASES (use these naturally):\n- ' + [p.phrase1,p.phrase2,p.phrase3].filter(Boolean).join('\n- ') : ''}
+
+${(p.contentPillars||[]).length ? 'YOUR WORLD INCLUDES: ' + p.contentPillars.join(', ') : ''}
+
+VOICE RULES:
+- Lowercase, minimal punctuation, real person energy
+- Max 2 sentences per message, sometimes just one word or phrase
+- Never break character, never confirm being AI
+- Reference your world — ${icon.setting}
+- If someone asks if you're real or AI, deflect with character energy, never confirm
+- Never be enthusiastic or use exclamation marks unless it's genuinely surprising
+- Your silence is as powerful as your words`;
+}
+
+function updateSystemPromptPreview() {
+  const el = $('persona-system-preview');
+  if(el) el.textContent = buildSystemPrompt();
+}
+
+function loadPersonaForIcon() {
+  currentPersona = {...getPersona(selectedIcon.id)};
+  setVal('pv-phrase1', currentPersona.phrase1||'');
+  setVal('pv-phrase2', currentPersona.phrase2||'');
+  setVal('pv-phrase3', currentPersona.phrase3||'');
+  setVal('pv-sms-desc', currentPersona.smsDesc||'');
+  renderPersonaChips();
+  updatePersonaSummary();
+  updateSystemPromptPreview();
+}
+
+function savePersona() {
+  savePersonaToStorage(selectedIcon.id, currentPersona);
+  // Also save cluster back to icon data
+  if(currentPersona.cluster) selectedIcon.cluster = currentPersona.cluster;
+  notify(selectedIcon.name + ' persona saved ✦');
+  renderIconsGrid();
+}
+
+function togglePersonaBuilder() {
+  const b=$('persona-builder'); if(!b) return;
+  b.classList.toggle('collapsed');
+  const ch=$('persona-chevron');
+  if(ch) ch.textContent=b.classList.contains('collapsed')?'▶':'▼';
+}
+
+// ── WARDROBE PROMPT LAYER ─────────────────────────────────────────────────────
+const DEFAULT_WARDROBE = [
+  {id:'w1', label:'Leather jacket', prompt:'fitted black leather jacket, Schott, real not fashion, worn-in'},
+  {id:'w2', label:'Vintage turtleneck', prompt:'black ribbed turtleneck, vintage, slightly cropped, worn-in'},
+  {id:'w3', label:'White slip dress', prompt:'white slip dress, silk or satin, minimal, slightly sheer'},
+  {id:'w4', label:'Oversized tee', prompt:'oversized faded vintage band tee, worn, slightly off-shoulder'},
+  {id:'w5', label:'Linen shirt open', prompt:'oversized linen shirt open, barely buttoned, relaxed'},
+  {id:'w6', label:'High waist jeans', prompt:'high waist straight leg jeans, vintage Levi\'s, raw hem'},
+  {id:'w7', label:'No top', prompt:'bare shoulders, minimal, intimately shot, non-explicit'},
+  {id:'w8', label:'Bralette', prompt:'simple black bralette, minimal, editorial, non-explicit'},
+];
+
+let selectedWardrobeId = null;
+
+function loadWardrobeForIcon() {
+  let saved = getWardrobe(selectedIcon.id);
+  currentWardrobe = saved.length ? saved : [...DEFAULT_WARDROBE];
+  selectedWardrobeId = null;
+  renderWardrobeChips();
+}
+
+function renderWardrobeChips() {
+  const el = $('wardrobe-chips'); if(!el) return;
+  el.innerHTML = currentWardrobe.map(item=>`
+    <div class=&quot;wardrobe-chip ${selectedWardrobeId===item.id?'selected':''}&quot; onclick=&quot;selectWardrobeItem('${item.id}')&quot; title=&quot;${item.prompt}&quot;>${item.label}</div>
+  `).join('');
+}
+
+function selectWardrobeItem(id) {
+  selectedWardrobeId = selectedWardrobeId === id ? null : id;
+  renderWardrobeChips();
+  refreshPrompt();
+}
+
+function getSelectedWardrobePrompt() {
+  if(!selectedWardrobeId) return '';
+  const item = currentWardrobe.find(w=>w.id===selectedWardrobeId);
+  return item ? item.prompt : '';
+}
+
+function addWardrobeItem() {
+  const inp = $('wardrobe-add-input');
+  if(!inp||!inp.value.trim()) return;
+  const label = inp.value.trim().split(',')[0].trim();
+  const prompt = inp.value.trim();
+  const newItem = {id:'w'+Date.now(), label, prompt};
+  currentWardrobe.push(newItem);
+  saveWardrobeToStorage(selectedIcon.id, currentWardrobe);
+  inp.value = '';
+  renderWardrobeChips();
+  notify('Wardrobe item added');
+}
+
+// ── PATCH buildPrompt to include wardrobe ─────────────────────────────────────
+const _origBuildPrompt = buildPrompt;
+// We'll override inline below after definitions
+
+// ── VOICE PREVIEW ─────────────────────────────────────────────────────────────
+let voiceMessages = [];
+
+function toggleVoicePreview() {
+  const el=$('voice-preview'); if(!el) return;
+  el.classList.toggle('collapsed');
+  const ch=$('voice-chevron');
+  if(ch) ch.textContent = el.classList.contains('collapsed') ? '▼ Test in-character SMS' : '▲ Collapse';
+}
+
+function resetVoicePreview() {
+  voiceMessages = [];
+  const el=$('voice-msgs'); if(!el) return;
+  el.innerHTML = `<div class=&quot;voice-msg-icon&quot; id=&quot;voice-welcome&quot;>${selectedIcon.name} is ready. Type a message to test her voice...</div>`;
+}
+
+async function sendVoiceMessage() {
+  const inp=$('voice-input'); if(!inp||!inp.value.trim()) return;
+  const btn=$('voice-send-btn');
+  const userMsg = inp.value.trim();
+  inp.value='';
+
+  // Add user message
+  voiceMessages.push({role:'user', content:userMsg});
+  renderVoiceMsgs();
+
+  // Show thinking
+  const msgs=$('voice-msgs');
+  const thinking = document.createElement('div');
+  thinking.className='voice-msg-thinking';
+  thinking.id='voice-thinking';
+  thinking.textContent='...';
+  if(msgs) msgs.appendChild(thinking);
+
+  if(btn) btn.disabled=true;
+
+  try {
+    const systemPrompt = buildSystemPrompt();
+    const response = await fetch(PROXY + '/claude/chat', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        system: systemPrompt,
+        messages: voiceMessages.map(m=>({role:m.role, content:m.content}))
+      })
+    });
+    const data = await response.json();
+    const reply = data.reply || '...';
+    voiceMessages.push({role:'assistant', content:reply});
+    const t=$('voice-thinking'); if(t) t.remove();
+    renderVoiceMsgs();
+  } catch(err) {
+    const t=$('voice-thinking'); if(t) t.textContent = 'Error — check proxy connection';
+  } finally {
+    if(btn) btn.disabled=false;
+  }
+}
+
+function renderVoiceMsgs() {
+  const el=$('voice-msgs'); if(!el) return;
+  el.innerHTML = voiceMessages.map(m=>
+    m.role==='user'
+      ? `<div class=&quot;voice-msg-user&quot;>${m.content}</div>`
+      : `<div class=&quot;voice-msg-icon&quot;>${m.content}</div>`
+  ).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+// ── CLUSTER FILTER ────────────────────────────────────────────────────────────
+function setCluster(cluster, el) {
+  window.activeCluster = cluster;
+  document.querySelectorAll('.cluster-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderIconsGrid();
+}
+
+let _iconsGridFilter = '';
+function filterIconsGrid(val) {
+  _iconsGridFilter = val;
+  renderIconsGrid(val);
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 function init() {
   renderIconList();
@@ -1988,18 +3177,22 @@ function init() {
   renderParams();
   loadCharIntoBuilder();
   loadMoodboardForIcon();
+  loadPersonaForIcon();
+  loadWardrobeForIcon();
   refreshPrompt();
   // Start moodboard collapsed
   const mb=$(&quot;moodboard&quot;); if(mb) mb.classList.add(&quot;collapsed&quot;);
   renderLibrary();
   updateLibCount();
   renderSchedule();
-  // Start char builder collapsed
+  // Start char builder and persona collapsed
   const cb=$(&quot;char-builder&quot;);
   if(cb) cb.classList.add(&quot;collapsed&quot;);
   checkProxy();
   setInterval(checkProxy,15000);
 }
+
+if(window.self!==window.top){document.body.classList.add("in-admin");}
 
 init();
 </script>
@@ -2160,12 +3353,12 @@ function doLogout() {
 function showPane(id) {
   document.querySelectorAll('.pane').forEach(p => { 
     p.classList.remove('active');
-    if (p.id === 'pane-studio') p.style.display = 'none';
+    if (p.id === 'pane-studio' || p.id === 'pane-projdash') p.style.display = 'none';
   });
   document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
   document.getElementById('pane-' + id).classList.add('active');
 
-  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', studio:'Icon Studio' };
+  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', studio:'Icon Studio', projdash:'Project Dashboard' };
   document.getElementById('topbar-section').textContent = labels[id] || id;
 
   // highlight sidebar
@@ -2180,6 +3373,10 @@ function showPane(id) {
   if (id === 'studio') {
     const studioPane = document.getElementById('pane-studio');
     if (studioPane) studioPane.style.display = 'block';
+  }
+  if (id === 'projdash') {
+    const dashPane = document.getElementById('pane-projdash');
+    if (dashPane) dashPane.style.display = 'block';
   }
   if (id === 'subscribers') loadSubscribers();
   if (id === 'requests') loadRequests();
