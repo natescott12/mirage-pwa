@@ -278,6 +278,13 @@ tbody tr:hover td { background: var(--bg); }
       <div class="sidebar-item" onclick="showPane('requests')">
         <span class="icon">◇</span> Requests
       </div>
+      <div class="sidebar-section">Tools</div>
+      <div class="sidebar-item" onclick="showPane('checklist')">
+        <span class="icon">✓</span> Task Checklist
+      </div>
+      <div class="sidebar-item" onclick="showPane('pnl')">
+        <span class="icon">$</span> P&amp;L Dashboard
+      </div>
     </div>
 
     <!-- CONTENT PANES -->
@@ -416,8 +423,6 @@ tbody tr:hover td { background: var(--bg); }
         </div>
       </div>
 
-    
-      <!-- ICON STUDIO -->
       <div class="pane" id="pane-studio" style="padding:0;height:calc(100vh - 48px);display:none">
         <iframe 
           id="studio-frame"
@@ -2006,7 +2011,76 @@ init();
         ></iframe>
       </div>
 
-</div><!-- /content -->
+      <!-- CHECKLIST -->
+      <div class="pane" id="pane-checklist">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Task Checklist</div>
+            <div class="page-sub">April 2026 — track what's done</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="resetChecklist()">Reset all</button>
+        </div>
+        <div id="checklist-progress-wrap" style="margin-bottom:28px">
+          <div style="height:3px;background:#ece9e4;border-radius:2px;overflow:hidden;">
+            <div id="cl-bar" style="height:100%;background:var(--ink);border-radius:2px;transition:width 0.4s ease;width:0%"></div>
+          </div>
+          <div id="cl-label" style="font-size:12px;color:var(--ink-dim);margin-top:6px"></div>
+        </div>
+        <div id="checklist-body"></div>
+      </div>
+
+      <!-- P&L DASHBOARD -->
+      <div class="pane" id="pane-pnl">
+        <div class="page-header">
+          <div>
+            <div class="page-title">P&amp;L Model</div>
+            <div class="page-sub">Interactive financial projections</div>
+          </div>
+        </div>
+        <!-- Subscriber slider -->
+        <div style="background:var(--surface);border:1px solid var(--border);padding:20px;margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-size:13px;font-weight:500">Subscribers</div>
+            <div id="pnl-sub-val" style="font-size:22px;font-weight:500;letter-spacing:-0.5px">500</div>
+          </div>
+          <input type="range" id="pnl-slider" min="100" max="10000" step="100" value="500"
+            oninput="updatePnl()"
+            style="width:100%;accent-color:var(--ink);cursor:pointer">
+          <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--ink-dim)"><span>100</span><span>10,000</span></div>
+        </div>
+        <!-- Tier mix -->
+        <div style="background:var(--surface);border:1px solid var(--border);padding:20px;margin-bottom:16px">
+          <div style="font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:14px">Tier Mix</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+            <div class="field"><label>Glimpse %</label><input type="number" id="pnl-glimpse" value="30" min="0" max="100" oninput="updatePnl()" style="padding:8px 10px;border:1px solid var(--border);background:var(--bg);font-family:'Afacad',sans-serif;font-size:14px;color:var(--ink);outline:none;width:100%"></div>
+            <div class="field"><label>Illusion %</label><input type="number" id="pnl-illusion" value="55" min="0" max="100" oninput="updatePnl()" style="padding:8px 10px;border:1px solid var(--border);background:var(--bg);font-family:'Afacad',sans-serif;font-size:14px;color:var(--ink);outline:none;width:100%"></div>
+            <div class="field"><label>VIP %</label><input type="number" id="pnl-vip" value="15" min="0" max="100" oninput="updatePnl()" style="padding:8px 10px;border:1px solid var(--border);background:var(--bg);font-family:'Afacad',sans-serif;font-size:14px;color:var(--ink);outline:none;width:100%"></div>
+          </div>
+        </div>
+        <!-- Results -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+          <div class="stat-card"><div class="stat-value" id="pnl-gross">—</div><div class="stat-label">Gross / mo</div></div>
+          <div class="stat-card"><div class="stat-value" id="pnl-net">—</div><div class="stat-label">Net / mo</div></div>
+          <div class="stat-card"><div class="stat-value" id="pnl-margin">—</div><div class="stat-label">Net Margin</div></div>
+          <div class="stat-card"><div class="stat-value" id="pnl-annual">—</div><div class="stat-label">Annual Net</div></div>
+        </div>
+        <!-- Cost breakdown -->
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Cost Item</th><th>Monthly</th><th>% of Gross</th></tr></thead>
+            <tbody id="pnl-costs"></tbody>
+          </table>
+        </div>
+        <!-- Growth table -->
+        <div class="table-wrap" style="margin-top:16px">
+          <table>
+            <thead><tr><th>Stage</th><th>Subscribers</th><th>Gross</th><th>Net</th><th>Margin</th></tr></thead>
+            <tbody id="pnl-stages"></tbody>
+          </table>
+        </div>
+      </div>
+
+
   </div><!-- /main -->
 
   <!-- SAVE BAR (persona editor) -->
@@ -2091,7 +2165,7 @@ function showPane(id) {
   document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
   document.getElementById('pane-' + id).classList.add('active');
 
-  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', content:'Content Library', subscribers:'Subscribers', requests:'Requests' };
+  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', studio:'Icon Studio' };
   document.getElementById('topbar-section').textContent = labels[id] || id;
 
   // highlight sidebar
@@ -2109,6 +2183,8 @@ function showPane(id) {
   }
   if (id === 'subscribers') loadSubscribers();
   if (id === 'requests') loadRequests();
+  if (id === 'checklist') initChecklist();
+  if (id === 'pnl') initPnl();
 }
 
 // ── TOAST ────────────────────────────────────────────────────────────────────
@@ -2639,6 +2715,186 @@ function mergeLocalPersonas() {
       }
     });
   } catch(e) {}
+}
+
+// ── CHECKLIST ─────────────────────────────────────────────────────────────────
+const CHECKLIST_KEY = 'mirage-checklist-v2';
+
+const CHECKLIST_SECTIONS = [
+  { title: 'Security', items: [
+    { id:'s1', text:'Rotate Flux API key at dashboard.bfl.ai — mirage-prod was exposed', tag:'urgent' },
+    { id:'s2', text:"Change Anna's admin password from Mirage2026!", tag:'urgent' },
+  ]},
+  { title: 'PWA Build', items: [
+    { id:'p1', text:'Age Gate screen — QC\'d, pixel-matched to Figma', tag:'design' },
+    { id:'p2', text:'Landing Page (Screen 2) — build from Figma node 12:79', tag:'design' },
+    { id:'p3', text:'World Intro screen — Figma node 12:105', tag:'design' },
+    { id:'p4', text:'World Features screen — Figma node 12:137', tag:'design' },
+    { id:'p5', text:'Free Preview screen — Figma node 12:175', tag:'design' },
+    { id:'p6', text:'PWA Flux integration — generate images in-app', tag:'infra' },
+    { id:'p7', text:'Segpay payment integration', tag:'infra' },
+    { id:'p8', text:'Functional prototype live at mirageicons.com/app', tag:'infra' },
+  ]},
+  { title: 'Backend', items: [
+    { id:'b1', text:"Wire saveIconPersona() in admin to Supabase — sb.from('icons').update()", tag:'infra' },
+    { id:'b2', text:'Wire all personas → Supabase icons table', tag:'infra' },
+    { id:'b3', text:'Supabase backend fully connected to PWA', tag:'infra' },
+    { id:'b4', text:'Add /claude/chat endpoint to Railway proxy for DMs', tag:'infra' },
+  ]},
+  { title: 'Content', items: [
+    { id:'c1', text:'Generate Luna content — 15 free + 10 PPV images', tag:'content' },
+    { id:'c2', text:'Generate Vera content — 15 free + 10 PPV images', tag:'content' },
+    { id:'c3', text:'Generate Aria content — 15 free + 10 PPV images', tag:'content' },
+    { id:'c4', text:'Export Mirage logo as permanent PNG/SVG', tag:'design' },
+  ]},
+  { title: 'Admin', items: [
+    { id:'a1', text:'Admin panel live at mirageicons.com/admin', tag:'infra' },
+    { id:'a2', text:'Icon Studio embedded in admin with Railway proxy', tag:'infra' },
+    { id:'a3', text:'Anna — complete all 100 icon persona profiles', tag:'anna' },
+  ]},
+];
+
+const TAG_COLORS = {
+  urgent: { bg:'#111', color:'#f6eaea' },
+  infra: { bg:'#f0e8e4', color:'#a05a40' },
+  design: { bg:'#e4ede8', color:'#3a7a58' },
+  content: { bg:'#ece9e4', color:'#666' },
+  anna: { bg:'#e8e4f0', color:'#7060aa' },
+};
+
+function getChecklistState() {
+  try { return JSON.parse(localStorage.getItem(CHECKLIST_KEY)) || {}; } catch { return {}; }
+}
+function saveChecklistState(s) { localStorage.setItem(CHECKLIST_KEY, JSON.stringify(s)); }
+
+function initChecklist() {
+  const state = getChecklistState();
+  const body = document.getElementById('checklist-body');
+  if (!body) return;
+
+  let html = '';
+  CHECKLIST_SECTIONS.forEach(section => {
+    html += `<div style="margin-bottom:28px">
+      <div style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-dim);padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:2px">${section.title}</div>`;
+    section.items.forEach(item => {
+      const done = state[item.id];
+      const tc = TAG_COLORS[item.tag] || TAG_COLORS.content;
+      html += `
+        <div class="cl-task ${done ? 'cl-done' : ''}" data-id="${item.id}" onclick="toggleTask('${item.id}')"
+          style="display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid #f0ece8;cursor:pointer;user-select:none">
+          <div style="width:17px;height:17px;border:1.5px solid ${done?'var(--ink)':'#ccc'};border-radius:3px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;background:${done?'var(--ink)':'transparent'};transition:all 0.15s">
+            ${done?`<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.8 7L9 1" stroke="#f6eaea" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`:''}
+          </div>
+          <div style="flex:1">
+            <div style="font-size:15px;letter-spacing:-0.3px;color:${done?'#bbb':'#222'};text-decoration:${done?'line-through':''};text-decoration-color:#ccc;transition:color 0.2s">${item.text}</div>
+            <span style="display:inline-block;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;padding:2px 7px;border-radius:20px;margin-top:4px;background:${tc.bg};color:${tc.color}">${item.tag}</span>
+          </div>
+        </div>`;
+    });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+  updateChecklistProgress();
+}
+
+function toggleTask(id) {
+  const state = getChecklistState();
+  state[id] = !state[id];
+  saveChecklistState(state);
+  initChecklist();
+}
+
+function updateChecklistProgress() {
+  const state = getChecklistState();
+  const allItems = CHECKLIST_SECTIONS.flatMap(s => s.items);
+  const done = allItems.filter(i => state[i.id]).length;
+  const pct = Math.round((done / allItems.length) * 100);
+  const bar = document.getElementById('cl-bar');
+  const label = document.getElementById('cl-label');
+  if (bar) bar.style.width = pct + '%';
+  if (label) label.textContent = `${done} of ${allItems.length} complete`;
+}
+
+function resetChecklist() {
+  saveChecklistState({});
+  initChecklist();
+}
+
+// ── P&L MODEL ─────────────────────────────────────────────────────────────────
+function initPnl() {
+  updatePnl();
+}
+
+function fmt(n) {
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return '$' + Math.round(n/1000) + 'K';
+  return '$' + Math.round(n).toLocaleString();
+}
+
+function updatePnl() {
+  const subs = parseInt(document.getElementById('pnl-slider')?.value || 500);
+  const glimpsePct = parseInt(document.getElementById('pnl-glimpse')?.value || 30) / 100;
+  const illusionPct = parseInt(document.getElementById('pnl-illusion')?.value || 55) / 100;
+  const vipPct = parseInt(document.getElementById('pnl-vip')?.value || 15) / 100;
+
+  document.getElementById('pnl-sub-val').textContent = subs.toLocaleString();
+
+  const glimpseRev = subs * glimpsePct * 4.99;
+  const illusionRev = subs * illusionPct * 14.99;
+  const vipRev = subs * vipPct * 39.99;
+  const gross = glimpseRev + illusionRev + vipRev;
+
+  // Costs
+  const segpay = gross * 0.12;
+  const images = Math.round(subs * 15); // ~15 images/sub/mo
+  const flux = images * 0.04;
+  const claude = Math.max(50, subs * 0.045);
+  const hosting = 50;
+  const totalCosts = segpay + flux + claude + hosting;
+  const net = gross - totalCosts;
+  const margin = gross > 0 ? (net / gross * 100) : 0;
+
+  document.getElementById('pnl-gross').textContent = fmt(gross);
+  document.getElementById('pnl-net').textContent = fmt(net);
+  document.getElementById('pnl-margin').textContent = Math.round(margin) + '%';
+  document.getElementById('pnl-annual').textContent = fmt(net * 12);
+
+  document.getElementById('pnl-costs').innerHTML = [
+    ['Segpay Processing (12%)', segpay, gross],
+    [`Flux API (~${images.toLocaleString()} images)`, flux, gross],
+    ['Claude API', claude, gross],
+    ['Hosting + Infra', hosting, gross],
+    ['<strong>Total Costs</strong>', totalCosts, gross],
+  ].map(([label, cost, g]) => `<tr>
+    <td>${label}</td>
+    <td>$${Math.round(cost).toLocaleString()}</td>
+    <td style="color:var(--ink-dim)">${g > 0 ? (cost/g*100).toFixed(1) : 0}%</td>
+  </tr>`).join('');
+
+  const stages = [
+    { name:'Seed', subs:100 },
+    { name:'Traction', subs:500 },
+    { name:'Growing', subs:1000 },
+    { name:'Established', subs:2500 },
+    { name:'Scaling', subs:5000 },
+    { name:'Serious', subs:7500 },
+    { name:'Breakout ✦', subs:10000 },
+  ];
+
+  document.getElementById('pnl-stages').innerHTML = stages.map(stage => {
+    const g2 = stage.subs * (glimpsePct * 4.99 + illusionPct * 14.99 + vipPct * 39.99);
+    const costs2 = g2 * 0.12 + (stage.subs * 15 * 0.04) + Math.max(50, stage.subs * 0.045) + 50;
+    const n2 = g2 - costs2;
+    const m2 = g2 > 0 ? Math.round(n2/g2*100) : 0;
+    const isActive = Math.abs(stage.subs - subs) < 300;
+    return `<tr style="${isActive ? 'background:var(--bg);font-weight:500' : ''}">
+      <td>${stage.name}</td>
+      <td style="color:var(--ink-dim)">${stage.subs.toLocaleString()}</td>
+      <td>${fmt(g2)}</td>
+      <td style="color:${n2 > 0 ? '#2a7a4a' : '#b03025'}">${fmt(n2)}</td>
+      <td>${m2}%</td>
+    </tr>`;
+  }).join('');
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
