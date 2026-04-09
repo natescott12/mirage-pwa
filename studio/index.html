@@ -1381,7 +1381,7 @@ function renderLibrary() {
   const iconsWithImgs=ICONS_DATA.filter(i=>(lib[i.id]||[]).length>0);
   const btns=[{id:"all",name:"All Icons",color:"#1a1714",count:getTotalCount()},...iconsWithImgs.map(i=>({id:i.id,name:i.name,color:i.color,count:(lib[i.id]||[]).length}))];
   setHTML("lib-icon-btns",btns.map(b=>`
-    <div class="lib-icon-btn ${libIconId===b.id?"active":""}" onclick="setLibIcon(${JSON.stringify(b.id)})">
+    <div class="lib-icon-btn ${libIconId===b.id?"active":""}" onclick="setLibIcon('${b.id}')">
       <div class="lib-dot" style="background:${b.color}"></div>
       <span class="lib-name">${typeof b.name==="string"?b.name.toLowerCase():b.name}</span>
       <span class="lib-cnt">${b.count}</span>
