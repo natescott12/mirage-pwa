@@ -694,15 +694,15 @@
     <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px">
       <div>
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
-          <button onclick="switchTab('generate')" style="padding:5px 14px;background:transparent;border:1px solid var(--border-md);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all 0.15s" onmouseover="this.style.borderColor='var(--border-strong)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--muted)'">← Generate</button>
-          <button onclick="switchTab('icons')" style="padding:5px 14px;background:transparent;border:1px solid var(--border-md);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all 0.15s" onmouseover="this.style.borderColor='var(--border-strong)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--muted)'">Icons →</button>
+          <button onclick="switchTab('generate')" style="padding:5px 14px;background:transparent;border:1px solid var(--border-md);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--muted);font-family:'Afacad',sans-serif;transition:all 0.15s" onmouseover="this.style.borderColor='var(--border-strong)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--muted)'">← Generate</button>
+          <button onclick="switchTab('icons')" style="padding:5px 14px;background:transparent;border:1px solid var(--border-md);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--muted);font-family:'Afacad',sans-serif;transition:all 0.15s" onmouseover="this.style.borderColor='var(--border-strong)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--muted)'">Icons →</button>
         </div>
         <div class="serif" style="font-size:32px;margin-bottom:4px">Image Library</div>
         <div style="font-size:11px;color:var(--muted)" id="lib-subtitle">All generated images · saved automatically per icon</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
-        <button onclick="repairLibrary()" style="padding:7px 14px;background:transparent;border:1px solid var(--border-md);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all 0.15s" onmouseover="this.style.borderColor='var(--border-strong)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--muted)'" id="repair-btn">↺ Repair Images</button>
-        <button onclick="clearLibraryConfirm()" style="padding:7px 14px;background:transparent;border:1px solid rgba(176,48,37,0.3);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--red);font-family:'DM Sans',sans-serif;transition:all 0.15s">Clear Library</button>
+        <button onclick="repairLibrary()" style="padding:7px 14px;background:transparent;border:1px solid var(--border-md);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--muted);font-family:'Afacad',sans-serif;transition:all 0.15s" onmouseover="this.style.borderColor='var(--border-strong)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--muted)'" id="repair-btn">↺ Repair Images</button>
+        <button onclick="clearLibraryConfirm()" style="padding:7px 14px;background:transparent;border:1px solid rgba(176,48,37,0.3);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--red);font-family:'Afacad',sans-serif;transition:all 0.15s">Clear Library</button>
       </div>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px" id="lib-icon-btns"></div>
@@ -713,8 +713,8 @@
       <div class="lib-filter" onclick="setFilter('fav',this)">★ Favourites</div>
       <div style="margin-left:auto;font-size:10px;color:var(--muted);cursor:pointer" onclick="selectAll()">Select all</div>
       <div id="bulk-btns" style="display:none;gap:8px">
-        <button onclick="bulkQueue()" style="padding:6px 14px;background:var(--text);color:var(--bg);border:none;border-radius:2px;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif">Queue Selected</button>
-        <button onclick="bulkDelete()" style="padding:6px 14px;background:transparent;color:var(--red);border:1px solid rgba(176,48,37,0.3);border-radius:2px;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif">Delete Selected</button>
+        <button onclick="bulkQueue()" style="padding:6px 14px;background:var(--text);color:var(--bg);border:none;border-radius:2px;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;font-family:'Afacad',sans-serif">Queue Selected</button>
+        <button onclick="bulkDelete()" style="padding:6px 14px;background:transparent;color:var(--red);border:1px solid rgba(176,48,37,0.3);border-radius:2px;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;font-family:'Afacad',sans-serif">Delete Selected</button>
       </div>
     </div>
     <div class="library-grid" id="library-grid"></div>
@@ -725,8 +725,8 @@
     <div style="display:flex;justify-content:space-between;align-items:flex-end">
       <div>
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
-          <button onclick="switchTab('generate')" style="padding:5px 14px;background:transparent;border:1px solid var(--border-md);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all 0.15s" onmouseover="this.style.borderColor='var(--border-strong)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--muted)'">← Generate</button>
-          <button onclick="switchTab('library')" style="padding:5px 14px;background:transparent;border:1px solid var(--border-md);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all 0.15s" onmouseover="this.style.borderColor='var(--border-strong)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--muted)'">Library →</button>
+          <button onclick="switchTab('generate')" style="padding:5px 14px;background:transparent;border:1px solid var(--border-md);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--muted);font-family:'Afacad',sans-serif;transition:all 0.15s" onmouseover="this.style.borderColor='var(--border-strong)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--muted)'">← Generate</button>
+          <button onclick="switchTab('library')" style="padding:5px 14px;background:transparent;border:1px solid var(--border-md);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--muted);font-family:'Afacad',sans-serif;transition:all 0.15s" onmouseover="this.style.borderColor='var(--border-strong)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--muted)'">Library →</button>
         </div>
         <div class="serif" style="font-size:32px;margin-bottom:4px">The Icons</div>
         <div style="font-size:11px;color:var(--muted)">100 archetypes · American Apparel direction</div></div>
@@ -747,7 +747,7 @@
   <div id="tab-queue" class="tab-content">
     <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px">
       <div><div class="serif" style="font-size:32px;margin-bottom:4px">Drop Queue</div><div style="font-size:11px;color:var(--muted)" id="queue-sub">0 drops scheduled</div></div>
-      <button onclick="publishAll()" style="padding:10px 24px;background:var(--text);color:var(--bg);border:none;border-radius:2px;font-size:10px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif">Publish All → Mirage</button>
+      <button onclick="publishAll()" style="padding:10px 24px;background:var(--text);color:var(--bg);border:none;border-radius:2px;font-size:10px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;cursor:pointer;font-family:'Afacad',sans-serif">Publish All → Mirage</button>
     </div>
     <div id="queue-list"><div style="padding:60px 32px;text-align:center;border:1px solid var(--border);border-radius:2px;background:var(--bg2)"><div class="serif" style="font-size:24px;color:rgba(26,23,20,0.18);margin-bottom:10px">Queue is empty</div><div style="font-size:12px;color:rgba(26,23,20,0.28)">Generate content and add drops to the queue</div></div></div>
   </div>
@@ -1475,7 +1475,7 @@ function renderSchedule() {
     <div class="sch-card">
       <div class="sch-head"><div class="icon-avatar" style="background:${icon.color};width:34px;height:34px;font-size:13px">${icon.name[0]}</div><div><div style="font-family:'Playfair Display',serif;font-style:italic;font-size:20px">${icon.name.toLowerCase()}</div><div style="font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">${icon.archetype}</div></div></div>
       <div style="padding:8px 0">${slots.map(sl=>`<div class="sch-slot"><div><div style="font-size:12px;color:var(--dim)">${sl.time}</div><div style="font-size:9px;color:var(--muted)">${sl.s}</div></div><div style="font-size:9px;padding:2px 8px;border:1px solid var(--border-md);border-radius:1px;color:var(--muted)">${sl.type}</div></div>`).join("")}</div>
-      <div style="padding:0 16px 14px"><button onclick="selectIconAndGenerate(${icon.id})" style="width:100%;padding:10px;background:var(--text);color:var(--bg);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;border:none;border-radius:2px;cursor:pointer;font-family:'DM Sans',sans-serif">Generate Drops →</button></div>
+      <div style="padding:0 16px 14px"><button onclick="selectIconAndGenerate(${icon.id})" style="width:100%;padding:10px;background:var(--text);color:var(--bg);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;border:none;border-radius:2px;cursor:pointer;font-family:'Afacad',sans-serif">Generate Drops →</button></div>
     </div>`).join("");
 }
 
