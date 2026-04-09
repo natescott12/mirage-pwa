@@ -1603,33 +1603,24 @@ async function handleGenerate() {
     notify(`Generating ${selectedIcon.name} via Flux Pro...`);
     const imageUrl=await generateFlux(fluxPrompt);
 
-    // Show immediately — JSON-aware base64 conversion
+    // Convert Flux's temporary signed URL to base64 so it persists in localStorage
+    notify(`✦ Saving ${selectedIcon.name} to library...`);
+    // Show immediately — base64 in background
     const idx=generatedContent.findIndex(c=>c.id===id);
     if(idx>-1){generatedContent[idx].imageUrl=imageUrl;generatedContent[idx].status="pending";generatedContent[idx].savedToLib=true;}
     addToLib(selectedIcon.id,{id,imageUrl,caption,contentType,suggestedPrice,tags,dropTime,series:item.series,fluxPrompt,favourite:false,createdAt:now});
     updateLibCount();renderOutput();renderIconList();renderIconCard();
-    notify(`✦ ${selectedIcon.name} · Generated — saving...`);
-    (async()=>{
+    notify(`✦ ${selectedIcon.name} · Generated`);
+    setTimeout(async()=>{
       try{
-        const r=await fetch(PROXY+"/fetch-image?url="+encodeURIComponent(imageUrl),{signal:AbortSignal.timeout(30000)});
-        if(!r.ok) return;
-        let b64;
-        const ct=r.headers.get('content-type')||'';
-        if(ct.includes('application/json')||ct.includes('text/')){
-          const j=await r.json(); b64=j.base64||j.url||j.imageUrl;
-        } else {
+        const r=await fetch(PROXY+"/fetch-image?url="+encodeURIComponent(imageUrl),{signal:AbortSignal.timeout(25000)});
+        if(r.ok){
           const blob=await r.blob();
-          b64=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(blob);});
-        }
-        if(!b64||!b64.startsWith('data:image')) return;
-        const ci=generatedContent.find(c=>c.id===id);
-        if(ci){ci.imageUrl=b64;}
-        const lib=load(LIB_KEY);
-        if(lib[selectedIcon.id]){const img=lib[selectedIcon.id].find(i=>i.id===id);if(img){img.imageUrl=b64;save(LIB_KEY,lib);}}
-        renderOutput();
-        notify(`✦ ${selectedIcon.name} · Saved to library`);
-      }catch(e){console.warn('fetch-image:',e.message);}
-    })();
+          const b64=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(blob);});
+          const lib=load(LIB_KEY);
+          if(lib[selectedIcon.id]){const img=lib[selectedIcon.id].find(i=>i.id===id);if(img){img.imageUrl=b64;save(LIB_KEY,lib);}}
+          const ci=generatedContent.find(c=>c.id===id);if(ci){ci.imageUrl=b64;renderOutput();}
+          notify(`✦ ${selectedIcon.name} · Saved to library`);
         }
       }catch(e){/* temp URL stays */}
     },100);
