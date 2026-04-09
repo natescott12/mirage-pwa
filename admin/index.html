@@ -1348,12 +1348,12 @@ function doLogout() {
 function showPane(id) {
   document.querySelectorAll('.pane').forEach(p => { 
     p.classList.remove('active');
-    if (p.id === 'pane-studio' || p.id === 'pane-projdash') p.style.display = 'none';
+    if (p.id === 'pane-studio' || p.id === 'pane-projdash' || p.id === 'pane-design') p.style.display = 'none';
   });
   document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
   document.getElementById('pane-' + id).classList.add('active');
 
-  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', studio:'Icon Studio', projdash:'Project Dashboard' };
+  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', studio:'Icon Studio', projdash:'Project Dashboard', design:'Design System' };
   document.getElementById('topbar-section').textContent = labels[id] || id;
 
   // highlight sidebar
