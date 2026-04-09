@@ -1551,9 +1551,9 @@ async function loadDashboard() {
 // ── PERSONA BUILDER ───────────────────────────────────────────────────────────
 function populateIconSelect() {
   const sel = document.getElementById('persona-icon-select');
-  sel.innerHTML = '<option value="">— Select Icon —</option>
-            <option value="__new__">+ New Icon</option>' +
-    allIcons.map(i => `<option value="${i.id}">${i.name} · ${i.archetype || 'No archetype'}</option>`).join('');
+    var opts = '<option value="">— Select Icon —</option><option value="__new__">+ New Icon</option>';
+  opts += allIcons.map(i => '<option value="' + i.id + '">' + i.name + ' - ' + (i.archetype || 'No archetype') + '</option>').join('');
+  sel.innerHTML = opts;
 }
 
 function openPersona(iconId) {
