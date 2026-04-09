@@ -89,8 +89,9 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 .sidebar-badge { margin-left: auto; font-size: 10px; background: var(--ink); color: var(--bg); padding: 1px 6px; border-radius: 20px; }
 
 /* ── CONTENT ── */
-.content { flex: 1; overflow: hidden; background: var(--bg); }
-.pane { display: none; padding: 32px; min-width: 0; }
+.content { flex: 1; overflow: hidden; background: var(--bg); position: relative; }
+.pane { display: none; padding: 32px; min-width: 0; width: 100%; }
+.pane.active { display: block; width: 100%; }
 .pane.active { display: block; }
 
 /* ── PAGE HEADER ── */
@@ -428,7 +429,7 @@ tbody tr:hover td { background: var(--bg); }
 
 
       <!-- PROJECT DASHBOARD -->
-      <div class="pane" id="pane-projdash" style="padding:0;height:calc(100vh - 48px);display:none;width:100%;overflow:hidden">
+      <div class="pane" id="pane-projdash" style="padding:0;height:calc(100vh - 48px);display:none;width:100%;overflow:hidden;position:absolute;top:0;left:0;right:0;bottom:0">
         <iframe
           id="projdash-frame"
           srcdoc="<!DOCTYPE html>
@@ -1190,9 +1191,10 @@ function addFile() {
         ></iframe>
       </div>
 
-      <div class="pane" id="pane-studio" style="padding:0;height:calc(100vh - 48px);display:none;width:100%;overflow:hidden">
+      <div class="pane" id="pane-studio" style="padding:0;height:calc(100vh - 48px);display:none;width:100%;overflow:hidden;position:absolute;top:0;left:0;right:0;bottom:0">
         <iframe 
           id="studio-frame"
+          style="width:100%;height:100%;border:none;display:block"
           srcdoc="<!DOCTYPE html>
 <html lang=&quot;en&quot;>
 <head>
@@ -3373,10 +3375,37 @@ function showPane(id) {
   if (id === 'studio') {
     const studioPane = document.getElementById('pane-studio');
     if (studioPane) studioPane.style.display = 'block';
+    // Force iframe to fill pane and inject in-admin class
+    const sf = document.getElementById('studio-frame');
+    if (sf) {
+      sf.style.cssText = 'width:100%;height:100%;border:none;display:block;position:absolute;inset:0;';
+      const injectClass = () => {
+        try {
+          const d = sf.contentDocument;
+          if (d && d.body) {
+            d.body.classList.add('in-admin');
+          }
+        } catch(e) {}
+      };
+      if (sf.contentDocument && sf.contentDocument.readyState === 'complete') {
+        injectClass();
+      } else {
+        sf.addEventListener('load', injectClass, { once: true });
+      }
+    }
   }
   if (id === 'projdash') {
     const dashPane = document.getElementById('pane-projdash');
     if (dashPane) dashPane.style.display = 'block';
+    const df = document.getElementById('projdash-frame');
+    if (df) {
+      df.style.cssText = 'width:100%;height:100%;border:none;display:block;';
+      const injectDash = () => {
+        try { if (df.contentDocument && df.contentDocument.body) df.contentDocument.body.classList.add('in-admin'); } catch(e) {}
+      };
+      if (df.contentDocument && df.contentDocument.readyState === 'complete') injectDash();
+      else df.addEventListener('load', injectDash, { once: true });
+    }
   }
   if (id === 'subscribers') loadSubscribers();
   if (id === 'requests') loadRequests();
