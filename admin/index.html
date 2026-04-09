@@ -1368,6 +1368,8 @@ function showPane(id) {
   if (id === 'studio') {
     const studioPane = document.getElementById('pane-studio');
     if (studioPane) studioPane.style.display = 'block';
+  } else if (id === 'design') {
+    document.getElementById('pane-design').style.display = 'block';
     // Force iframe to fill pane and inject in-admin class
     const sf = document.getElementById('studio-frame');
     if (sf) {
