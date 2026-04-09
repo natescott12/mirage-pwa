@@ -375,10 +375,12 @@ tbody tr:hover td { background: var(--bg); }
           <span style="font-size:11px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:0.12em;margin-right:4px">Icon:</span>
           <select id="persona-icon-select" onchange="loadPersonaForIcon(this.value)" style="padding:6px 10px;border:1px solid var(--border);background:var(--bg);font-family:'Afacad',sans-serif;font-size:14px;color:var(--ink);outline:none;flex:1;max-width:280px">
             <option value="">— Select Icon —</option>
+            <option value="__new__">+ New Icon</option>
           </select>
           <div id="persona-progress-label" style="font-size:12px;color:var(--ink-dim);margin-left:8px"></div>
         </div>
 
+        <div id="new-icon-form" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:2px;padding:20px 24px;margin-bottom:20px"><div style="font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:16px">New Icon</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px"><div><div style="font-size:11px;color:var(--ink-dim);margin-bottom:4px">NAME</div><input id="new-icon-name" type="text" placeholder="e.g. Jade" style="width:100%;padding:8px 10px;border:1px solid var(--border);background:var(--bg);font-size:14px;color:var(--ink);outline:none;border-radius:2px"></div><div><div style="font-size:11px;color:var(--ink-dim);margin-bottom:4px">ARCHETYPE</div><input id="new-icon-archetype" type="text" placeholder="e.g. The Pacific Northwest Wanderer" style="width:100%;padding:8px 10px;border:1px solid var(--border);background:var(--bg);font-size:14px;color:var(--ink);outline:none;border-radius:2px"></div></div><div style="margin-bottom:12px"><div style="font-size:11px;color:var(--ink-dim);margin-bottom:4px">TAGLINE</div><input id="new-icon-tagline" type="text" placeholder="One sentence" style="width:100%;padding:8px 10px;border:1px solid var(--border);background:var(--bg);font-size:14px;color:var(--ink);outline:none;border-radius:2px"></div><div style="display:flex;align-items:center;gap:16px"><div><div style="font-size:11px;color:var(--ink-dim);margin-bottom:4px">COLOR</div><input id="new-icon-color" type="color" value="#8b7355" style="width:40px;height:32px;border:1px solid var(--border);cursor:pointer;border-radius:2px;padding:2px"></div><div style="margin-top:16px;display:flex;gap:8px"><button onclick="createNewIcon()" style="padding:8px 20px;background:var(--ink);color:var(--bg);border:none;font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;border-radius:2px">Create Icon</button><button onclick="cancelNewIcon()" style="padding:8px 16px;background:transparent;color:var(--ink);border:1px solid var(--border);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;border-radius:2px">Cancel</button></div></div></div>
         <div class="editor-main" id="persona-editor">
           <div class="empty-state">
             <div class="empty-state-icon">◎</div>
@@ -1549,7 +1551,8 @@ async function loadDashboard() {
 // ── PERSONA BUILDER ───────────────────────────────────────────────────────────
 function populateIconSelect() {
   const sel = document.getElementById('persona-icon-select');
-  sel.innerHTML = '<option value="">— Select Icon —</option>' +
+  sel.innerHTML = '<option value="">— Select Icon —</option>
+            <option value="__new__">+ New Icon</option>' +
     allIcons.map(i => `<option value="${i.id}">${i.name} · ${i.archetype || 'No archetype'}</option>`).join('');
 }
 
@@ -1560,6 +1563,9 @@ function openPersona(iconId) {
 }
 
 function loadPersonaForIcon(iconId) {
+  if(iconId==='__new__'){document.getElementById('new-icon-form').style.display='block';document.getElementById('persona-editor').style.display='none';return;}
+  document.getElementById('new-icon-form').style.display='none';
+  document.getElementById('persona-editor').style.display='block';
   currentIconId = iconId;
   const icon = allIcons.find(i => i.id === iconId);
   if (!icon) {
