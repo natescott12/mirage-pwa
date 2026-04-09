@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mirage · Admin</title>
+<title>Mirage Â· Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Afacad:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -23,7 +23,7 @@
 
 html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
 
-/* ── LOGIN ── */
+/* ââ LOGIN ââ */
 #login-screen {
   display: flex; align-items: center; justify-content: center;
   min-height: 100vh; background: var(--bg);
@@ -51,7 +51,7 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 .login-btn:hover { opacity: 0.85; }
 .login-error { font-size: 12px; color: #b03025; margin-top: 10px; min-height: 16px; }
 
-/* ── LAYOUT ── */
+/* ââ LAYOUT ââ */
 #app { display: none; height: 100vh; flex-direction: column; }
 #app.visible { display: flex; }
 
@@ -71,7 +71,7 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 
 .main { display: flex; flex: 1; overflow: hidden; }
 
-/* ── SIDEBAR ── */
+/* ââ SIDEBAR ââ */
 .sidebar {
   width: var(--sidebar); background: var(--surface);
   border-right: 1px solid var(--border); flex-shrink: 0;
@@ -88,18 +88,18 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 .sidebar-item .icon { font-size: 15px; width: 18px; text-align: center; }
 .sidebar-badge { margin-left: auto; font-size: 10px; background: var(--ink); color: var(--bg); padding: 1px 6px; border-radius: 20px; }
 
-/* ── CONTENT ── */
+/* ââ CONTENT ââ */
 .content { flex: 1; overflow: hidden; background: var(--bg); position: relative; }
 .pane { display: none; padding: 32px; min-width: 0; width: 100%; }
 .pane.active { display: block; width: 100%; }
 .pane.active { display: block; }
 
-/* ── PAGE HEADER ── */
+/* ââ PAGE HEADER ââ */
 .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
 .page-title { font-size: 24px; font-weight: 500; letter-spacing: -0.72px; }
 .page-sub { font-size: 13px; color: var(--ink-dim); margin-top: 3px; }
 
-/* ── BUTTONS ── */
+/* ââ BUTTONS ââ */
 .btn {
   padding: 9px 18px; background: var(--ink); color: var(--bg);
   border: none; font-family: 'Afacad', sans-serif; font-size: 11px;
@@ -113,7 +113,7 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 .btn-danger { background: #b03025; }
 .btn-success { background: #2a7a4a; }
 
-/* ── ICON GRID ── */
+/* ââ ICON GRID ââ */
 .icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
 .icon-card {
   background: var(--surface); border: 1px solid var(--border);
@@ -132,7 +132,7 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 .icon-card-progress { margin-top: 10px; height: 2px; background: #ece9e4; border-radius: 1px; overflow: hidden; }
 .icon-card-progress-fill { height: 100%; background: var(--ink); border-radius: 1px; transition: width 0.3s; }
 
-/* ── PERSONA EDITOR ── */
+/* ââ PERSONA EDITOR ââ */
 .editor-layout { display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: start; }
 .editor-sidebar { background: var(--surface); border: 1px solid var(--border); padding: 20px; position: sticky; top: 0; }
 .editor-main { display: flex; flex-direction: column; gap: 16px; }
@@ -176,13 +176,13 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 .save-status.saving { color: var(--ink-mid); }
 .save-status.error { color: #b03025; }
 
-/* ── STATS ── */
+/* ââ STATS ââ */
 .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
 .stat-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; }
 .stat-value { font-size: 32px; font-weight: 500; letter-spacing: -1px; line-height: 1; margin-bottom: 4px; }
 .stat-label { font-size: 11px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.12em; }
 
-/* ── TABLE ── */
+/* ââ TABLE ââ */
 .table-wrap { background: var(--surface); border: 1px solid var(--border); overflow: hidden; }
 table { width: 100%; border-collapse: collapse; }
 thead th { padding: 10px 16px; text-align: left; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-dim); border-bottom: 1px solid var(--border); font-weight: 500; }
@@ -190,7 +190,7 @@ tbody td { padding: 12px 16px; font-size: 14px; border-bottom: 1px solid var(--b
 tbody tr:last-child td { border-bottom: none; }
 tbody tr:hover td { background: var(--bg); }
 
-/* ── MISC ── */
+/* ââ MISC ââ */
 .empty-state { padding: 60px; text-align: center; color: var(--ink-dim); }
 .empty-state-icon { font-size: 32px; margin-bottom: 12px; }
 .empty-state-text { font-size: 15px; }
@@ -227,7 +227,7 @@ tbody tr:hover td { background: var(--bg); }
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
-    <div class="login-wordmark">Mirage · Admin</div>
+    <div class="login-wordmark">Mirage Â· Admin</div>
     <div class="login-title">Welcome back.</div>
     <div class="login-sub">mirageicons.com internal tools</div>
     <input class="login-input" type="text" id="login-user" placeholder="Username" autocomplete="username">
@@ -256,38 +256,38 @@ tbody tr:hover td { background: var(--bg); }
     <div class="sidebar">
       <div class="sidebar-section">Main</div>
       <div class="sidebar-item active" onclick="showPane('dashboard')">
-        <span class="icon">◈</span> Dashboard
+        <span class="icon">â</span> Dashboard
       </div>
       <div class="sidebar-item" onclick="showPane('icons')">
-        <span class="icon">◉</span> Icons
+        <span class="icon">â</span> Icons
         <span class="sidebar-badge" id="badge-icons">100</span>
       </div>
       <div class="sidebar-section">Content</div>
       <div class="sidebar-item" onclick="showPane('personas')">
-        <span class="icon">◎</span> Persona Builder
+        <span class="icon">â</span> Persona Builder
       </div>
       <div class="sidebar-item" onclick="showPane('content')">
-        <span class="icon">▣</span> Content Library
+        <span class="icon">â£</span> Content Library
       </div>
       <div class="sidebar-item" onclick="showPane('studio')">
-        <span class="icon">⚡</span> Icon Studio
+        <span class="icon">â¡</span> Icon Studio
       </div>
       <div class="sidebar-section">Platform</div>
       <div class="sidebar-item" onclick="showPane('subscribers')">
-        <span class="icon">○</span> Subscribers
+        <span class="icon">â</span> Subscribers
       </div>
       <div class="sidebar-item" onclick="showPane('requests')">
-        <span class="icon">◇</span> Requests
+        <span class="icon">â</span> Requests
       </div>
       <div class="sidebar-section">Tools</div>
       <div class="sidebar-item" onclick="showPane('checklist')">
-        <span class="icon">✓</span> Task Checklist
+        <span class="icon">â</span> Task Checklist
       </div>
       <div class="sidebar-item" onclick="showPane('pnl')">
         <span class="icon">$</span> P&amp;L Dashboard
       </div>
       <div class="sidebar-item" onclick="showPane('projdash')">
-        <span class="icon">◈</span> Project Dashboard
+        <span class="icon">â</span> Project Dashboard
       </div>
     </div>
 
@@ -299,24 +299,24 @@ tbody tr:hover td { background: var(--bg); }
         <div class="page-header">
           <div>
             <div class="page-title">Dashboard</div>
-            <div class="page-sub">Mirage Admin · mirageicons.com</div>
+            <div class="page-sub">Mirage Admin Â· mirageicons.com</div>
           </div>
         </div>
         <div class="stats-grid">
           <div class="stat-card">
-            <div class="stat-value" id="stat-icons">—</div>
+            <div class="stat-value" id="stat-icons">â</div>
             <div class="stat-label">Total Icons</div>
           </div>
           <div class="stat-card">
-            <div class="stat-value" id="stat-personas-done">—</div>
+            <div class="stat-value" id="stat-personas-done">â</div>
             <div class="stat-label">Personas Complete</div>
           </div>
           <div class="stat-card">
-            <div class="stat-value" id="stat-content">—</div>
+            <div class="stat-value" id="stat-content">â</div>
             <div class="stat-label">Content Items</div>
           </div>
           <div class="stat-card">
-            <div class="stat-value" id="stat-subscribers">—</div>
+            <div class="stat-value" id="stat-subscribers">â</div>
             <div class="stat-label">Subscribers</div>
           </div>
         </div>
@@ -324,7 +324,7 @@ tbody tr:hover td { background: var(--bg); }
           <table>
             <thead><tr><th>Icon</th><th>Archetype</th><th>Persona</th><th>Content</th><th>Status</th></tr></thead>
             <tbody id="dashboard-table-body">
-              <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--ink-dim)">Loading…</td></tr>
+              <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--ink-dim)">Loadingâ¦</td></tr>
             </tbody>
           </table>
         </div>
@@ -340,7 +340,7 @@ tbody tr:hover td { background: var(--bg); }
           <button class="btn" onclick="showPane('personas')">+ Build Persona</button>
         </div>
         <div class="filter-bar">
-          <input type="text" placeholder="Search icons…" id="icon-search" oninput="filterIcons()">
+          <input type="text" placeholder="Search iconsâ¦" id="icon-search" oninput="filterIcons()">
           <select class="filter-select" id="icon-filter-status" onchange="filterIcons()">
             <option value="">All Status</option>
             <option value="complete">Complete</option>
@@ -349,19 +349,19 @@ tbody tr:hover td { background: var(--bg); }
           </select>
         </div>
         <div class="icon-grid" id="icon-grid">
-          <div class="empty-state"><div class="empty-state-text">Loading icons…</div></div>
+          <div class="empty-state"><div class="empty-state-text">Loading iconsâ¦</div></div>
         </div>
       </div>
 
       <!-- PERSONA BUILDER -->
-      <div class="pane" id="pane-personas">
+      <div class="pane" id="pane-personas" style="overflow-y:auto;height:calc(100vh - 48px)">
         <div class="page-header">
           <div>
             <div class="page-title">Persona Builder</div>
             <div class="page-sub" id="persona-sub">Select an icon to edit</div>
           </div>
           <div style="display:flex;gap:10px">
-            <button class="btn btn-outline" onclick="showPane('icons')">← All Icons</button>
+            <button class="btn btn-outline" onclick="showPane('icons')">â All Icons</button>
             <button class="btn" id="save-btn" onclick="savePersona()">Save</button>
           </div>
         </div>
@@ -370,14 +370,14 @@ tbody tr:hover td { background: var(--bg); }
         <div style="background:var(--surface);border:1px solid var(--border);padding:12px 16px;margin-bottom:20px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <span style="font-size:11px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:0.12em;margin-right:4px">Icon:</span>
           <select id="persona-icon-select" onchange="loadPersonaForIcon(this.value)" style="padding:6px 10px;border:1px solid var(--border);background:var(--bg);font-family:'Afacad',sans-serif;font-size:14px;color:var(--ink);outline:none;flex:1;max-width:280px">
-            <option value="">— Select Icon —</option>
+            <option value="">â Select Icon â</option>
           </select>
           <div id="persona-progress-label" style="font-size:12px;color:var(--ink-dim);margin-left:8px"></div>
         </div>
 
         <div class="editor-main" id="persona-editor">
           <div class="empty-state">
-            <div class="empty-state-icon">◎</div>
+            <div class="empty-state-icon">â</div>
             <div class="empty-state-text">Select an icon above to begin building her persona.</div>
           </div>
         </div>
@@ -392,7 +392,7 @@ tbody tr:hover td { background: var(--bg); }
           </div>
         </div>
         <div class="empty-state">
-          <div class="empty-state-icon">▣</div>
+          <div class="empty-state-icon">â£</div>
           <div class="empty-state-text">Content library coming soon. Generate content via Icon Studio.</div>
         </div>
       </div>
@@ -406,7 +406,7 @@ tbody tr:hover td { background: var(--bg); }
           <table>
             <thead><tr><th>Email</th><th>Tier</th><th>Joined</th><th>Status</th></tr></thead>
             <tbody id="subscribers-body">
-              <tr><td colspan="4" style="text-align:center;padding:40px;color:var(--ink-dim)">Loading…</td></tr>
+              <tr><td colspan="4" style="text-align:center;padding:40px;color:var(--ink-dim)">Loadingâ¦</td></tr>
             </tbody>
           </table>
         </div>
@@ -421,7 +421,7 @@ tbody tr:hover td { background: var(--bg); }
           <table>
             <thead><tr><th>From</th><th>Icon</th><th>Request</th><th>Tier</th><th>Status</th><th></th></tr></thead>
             <tbody id="requests-body">
-              <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--ink-dim)">Loading…</td></tr>
+              <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--ink-dim)">Loadingâ¦</td></tr>
             </tbody>
           </table>
         </div>
@@ -437,7 +437,7 @@ tbody tr:hover td { background: var(--bg); }
 <head>
 <meta charset=&quot;UTF-8&quot;>
 <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
-<title>Mirage · Project Dashboard</title>
+<title>Mirage Â· Project Dashboard</title>
 <link href=&quot;https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400;1,500&amp;family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&amp;display=swap&quot; rel=&quot;stylesheet&quot;>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -570,8 +570,8 @@ tbody tr:hover td { background: var(--bg); }
 <header>
   <div class=&quot;logo&quot;>Mirage</div>
   <div class=&quot;header-status&quot;>
-    <div style=&quot;font-size:9px;letter-spacing:0.14em;color:rgba(248,246,242,0.3)&quot;><span class=&quot;status-dot&quot;></span>Proxy live · railway.app</div>
-    <div class=&quot;header-meta&quot;>Project Dashboard · April 2026</div>
+    <div style=&quot;font-size:9px;letter-spacing:0.14em;color:rgba(248,246,242,0.3)&quot;><span class=&quot;status-dot&quot;></span>Proxy live Â· railway.app</div>
+    <div class=&quot;header-meta&quot;>Project Dashboard Â· April 2026</div>
   </div>
 </header>
 
@@ -601,27 +601,27 @@ tbody tr:hover td { background: var(--bg); }
   <div class=&quot;info-bar&quot;>
     <div class=&quot;info-item&quot;>
       <div class=&quot;info-label&quot;>Domain</div>
-      <div class=&quot;info-value gold&quot;>mirageicons.com ✓</div>
+      <div class=&quot;info-value gold&quot;>mirageicons.com â</div>
     </div>
     <div class=&quot;info-item&quot;>
-      <div class=&quot;info-label&quot;>Proxy · Railway</div>
-      <div class=&quot;info-value green&quot;>mirage-proxy-production.up.railway.app ✓</div>
+      <div class=&quot;info-label&quot;>Proxy Â· Railway</div>
+      <div class=&quot;info-value green&quot;>mirage-proxy-production.up.railway.app â</div>
     </div>
     <div class=&quot;info-item&quot;>
       <div class=&quot;info-label&quot;>GitHub</div>
-      <div class=&quot;info-value green&quot;>natescott12/mirage-proxy ✓</div>
+      <div class=&quot;info-value green&quot;>natescott12/mirage-proxy â</div>
     </div>
     <div class=&quot;info-item&quot;>
       <div class=&quot;info-label&quot;>Supabase</div>
-      <div class=&quot;info-value green&quot;>gmyenvnfuailickepvax · Schema deployed ✓</div>
+      <div class=&quot;info-value green&quot;>gmyenvnfuailickepvax Â· Schema deployed â</div>
     </div>
     <div class=&quot;info-item&quot;>
       <div class=&quot;info-label&quot;>Vercel / PWA</div>
-      <div class=&quot;info-value green&quot;>mirage-pwa.vercel.app ✓ Live</div>
+      <div class=&quot;info-value green&quot;>mirage-pwa.vercel.app â Live</div>
     </div>
     <div class=&quot;info-item&quot;>
       <div class=&quot;info-label&quot;>mirageicons.com</div>
-      <div class=&quot;info-value green&quot;>Live · DNS propagated ✓</div>
+      <div class=&quot;info-value green&quot;>Live Â· DNS propagated â</div>
     </div>
     <div class=&quot;info-item&quot;>
       <div class=&quot;info-label&quot;>Segpay</div>
@@ -639,8 +639,8 @@ tbody tr:hover td { background: var(--bg); }
       <div class=&quot;priority-item&quot;>
         <div class=&quot;priority-num&quot;>1</div>
         <div class=&quot;priority-content&quot;>
-          <div class=&quot;priority-title&quot;>Deploy PWA to Vercel ✓</div>
-          <div class=&quot;priority-detail&quot;>Live at mirage-pwa.vercel.app. mirageicons.com DNS propagating — will be live within 30 min.</div>
+          <div class=&quot;priority-title&quot;>Deploy PWA to Vercel â</div>
+          <div class=&quot;priority-detail&quot;>Live at mirage-pwa.vercel.app. mirageicons.com DNS propagating â will be live within 30 min.</div>
         </div>
         <div class=&quot;priority-status&quot;><span class=&quot;status-badge done&quot;>Done</span></div>
       </div>
@@ -648,14 +648,14 @@ tbody tr:hover td { background: var(--bg); }
         <div class=&quot;priority-num&quot;>2</div>
         <div class=&quot;priority-content&quot;>
           <div class=&quot;priority-title&quot;>Generate icon content library</div>
-          <div class=&quot;priority-detail&quot;>Anna building personas (admin panel live). You generate images via Icon Studio — 15 free + 10 PPV per icon. Luna first.</div>
+          <div class=&quot;priority-detail&quot;>Anna building personas (admin panel live). You generate images via Icon Studio â 15 free + 10 PPV per icon. Luna first.</div>
         </div>
         <div class=&quot;priority-status&quot;><span class=&quot;status-badge wip&quot;>In Progress</span></div>
       </div>
       <div class=&quot;priority-item&quot;>
         <div class=&quot;priority-num&quot;>3</div>
         <div class=&quot;priority-content&quot;>
-          <div class=&quot;priority-title&quot;>Figma design — marketing site</div>
+          <div class=&quot;priority-title&quot;>Figma design â marketing site</div>
           <div class=&quot;priority-detail&quot;>Wireframes ready. Drop real photos on top. Big italic serif names. White bg. American Apparel editorial.</div>
         </div>
         <div class=&quot;priority-status&quot;><span class=&quot;status-badge todo&quot;>To Do</span></div>
@@ -664,7 +664,7 @@ tbody tr:hover td { background: var(--bg); }
         <div class=&quot;priority-num&quot;>4</div>
         <div class=&quot;priority-content&quot;>
           <div class=&quot;priority-title&quot;>Wire shop into PWA</div>
-          <div class=&quot;priority-detail&quot;>Drop currency, wardrobe tab, purchase flow. Supabase is live — can start now.</div>
+          <div class=&quot;priority-detail&quot;>Drop currency, wardrobe tab, purchase flow. Supabase is live â can start now.</div>
         </div>
         <div class=&quot;priority-status&quot;><span class=&quot;status-badge todo&quot;>To Do</span></div>
       </div>
@@ -672,7 +672,7 @@ tbody tr:hover td { background: var(--bg); }
         <div class=&quot;priority-num&quot;>5</div>
         <div class=&quot;priority-content&quot;>
           <div class=&quot;priority-title&quot;>Segpay integration</div>
-          <div class=&quot;priority-detail&quot;>Wire payment flow into signup. 12% processing — biggest cost. Needs PWA deployed first.</div>
+          <div class=&quot;priority-detail&quot;>Wire payment flow into signup. 12% processing â biggest cost. Needs PWA deployed first.</div>
         </div>
         <div class=&quot;priority-status&quot;><span class=&quot;status-badge todo&quot;>To Do</span></div>
       </div>
@@ -736,10 +736,10 @@ tbody tr:hover td { background: var(--bg); }
           <span class=&quot;file-type-badge&quot; style=&quot;background:rgba(42,102,64,0.2);color:#4a9960&quot;>Live</span>
           <span class=&quot;status-badge done&quot;>Online</span>
         </div>
-        <div class=&quot;file-name&quot;>Railway · Proxy</div>
+        <div class=&quot;file-name&quot;>Railway Â· Proxy</div>
         <div class=&quot;file-desc&quot;>Node.js proxy. Flux generation, Claude voice, image fetch. Full CORS for hosted access.</div>
         <div class=&quot;file-meta&quot;><span>mirage-proxy-production.up.railway.app</span></div>
-        <div class=&quot;file-path&quot; onclick=&quot;window.open('https://railway.com/project/3f900a6d-0b6b-4c72-9c37-c26db7ef68c3','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>railway.com → perpetual-patience</div>
+        <div class=&quot;file-path&quot; onclick=&quot;window.open('https://railway.com/project/3f900a6d-0b6b-4c72-9c37-c26db7ef68c3','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>railway.com â perpetual-patience</div>
       </div>
 
       <div class=&quot;file-card dark&quot;>
@@ -747,7 +747,7 @@ tbody tr:hover td { background: var(--bg); }
           <span class=&quot;file-type-badge&quot; style=&quot;background:rgba(42,102,64,0.2);color:#4a9960&quot;>Live</span>
           <span class=&quot;status-badge done&quot;>Deployed</span>
         </div>
-        <div class=&quot;file-name&quot;>GitHub · Proxy Repo</div>
+        <div class=&quot;file-name&quot;>GitHub Â· Proxy Repo</div>
         <div class=&quot;file-desc&quot;>Private repo. Auto-deploys to Railway on every push to main. server.js, package.json, railway.json.</div>
         <div class=&quot;file-meta&quot;><span>natescott12/mirage-proxy</span></div>
         <div class=&quot;file-path&quot; onclick=&quot;window.open('https://github.com/natescott12/mirage-proxy','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>github.com/natescott12/mirage-proxy</div>
@@ -758,10 +758,10 @@ tbody tr:hover td { background: var(--bg); }
           <span class=&quot;file-type-badge&quot; style=&quot;background:rgba(42,102,64,0.2);color:#4a9960&quot;>Live</span>
           <span class=&quot;status-badge done&quot;>Schema Deployed</span>
         </div>
-        <div class=&quot;file-name&quot;>Supabase · Database</div>
+        <div class=&quot;file-name&quot;>Supabase Â· Database</div>
         <div class=&quot;file-desc&quot;>Postgres DB. Profiles, subscriptions, icons (Luna/Vera/Aria seeded), content, messages, requests, PPV unlocks. RLS enabled.</div>
         <div class=&quot;file-meta&quot;><span>gmyenvnfuailickepvax.supabase.co</span></div>
-        <div class=&quot;file-path&quot; onclick=&quot;window.open('https://supabase.com/dashboard/project/gmyenvnfuailickepvax','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>Mirage Icons · Mirage org</div>
+        <div class=&quot;file-path&quot; onclick=&quot;window.open('https://supabase.com/dashboard/project/gmyenvnfuailickepvax','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>Mirage Icons Â· Mirage org</div>
       </div>
 
       <div class=&quot;file-card dark&quot;>
@@ -780,10 +780,10 @@ tbody tr:hover td { background: var(--bg); }
           <span class=&quot;file-type-badge&quot; style=&quot;background:rgba(160,120,64,0.2);color:var(--gold)&quot;>Pending</span>
           <span class=&quot;status-badge todo&quot;>To Do</span>
         </div>
-        <div class=&quot;file-name&quot;>Vercel · PWA</div>
+        <div class=&quot;file-name&quot;>Vercel Â· PWA</div>
         <div class=&quot;file-desc&quot;>Deploy mirage-pwa.html. Free tier. Point mirageicons.com DNS to Vercel. PWA is Supabase-connected and ready.</div>
         <div class=&quot;file-meta&quot;><span>mirageicons.com</span></div>
-        <div class=&quot;file-path&quot; onclick=&quot;window.open('https://vercel.com','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>vercel.com → next step</div>
+        <div class=&quot;file-path&quot; onclick=&quot;window.open('https://vercel.com','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>vercel.com â next step</div>
       </div>
 
       <div class=&quot;file-card dark&quot;>
@@ -791,20 +791,20 @@ tbody tr:hover td { background: var(--bg); }
           <span class=&quot;file-type-badge&quot; style=&quot;background:rgba(160,120,64,0.2);color:var(--gold)&quot;>Pending</span>
           <span class=&quot;status-badge todo&quot;>To Do</span>
         </div>
-        <div class=&quot;file-name&quot;>Segpay · Payments</div>
-        <div class=&quot;file-desc&quot;>12% processing — biggest cost driver. Wire into signup flow post-Vercel deploy. Dominant adult content processor.</div>
+        <div class=&quot;file-name&quot;>Segpay Â· Payments</div>
+        <div class=&quot;file-desc&quot;>12% processing â biggest cost driver. Wire into signup flow post-Vercel deploy. Dominant adult content processor.</div>
         <div class=&quot;file-meta&quot;><span>segpay.com</span></div>
-        <div class=&quot;file-path&quot; onclick=&quot;window.open('https://segpay.com','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>segpay.com → after Vercel</div>
+        <div class=&quot;file-path&quot; onclick=&quot;window.open('https://segpay.com','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>segpay.com â after Vercel</div>
       </div>
 
     </div>
   </div>
 
-  <!-- ══ PROJECT SUMMARY ══════════════════════════════════════════════════ -->
+  <!-- ââ PROJECT SUMMARY ââââââââââââââââââââââââââââââââââââââââââââââââââ -->
   <div class=&quot;section&quot;>
     <div class=&quot;section-head&quot;>
       <div class=&quot;section-title&quot;>Project Summary</div>
-      <div class=&quot;section-count&quot;>Full context · Apr 2026</div>
+      <div class=&quot;section-count&quot;>Full context Â· Apr 2026</div>
     </div>
 
     <div style=&quot;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px&quot;>
@@ -812,7 +812,7 @@ tbody tr:hover td { background: var(--bg); }
       <div style=&quot;background:var(--bg2);border:1px solid var(--border-md);border-radius:2px;padding:20px&quot;>
         <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px&quot;>What Mirage Is</div>
         <div style=&quot;font-size:12px;color:var(--dim);line-height:1.8&quot;>
-          AI content platform featuring editorial AI characters called Icons. American Apparel 2000s aesthetic — film grain, desaturated, natural light, tight crops, no studio. Think Corinne Day, Juergen Teller. Content is non-explicit and clearly labeled as AI-generated. PWA to avoid app store fees.
+          AI content platform featuring editorial AI characters called Icons. American Apparel 2000s aesthetic â film grain, desaturated, natural light, tight crops, no studio. Think Corinne Day, Juergen Teller. Content is non-explicit and clearly labeled as AI-generated. PWA to avoid app store fees.
         </div>
       </div>
 
@@ -820,9 +820,9 @@ tbody tr:hover td { background: var(--bg); }
         <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px&quot;>Financials (Target)</div>
         <div style=&quot;font-size:12px;color:var(--dim);line-height:1.8&quot;>
           At 10K subs / 500 Icons / 30-55-15 tier mix:<br>
-          $172K gross · $26.7K costs · <strong>$145K net (84.5% margin)</strong> · $1.74M annual.<br>
-          Flux costs ~$6K/mo at scale (150K images · $0.04/img).<br>
-          Segpay 12% processing — dominant cost driver.
+          $172K gross Â· $26.7K costs Â· <strong>$145K net (84.5% margin)</strong> Â· $1.74M annual.<br>
+          Flux costs ~$6K/mo at scale (150K images Â· $0.04/img).<br>
+          Segpay 12% processing â dominant cost driver.
         </div>
       </div>
 
@@ -833,19 +833,19 @@ tbody tr:hover td { background: var(--bg); }
       <div style=&quot;background:var(--bg2);border:1px solid var(--border-md);border-radius:2px;padding:20px&quot;>
         <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px&quot;>Launch Icons</div>
         <div style=&quot;font-size:12px;color:var(--dim);line-height:2&quot;>
-          <span style=&quot;font-family:'Playfair Display',serif;font-style:italic;font-size:14px&quot;>Luna</span> — Downtown Intellectual. Cool grey. Direct stare.<br>
-          <span style=&quot;font-family:'Playfair Display',serif;font-style:italic;font-size:14px&quot;>Vera</span> — Unapologetic Bold. Warm gold. Owns every room.<br>
-          <span style=&quot;font-family:'Playfair Display',serif;font-style:italic;font-size:14px&quot;>Aria</span> — Soft Sadcore. Melancholy. Never eye contact.
+          <span style=&quot;font-family:'Playfair Display',serif;font-style:italic;font-size:14px&quot;>Luna</span> â Downtown Intellectual. Cool grey. Direct stare.<br>
+          <span style=&quot;font-family:'Playfair Display',serif;font-style:italic;font-size:14px&quot;>Vera</span> â Unapologetic Bold. Warm gold. Owns every room.<br>
+          <span style=&quot;font-family:'Playfair Display',serif;font-style:italic;font-size:14px&quot;>Aria</span> â Soft Sadcore. Melancholy. Never eye contact.
         </div>
       </div>
 
       <div style=&quot;background:var(--bg2);border:1px solid var(--border-md);border-radius:2px;padding:20px&quot;>
         <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px&quot;>Pricing Tiers</div>
         <div style=&quot;font-size:12px;color:var(--dim);line-height:2&quot;>
-          Glimpse · <strong>$4.99/mo</strong><br>
-          Illusion · <strong>$14.99/mo</strong> (most popular)<br>
-          Mirage VIP · <strong>$39.99/mo</strong><br>
-          Devoted · <strong>$79.99/mo</strong>
+          Glimpse Â· <strong>$4.99/mo</strong><br>
+          Illusion Â· <strong>$14.99/mo</strong> (most popular)<br>
+          Mirage VIP Â· <strong>$39.99/mo</strong><br>
+          Devoted Â· <strong>$79.99/mo</strong>
         </div>
       </div>
 
@@ -855,7 +855,7 @@ tbody tr:hover td { background: var(--bg); }
           Icon names: Playfair Display italic<br>
           UI: DM Sans light<br>
           Warm white backgrounds<br>
-          Film grain overlays · Desaturated
+          Film grain overlays Â· Desaturated
         </div>
       </div>
 
@@ -864,26 +864,26 @@ tbody tr:hover td { background: var(--bg); }
     <div style=&quot;display:grid;grid-template-columns:1fr 1fr;gap:12px&quot;>
 
       <div style=&quot;background:var(--dark);border:1px solid rgba(248,246,242,0.06);border-radius:2px;padding:20px&quot;>
-        <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(248,246,242,0.3);margin-bottom:12px&quot;>Infrastructure · All Live</div>
+        <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(248,246,242,0.3);margin-bottom:12px&quot;>Infrastructure Â· All Live</div>
         <div style=&quot;font-size:11px;color:rgba(248,246,242,0.5);line-height:2.2&quot;>
-          <span style=&quot;color:rgba(42,162,64,0.9)&quot;>✓</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Railway Proxy</strong> · mirage-proxy-production.up.railway.app<br>
-          <span style=&quot;color:rgba(42,162,64,0.9)&quot;>✓</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>GitHub</strong> · natescott12/mirage-proxy · natescott12/mirage-pwa<br>
-          <span style=&quot;color:rgba(42,162,64,0.9)&quot;>✓</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Supabase</strong> · gmyenvnfuailickepvax.supabase.co · Schema deployed<br>
-          <span style=&quot;color:rgba(42,162,64,0.9)&quot;>✓</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Vercel</strong> · mirageicons.com · mirage-pwa.vercel.app<br>
-          <span style=&quot;color:rgba(42,162,64,0.9)&quot;>✓</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Flux Pro 1.1</strong> · api.bfl.ai · Key rotated Apr 5<br>
-          <span style=&quot;color:rgba(176,48,37,0.9)&quot;>◌</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Segpay</strong> · Payments · After content generation<br>
-          <span style=&quot;color:rgba(176,48,37,0.9)&quot;>◌</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Twilio SMS</strong> · After 1K subscribers
+          <span style=&quot;color:rgba(42,162,64,0.9)&quot;>â</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Railway Proxy</strong> Â· mirage-proxy-production.up.railway.app<br>
+          <span style=&quot;color:rgba(42,162,64,0.9)&quot;>â</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>GitHub</strong> Â· natescott12/mirage-proxy Â· natescott12/mirage-pwa<br>
+          <span style=&quot;color:rgba(42,162,64,0.9)&quot;>â</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Supabase</strong> Â· gmyenvnfuailickepvax.supabase.co Â· Schema deployed<br>
+          <span style=&quot;color:rgba(42,162,64,0.9)&quot;>â</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Vercel</strong> Â· mirageicons.com Â· mirage-pwa.vercel.app<br>
+          <span style=&quot;color:rgba(42,162,64,0.9)&quot;>â</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Flux Pro 1.1</strong> Â· api.bfl.ai Â· Key rotated Apr 5<br>
+          <span style=&quot;color:rgba(176,48,37,0.9)&quot;>â</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Segpay</strong> Â· Payments Â· After content generation<br>
+          <span style=&quot;color:rgba(176,48,37,0.9)&quot;>â</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Twilio SMS</strong> Â· After 1K subscribers
         </div>
       </div>
 
       <div style=&quot;background:var(--dark);border:1px solid rgba(248,246,242,0.06);border-radius:2px;padding:20px&quot;>
-        <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(248,246,242,0.3);margin-bottom:12px&quot;>URLs · Credentials</div>
+        <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(248,246,242,0.3);margin-bottom:12px&quot;>URLs Â· Credentials</div>
         <div style=&quot;font-size:11px;color:rgba(248,246,242,0.5);line-height:2.2&quot;>
-          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>mirageicons.com</strong> → Splash page (coming soon)<br>
-          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>mirageicons.com/admin</strong> → Admin panel<br>
-          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Nate login:</strong> natescott12 GitHub → Supabase<br>
-          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Anna login:</strong> <a href=&quot;/cdn-cgi/l/email-protection&quot; class=&quot;__cf_email__&quot; data-cfemail=&quot;84e5eaeae5c4f3e1e5f6e1e7f1f6f6e1eaf0aaeae1f0&quot;>[email&amp;#160;protected]</a> · Mirage2026!<br>
-          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Supabase org:</strong> Mirage → Mirage Icons project<br>
+          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>mirageicons.com</strong> â Splash page (coming soon)<br>
+          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>mirageicons.com/admin</strong> â Admin panel<br>
+          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Nate login:</strong> natescott12 GitHub â Supabase<br>
+          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Anna login:</strong> <a href=&quot;/cdn-cgi/l/email-protection&quot; class=&quot;__cf_email__&quot; data-cfemail=&quot;84e5eaeae5c4f3e1e5f6e1e7f1f6f6e1eaf0aaeae1f0&quot;>[email&amp;#160;protected]</a> Â· Mirage2026!<br>
+          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Supabase org:</strong> Mirage â Mirage Icons project<br>
           <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Railway:</strong> perpetual-patience project<br>
           <em style=&quot;color:rgba(248,246,242,0.2)&quot;>Full API keys stored in private secure note</em>
         </div>
@@ -892,7 +892,7 @@ tbody tr:hover td { background: var(--bg); }
     </div>
   </div>
 
-  <!-- ══ TEAM ══════════════════════════════════════════════════════════════ -->
+  <!-- ââ TEAM ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ -->
   <!-- COLLABORATORS -->
   <div class=&quot;section&quot;>
     <div class=&quot;section-head&quot;>
@@ -920,7 +920,7 @@ tbody tr:hover td { background: var(--bg); }
           </div>
         </div>
         <div class=&quot;file-desc&quot;>Building persona profiles for all 100 icon archetypes. Voice lines, SMS character, content pillars, cluster. Starting with Luna, Vera, Aria.</div>
-        <div class=&quot;file-meta&quot;><span>Google Drive access · Studio via download</span></div>
+        <div class=&quot;file-meta&quot;><span>Google Drive access Â· Studio via download</span></div>
       </div>
     </div>
   </div>
@@ -968,7 +968,7 @@ tbody tr:hover td { background: var(--bg); }
 // Detect iframe context
 if(window.self !== window.top){document.body.classList.add(&quot;in-admin&quot;);}
 
-// ── FILE DATA ────────────────────────────────────────────────────
+// ââ FILE DATA ââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const BASE = '';
 
 let FILES = JSON.parse(localStorage.getItem('mirage-files') || 'null') || [
@@ -977,7 +977,7 @@ let FILES = JSON.parse(localStorage.getItem('mirage-files') || 'null') || [
     id: 'pwa', section: 'product', type: 'html', status: 'done',
     name: 'Subscriber PWA',
     path: 'mirage-pwa.html',
-    desc: 'Full subscriber app — all screens. Supabase auth wired (real signIn/signUp/signOut/session check). Ready to deploy to Vercel.',
+    desc: 'Full subscriber app â all screens. Supabase auth wired (real signIn/signUp/signOut/session check). Ready to deploy to Vercel.',
     date: 'Apr 5 2026'
   },
   {
@@ -991,7 +991,7 @@ let FILES = JSON.parse(localStorage.getItem('mirage-files') || 'null') || [
     id: 'shop', section: 'product', type: 'html', status: 'done',
     name: 'Shop UI',
     path: 'mirage-shop-ui.html',
-    desc: 'Full shop PWA screen — Drops tab, Wardrobe tab, Get Drops tab. Interactive with live balance, purchase modal, wardrobe grid.',
+    desc: 'Full shop PWA screen â Drops tab, Wardrobe tab, Get Drops tab. Interactive with live balance, purchase modal, wardrobe grid.',
     date: 'Apr 5 2026'
   },
   {
@@ -1056,7 +1056,7 @@ let FILES = JSON.parse(localStorage.getItem('mirage-files') || 'null') || [
     id: 'digital-goods', section: 'strategy', type: 'md', status: 'done',
     name: 'Digital Goods Strategy',
     path: 'mirage-digital-goods-strategy.md',
-    desc: 'Full drop economy strategy — currency mechanics, scarcity, wardrobe psychology, rollout phases, whale segment math, Supabase schema, revenue projections.',
+    desc: 'Full drop economy strategy â currency mechanics, scarcity, wardrobe psychology, rollout phases, whale segment math, Supabase schema, revenue projections.',
     date: 'Apr 5 2026'
   },
   {
@@ -1070,7 +1070,7 @@ let FILES = JSON.parse(localStorage.getItem('mirage-files') || 'null') || [
     id: 'summary', section: 'strategy', type: 'pdf', status: 'done',
     name: 'Full Project Summary',
     path: 'mirage-full-summary.pdf',
-    desc: 'Complete session summary — all sessions, every bug fixed, every file built, shop and SMS systems, financial model, competitive research.',
+    desc: 'Complete session summary â all sessions, every bug fixed, every file built, shop and SMS systems, financial model, competitive research.',
     date: 'Apr 5 2026'
   },
   {
@@ -1086,7 +1086,7 @@ let FILES = JSON.parse(localStorage.getItem('mirage-files') || 'null') || [
     id: 'wireframes', section: 'design', type: 'html', status: 'done',
     name: 'Wireframes',
     path: 'mirage-wireframes.html',
-    desc: 'Marketing site (4 screens) + PWA (8 screens). Full Mirage design system — Playfair italic, DM Sans, warm white, grain overlays. Ready for Figma.',
+    desc: 'Marketing site (4 screens) + PWA (8 screens). Full Mirage design system â Playfair italic, DM Sans, warm white, grain overlays. Ready for Figma.',
     date: 'Apr 5 2026'
   },
   {
@@ -1114,7 +1114,7 @@ let FILES = JSON.parse(localStorage.getItem('mirage-files') || 'null') || [
   },
 ];
 
-// ── RENDER ───────────────────────────────────────────────────────
+// ââ RENDER âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function renderAll() {
   const sections = ['product', 'strategy', 'design', 'investor'];
   sections.forEach(sec => {
@@ -1134,7 +1134,7 @@ function renderCard(f) {
   const statusMap = { done: 'Done', wip: 'In Progress', todo: 'To Do' };
   return `
     <div class=&quot;file-card ${isDark ? 'dark' : ''}&quot; onclick=&quot;openFile('${f.id}')&quot;>
-      <span class=&quot;open-btn&quot;>↗</span>
+      <span class=&quot;open-btn&quot;>â</span>
       <div style=&quot;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px&quot;>
         <span class=&quot;file-type-badge ${f.type}&quot;>${f.type.toUpperCase()}</span>
         <span class=&quot;status-badge ${f.status}&quot;>${statusMap[f.status]}</span>
@@ -1143,7 +1143,7 @@ function renderCard(f) {
       <div class=&quot;file-desc&quot;>${f.desc}</div>
       <div class=&quot;file-meta&quot;>
         <span>${f.date}</span>
-        <span onclick=&quot;removeFile(event,'${f.id}')&quot; style=&quot;cursor:pointer;opacity:0.4;font-size:11px&quot; title=&quot;Remove&quot;>✕</span>
+        <span onclick=&quot;removeFile(event,'${f.id}')&quot; style=&quot;cursor:pointer;opacity:0.4;font-size:11px&quot; title=&quot;Remove&quot;>â</span>
       </div>
       <div class=&quot;file-path&quot; title=&quot;${f.path}&quot;>${f.path}</div>
     </div>`;
@@ -1200,7 +1200,7 @@ function addFile() {
         <div class="page-header">
           <div>
             <div class="page-title">Task Checklist</div>
-            <div class="page-sub">April 2026 — track what's done</div>
+            <div class="page-sub">April 2026 â track what's done</div>
           </div>
           <button class="btn btn-ghost btn-sm" onclick="resetChecklist()">Reset all</button>
         </div>
@@ -1243,10 +1243,10 @@ function addFile() {
         </div>
         <!-- Results -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-          <div class="stat-card"><div class="stat-value" id="pnl-gross">—</div><div class="stat-label">Gross / mo</div></div>
-          <div class="stat-card"><div class="stat-value" id="pnl-net">—</div><div class="stat-label">Net / mo</div></div>
-          <div class="stat-card"><div class="stat-value" id="pnl-margin">—</div><div class="stat-label">Net Margin</div></div>
-          <div class="stat-card"><div class="stat-value" id="pnl-annual">—</div><div class="stat-label">Annual Net</div></div>
+          <div class="stat-card"><div class="stat-value" id="pnl-gross">â</div><div class="stat-label">Gross / mo</div></div>
+          <div class="stat-card"><div class="stat-value" id="pnl-net">â</div><div class="stat-label">Net / mo</div></div>
+          <div class="stat-card"><div class="stat-value" id="pnl-margin">â</div><div class="stat-label">Net Margin</div></div>
+          <div class="stat-card"><div class="stat-value" id="pnl-annual">â</div><div class="stat-label">Annual Net</div></div>
         </div>
         <!-- Cost breakdown -->
         <div class="table-wrap">
@@ -1281,7 +1281,7 @@ function addFile() {
 <div class="toast" id="toast"></div>
 
 <script>
-// ── CONFIG ──────────────────────────────────────────────────────────────────
+// ââ CONFIG ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const SUPABASE_URL = 'https://gmyenvnfuailickepvax.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
 
@@ -1297,18 +1297,18 @@ let allIcons = [];
 let currentIconId = null;
 let hasUnsavedChanges = false;
 
-// ── SUPABASE INIT ────────────────────────────────────────────────────────────
+// ââ SUPABASE INIT ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function initSupabase() {
   try {
     sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     console.log('Supabase connected');
   } catch(e) {
-    console.warn('Supabase init failed — running in local mode', e);
+    console.warn('Supabase init failed â running in local mode', e);
     sb = null;
   }
 }
 
-// ── AUTH ─────────────────────────────────────────────────────────────────────
+// ââ AUTH âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function doLogin() {
   const user = document.getElementById('login-user').value.trim().toLowerCase();
   const pass = document.getElementById('login-pass').value;
@@ -1340,7 +1340,7 @@ function doLogout() {
   document.getElementById('login-error').textContent = '';
 }
 
-// ── NAVIGATION ───────────────────────────────────────────────────────────────
+// ââ NAVIGATION âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function showPane(id) {
   document.querySelectorAll('.pane').forEach(p => { 
     p.classList.remove('active');
@@ -1402,7 +1402,7 @@ function showPane(id) {
   if (id === 'pnl') initPnl();
 }
 
-// ── TOAST ────────────────────────────────────────────────────────────────────
+// ââ TOAST ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function toast(msg, duration = 2500) {
   const el = document.getElementById('toast');
   el.textContent = msg;
@@ -1410,7 +1410,7 @@ function toast(msg, duration = 2500) {
   setTimeout(() => el.classList.remove('show'), duration);
 }
 
-// ── LOAD ICONS ───────────────────────────────────────────────────────────────
+// ââ LOAD ICONS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function loadIcons() {
   if (sb) {
     const { data, error } = await sb.from('icons').select('*').order('name');
@@ -1471,10 +1471,10 @@ function renderIconGrid(icons) {
     return `
       <div class="icon-card" onclick="openPersona('${icon.id}')">
         <div class="icon-card-name">${icon.name}</div>
-        <div class="icon-card-archetype">${icon.archetype || '—'}</div>
+        <div class="icon-card-archetype">${icon.archetype || 'â'}</div>
         <div class="icon-card-status">
           <div class="status-dot ${status}"></div>
-          <div class="status-label">${statusLabel} ${pct > 0 ? '· ' + pct + '%' : ''}</div>
+          <div class="status-label">${statusLabel} ${pct > 0 ? 'Â· ' + pct + '%' : ''}</div>
         </div>
         <div class="icon-card-progress">
           <div class="icon-card-progress-fill" style="width:${pct}%"></div>
@@ -1496,7 +1496,7 @@ function filterIcons() {
   renderIconGrid(filtered);
 }
 
-// ── DASHBOARD ────────────────────────────────────────────────────────────────
+// ââ DASHBOARD ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function updateDashboard() {
   const total = allIcons.length;
   const done = allIcons.filter(i => getPersonaCompletion(i) >= 80).length;
@@ -1511,7 +1511,7 @@ function updateDashboard() {
     const badge = status === 'complete' ? '#2a7a4a' : status === 'partial' ? '#d4820a' : '#ccc';
     return `<tr>
       <td><strong>${icon.name}</strong></td>
-      <td style="color:var(--ink-dim)">${icon.archetype || '—'}</td>
+      <td style="color:var(--ink-dim)">${icon.archetype || 'â'}</td>
       <td>
         <div style="display:flex;align-items:center;gap:8px">
           <div style="flex:1;height:3px;background:#ece9e4;border-radius:1px;max-width:80px">
@@ -1520,7 +1520,7 @@ function updateDashboard() {
           <span style="font-size:12px;color:var(--ink-dim)">${pct}%</span>
         </div>
       </td>
-      <td style="color:var(--ink-dim)">—</td>
+      <td style="color:var(--ink-dim)">â</td>
       <td><span style="font-size:11px;color:${badge};text-transform:uppercase;letter-spacing:0.1em">${status}</span></td>
     </tr>`;
   }).join('');
@@ -1534,16 +1534,16 @@ async function loadDashboard() {
     const { count: contentCount } = await sb.from('content').select('*', { count: 'exact', head: true });
     document.getElementById('stat-content').textContent = contentCount || 0;
   } else {
-    document.getElementById('stat-subscribers').textContent = '—';
-    document.getElementById('stat-content').textContent = '—';
+    document.getElementById('stat-subscribers').textContent = 'â';
+    document.getElementById('stat-content').textContent = 'â';
   }
 }
 
-// ── PERSONA BUILDER ───────────────────────────────────────────────────────────
+// ââ PERSONA BUILDER âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function populateIconSelect() {
   const sel = document.getElementById('persona-icon-select');
-  sel.innerHTML = '<option value="">— Select Icon —</option>' +
-    allIcons.map(i => `<option value="${i.id}">${i.name} · ${i.archetype || 'No archetype'}</option>`).join('');
+  sel.innerHTML = '<option value="">â Select Icon â</option>' +
+    allIcons.map(i => `<option value="${i.id}">${i.name} Â· ${i.archetype || 'No archetype'}</option>`).join('');
 }
 
 function openPersona(iconId) {
@@ -1556,12 +1556,12 @@ function loadPersonaForIcon(iconId) {
   currentIconId = iconId;
   const icon = allIcons.find(i => i.id === iconId);
   if (!icon) {
-    document.getElementById('persona-editor').innerHTML = `<div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-text">Select an icon above.</div></div>`;
+    document.getElementById('persona-editor').innerHTML = `<div class="empty-state"><div class="empty-state-icon">â</div><div class="empty-state-text">Select an icon above.</div></div>`;
     return;
   }
 
   const pct = getPersonaCompletion(icon);
-  document.getElementById('persona-sub').textContent = `Editing: ${icon.name} · ${icon.archetype}`;
+  document.getElementById('persona-sub').textContent = `Editing: ${icon.name} Â· ${icon.archetype}`;
   document.getElementById('persona-progress-label').textContent = pct > 0 ? `${pct}% complete` : 'Not started';
 
   const p = icon.persona_data || {};
@@ -1611,7 +1611,7 @@ function buildPersonaForm(p, icon) {
   <div class="field-group">
     <div class="field-group-title">Voice & Personality</div>
     <div class="field-row single">
-      <div class="field"><label>Voice / Tone</label><textarea id="f-voice" placeholder="How she speaks, her texting style, what she says and doesn't say…">${p.voice || ''}</textarea></div>
+      <div class="field"><label>Voice / Tone</label><textarea id="f-voice" placeholder="How she speaks, her texting style, what she says and doesn't sayâ¦">${p.voice || ''}</textarea></div>
     </div>
     <div class="field-row single">
       <div class="field">
@@ -1644,21 +1644,21 @@ function buildPersonaForm(p, icon) {
   <div class="field-group">
     <div class="field-group-title">Backstory & World</div>
     <div class="field-row single">
-      <div class="field"><label>Backstory</label><textarea id="f-backstory" style="min-height:120px" placeholder="Where she came from, what shaped her, the experiences she doesn't talk about…">${p.backstory || ''}</textarea></div>
+      <div class="field"><label>Backstory</label><textarea id="f-backstory" style="min-height:120px" placeholder="Where she came from, what shaped her, the experiences she doesn't talk aboutâ¦">${p.backstory || ''}</textarea></div>
     </div>
     <div class="field-row">
-      <div class="field"><label>Desires</label><textarea id="f-desires" placeholder="What she actually wants, even if she won't say it directly…">${p.desires || ''}</textarea></div>
-      <div class="field"><label>Fears</label><textarea id="f-fears" placeholder="What keeps her up at night, what she avoids…">${p.fears || ''}</textarea></div>
+      <div class="field"><label>Desires</label><textarea id="f-desires" placeholder="What she actually wants, even if she won't say it directlyâ¦">${p.desires || ''}</textarea></div>
+      <div class="field"><label>Fears</label><textarea id="f-fears" placeholder="What keeps her up at night, what she avoidsâ¦">${p.fears || ''}</textarea></div>
     </div>
   </div>
 
   <div class="field-group">
     <div class="field-group-title">Aesthetic & Interests</div>
     <div class="field-row single">
-      <div class="field"><label>Aesthetic / Visual World</label><textarea id="f-aesthetic" placeholder="Film grain, natural light, specific colors, settings, objects, clothing, mood…">${p.aesthetic || ''}</textarea></div>
+      <div class="field"><label>Aesthetic / Visual World</label><textarea id="f-aesthetic" placeholder="Film grain, natural light, specific colors, settings, objects, clothing, moodâ¦">${p.aesthetic || ''}</textarea></div>
     </div>
     <div class="field-row single">
-      <div class="field"><label>Interests & References</label><textarea id="f-interests" placeholder="Music, books, places, brands, artists, films, subcultures she inhabits…">${p.interests || ''}</textarea></div>
+      <div class="field"><label>Interests & References</label><textarea id="f-interests" placeholder="Music, books, places, brands, artists, films, subcultures she inhabitsâ¦">${p.interests || ''}</textarea></div>
     </div>
     <div class="field-row">
       <div class="field"><label>Scene Tags</label>
@@ -1743,7 +1743,7 @@ function buildPersonaForm(p, icon) {
       </div>
     </div>
     <div class="field-row single">
-      <div class="field"><label>Flux Prompt Notes</label><textarea id="f-flux-notes" placeholder="Any additional prompt language to maintain visual consistency across generations…">${p.flux_notes || ''}</textarea></div>
+      <div class="field"><label>Flux Prompt Notes</label><textarea id="f-flux-notes" placeholder="Any additional prompt language to maintain visual consistency across generationsâ¦">${p.flux_notes || ''}</textarea></div>
     </div>
   </div>
 
@@ -1802,7 +1802,7 @@ async function savePersona() {
   const btn = document.getElementById('save-bar-btn');
   btn.innerHTML = '<span class="spinner"></span>';
   btn.disabled = true;
-  setSaveStatus('Saving…', 'saving');
+  setSaveStatus('Savingâ¦', 'saving');
 
   const persona_data = collectPersonaData();
   const icon = allIcons.find(i => i.id === currentIconId);
@@ -1843,8 +1843,8 @@ async function savePersona() {
   hasUnsavedChanges = false;
 
   if (saved) {
-    setSaveStatus('Saved to Supabase ✓', 'saved');
-    toast('Saved to Supabase ✓');
+    setSaveStatus('Saved to Supabase â', 'saved');
+    toast('Saved to Supabase â');
   } else {
     setSaveStatus('Saved locally (Supabase offline)', 'saved');
     toast('Saved locally');
@@ -1868,7 +1868,7 @@ function setSaveStatus(msg, type = '') {
   el.className = 'save-status' + (type ? ' ' + type : '');
 }
 
-// ── SUBSCRIBERS ───────────────────────────────────────────────────────────────
+// ââ SUBSCRIBERS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function loadSubscribers() {
   const body = document.getElementById('subscribers-body');
   if (!sb) {
@@ -1881,14 +1881,14 @@ async function loadSubscribers() {
     return;
   }
   body.innerHTML = data.map(s => `<tr>
-    <td>${s.email || '—'}</td>
-    <td style="text-transform:capitalize">${s.tier || '—'}</td>
-    <td style="color:var(--ink-dim)">${s.created_at ? new Date(s.created_at).toLocaleDateString() : '—'}</td>
+    <td>${s.email || 'â'}</td>
+    <td style="text-transform:capitalize">${s.tier || 'â'}</td>
+    <td style="color:var(--ink-dim)">${s.created_at ? new Date(s.created_at).toLocaleDateString() : 'â'}</td>
     <td><span style="font-size:11px;color:#2a7a4a;text-transform:uppercase;letter-spacing:0.1em">${s.status || 'active'}</span></td>
   </tr>`).join('');
 }
 
-// ── REQUESTS ─────────────────────────────────────────────────────────────────
+// ââ REQUESTS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 async function loadRequests() {
   const body = document.getElementById('requests-body');
   if (!sb) {
@@ -1901,10 +1901,10 @@ async function loadRequests() {
     return;
   }
   body.innerHTML = data.map(r => `<tr>
-    <td style="color:var(--ink-dim)">${r.subscriber_id || '—'}</td>
-    <td>${r.icon_id || '—'}</td>
-    <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.description || '—'}</td>
-    <td style="text-transform:capitalize;color:var(--ink-dim)">${r.tier || '—'}</td>
+    <td style="color:var(--ink-dim)">${r.subscriber_id || 'â'}</td>
+    <td>${r.icon_id || 'â'}</td>
+    <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.description || 'â'}</td>
+    <td style="text-transform:capitalize;color:var(--ink-dim)">${r.tier || 'â'}</td>
     <td><span style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:${r.status==='pending'?'#d4820a':'#2a7a4a'}">${r.status || 'pending'}</span></td>
     <td><button class="btn btn-sm btn-outline" onclick="markRequestDone('${r.id}')">Done</button></td>
   </tr>`).join('');
@@ -1917,7 +1917,7 @@ async function markRequestDone(id) {
   toast('Request marked complete');
 }
 
-// ── LOAD LOCAL FALLBACK ───────────────────────────────────────────────────────
+// ââ LOAD LOCAL FALLBACK âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function mergeLocalPersonas() {
   try {
     const local = JSON.parse(localStorage.getItem('mirage-personas') || '{}');
@@ -1932,40 +1932,40 @@ function mergeLocalPersonas() {
   } catch(e) {}
 }
 
-// ── CHECKLIST ─────────────────────────────────────────────────────────────────
+// ââ CHECKLIST âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const CHECKLIST_KEY = 'mirage-checklist-v2';
 
 const CHECKLIST_SECTIONS = [
   { title: 'Security', items: [
-    { id:'s1', text:'Rotate Flux API key at dashboard.bfl.ai — mirage-prod was exposed', tag:'urgent' },
+    { id:'s1', text:'Rotate Flux API key at dashboard.bfl.ai â mirage-prod was exposed', tag:'urgent' },
     { id:'s2', text:"Change Anna's admin password from Mirage2026!", tag:'urgent' },
   ]},
   { title: 'PWA Build', items: [
-    { id:'p1', text:'Age Gate screen — QC\'d, pixel-matched to Figma', tag:'design' },
-    { id:'p2', text:'Landing Page (Screen 2) — build from Figma node 12:79', tag:'design' },
-    { id:'p3', text:'World Intro screen — Figma node 12:105', tag:'design' },
-    { id:'p4', text:'World Features screen — Figma node 12:137', tag:'design' },
-    { id:'p5', text:'Free Preview screen — Figma node 12:175', tag:'design' },
-    { id:'p6', text:'PWA Flux integration — generate images in-app', tag:'infra' },
+    { id:'p1', text:'Age Gate screen â QC\'d, pixel-matched to Figma', tag:'design' },
+    { id:'p2', text:'Landing Page (Screen 2) â build from Figma node 12:79', tag:'design' },
+    { id:'p3', text:'World Intro screen â Figma node 12:105', tag:'design' },
+    { id:'p4', text:'World Features screen â Figma node 12:137', tag:'design' },
+    { id:'p5', text:'Free Preview screen â Figma node 12:175', tag:'design' },
+    { id:'p6', text:'PWA Flux integration â generate images in-app', tag:'infra' },
     { id:'p7', text:'Segpay payment integration', tag:'infra' },
     { id:'p8', text:'Functional prototype live at mirageicons.com/app', tag:'infra' },
   ]},
   { title: 'Backend', items: [
-    { id:'b1', text:"Wire saveIconPersona() in admin to Supabase — sb.from('icons').update()", tag:'infra' },
-    { id:'b2', text:'Wire all personas → Supabase icons table', tag:'infra' },
+    { id:'b1', text:"Wire saveIconPersona() in admin to Supabase â sb.from('icons').update()", tag:'infra' },
+    { id:'b2', text:'Wire all personas â Supabase icons table', tag:'infra' },
     { id:'b3', text:'Supabase backend fully connected to PWA', tag:'infra' },
     { id:'b4', text:'Add /claude/chat endpoint to Railway proxy for DMs', tag:'infra' },
   ]},
   { title: 'Content', items: [
-    { id:'c1', text:'Generate Luna content — 15 free + 10 PPV images', tag:'content' },
-    { id:'c2', text:'Generate Vera content — 15 free + 10 PPV images', tag:'content' },
-    { id:'c3', text:'Generate Aria content — 15 free + 10 PPV images', tag:'content' },
+    { id:'c1', text:'Generate Luna content â 15 free + 10 PPV images', tag:'content' },
+    { id:'c2', text:'Generate Vera content â 15 free + 10 PPV images', tag:'content' },
+    { id:'c3', text:'Generate Aria content â 15 free + 10 PPV images', tag:'content' },
     { id:'c4', text:'Export Mirage logo as permanent PNG/SVG', tag:'design' },
   ]},
   { title: 'Admin', items: [
     { id:'a1', text:'Admin panel live at mirageicons.com/admin', tag:'infra' },
     { id:'a2', text:'Icon Studio embedded in admin with Railway proxy', tag:'infra' },
-    { id:'a3', text:'Anna — complete all 100 icon persona profiles', tag:'anna' },
+    { id:'a3', text:'Anna â complete all 100 icon persona profiles', tag:'anna' },
   ]},
 ];
 
@@ -2035,7 +2035,7 @@ function resetChecklist() {
   initChecklist();
 }
 
-// ── P&L MODEL ─────────────────────────────────────────────────────────────────
+// ââ P&L MODEL âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function initPnl() {
   updatePnl();
 }
@@ -2093,7 +2093,7 @@ function updatePnl() {
     { name:'Established', subs:2500 },
     { name:'Scaling', subs:5000 },
     { name:'Serious', subs:7500 },
-    { name:'Breakout ✦', subs:10000 },
+    { name:'Breakout â¦', subs:10000 },
   ];
 
   document.getElementById('pnl-stages').innerHTML = stages.map(stage => {
@@ -2112,7 +2112,7 @@ function updatePnl() {
   }).join('');
 }
 
-// ── INIT ──────────────────────────────────────────────────────────────────────
+// ââ INIT ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 window.addEventListener('load', () => {
   mergeLocalPersonas();
   document.getElementById('login-user').focus();
