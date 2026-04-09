@@ -858,10 +858,10 @@ const LIB_KEY = "mirage_library_v2";
 const CHAR_KEY = "mirage_characters_v1";
 const load = key => { try { return JSON.parse(localStorage.getItem(key))||{}; } catch { return {}; } };
 const save = (key, val) => { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) { console.warn(e); } };
-const getIconLib = id => (load(LIB_KEY)[id]||[]);
-const addToLib = (id, img) => { const l=load(LIB_KEY); if(!l[id])l[id]=[]; l[id].unshift(img); save(LIB_KEY,l); };
-const removeFromLib = (iconId, imgId) => { const l=load(LIB_KEY); if(l[iconId])l[iconId]=l[iconId].filter(i=>i.id!==imgId); save(LIB_KEY,l); };
-const toggleFav = (iconId, imgId) => { const l=load(LIB_KEY); if(l[iconId]){const i=l[iconId].find(x=>x.id===imgId);if(i)i.favourite=!i.favourite;} save(LIB_KEY,l); };
+const getIconLib = id => (load(LIB_KEY)[String(id)]||[]);
+const addToLib = (id, img) => { const l=load(LIB_KEY); const k=String(id); if(!l[k])l[k]=[]; l[k].unshift(img); save(LIB_KEY,l); };
+const removeFromLib = (iconId, imgId) => { const l=load(LIB_KEY); const k=String(iconId); if(l[k])l[k]=l[k].filter(i=>i.id!==imgId); save(LIB_KEY,l); };
+const toggleFav = (iconId, imgId) => { const l=load(LIB_KEY); const k=String(iconId); if(l[k]){const i=l[k].find(x=>x.id===imgId);if(i)i.favourite=!i.favourite;} save(LIB_KEY,l); };
 const getTotalCount = () => Object.values(load(LIB_KEY)).reduce((s,a)=>s+a.length,0);
 const getCount = id => getIconLib(id).length;
 const getChar = id => (load(CHAR_KEY)[id]||{});
@@ -1378,8 +1378,8 @@ function renderOutput() {
 
 function renderLibrary() {
   const lib=load(LIB_KEY);
-  const iconsWithImgs=ICONS_DATA.filter(i=>(lib[i.id]||[]).length>0);
-  const btns=[{id:"all",name:"All Icons",color:"#1a1714",count:getTotalCount()},...iconsWithImgs.map(i=>({id:i.id,name:i.name,color:i.color,count:(lib[i.id]||[]).length}))];
+  const iconsWithImgs=ICONS_DATA.filter(i=>(lib[String(i.id)]||[]).length>0);
+  const btns=[{id:"all",name:"All Icons",color:"#1a1714",count:getTotalCount()},...iconsWithImgs.map(i=>({id:i.id,name:i.name,color:i.color,count:(lib[String(i.id)]||[]).length}))];
   setHTML("lib-icon-btns",btns.map(b=>`
     <div class="lib-icon-btn ${libIconId===b.id?"active":""}" onclick="setLibIcon('${b.id}')">
       <div class="lib-dot" style="background:${b.color}"></div>
@@ -1392,7 +1392,7 @@ function renderLibrary() {
     images.sort((a,b)=>b.id-a.id);
   } else {
     const icon=ICONS_DATA.find(i=>i.id===libIconId);
-    if(icon) images=(lib[libIconId]||[]).map(img=>({...img,icon}));
+    if(icon) images=(lib[String(libIconId)]||[]).map(img=>({...img,icon}));
   }
   if(libFilter==="free") images=images.filter(i=>i.contentType==="free");
   if(libFilter==="ppv") images=images.filter(i=>i.contentType==="ppv");
