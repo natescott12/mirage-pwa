@@ -1313,7 +1313,9 @@ function initSupabase() {
 }
 
 // ── AUTH ─────────────────────────────────────────────────────────────────────
-function doLogin() {
+function doLogin()
+  // set session flag
+  sessionStorage.setItem('mirage_admin_authed','1'); {
   const user = document.getElementById('login-user').value.trim().toLowerCase();
   const pass = document.getElementById('login-pass').value;
   const err = document.getElementById('login-error');
