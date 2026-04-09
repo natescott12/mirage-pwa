@@ -1108,7 +1108,7 @@ async function generateFlux(prompt) {
     const p=await fetch(PROXY+"/flux/result/"+id);
     const d=await p.json();
     if(d.status==="Ready") return d.result.sample;
-    if(d.status==="Error"||d.status==="Failed") throw new Error("Flux: "+d.status);
+    if(d.status==="Error"||d.status==="Failed"||d.status==="Content Moderated") throw new Error("Flux: "+d.status+(d.details?(" — "+JSON.stringify(d.details)):""));
   }
   throw new Error("Flux timed out after 2 minutes");
 }
