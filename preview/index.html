@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+<!DOCTYP
+      <button onclick="previewMode()" style="margin-top:8px;width:100%;padding:14px;background:transparent;color:rgba(26,23,20,0.4);border:none;font-family:'Afacad',sans-serif;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;">Preview Mode</button>E html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -136,6 +137,11 @@ document.addEventListener('DOMContentLoaded', function() {
   var app = document.getElementById('screen-app');
   if(app) app.style.display='block';
 });
+
+function previewMode() {
+  localStorage.setItem('mirage_user', JSON.stringify({name:'Preview',tier:'vip',email:'preview@mirage.dev'}));
+  showScreen('app');
+}
 </script>
 </head>
 <body>
