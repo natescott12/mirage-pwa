@@ -322,6 +322,10 @@
   .cluster-btn:hover { border-color: var(--border-strong); color: var(--text); }
   .cluster-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
   .icon-cluster-badge { display: inline-block; padding: 2px 7px; border-radius: 1px; font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 5px; border: 1px solid var(--border-md); color: var(--muted); }
+
+  /* Hide header when embedded in admin */
+  body.in-admin #header { display: none !important; }
+  body.in-admin #app { height: 100vh !important; }
 </style>
 </head>
 <body>
@@ -1601,26 +1605,25 @@ async function handleGenerate() {
 
     // Convert Flux's temporary signed URL to base64 so it persists in localStorage
     notify(`✦ Saving ${selectedIcon.name} to library...`);
-    let persistentUrl = imageUrl;
-    try {
-      const imgRes = await fetch(PROXY + "/fetch-image?url=" + encodeURIComponent(imageUrl));
-      if (imgRes.ok) {
-        const blob = await imgRes.blob();
-        persistentUrl = await new Promise(resolve => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.readAsDataURL(blob);
-        });
-      }
-    } catch(e) {
-      console.warn("Could not convert to base64, using temp URL:", e.message);
-    }
-
+    // Show immediately — base64 in background
     const idx=generatedContent.findIndex(c=>c.id===id);
-    if(idx>-1){generatedContent[idx].imageUrl=persistentUrl;generatedContent[idx].status="pending";generatedContent[idx].savedToLib=true;}
-    addToLib(selectedIcon.id,{id,imageUrl:persistentUrl,caption,contentType,suggestedPrice,tags,dropTime,series:item.series,fluxPrompt,favourite:false,createdAt:now});
+    if(idx>-1){generatedContent[idx].imageUrl=imageUrl;generatedContent[idx].status="pending";generatedContent[idx].savedToLib=true;}
+    addToLib(selectedIcon.id,{id,imageUrl,caption,contentType,suggestedPrice,tags,dropTime,series:item.series,fluxPrompt,favourite:false,createdAt:now});
     updateLibCount();renderOutput();renderIconList();renderIconCard();
-    notify(`✦ ${selectedIcon.name} · Saved to library`);
+    notify(`✦ ${selectedIcon.name} · Generated`);
+    setTimeout(async()=>{
+      try{
+        const r=await fetch(PROXY+"/fetch-image?url="+encodeURIComponent(imageUrl),{signal:AbortSignal.timeout(25000)});
+        if(r.ok){
+          const blob=await r.blob();
+          const b64=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(blob);});
+          const lib=load(LIB_KEY);
+          if(lib[selectedIcon.id]){const img=lib[selectedIcon.id].find(i=>i.id===id);if(img){img.imageUrl=b64;save(LIB_KEY,lib);}}
+          const ci=generatedContent.find(c=>c.id===id);if(ci){ci.imageUrl=b64;renderOutput();}
+          notify(`✦ ${selectedIcon.name} · Saved to library`);
+        }
+      }catch(e){/* temp URL stays */}
+    },100);
   } catch(err) {
     notify(`Failed — ${err.message}`,"error");
     generatedContent=generatedContent.filter(c=>c.id!==id);
@@ -1991,6 +1994,12 @@ function init() {
   if(cb) cb.classList.add("collapsed");
   checkProxy();
   setInterval(checkProxy,15000);
+}
+
+
+// Detect admin iframe context
+if (window.self !== window.top) {
+  document.body.classList.add('in-admin');
 }
 
 init();
