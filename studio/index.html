@@ -1378,7 +1378,7 @@ function renderOutput() {
 
 function renderLibrary() {
   const lib=load(LIB_KEY);
-  const iconsWithImgs=ICONS_DATA.filter(i=>(lib[String(i.id)]||[]).length>0);
+  const iconsWithImgs=ICONS_DATA.filter(i=>(lib[String(i.id)]||lib[i.id]||[]).length>0);
   const btns=[{id:"all",name:"All Icons",color:"#1a1714",count:getTotalCount()},...iconsWithImgs.map(i=>({id:i.id,name:i.name,color:i.color,count:(lib[String(i.id)]||[]).length}))];
   setHTML("lib-icon-btns",btns.map(b=>`
     <div class="lib-icon-btn ${libIconId===b.id?"active":""}" onclick="setLibIcon('${b.id}')">
@@ -1388,10 +1388,10 @@ function renderLibrary() {
     </div>`).join(""));
   let images=[];
   if(libIconId==="all"){
-    ICONS_DATA.forEach(icon=>(lib[icon.id]||[]).forEach(img=>images.push({...img,icon})));
+    ICONS_DATA.forEach(icon=>(lib[String(icon.id)]||[]).forEach(img=>images.push({...img,icon})));
     images.sort((a,b)=>b.id-a.id);
   } else {
-    const icon=ICONS_DATA.find(i=>i.id===libIconId);
+    const icon=ICONS_DATA.find(i=>String(i.id)===String(libIconId));
     if(icon) images=(lib[String(libIconId)]||[]).map(img=>({...img,icon}));
   }
   if(libFilter==="free") images=images.filter(i=>i.contentType==="free");
