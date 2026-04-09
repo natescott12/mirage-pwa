@@ -439,7 +439,7 @@ tbody tr:hover td { background: var(--bg); }
 <meta charset=&quot;UTF-8&quot;>
 <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
 <title>Mirage · Project Dashboard</title>
-<link href=&quot;https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400;1,500&amp;family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&amp;display=swap&quot; rel=&quot;stylesheet&quot;>
+<link href=&quot;https://fonts.googleapis.com/css2?&amp;family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&amp;display=swap&quot; rel=&quot;stylesheet&quot;>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -449,7 +449,7 @@ tbody tr:hover td { background: var(--bg); }
     --gold: #a07840; --green: #2a6640; --red: #b03025;
   }
   body { font-family: 'DM Sans', sans-serif; font-weight: 300; background: var(--bg); color: var(--dark); -webkit-font-smoothing: antialiased; min-height: 100vh; }
-  .serif { font-family: 'Playfair Display', serif; font-style: italic; }
+  .serif { font-family: 'Afacad', sans-serif; }
 
   /* Grain */
   body::after {
@@ -460,7 +460,7 @@ tbody tr:hover td { background: var(--bg); }
 
   /* Header */
   header { background: var(--dark); padding: 0 48px; display: flex; align-items: center; justify-content: space-between; height: 64px; position: sticky; top: 0; z-index: 100; }
-  .logo { font-family: 'Playfair Display', serif; font-style: italic; font-size: 26px; color: var(--bg); }
+  .logo { font-family: 'Afacad', sans-serif;  font-size: 26px; color: var(--bg); }
   .header-meta { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(248,246,242,0.3); }
   .header-status { display: flex; align-items: center; gap: 20px; }
   .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; margin-right: 5px; animation: pulse 2.5s ease infinite; }
@@ -472,7 +472,7 @@ tbody tr:hover td { background: var(--bg); }
   /* Section */
   .section { margin-bottom: 48px; }
   .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-  .section-title { font-family: 'Playfair Display', serif; font-style: italic; font-size: 22px; }
+  .section-title { font-family: 'Afacad', sans-serif;  font-size: 22px; }
   .section-count { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
 
   /* File grid */
@@ -504,7 +504,7 @@ tbody tr:hover td { background: var(--bg); }
   .file-type-badge.json { background: rgba(42,102,64,0.08); color: var(--green); }
   .file-type-badge.js { background: rgba(160,120,64,0.08); color: var(--gold); }
 
-  .file-name { font-family: 'Playfair Display', serif; font-style: italic; font-size: 16px; margin-bottom: 5px; color: var(--dark); line-height: 1.2; }
+  .file-name { font-family: 'Afacad', sans-serif;  font-size: 16px; margin-bottom: 5px; color: var(--dark); line-height: 1.2; }
   .file-desc { font-size: 11px; color: var(--dim); line-height: 1.6; margin-bottom: 10px; }
   .file-meta { font-size: 9px; color: var(--muted); letter-spacing: 0.08em; display: flex; align-items: center; justify-content: space-between; }
   .file-path { font-size: 9px; color: var(--muted); font-family: monospace; background: var(--bg3); padding: 3px 7px; border-radius: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; margin-top: 8px; }
@@ -525,7 +525,7 @@ tbody tr:hover td { background: var(--bg); }
     display: flex; align-items: flex-start; gap: 16px; padding: 14px 0;
     border-bottom: 1px solid var(--border);
   }
-  .priority-num { font-family: 'Playfair Display', serif; font-style: italic; font-size: 22px; color: var(--muted); flex-shrink: 0; width: 28px; line-height: 1; }
+  .priority-num { font-family: 'Afacad', sans-serif;  font-size: 22px; color: var(--muted); flex-shrink: 0; width: 28px; line-height: 1; }
   .priority-content { flex: 1; }
   .priority-title { font-size: 13px; font-weight: 500; color: var(--dark); margin-bottom: 3px; }
   .priority-detail { font-size: 11px; color: var(--dim); line-height: 1.6; }
@@ -534,7 +534,7 @@ tbody tr:hover td { background: var(--bg); }
   /* Stats row */
   .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 40px; }
   .stat-card { background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; padding: 18px; }
-  .stat-value { font-family: 'Playfair Display', serif; font-style: italic; font-size: 32px; color: var(--dark); margin-bottom: 4px; }
+  .stat-value { font-family: 'Afacad', sans-serif;  font-size: 32px; color: var(--dark); margin-bottom: 4px; }
   .stat-label { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
 
   /* Eyebrow */
@@ -834,9 +834,9 @@ tbody tr:hover td { background: var(--bg); }
       <div style=&quot;background:var(--bg2);border:1px solid var(--border-md);border-radius:2px;padding:20px&quot;>
         <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px&quot;>Launch Icons</div>
         <div style=&quot;font-size:12px;color:var(--dim);line-height:2&quot;>
-          <span style=&quot;font-family:'Playfair Display',serif;font-style:italic;font-size:14px&quot;>Luna</span> — Downtown Intellectual. Cool grey. Direct stare.<br>
-          <span style=&quot;font-family:'Playfair Display',serif;font-style:italic;font-size:14px&quot;>Vera</span> — Unapologetic Bold. Warm gold. Owns every room.<br>
-          <span style=&quot;font-family:'Playfair Display',serif;font-style:italic;font-size:14px&quot;>Aria</span> — Soft Sadcore. Melancholy. Never eye contact.
+          <span style=&quot;font-family:'Afacad',sans-serif;font-size:14px&quot;>Luna</span> — Downtown Intellectual. Cool grey. Direct stare.<br>
+          <span style=&quot;font-family:'Afacad',sans-serif;font-size:14px&quot;>Vera</span> — Unapologetic Bold. Warm gold. Owns every room.<br>
+          <span style=&quot;font-family:'Afacad',sans-serif;font-size:14px&quot;>Aria</span> — Soft Sadcore. Melancholy. Never eye contact.
         </div>
       </div>
 
@@ -903,7 +903,7 @@ tbody tr:hover td { background: var(--bg); }
     <div class=&quot;file-grid&quot;>
       <div class=&quot;file-card&quot;>
         <div style=&quot;display:flex;align-items:center;gap:12px;margin-bottom:10px&quot;>
-          <div style=&quot;width:36px;height:36px;border-radius:50%;background:var(--dark);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-style:italic;font-size:15px;color:var(--bg)&quot;>N</div>
+          <div style=&quot;width:36px;height:36px;border-radius:50%;background:var(--dark);display:flex;align-items:center;justify-content:center;font-family:'Afacad',sans-serif;font-size:15px;color:var(--bg)&quot;>N</div>
           <div>
             <div class=&quot;file-name&quot; style=&quot;margin-bottom:2px&quot;>Nate</div>
             <div style=&quot;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)&quot;>Executive Design Director</div>
@@ -914,7 +914,7 @@ tbody tr:hover td { background: var(--bg); }
       </div>
       <div class=&quot;file-card&quot;>
         <div style=&quot;display:flex;align-items:center;gap:12px;margin-bottom:10px&quot;>
-          <div style=&quot;width:36px;height:36px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-style:italic;font-size:15px;color:var(--bg)&quot;>A</div>
+          <div style=&quot;width:36px;height:36px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Afacad',sans-serif;font-size:15px;color:var(--bg)&quot;>A</div>
           <div>
             <div class=&quot;file-name&quot; style=&quot;margin-bottom:2px&quot;>Anna</div>
             <div style=&quot;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)&quot;>Icon Profile Builder</div>
