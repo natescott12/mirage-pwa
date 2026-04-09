@@ -375,12 +375,10 @@ tbody tr:hover td { background: var(--bg); }
           <span style="font-size:11px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:0.12em;margin-right:4px">Icon:</span>
           <select id="persona-icon-select" onchange="loadPersonaForIcon(this.value)" style="padding:6px 10px;border:1px solid var(--border);background:var(--bg);font-family:'Afacad',sans-serif;font-size:14px;color:var(--ink);outline:none;flex:1;max-width:280px">
             <option value="">— Select Icon —</option>
-            <option value="__new__">+ New Icon</option>
           </select>
           <div id="persona-progress-label" style="font-size:12px;color:var(--ink-dim);margin-left:8px"></div>
         </div>
 
-        <div id="new-icon-form" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:2px;padding:20px 24px;margin-bottom:20px"><div style="font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:16px">New Icon</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px"><div><div style="font-size:11px;color:var(--ink-dim);margin-bottom:4px">NAME</div><input id="new-icon-name" type="text" placeholder="e.g. Jade" style="width:100%;padding:8px 10px;border:1px solid var(--border);background:var(--bg);font-size:14px;color:var(--ink);outline:none;border-radius:2px"></div><div><div style="font-size:11px;color:var(--ink-dim);margin-bottom:4px">ARCHETYPE</div><input id="new-icon-archetype" type="text" placeholder="e.g. The Pacific Northwest Wanderer" style="width:100%;padding:8px 10px;border:1px solid var(--border);background:var(--bg);font-size:14px;color:var(--ink);outline:none;border-radius:2px"></div></div><div style="margin-bottom:12px"><div style="font-size:11px;color:var(--ink-dim);margin-bottom:4px">TAGLINE</div><input id="new-icon-tagline" type="text" placeholder="One sentence" style="width:100%;padding:8px 10px;border:1px solid var(--border);background:var(--bg);font-size:14px;color:var(--ink);outline:none;border-radius:2px"></div><div style="display:flex;align-items:center;gap:16px"><div><div style="font-size:11px;color:var(--ink-dim);margin-bottom:4px">COLOR</div><input id="new-icon-color" type="color" value="#8b7355" style="width:40px;height:32px;border:1px solid var(--border);cursor:pointer;border-radius:2px;padding:2px"></div><div style="margin-top:16px;display:flex;gap:8px"><button onclick="createNewIcon()" style="padding:8px 20px;background:var(--ink);color:var(--bg);border:none;font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;border-radius:2px">Create Icon</button><button onclick="cancelNewIcon()" style="padding:8px 16px;background:transparent;color:var(--ink);border:1px solid var(--border);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;border-radius:2px">Cancel</button></div></div></div>
         <div class="editor-main" id="persona-editor">
           <div class="empty-state">
             <div class="empty-state-icon">◎</div>
@@ -444,7 +442,7 @@ tbody tr:hover td { background: var(--bg); }
 <meta charset=&quot;UTF-8&quot;>
 <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
 <title>Mirage · Project Dashboard</title>
-<link href=&quot;https://fonts.googleapis.com/css2?&amp;family=Afacad:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;display=swap&quot; rel=&quot;stylesheet&quot;>
+<link href=&quot;https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400;1,500&amp;family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&amp;display=swap&quot; rel=&quot;stylesheet&quot;>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -454,7 +452,7 @@ tbody tr:hover td { background: var(--bg); }
     --gold: #a07840; --green: #2a6640; --red: #b03025;
   }
   body { font-family: 'DM Sans', sans-serif; font-weight: 300; background: var(--bg); color: var(--dark); -webkit-font-smoothing: antialiased; min-height: 100vh; }
-  .serif { font-family: 'Afacad', sans-serif; }
+  .serif { font-family: 'Playfair Display', serif; font-style: italic; }
 
   /* Grain */
   body::after {
@@ -464,8 +462,8 @@ tbody tr:hover td { background: var(--bg); }
   }
 
   /* Header */
-  header { background: var(--bg); border-bottom: 1px solid var(--border-md); padding: 0 48px; display: flex; align-items: center; justify-content: space-between; height: 64px; position: sticky; top: 0; z-index: 100; }
-  .logo { font-family: 'Afacad', sans-serif;  font-size: 26px; color: var(--dark); }
+  header { background: var(--dark); padding: 0 48px; display: flex; align-items: center; justify-content: space-between; height: 64px; position: sticky; top: 0; z-index: 100; }
+  .logo { font-family: 'Playfair Display', serif; font-style: italic; font-size: 26px; color: var(--bg); }
   .header-meta { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(248,246,242,0.3); }
   .header-status { display: flex; align-items: center; gap: 20px; }
   .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; margin-right: 5px; animation: pulse 2.5s ease infinite; }
@@ -477,7 +475,7 @@ tbody tr:hover td { background: var(--bg); }
   /* Section */
   .section { margin-bottom: 48px; }
   .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-  .section-title { font-family: 'Afacad', sans-serif;  font-size: 22px; }
+  .section-title { font-family: 'Playfair Display', serif; font-style: italic; font-size: 22px; }
   .section-count { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
 
   /* File grid */
@@ -509,7 +507,7 @@ tbody tr:hover td { background: var(--bg); }
   .file-type-badge.json { background: rgba(42,102,64,0.08); color: var(--green); }
   .file-type-badge.js { background: rgba(160,120,64,0.08); color: var(--gold); }
 
-  .file-name { font-family: 'Afacad', sans-serif;  font-size: 16px; margin-bottom: 5px; color: var(--dark); line-height: 1.2; }
+  .file-name { font-family: 'Playfair Display', serif; font-style: italic; font-size: 16px; margin-bottom: 5px; color: var(--dark); line-height: 1.2; }
   .file-desc { font-size: 11px; color: var(--dim); line-height: 1.6; margin-bottom: 10px; }
   .file-meta { font-size: 9px; color: var(--muted); letter-spacing: 0.08em; display: flex; align-items: center; justify-content: space-between; }
   .file-path { font-size: 9px; color: var(--muted); font-family: monospace; background: var(--bg3); padding: 3px 7px; border-radius: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; margin-top: 8px; }
@@ -530,7 +528,7 @@ tbody tr:hover td { background: var(--bg); }
     display: flex; align-items: flex-start; gap: 16px; padding: 14px 0;
     border-bottom: 1px solid var(--border);
   }
-  .priority-num { font-family: 'Afacad', sans-serif;  font-size: 22px; color: var(--muted); flex-shrink: 0; width: 28px; line-height: 1; }
+  .priority-num { font-family: 'Playfair Display', serif; font-style: italic; font-size: 22px; color: var(--muted); flex-shrink: 0; width: 28px; line-height: 1; }
   .priority-content { flex: 1; }
   .priority-title { font-size: 13px; font-weight: 500; color: var(--dark); margin-bottom: 3px; }
   .priority-detail { font-size: 11px; color: var(--dim); line-height: 1.6; }
@@ -539,7 +537,7 @@ tbody tr:hover td { background: var(--bg); }
   /* Stats row */
   .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 40px; }
   .stat-card { background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; padding: 18px; }
-  .stat-value { font-family: 'Afacad', sans-serif;  font-size: 32px; color: var(--dark); margin-bottom: 4px; }
+  .stat-value { font-family: 'Playfair Display', serif; font-style: italic; font-size: 32px; color: var(--dark); margin-bottom: 4px; }
   .stat-label { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
 
   /* Eyebrow */
@@ -646,31 +644,31 @@ tbody tr:hover td { background: var(--bg); }
         <div class=&quot;priority-num&quot;>1</div>
         <div class=&quot;priority-content&quot;>
           <div class=&quot;priority-title&quot;>Deploy PWA to Vercel ✓</div>
-          <div class=&quot;priority-detail&quot;>Live at mirageicons.com. DNS propagated. Admin, Studio, Design System all live.</div>
+          <div class=&quot;priority-detail&quot;>Live at mirage-pwa.vercel.app. mirageicons.com DNS propagating — will be live within 30 min.</div>
         </div>
         <div class=&quot;priority-status&quot;><span class=&quot;status-badge done&quot;>Done</span></div>
       </div>
       <div class=&quot;priority-item&quot;>
         <div class=&quot;priority-num&quot;>2</div>
         <div class=&quot;priority-content&quot;>
-          <div class=&quot;priority-title&quot;>Generate content — Luna, Vera, Aria</div>
-          <div class=&quot;priority-detail&quot;>15 free + 10 PPV per icon = 75 images total via Icon Studio. Luna first. This makes the platform feel real.</div>
+          <div class=&quot;priority-title&quot;>Generate icon content library</div>
+          <div class=&quot;priority-detail&quot;>Anna building personas (admin panel live). You generate images via Icon Studio — 15 free + 10 PPV per icon. Luna first.</div>
         </div>
         <div class=&quot;priority-status&quot;><span class=&quot;status-badge wip&quot;>In Progress</span></div>
       </div>
       <div class=&quot;priority-item&quot;>
         <div class=&quot;priority-num&quot;>3</div>
         <div class=&quot;priority-content&quot;>
-          <div class=&quot;priority-title&quot;>PWA polish</div>
-          <div class=&quot;priority-detail&quot;>Review every screen — age gate, landing, feed, icon profiles, messages. On-brand before launch.</div>
+          <div class=&quot;priority-title&quot;>Figma design — marketing site</div>
+          <div class=&quot;priority-detail&quot;>Wireframes ready. Drop real photos on top. Big italic serif names. White bg. American Apparel editorial.</div>
         </div>
         <div class=&quot;priority-status&quot;><span class=&quot;status-badge todo&quot;>To Do</span></div>
       </div>
       <div class=&quot;priority-item&quot;>
         <div class=&quot;priority-num&quot;>4</div>
         <div class=&quot;priority-content&quot;>
-          <div class=&quot;priority-title&quot;>Supabase backend</div>
-          <div class=&quot;priority-detail&quot;>Schema: subscribers, icons, content, personas, requests, messages. Swap mock adapter (2 lines). Wire signup, feed, PPV, messages.</div>
+          <div class=&quot;priority-title&quot;>Wire shop into PWA</div>
+          <div class=&quot;priority-detail&quot;>Drop currency, wardrobe tab, purchase flow. Supabase is live — can start now.</div>
         </div>
         <div class=&quot;priority-status&quot;><span class=&quot;status-badge todo&quot;>To Do</span></div>
       </div>
@@ -678,7 +676,7 @@ tbody tr:hover td { background: var(--bg); }
         <div class=&quot;priority-num&quot;>5</div>
         <div class=&quot;priority-content&quot;>
           <div class=&quot;priority-title&quot;>Segpay integration</div>
-          <div class=&quot;priority-detail&quot;>Wire payment flow into signup. 12% processing. After Supabase is wired.</div>
+          <div class=&quot;priority-detail&quot;>Wire payment flow into signup. 12% processing — biggest cost. Needs PWA deployed first.</div>
         </div>
         <div class=&quot;priority-status&quot;><span class=&quot;status-badge todo&quot;>To Do</span></div>
       </div>
@@ -686,7 +684,7 @@ tbody tr:hover td { background: var(--bg); }
         <div class=&quot;priority-num&quot;>6</div>
         <div class=&quot;priority-content&quot;>
           <div class=&quot;priority-title&quot;>Twilio SMS setup</div>
-          <div class=&quot;priority-detail&quot;>3 numbers at $1.15/mo each. Wire after 1K subscribers.</div>
+          <div class=&quot;priority-detail&quot;>3 numbers at $1.15/mo each. Persona tab already built in Studio. Wire after 1K subscribers.</div>
         </div>
         <div class=&quot;priority-status&quot;><span class=&quot;status-badge todo&quot;>To Do</span></div>
       </div>
@@ -839,9 +837,9 @@ tbody tr:hover td { background: var(--bg); }
       <div style=&quot;background:var(--bg2);border:1px solid var(--border-md);border-radius:2px;padding:20px&quot;>
         <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px&quot;>Launch Icons</div>
         <div style=&quot;font-size:12px;color:var(--dim);line-height:2&quot;>
-          <span style=&quot;font-family:'Afacad',sans-serif;font-size:14px&quot;>Luna</span> — Downtown Intellectual. Cool grey. Direct stare.<br>
-          <span style=&quot;font-family:'Afacad',sans-serif;font-size:14px&quot;>Vera</span> — Unapologetic Bold. Warm gold. Owns every room.<br>
-          <span style=&quot;font-family:'Afacad',sans-serif;font-size:14px&quot;>Aria</span> — Soft Sadcore. Melancholy. Never eye contact.
+          <span style=&quot;font-family:'Playfair Display',serif;font-style:italic;font-size:14px&quot;>Luna</span> — Downtown Intellectual. Cool grey. Direct stare.<br>
+          <span style=&quot;font-family:'Playfair Display',serif;font-style:italic;font-size:14px&quot;>Vera</span> — Unapologetic Bold. Warm gold. Owns every room.<br>
+          <span style=&quot;font-family:'Playfair Display',serif;font-style:italic;font-size:14px&quot;>Aria</span> — Soft Sadcore. Melancholy. Never eye contact.
         </div>
       </div>
 
@@ -908,7 +906,7 @@ tbody tr:hover td { background: var(--bg); }
     <div class=&quot;file-grid&quot;>
       <div class=&quot;file-card&quot;>
         <div style=&quot;display:flex;align-items:center;gap:12px;margin-bottom:10px&quot;>
-          <div style=&quot;width:36px;height:36px;border-radius:50%;background:var(--dark);display:flex;align-items:center;justify-content:center;font-family:'Afacad',sans-serif;font-size:15px;color:var(--bg)&quot;>N</div>
+          <div style=&quot;width:36px;height:36px;border-radius:50%;background:var(--dark);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-style:italic;font-size:15px;color:var(--bg)&quot;>N</div>
           <div>
             <div class=&quot;file-name&quot; style=&quot;margin-bottom:2px&quot;>Nate</div>
             <div style=&quot;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)&quot;>Executive Design Director</div>
@@ -919,7 +917,7 @@ tbody tr:hover td { background: var(--bg); }
       </div>
       <div class=&quot;file-card&quot;>
         <div style=&quot;display:flex;align-items:center;gap:12px;margin-bottom:10px&quot;>
-          <div style=&quot;width:36px;height:36px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Afacad',sans-serif;font-size:15px;color:var(--bg)&quot;>A</div>
+          <div style=&quot;width:36px;height:36px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-style:italic;font-size:15px;color:var(--bg)&quot;>A</div>
           <div>
             <div class=&quot;file-name&quot; style=&quot;margin-bottom:2px&quot;>Anna</div>
             <div style=&quot;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)&quot;>Icon Profile Builder</div>
@@ -1350,13 +1348,12 @@ function doLogout() {
 function showPane(id) {
   document.querySelectorAll('.pane').forEach(p => { 
     p.classList.remove('active');
-    if (p.id === 'pane-studio' || p.id === 'pane-projdash' || p.id === 'pane-design') p.style.display = 'none';
+    if (p.id === 'pane-studio' || p.id === 'pane-projdash') p.style.display = 'none';
   });
   document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-  var activePane = document.getElementById('pane-' + id);
-  if (activePane) { activePane.classList.add('active'); activePane.style.display = 'block'; }
+  document.getElementById('pane-' + id).classList.add('active');
 
-  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', studio:'Icon Studio', projdash:'Project Dashboard', design:'Design System' };
+  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', studio:'Icon Studio', projdash:'Project Dashboard' };
   document.getElementById('topbar-section').textContent = labels[id] || id;
 
   // highlight sidebar
@@ -1371,8 +1368,6 @@ function showPane(id) {
   if (id === 'studio') {
     const studioPane = document.getElementById('pane-studio');
     if (studioPane) studioPane.style.display = 'block';
-  } else if (id === 'design') {
-    document.getElementById('pane-design').style.display = 'block';
     // Force iframe to fill pane and inject in-admin class
     const sf = document.getElementById('studio-frame');
     if (sf) {
@@ -1551,9 +1546,8 @@ async function loadDashboard() {
 // ── PERSONA BUILDER ───────────────────────────────────────────────────────────
 function populateIconSelect() {
   const sel = document.getElementById('persona-icon-select');
-    var opts = '<option value="">— Select Icon —</option><option value="__new__">+ New Icon</option>';
-  opts += allIcons.map(i => '<option value="' + i.id + '">' + i.name + ' - ' + (i.archetype || 'No archetype') + '</option>').join('');
-  sel.innerHTML = opts;
+  sel.innerHTML = '<option value="">— Select Icon —</option>' +
+    allIcons.map(i => `<option value="${i.id}">${i.name} · ${i.archetype || 'No archetype'}</option>`).join('');
 }
 
 function openPersona(iconId) {
@@ -1563,9 +1557,6 @@ function openPersona(iconId) {
 }
 
 function loadPersonaForIcon(iconId) {
-  if(iconId==='__new__'){document.getElementById('new-icon-form').style.display='block';document.getElementById('persona-editor').style.display='none';return;}
-  document.getElementById('new-icon-form').style.display='none';
-  document.getElementById('persona-editor').style.display='block';
   currentIconId = iconId;
   const icon = allIcons.find(i => i.id === iconId);
   if (!icon) {
@@ -2131,81 +2122,5 @@ window.addEventListener('load', () => {
   document.getElementById('login-user').focus();
 });
 </script>
-    <div class="pane" id="pane-design" style="overflow-y:auto;height:calc(100vh - 48px);display:none">
-      <div style="max-width:760px;padding:32px 40px">
-        <div class="pane-title">Design System</div>
-        <div class="pane-subtitle">Visual language reference. Edit DESIGN.md in the repo to update.</div>
-        <div style="margin-top:16px"><a href="https://github.com/natescott12/mirage-pwa/edit/main/DESIGN.md" target="_blank" style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);text-decoration:none">Edit on GitHub &rarr;</a></div>
-        <pre style="margin-top:24px;font-family:'Afacad',sans-serif;font-size:13px;line-height:1.75;white-space:pre-wrap;color:var(--ink);border-top:1px solid var(--border);padding-top:24px"># Mirage — Design System
-
-## Typography
-- **Font:** Afacad (Google Fonts) — single family, no Playfair, no italics
-- **Page heading:** 600, 22px
-- **Page subtitle:** 400, 12px, var(--ink-dim)
-- **Section label:** 500, 10–11px, UPPERCASE, 0.12em tracking, var(--ink-dim)
-- **Body / UI:** 400, 13–14px
-- **Stat value:** 400, 32px
-- **Muted / meta:** 400, 10–11px, var(--ink-dim)
-
-## Colors
-## Spacing
-- Page padding: 32px top, 40px sides
-- Section gap: 28–32px
-- Card padding: 20–24px
-- Border radius: 2px
-- Border: 1px solid var(--border)
-
-## Components
-
-### Page Header
-- Title: Afacad 600, 22px, var(--ink) — class `pane-title`
-- Subtitle: Afacad 400, 12px, var(--ink-dim) — class `pane-subtitle`
-- Actions: right-aligned buttons
-
-### Stat Cards (grid of 4)
-- Background: var(--bg2), border: 1px solid var(--border)
-- Value: 32px Afacad 400
-- Label: 10px UPPERCASE 0.1em tracking var(--ink-dim)
-
-### Section Label
-- 10–11px, UPPERCASE, 0.12em tracking, var(--ink-dim), weight 500
-
-### Buttons
-- Primary: bg var(--ink), color var(--bg), 11px 500 UPPERCASE, 8px 16px padding, 2px radius
-- Secondary: transparent bg, border var(--border), same typography
-
-### Inputs
-- bg var(--bg3), border var(--border), Afacad 14px, 2px radius
-
-### Status Badges
-- DONE: green · IN PROGRESS: orange/accent · TO DO: bg3/ink-dim
-- 9px UPPERCASE 0.12em tracking, no radius
-
-### Infra Status Row
-- Background: var(--bg2), border: 1px solid var(--border), radius 2px
-- Label: 9px UPPERCASE var(--ink-dim)
-- Value: 13px var(--ink), accent color for live/active links
-
-### Priority Rows
-- Number: 22px var(--ink-dim)
-- Title: 500 14px var(--ink)
-- Description: 400 12px var(--ink-dim)
-- Divider: 1px var(--border)
-
-## Layout Shell
-- Topbar: 48px, var(--ink) bg
-- Sidebar: 220px fixed
-- Content: flex:1, overflow-y:auto, padding 32px 40px
-
-## Do Nots
-- No Playfair Display
-- No italic text
-- No border-radius &gt; 2px
-- No drop shadows or gradients
-- No dark panel backgrounds on content panes
-- No browser-side btoa() for GitHub pushes
-</pre>
-      </div>
-    </div>
 </body>
 </html>
