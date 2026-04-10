@@ -221,6 +221,22 @@ tbody tr:hover td { background: var(--bg); }
   padding: 8px 12px; background: var(--surface); border: 1px solid var(--border);
   font-family: 'Afacad', sans-serif; font-size: 14px; color: var(--ink); outline: none;
 }
+
+/* Force dark on all content */
+.pane, .pane * { color: inherit; }
+.pane { background: var(--bg); color: var(--ink); }
+.stat-card { background: var(--surface) !important; border-color: var(--border) !important; }
+.stat-value { color: var(--ink) !important; font-family: 'Afacad', sans-serif !important; }
+.stat-label { color: var(--ink-dim) !important; }
+.priority-item { border-color: var(--border) !important; background: transparent !important; }
+.priority-title { color: var(--ink) !important; }
+.priority-detail { color: var(--ink-mid) !important; }
+.priority-num { color: var(--ink-dim) !important; }
+.section-title { color: var(--ink) !important; font-family: 'Afacad', sans-serif !important; }
+.section-count { color: var(--ink-dim) !important; }
+.status-bar { background: transparent !important; border-color: var(--border) !important; }
+.status-item { color: var(--ink-mid) !important; background: transparent !important; }
+
 </style>
 </head>
 <body>
