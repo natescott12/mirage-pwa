@@ -1,0 +1,2169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mirage · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Afacad:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f0e0d;
+  --surface: #1a1814;
+  --border: rgba(255,255,255,0.08);
+  --border-strong: rgba(255,255,255,0.16);
+  --ink: #ffffff;
+  --ink-mid: rgba(255,255,255,0.55);
+  --ink-dim: rgba(255,255,255,0.35);
+  --accent: #c9622f;
+  --sidebar: 240px;
+}
+
+html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+/* ── LOGIN ── */
+#login-screen {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; background: var(--bg);
+}
+.login-box {
+  width: 360px; padding: 48px 40px;
+  background: var(--surface); border: 1px solid var(--border);
+}
+.login-wordmark { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 32px; }
+.login-title { font-size: 28px; font-weight: 500; letter-spacing: -0.84px; margin-bottom: 6px; }
+.login-sub { font-size: 13px; color: var(--ink-mid); margin-bottom: 32px; }
+.login-input {
+  width: 100%; padding: 12px 14px; background: var(--bg);
+  border: 1px solid var(--border); font-family: 'Afacad', sans-serif;
+  font-size: 15px; color: var(--ink); outline: none; margin-bottom: 12px;
+  transition: border-color 0.15s;
+}
+.login-input:focus { border-color: var(--ink); }
+.login-btn {
+  width: 100%; padding: 13px; background: var(--ink); color: var(--bg);
+  border: none; font-family: 'Afacad', sans-serif; font-size: 12px;
+  letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer;
+  transition: opacity 0.15s;
+}
+.login-btn:hover { opacity: 0.85; }
+.login-error { font-size: 12px; color: #b03025; margin-top: 10px; min-height: 16px; }
+
+/* ── LAYOUT ── */
+#app { display: none; height: 100vh; flex-direction: column; }
+#app.visible { display: flex; }
+
+.topbar {
+  height: 48px; background: var(--surface); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 20px;
+  justify-content: space-between; flex-shrink: 0; z-index: 10;
+}
+.topbar-left { display: flex; align-items: center; gap: 16px; }
+.topbar-wordmark { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-dim); }
+.topbar-sep { width: 1px; height: 14px; background: var(--border); }
+.topbar-section { font-size: 13px; color: var(--ink); font-weight: 500; }
+.topbar-right { display: flex; align-items: center; gap: 16px; }
+.topbar-user { font-size: 12px; color: var(--ink-dim); }
+.topbar-logout { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-dim); cursor: pointer; border: none; background: none; font-family: 'Afacad', sans-serif; }
+.topbar-logout:hover { color: var(--ink); }
+
+.main { display: flex; flex: 1; overflow: hidden; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar); background: var(--surface);
+  border-right: 1px solid var(--border); flex-shrink: 0;
+  display: flex; flex-direction: column; overflow-y: auto;
+}
+.sidebar-section { padding: 20px 16px 8px; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-dim); }
+.sidebar-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 16px; font-size: 14px; color: var(--ink-mid);
+  cursor: pointer; transition: all 0.12s; border-left: 2px solid transparent;
+}
+.sidebar-item:hover { color: var(--ink); background: var(--bg); }
+.sidebar-item.active { color: var(--ink); border-left-color: var(--ink); background: var(--bg); font-weight: 500; }
+.sidebar-item .icon { font-size: 15px; width: 18px; text-align: center; }
+.sidebar-badge { margin-left: auto; font-size: 10px; background: var(--ink); color: var(--bg); padding: 1px 6px; border-radius: 20px; }
+
+/* ── CONTENT ── */
+.content { flex: 1; overflow-y: auto; background: var(--bg); position: relative; }
+.pane { display: none; padding: 32px; min-width: 0; width: 100%; }
+.pane.active { display: block; width: 100%; }
+.pane.active { display: block; }
+
+/* ── PAGE HEADER ── */
+.page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+.page-title { font-size: 24px; font-weight: 500; letter-spacing: -0.72px; }
+.page-sub { font-size: 13px; color: var(--ink-dim); margin-top: 3px; }
+
+/* ── BUTTONS ── */
+.btn {
+  padding: 9px 18px; background: var(--ink); color: var(--bg);
+  border: none; font-family: 'Afacad', sans-serif; font-size: 11px;
+  letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer;
+  transition: opacity 0.15s; display: inline-flex; align-items: center; gap: 7px;
+}
+.btn:hover { opacity: 0.8; }
+.btn-sm { padding: 6px 12px; font-size: 10px; }
+.btn-outline { background: transparent; color: var(--ink); border: 1px solid var(--border-strong); }
+.btn-ghost { background: transparent; color: var(--ink-mid); border: 1px solid var(--border); }
+.btn-danger { background: #b03025; }
+.btn-success { background: #2a7a4a; }
+
+/* ── ICON GRID ── */
+.icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+.icon-card {
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 16px; cursor: pointer; transition: all 0.15s; position: relative;
+}
+.icon-card:hover { border-color: var(--border-strong); }
+.icon-card.selected { border-color: var(--ink); }
+.icon-card-name { font-size: 17px; font-weight: 500; letter-spacing: -0.5px; margin-bottom: 2px; }
+.icon-card-archetype { font-size: 11px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
+.icon-card-status { display: flex; align-items: center; gap: 6px; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: #ccc; }
+.status-dot.complete { background: #2a7a4a; }
+.status-dot.partial { background: #d4820a; }
+.status-dot.empty { background: #ccc; }
+.status-label { font-size: 11px; color: var(--ink-dim); }
+.icon-card-progress { margin-top: 10px; height: 2px; background: #ece9e4; border-radius: 1px; overflow: hidden; }
+.icon-card-progress-fill { height: 100%; background: var(--ink); border-radius: 1px; transition: width 0.3s; }
+
+/* ── PERSONA EDITOR ── */
+.editor-layout { display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: start; }
+.editor-sidebar { background: var(--surface); border: 1px solid var(--border); padding: 20px; position: sticky; top: 0; }
+.editor-main { display: flex; flex-direction: column; gap: 16px; }
+
+.field-group { background: var(--surface); border: 1px solid var(--border); padding: 20px; }
+.field-group-title { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.field-row.single { grid-template-columns: 1fr; }
+.field-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); }
+.field input, .field select, .field textarea {
+  padding: 9px 12px; background: var(--bg); border: 1px solid var(--border);
+  font-family: 'Afacad', sans-serif; font-size: 14px; color: var(--ink);
+  outline: none; transition: border-color 0.15s; width: 100%;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--ink); }
+.field textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+/* tag-select chips */
+.tag-select { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.tag-chip {
+  padding: 4px 10px; border: 1px solid var(--border); font-size: 12px;
+  color: var(--ink-mid); cursor: pointer; transition: all 0.12s; border-radius: 20px;
+  background: transparent; font-family: 'Afacad', sans-serif;
+}
+.tag-chip:hover { border-color: var(--ink); color: var(--ink); }
+.tag-chip.selected { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+/* save bar */
+.save-bar {
+  position: sticky; bottom: 0; background: var(--surface);
+  border-top: 1px solid var(--border); padding: 14px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  z-index: 10;
+}
+.save-status { font-size: 12px; color: var(--ink-dim); }
+.save-status.saved { color: #2a7a4a; }
+.save-status.saving { color: var(--ink-mid); }
+.save-status.error { color: #b03025; }
+
+/* ── STATS ── */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; }
+.stat-value { font-size: 32px; font-weight: 500; letter-spacing: -1px; line-height: 1; margin-bottom: 4px; }
+.stat-label { font-size: 11px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.12em; }
+
+/* ── TABLE ── */
+.table-wrap { background: var(--surface); border: 1px solid var(--border); overflow: hidden; }
+table { width: 100%; border-collapse: collapse; }
+thead th { padding: 10px 16px; text-align: left; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-dim); border-bottom: 1px solid var(--border); font-weight: 500; }
+tbody td { padding: 12px 16px; font-size: 14px; border-bottom: 1px solid var(--border); }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--bg); }
+
+/* ── MISC ── */
+.empty-state { padding: 60px; text-align: center; color: var(--ink-dim); }
+.empty-state-icon { font-size: 32px; margin-bottom: 12px; }
+.empty-state-text { font-size: 15px; }
+
+.toast {
+  position: fixed; bottom: 24px; right: 24px; background: var(--ink); color: var(--bg);
+  padding: 12px 20px; font-size: 13px; z-index: 9999;
+  transform: translateY(80px); opacity: 0; transition: all 0.25s ease;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+.spinner {
+  width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff; border-radius: 50%;
+  animation: spin 0.7s linear infinite; display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.filter-bar { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+.filter-bar input {
+  padding: 8px 12px; background: var(--surface); border: 1px solid var(--border);
+  font-family: 'Afacad', sans-serif; font-size: 14px; color: var(--ink);
+  outline: none; flex: 1; max-width: 280px;
+}
+.filter-bar input:focus { border-color: var(--ink); }
+.filter-select {
+  padding: 8px 12px; background: var(--surface); border: 1px solid var(--border);
+  font-family: 'Afacad', sans-serif; font-size: 14px; color: var(--ink); outline: none;
+}
+
+/* Force dark on all content */
+.pane, .pane * { color: inherit; }
+.pane { background: var(--bg); color: var(--ink); }
+.pane .btn { background: var(--ink) !important; color: var(--bg) !important; }
+.pane .btn-outline { background: transparent !important; color: var(--ink) !important; }
+.pane .btn-ghost { background: transparent !important; color: var(--ink-mid) !important; }
+.stat-card { background: var(--surface) !important; border-color: var(--border) !important; }
+.stat-value { color: var(--ink) !important; font-family: 'Afacad', sans-serif !important; }
+.stat-label { color: var(--ink-dim) !important; }
+.priority-item { border-color: var(--border) !important; background: transparent !important; }
+.priority-title { color: var(--ink) !important; }
+.priority-detail { color: var(--ink-mid) !important; }
+.priority-num { color: var(--ink-dim) !important; }
+.section-title { color: var(--ink) !important; font-family: 'Afacad', sans-serif !important; }
+.section-count { color: var(--ink-dim) !important; }
+.status-bar { background: transparent !important; border-color: var(--border) !important; }
+.status-item { color: var(--ink-mid) !important; background: transparent !important; }
+
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-wordmark">Mirage · Admin</div>
+    <div class="login-title">Welcome back.</div>
+    <div class="login-sub">mirageicons.com internal tools</div>
+    <input class="login-input" type="text" id="login-user" placeholder="Username" autocomplete="username">
+    <input class="login-input" type="password" id="login-pass" placeholder="Password" autocomplete="current-password">
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-wordmark">Mirage</div>
+      <div class="topbar-sep"></div>
+      <div class="topbar-section" id="topbar-section">Dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-user" id="topbar-user"></div>
+      <button class="topbar-logout" onclick="doLogout()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-section">Main</div>
+      <div class="sidebar-item active" onclick="showPane('dashboard')">
+        <span class="icon">◈</span> Dashboard
+      </div>
+      <div class="sidebar-item" onclick="showPane('icons')">
+        <span class="icon">◉</span> Icons
+        <span class="sidebar-badge" id="badge-icons">100</span>
+      </div>
+      <div class="sidebar-section">Content</div>
+      <div class="sidebar-item" onclick="showPane('personas')">
+        <span class="icon">◎</span> Persona Builder
+      </div>
+      <div class="sidebar-item" onclick="showPane('content')">
+        <span class="icon">▣</span> Content Library
+      </div>
+      <div class="sidebar-item" onclick="showPane('studio')">
+        <span class="icon">⚡</span> Icon Studio
+      </div>
+      <div class="sidebar-section">Platform</div>
+      <div class="sidebar-item" onclick="showPane('subscribers')">
+        <span class="icon">○</span> Subscribers
+      </div>
+      <div class="sidebar-item" onclick="showPane('requests')">
+        <span class="icon">◇</span> Requests
+      </div>
+      <div class="sidebar-section">Tools</div>
+      <div class="sidebar-item" onclick="showPane('checklist')">
+        <span class="icon">✓</span> Task Checklist
+      </div>
+      <div class="sidebar-item" onclick="showPane('pnl')">
+        <span class="icon">$</span> P&amp;L Dashboard
+      </div>
+      <div class="sidebar-item" onclick="showPane('projdash')">
+        <span class="icon">◈</span> Project Dashboard
+      </div>
+      <div class="sidebar-item" onclick="showPane('design')">
+        <span class="icon">◈</span> Design System
+      </div>
+    </div>
+
+    <!-- CONTENT PANES -->
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="pane active" id="pane-dashboard">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Dashboard</div>
+            <div class="page-sub">Mirage Admin · mirageicons.com</div>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="stat-icons">—</div>
+            <div class="stat-label">Total Icons</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-personas-done">—</div>
+            <div class="stat-label">Personas Complete</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-content">—</div>
+            <div class="stat-label">Content Items</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-subscribers">—</div>
+            <div class="stat-label">Subscribers</div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Icon</th><th>Archetype</th><th>Persona</th><th>Content</th><th>Status</th></tr></thead>
+            <tbody id="dashboard-table-body">
+              <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--ink-dim)">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ICONS LIST -->
+      <div class="pane" id="pane-icons">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Icons</div>
+            <div class="page-sub">All 100 character archetypes</div>
+          </div>
+          <button class="btn" onclick="showPane('personas')">+ Build Persona</button>
+        </div>
+        <div class="filter-bar">
+          <input type="text" placeholder="Search icons…" id="icon-search" oninput="filterIcons()">
+          <select class="filter-select" id="icon-filter-status" onchange="filterIcons()">
+            <option value="">All Status</option>
+            <option value="complete">Complete</option>
+            <option value="partial">In Progress</option>
+            <option value="empty">Empty</option>
+          </select>
+        </div>
+        <div class="icon-grid" id="icon-grid">
+          <div class="empty-state"><div class="empty-state-text">Loading icons…</div></div>
+        </div>
+      </div>
+
+      <!-- PERSONA BUILDER -->
+      <div class="pane" id="pane-personas" style="overflow-y:auto;height:calc(100vh - 48px)">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Persona Builder</div>
+            <div class="page-sub" id="persona-sub">Select an icon to edit</div>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-outline" onclick="showPane('icons')">← All Icons</button>
+            <button class="btn" id="save-btn" onclick="savePersona()">Save</button>
+          </div>
+        </div>
+
+        <!-- Icon picker strip -->
+        <div style="background:var(--surface);border:1px solid var(--border);padding:12px 16px;margin-bottom:20px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <span style="font-size:11px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:0.12em;margin-right:4px">Icon:</span>
+          <select id="persona-icon-select" onchange="loadPersonaForIcon(this.value)" style="padding:6px 10px;border:1px solid var(--border);background:var(--bg);font-family:'Afacad',sans-serif;font-size:14px;color:var(--ink);outline:none;flex:1;max-width:280px">
+            <option value="">— Select Icon —</option>
+          </select>
+          <div id="persona-progress-label" style="font-size:12px;color:var(--ink-dim);margin-left:8px"></div>
+        </div>
+
+        <div class="editor-main" id="persona-editor">
+          <div class="empty-state">
+            <div class="empty-state-icon">◎</div>
+            <div class="empty-state-text">Select an icon above to begin building her persona.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTENT LIBRARY -->
+      <div class="pane" id="pane-content">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Content Library</div>
+            <div class="page-sub">All generated images and posts</div>
+          </div>
+        </div>
+        <div class="empty-state">
+          <div class="empty-state-icon">▣</div>
+          <div class="empty-state-text">Content library coming soon. Generate content via Icon Studio.</div>
+        </div>
+      </div>
+
+      <!-- SUBSCRIBERS -->
+      <div class="pane" id="pane-subscribers">
+        <div class="page-header">
+          <div><div class="page-title">Subscribers</div><div class="page-sub">Active subscriber accounts</div></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Email</th><th>Tier</th><th>Joined</th><th>Status</th></tr></thead>
+            <tbody id="subscribers-body">
+              <tr><td colspan="4" style="text-align:center;padding:40px;color:var(--ink-dim)">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- REQUESTS -->
+      <div class="pane" id="pane-requests">
+        <div class="page-header">
+          <div><div class="page-title">Requests</div><div class="page-sub">Custom content requests from subscribers</div></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>From</th><th>Icon</th><th>Request</th><th>Tier</th><th>Status</th><th></th></tr></thead>
+            <tbody id="requests-body">
+              <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--ink-dim)">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+
+      <!-- PROJECT DASHBOARD -->
+      <div class="pane" id="pane-projdash" style="padding:0;height:calc(100vh - 48px);display:none;width:100%;overflow:hidden;position:absolute;top:0;left:0;right:0;bottom:0">
+        <iframe
+          id="projdash-frame"
+          srcdoc="<!DOCTYPE html>
+<html lang=&quot;en&quot;>
+<head>
+<meta charset=&quot;UTF-8&quot;>
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
+<title>Mirage · Project Dashboard</title>
+<link href=&quot;https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400;1,500&amp;family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&amp;display=swap&quot; rel=&quot;stylesheet&quot;>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f8f6f2; --bg2: #f2efe9; --bg3: #eae6de;
+    --dark: var(--ink); --dim: rgba(26,23,20,0.55); --muted: rgba(26,23,20,0.32);
+    --border: rgba(26,23,20,0.08); --border-md: rgba(26,23,20,0.13);
+    --gold: #a07840; --green: #2a6640; --red: #b03025;
+  }
+  body { font-family: 'DM Sans', sans-serif; font-weight: 300; background: var(--bg); color: var(--dark); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+  .serif { font-family: 'Afacad', sans-serif; font-style: italic; }
+
+  /* Grain */
+  body::after {
+    content: ''; position: fixed; inset: -50%; width: 200%; height: 200%;
+    background-image: url(&quot;data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E&quot;);
+    pointer-events: none; z-index: 9998; opacity: 0.4;
+  }
+
+  /* Header */
+  header { background: var(--dark); padding: 0 48px; display: flex; align-items: center; justify-content: space-between; height: 64px; position: sticky; top: 0; z-index: 100; }
+  .logo { font-family: 'Afacad', sans-serif; font-style: italic; font-size: 26px; color: var(--bg); }
+  .header-meta { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(248,246,242,0.3); }
+  .header-status { display: flex; align-items: center; gap: 20px; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; margin-right: 5px; animation: pulse 2.5s ease infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* Shell */
+  .shell { max-width: 1200px; margin: 0 auto; padding: 40px 48px 80px; }
+
+  /* Section */
+  .section { margin-bottom: 48px; }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .section-title { font-family: 'Afacad', sans-serif; font-style: italic; font-size: 22px; }
+  .section-count { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+
+  /* File grid */
+  .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+
+  /* File card */
+  .file-card {
+    background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px;
+    padding: 16px; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+    text-decoration: none; color: inherit; display: block; position: relative;
+  }
+  .file-card:hover { border-color: rgba(26,23,20,0.3); background: var(--bg3); }
+  .file-card.dark { background: var(--dark); border-color: rgba(248,246,242,0.06); }
+  .file-card.dark:hover { border-color: rgba(248,246,242,0.15); }
+  .file-card.dark .file-name { color: var(--bg); }
+  .file-card.dark .file-desc { color: rgba(248,246,242,0.4); }
+  .file-card.dark .file-meta { color: rgba(248,246,242,0.2); }
+  .file-card.dark .file-type-badge { background: rgba(248,246,242,0.07); color: rgba(248,246,242,0.4); }
+
+  .file-type-badge {
+    display: inline-block; padding: 2px 8px; background: rgba(26,23,20,0.06);
+    border-radius: 1px; font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 8px;
+  }
+  .file-type-badge.html { background: rgba(42,102,64,0.1); color: var(--green); }
+  .file-type-badge.sql { background: rgba(160,120,64,0.1); color: var(--gold); }
+  .file-type-badge.md { background: rgba(26,23,20,0.06); color: var(--muted); }
+  .file-type-badge.pdf { background: rgba(176,48,37,0.08); color: var(--red); }
+  .file-type-badge.json { background: rgba(42,102,64,0.08); color: var(--green); }
+  .file-type-badge.js { background: rgba(160,120,64,0.08); color: var(--gold); }
+
+  .file-name { font-family: 'Afacad', sans-serif; font-style: italic; font-size: 16px; margin-bottom: 5px; color: var(--dark); line-height: 1.2; }
+  .file-desc { font-size: 11px; color: var(--dim); line-height: 1.6; margin-bottom: 10px; }
+  .file-meta { font-size: 9px; color: var(--muted); letter-spacing: 0.08em; display: flex; align-items: center; justify-content: space-between; }
+  .file-path { font-size: 9px; color: var(--muted); font-family: monospace; background: var(--bg3); padding: 3px 7px; border-radius: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; margin-top: 8px; }
+  .file-card.dark .file-path { background: rgba(248,246,242,0.04); color: rgba(248,246,242,0.2); }
+
+  .open-btn { position: absolute; top: 14px; right: 14px; font-size: 14px; color: var(--muted); opacity: 0; transition: opacity 0.15s; }
+  .file-card:hover .open-btn { opacity: 1; }
+
+  /* Status badges */
+  .status-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; padding: 2px 7px; border-radius: 1px; }
+  .status-badge.done { background: rgba(42,102,64,0.1); color: var(--green); }
+  .status-badge.wip { background: rgba(160,120,64,0.1); color: var(--gold); }
+  .status-badge.todo { background: rgba(26,23,20,0.06); color: var(--muted); }
+
+  /* Priority list */
+  .priority-list { display: flex; flex-direction: column; gap: 0; }
+  .priority-item {
+    display: flex; align-items: flex-start; gap: 16px; padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .priority-num { font-family: 'Afacad', sans-serif; font-style: italic; font-size: 22px; color: var(--muted); flex-shrink: 0; width: 28px; line-height: 1; }
+  .priority-content { flex: 1; }
+  .priority-title { font-size: 13px; font-weight: 500; color: var(--dark); margin-bottom: 3px; }
+  .priority-detail { font-size: 11px; color: var(--dim); line-height: 1.6; }
+  .priority-status { flex-shrink: 0; }
+
+  /* Stats row */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 40px; }
+  .stat-card { background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; padding: 18px; }
+  .stat-value { font-family: 'Afacad', sans-serif; font-style: italic; font-size: 32px; color: var(--dark); margin-bottom: 4px; }
+  .stat-label { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+
+  /* Eyebrow */
+  .eyebrow { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+
+  /* Domain + keys bar */
+  .info-bar { background: var(--dark); border-radius: 2px; padding: 16px 20px; display: flex; gap: 32px; align-items: center; margin-bottom: 40px; flex-wrap: wrap; }
+  .info-item { }
+  .info-label { font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(248,246,242,0.3); margin-bottom: 4px; }
+  .info-value { font-size: 12px; color: rgba(248,246,242,0.8); font-family: monospace; }
+  .info-value.gold { color: var(--gold); font-family: 'DM Sans', sans-serif; font-weight: 500; }
+  .info-value.green { color: #4a9960; font-family: 'DM Sans', sans-serif; }
+  .info-value.red { color: #d05048; font-family: 'DM Sans', sans-serif; }
+
+  /* Last updated */
+  .last-updated { font-size: 9px; color: var(--muted); text-align: center; margin-top: 48px; letter-spacing: 0.1em; }
+
+  /* Add file form */
+  .add-section { background: var(--bg2); border: 1px dashed var(--border-md); border-radius: 2px; padding: 20px; margin-top: 12px; }
+  .add-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .add-input { flex: 1; min-width: 160px; padding: 9px 12px; background: var(--bg); border: 1px solid var(--border-md); border-radius: 2px; font-size: 12px; color: var(--dark); outline: none; font-family: 'DM Sans', sans-serif; }
+  .add-input:focus { border-color: rgba(26,23,20,0.3); }
+  .add-select { padding: 9px 12px; background: var(--bg); border: 1px solid var(--border-md); border-radius: 2px; font-size: 12px; color: var(--dark); outline: none; font-family: 'DM Sans', sans-serif; cursor: pointer; }
+  .add-btn { padding: 9px 18px; background: var(--dark); color: var(--bg); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; border: none; border-radius: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
+  .add-label { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+
+  /* Hide standalone header when in admin iframe */
+  body.in-admin header { display: none !important; }
+  body.in-admin .shell { padding-top: 32px !important; }
+
+  /* Project Dashboard dark fix */
+  body, html { background: var(--bg) !important; }
+  .content, .pane, .stats-grid, .stat-card, .priority-list, 
+  .priority-item, .section-header, .status-bar, .project-dash { 
+    background: var(--bg) !important; 
+    color: var(--ink) !important;
+  }
+  .stat-card { background: var(--surface) !important; }
+  .stat-value { color: var(--ink) !important; font-style: normal !important; }
+  .section-title { font-style: normal !important; color: var(--ink) !important; }
+  .priority-title { color: var(--ink) !important; }
+  .priority-detail { color: var(--ink-mid) !important; }
+
+  .btn { background: var(--ink) !important; color: var(--bg) !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class=&quot;logo&quot;>Mirage</div>
+  <div class=&quot;header-status&quot;>
+    <div style=&quot;font-size:9px;letter-spacing:0.14em;color:rgba(248,246,242,0.3)&quot;><span class=&quot;status-dot&quot;></span>Proxy live · railway.app</div>
+    <div class=&quot;header-meta&quot;>Project Dashboard · April 2026</div>
+  </div>
+</header>
+
+<div class=&quot;shell&quot;>
+
+  <!-- STATS -->
+  <div class=&quot;stats-row&quot;>
+    <div class=&quot;stat-card&quot;>
+      <div class=&quot;stat-value&quot; id=&quot;stat-files&quot;>20</div>
+      <div class=&quot;stat-label&quot;>Files Built</div>
+    </div>
+    <div class=&quot;stat-card&quot;>
+      <div class=&quot;stat-value&quot;>100</div>
+      <div class=&quot;stat-label&quot;>Icon Archetypes</div>
+    </div>
+    <div class=&quot;stat-card&quot;>
+      <div class=&quot;stat-value&quot;>$145K</div>
+      <div class=&quot;stat-label&quot;>Net Monthly at 10K Subs</div>
+    </div>
+    <div class=&quot;stat-card&quot;>
+      <div class=&quot;stat-value&quot;>84.5%</div>
+      <div class=&quot;stat-label&quot;>Net Margin</div>
+    </div>
+  </div>
+
+  <!-- INFO BAR -->
+  <div class=&quot;info-bar&quot;>
+    <div class=&quot;info-item&quot;>
+      <div class=&quot;info-label&quot;>Domain</div>
+      <div class=&quot;info-value gold&quot;>mirageicons.com ✓</div>
+    </div>
+    <div class=&quot;info-item&quot;>
+      <div class=&quot;info-label&quot;>Proxy · Railway</div>
+      <div class=&quot;info-value green&quot;>mirage-proxy-production.up.railway.app ✓</div>
+    </div>
+    <div class=&quot;info-item&quot;>
+      <div class=&quot;info-label&quot;>GitHub</div>
+      <div class=&quot;info-value green&quot;>natescott12/mirage-proxy ✓</div>
+    </div>
+    <div class=&quot;info-item&quot;>
+      <div class=&quot;info-label&quot;>Supabase</div>
+      <div class=&quot;info-value green&quot;>gmyenvnfuailickepvax · Schema deployed ✓</div>
+    </div>
+    <div class=&quot;info-item&quot;>
+      <div class=&quot;info-label&quot;>Vercel / PWA</div>
+      <div class=&quot;info-value green&quot;>mirage-pwa.vercel.app ✓ Live</div>
+    </div>
+    <div class=&quot;info-item&quot;>
+      <div class=&quot;info-label&quot;>mirageicons.com</div>
+      <div class=&quot;info-value green&quot;>Live · DNS propagated ✓</div>
+    </div>
+    <div class=&quot;info-item&quot;>
+      <div class=&quot;info-label&quot;>Segpay</div>
+      <div class=&quot;info-value red&quot;>Not yet integrated</div>
+    </div>
+  </div>
+
+  <!-- NEXT PRIORITIES -->
+  <div class=&quot;section&quot;>
+    <div class=&quot;section-head&quot;>
+      <div class=&quot;section-title&quot;>Next Priorities</div>
+      <div class=&quot;section-count&quot;>6 tasks</div>
+    </div>
+    <div class=&quot;priority-list&quot; id=&quot;priority-list&quot;>
+      <div class=&quot;priority-item&quot;>
+        <div class=&quot;priority-num&quot;>1</div>
+        <div class=&quot;priority-content&quot;>
+          <div class=&quot;priority-title&quot;>Deploy PWA to Vercel ✓</div>
+          <div class=&quot;priority-detail&quot;>Live at mirage-pwa.vercel.app. mirageicons.com DNS propagating — will be live within 30 min.</div>
+        </div>
+        <div class=&quot;priority-status&quot;><span class=&quot;status-badge done&quot;>Done</span></div>
+      </div>
+      <div class=&quot;priority-item&quot;>
+        <div class=&quot;priority-num&quot;>2</div>
+        <div class=&quot;priority-content&quot;>
+          <div class=&quot;priority-title&quot;>Generate icon content library</div>
+          <div class=&quot;priority-detail&quot;>Anna building personas (admin panel live). You generate images via Icon Studio — 15 free + 10 PPV per icon. Luna first.</div>
+        </div>
+        <div class=&quot;priority-status&quot;><span class=&quot;status-badge wip&quot;>In Progress</span></div>
+      </div>
+      <div class=&quot;priority-item&quot;>
+        <div class=&quot;priority-num&quot;>3</div>
+        <div class=&quot;priority-content&quot;>
+          <div class=&quot;priority-title&quot;>Figma design — marketing site</div>
+          <div class=&quot;priority-detail&quot;>Wireframes ready. Drop real photos on top. Big italic serif names. White bg. American Apparel editorial.</div>
+        </div>
+        <div class=&quot;priority-status&quot;><span class=&quot;status-badge todo&quot;>To Do</span></div>
+      </div>
+      <div class=&quot;priority-item&quot;>
+        <div class=&quot;priority-num&quot;>4</div>
+        <div class=&quot;priority-content&quot;>
+          <div class=&quot;priority-title&quot;>Wire shop into PWA</div>
+          <div class=&quot;priority-detail&quot;>Drop currency, wardrobe tab, purchase flow. Supabase is live — can start now.</div>
+        </div>
+        <div class=&quot;priority-status&quot;><span class=&quot;status-badge todo&quot;>To Do</span></div>
+      </div>
+      <div class=&quot;priority-item&quot;>
+        <div class=&quot;priority-num&quot;>5</div>
+        <div class=&quot;priority-content&quot;>
+          <div class=&quot;priority-title&quot;>Segpay integration</div>
+          <div class=&quot;priority-detail&quot;>Wire payment flow into signup. 12% processing — biggest cost. Needs PWA deployed first.</div>
+        </div>
+        <div class=&quot;priority-status&quot;><span class=&quot;status-badge todo&quot;>To Do</span></div>
+      </div>
+      <div class=&quot;priority-item&quot;>
+        <div class=&quot;priority-num&quot;>6</div>
+        <div class=&quot;priority-content&quot;>
+          <div class=&quot;priority-title&quot;>Twilio SMS setup</div>
+          <div class=&quot;priority-detail&quot;>3 numbers at $1.15/mo each. Persona tab already built in Studio. Wire after 1K subscribers.</div>
+        </div>
+        <div class=&quot;priority-status&quot;><span class=&quot;status-badge todo&quot;>To Do</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CORE PRODUCT FILES -->
+  <div class=&quot;section&quot;>
+    <div class=&quot;section-head&quot;>
+      <div class=&quot;section-title&quot;>Core Product</div>
+      <div class=&quot;section-count&quot; id=&quot;count-product&quot;></div>
+    </div>
+    <div class=&quot;file-grid&quot; id=&quot;grid-product&quot;></div>
+  </div>
+
+  <!-- STRATEGY &amp; DOCS -->
+  <div class=&quot;section&quot;>
+    <div class=&quot;section-head&quot;>
+      <div class=&quot;section-title&quot;>Strategy &amp; Docs</div>
+      <div class=&quot;section-count&quot; id=&quot;count-strategy&quot;></div>
+    </div>
+    <div class=&quot;file-grid&quot; id=&quot;grid-strategy&quot;></div>
+  </div>
+
+  <!-- DESIGN -->
+  <div class=&quot;section&quot;>
+    <div class=&quot;section-head&quot;>
+      <div class=&quot;section-title&quot;>Design</div>
+      <div class=&quot;section-count&quot; id=&quot;count-design&quot;></div>
+    </div>
+    <div class=&quot;file-grid&quot; id=&quot;grid-design&quot;></div>
+  </div>
+
+  <!-- INVESTOR -->
+  <div class=&quot;section&quot;>
+    <div class=&quot;section-head&quot;>
+      <div class=&quot;section-title&quot;>Investor</div>
+      <div class=&quot;section-count&quot; id=&quot;count-investor&quot;></div>
+    </div>
+    <div class=&quot;file-grid&quot; id=&quot;grid-investor&quot;></div>
+  </div>
+
+  <!-- INFRASTRUCTURE -->
+  <div class=&quot;section&quot;>
+    <div class=&quot;section-head&quot;>
+      <div class=&quot;section-title&quot;>Infrastructure</div>
+      <div class=&quot;section-count&quot;>6 services</div>
+    </div>
+    <div class=&quot;file-grid&quot;>
+
+      <div class=&quot;file-card dark&quot;>
+        <div style=&quot;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px&quot;>
+          <span class=&quot;file-type-badge&quot; style=&quot;background:rgba(42,102,64,0.2);color:#4a9960&quot;>Live</span>
+          <span class=&quot;status-badge done&quot;>Online</span>
+        </div>
+        <div class=&quot;file-name&quot;>Railway · Proxy</div>
+        <div class=&quot;file-desc&quot;>Node.js proxy. Flux generation, Claude voice, image fetch. Full CORS for hosted access.</div>
+        <div class=&quot;file-meta&quot;><span>mirage-proxy-production.up.railway.app</span></div>
+        <div class=&quot;file-path&quot; onclick=&quot;window.open('https://railway.com/project/3f900a6d-0b6b-4c72-9c37-c26db7ef68c3','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>railway.com → perpetual-patience</div>
+      </div>
+
+      <div class=&quot;file-card dark&quot;>
+        <div style=&quot;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px&quot;>
+          <span class=&quot;file-type-badge&quot; style=&quot;background:rgba(42,102,64,0.2);color:#4a9960&quot;>Live</span>
+          <span class=&quot;status-badge done&quot;>Deployed</span>
+        </div>
+        <div class=&quot;file-name&quot;>GitHub · Proxy Repo</div>
+        <div class=&quot;file-desc&quot;>Private repo. Auto-deploys to Railway on every push to main. server.js, package.json, railway.json.</div>
+        <div class=&quot;file-meta&quot;><span>natescott12/mirage-proxy</span></div>
+        <div class=&quot;file-path&quot; onclick=&quot;window.open('https://github.com/natescott12/mirage-proxy','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>github.com/natescott12/mirage-proxy</div>
+      </div>
+
+      <div class=&quot;file-card dark&quot;>
+        <div style=&quot;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px&quot;>
+          <span class=&quot;file-type-badge&quot; style=&quot;background:rgba(42,102,64,0.2);color:#4a9960&quot;>Live</span>
+          <span class=&quot;status-badge done&quot;>Schema Deployed</span>
+        </div>
+        <div class=&quot;file-name&quot;>Supabase · Database</div>
+        <div class=&quot;file-desc&quot;>Postgres DB. Profiles, subscriptions, icons (Luna/Vera/Aria seeded), content, messages, requests, PPV unlocks. RLS enabled.</div>
+        <div class=&quot;file-meta&quot;><span>gmyenvnfuailickepvax.supabase.co</span></div>
+        <div class=&quot;file-path&quot; onclick=&quot;window.open('https://supabase.com/dashboard/project/gmyenvnfuailickepvax','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>Mirage Icons · Mirage org</div>
+      </div>
+
+      <div class=&quot;file-card dark&quot;>
+        <div style=&quot;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px&quot;>
+          <span class=&quot;file-type-badge&quot; style=&quot;background:rgba(42,102,64,0.2);color:#4a9960&quot;>Live</span>
+          <span class=&quot;status-badge done&quot;>Active</span>
+        </div>
+        <div class=&quot;file-name&quot;>Flux Pro 1.1</div>
+        <div class=&quot;file-desc&quot;>Image generation. $0.04/image. Key rotated Apr 5. Regional cluster routing fix in proxy. ~$6K/mo at 10K subs scale.</div>
+        <div class=&quot;file-meta&quot;><span>api.bfl.ai</span></div>
+        <div class=&quot;file-path&quot; onclick=&quot;window.open('https://dashboard.bfl.ai','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>dashboard.bfl.ai</div>
+      </div>
+
+      <div class=&quot;file-card dark&quot;>
+        <div style=&quot;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px&quot;>
+          <span class=&quot;file-type-badge&quot; style=&quot;background:rgba(160,120,64,0.2);color:var(--gold)&quot;>Pending</span>
+          <span class=&quot;status-badge todo&quot;>To Do</span>
+        </div>
+        <div class=&quot;file-name&quot;>Vercel · PWA</div>
+        <div class=&quot;file-desc&quot;>Deploy mirage-pwa.html. Free tier. Point mirageicons.com DNS to Vercel. PWA is Supabase-connected and ready.</div>
+        <div class=&quot;file-meta&quot;><span>mirageicons.com</span></div>
+        <div class=&quot;file-path&quot; onclick=&quot;window.open('https://vercel.com','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>vercel.com → next step</div>
+      </div>
+
+      <div class=&quot;file-card dark&quot;>
+        <div style=&quot;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px&quot;>
+          <span class=&quot;file-type-badge&quot; style=&quot;background:rgba(160,120,64,0.2);color:var(--gold)&quot;>Pending</span>
+          <span class=&quot;status-badge todo&quot;>To Do</span>
+        </div>
+        <div class=&quot;file-name&quot;>Segpay · Payments</div>
+        <div class=&quot;file-desc&quot;>12% processing — biggest cost driver. Wire into signup flow post-Vercel deploy. Dominant adult content processor.</div>
+        <div class=&quot;file-meta&quot;><span>segpay.com</span></div>
+        <div class=&quot;file-path&quot; onclick=&quot;window.open('https://segpay.com','_blank')&quot; style=&quot;cursor:pointer;color:rgba(248,246,242,0.4)&quot;>segpay.com → after Vercel</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ PROJECT SUMMARY ══════════════════════════════════════════════════ -->
+  <div class=&quot;section&quot;>
+    <div class=&quot;section-head&quot;>
+      <div class=&quot;section-title&quot;>Project Summary</div>
+      <div class=&quot;section-count&quot;>Full context · Apr 2026</div>
+    </div>
+
+    <div style=&quot;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px&quot;>
+
+      <div style=&quot;background:var(--bg2);border:1px solid var(--border-md);border-radius:2px;padding:20px&quot;>
+        <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px&quot;>What Mirage Is</div>
+        <div style=&quot;font-size:12px;color:var(--dim);line-height:1.8&quot;>
+          AI content platform featuring editorial AI characters called Icons. American Apparel 2000s aesthetic — film grain, desaturated, natural light, tight crops, no studio. Think Corinne Day, Juergen Teller. Content is non-explicit and clearly labeled as AI-generated. PWA to avoid app store fees.
+        </div>
+      </div>
+
+      <div style=&quot;background:var(--bg2);border:1px solid var(--border-md);border-radius:2px;padding:20px&quot;>
+        <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px&quot;>Financials (Target)</div>
+        <div style=&quot;font-size:12px;color:var(--dim);line-height:1.8&quot;>
+          At 10K subs / 500 Icons / 30-55-15 tier mix:<br>
+          $172K gross · $26.7K costs · <strong>$145K net (84.5% margin)</strong> · $1.74M annual.<br>
+          Flux costs ~$6K/mo at scale (150K images · $0.04/img).<br>
+          Segpay 12% processing — dominant cost driver.
+        </div>
+      </div>
+
+    </div>
+
+    <div style=&quot;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px&quot;>
+
+      <div style=&quot;background:var(--bg2);border:1px solid var(--border-md);border-radius:2px;padding:20px&quot;>
+        <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px&quot;>Launch Icons</div>
+        <div style=&quot;font-size:12px;color:var(--dim);line-height:2&quot;>
+          <span style=&quot;font-family:'Afacad',sans-serif;font-style:italic;font-size:14px&quot;>Luna</span> — Downtown Intellectual. Cool grey. Direct stare.<br>
+          <span style=&quot;font-family:'Afacad',sans-serif;font-style:italic;font-size:14px&quot;>Vera</span> — Unapologetic Bold. Warm gold. Owns every room.<br>
+          <span style=&quot;font-family:'Afacad',sans-serif;font-style:italic;font-size:14px&quot;>Aria</span> — Soft Sadcore. Melancholy. Never eye contact.
+        </div>
+      </div>
+
+      <div style=&quot;background:var(--bg2);border:1px solid var(--border-md);border-radius:2px;padding:20px&quot;>
+        <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px&quot;>Pricing Tiers</div>
+        <div style=&quot;font-size:12px;color:var(--dim);line-height:2&quot;>
+          Glimpse · <strong>$4.99/mo</strong><br>
+          Illusion · <strong>$14.99/mo</strong> (most popular)<br>
+          Mirage VIP · <strong>$39.99/mo</strong><br>
+          Devoted · <strong>$79.99/mo</strong>
+        </div>
+      </div>
+
+      <div style=&quot;background:var(--bg2);border:1px solid var(--border-md);border-radius:2px;padding:20px&quot;>
+        <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px&quot;>Design System</div>
+        <div style=&quot;font-size:12px;color:var(--dim);line-height:2&quot;>
+          Icon names: Playfair Display italic<br>
+          UI: DM Sans light<br>
+          Warm white backgrounds<br>
+          Film grain overlays · Desaturated
+        </div>
+      </div>
+
+    </div>
+
+    <div style=&quot;display:grid;grid-template-columns:1fr 1fr;gap:12px&quot;>
+
+      <div style=&quot;background:var(--dark);border:1px solid rgba(248,246,242,0.06);border-radius:2px;padding:20px&quot;>
+        <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(248,246,242,0.3);margin-bottom:12px&quot;>Infrastructure · All Live</div>
+        <div style=&quot;font-size:11px;color:rgba(248,246,242,0.5);line-height:2.2&quot;>
+          <span style=&quot;color:rgba(42,162,64,0.9)&quot;>✓</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Railway Proxy</strong> · mirage-proxy-production.up.railway.app<br>
+          <span style=&quot;color:rgba(42,162,64,0.9)&quot;>✓</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>GitHub</strong> · natescott12/mirage-proxy · natescott12/mirage-pwa<br>
+          <span style=&quot;color:rgba(42,162,64,0.9)&quot;>✓</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Supabase</strong> · gmyenvnfuailickepvax.supabase.co · Schema deployed<br>
+          <span style=&quot;color:rgba(42,162,64,0.9)&quot;>✓</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Vercel</strong> · mirageicons.com · mirage-pwa.vercel.app<br>
+          <span style=&quot;color:rgba(42,162,64,0.9)&quot;>✓</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Flux Pro 1.1</strong> · api.bfl.ai · Key rotated Apr 5<br>
+          <span style=&quot;color:rgba(176,48,37,0.9)&quot;>◌</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Segpay</strong> · Payments · After content generation<br>
+          <span style=&quot;color:rgba(176,48,37,0.9)&quot;>◌</span> <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Twilio SMS</strong> · After 1K subscribers
+        </div>
+      </div>
+
+      <div style=&quot;background:var(--dark);border:1px solid rgba(248,246,242,0.06);border-radius:2px;padding:20px&quot;>
+        <div style=&quot;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(248,246,242,0.3);margin-bottom:12px&quot;>URLs · Credentials</div>
+        <div style=&quot;font-size:11px;color:rgba(248,246,242,0.5);line-height:2.2&quot;>
+          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>mirageicons.com</strong> → Splash page (coming soon)<br>
+          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>mirageicons.com/admin</strong> → Admin panel<br>
+          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Nate login:</strong> natescott12 GitHub → Supabase<br>
+          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Anna login:</strong> <a href=&quot;/cdn-cgi/l/email-protection&quot; class=&quot;__cf_email__&quot; data-cfemail=&quot;84e5eaeae5c4f3e1e5f6e1e7f1f6f6e1eaf0aaeae1f0&quot;>[email&amp;#160;protected]</a> · Mirage2026!<br>
+          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Supabase org:</strong> Mirage → Mirage Icons project<br>
+          <strong style=&quot;color:rgba(248,246,242,0.8)&quot;>Railway:</strong> perpetual-patience project<br>
+          <em style=&quot;color:rgba(248,246,242,0.2)&quot;>Full API keys stored in private secure note</em>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ TEAM ══════════════════════════════════════════════════════════════ -->
+  <!-- COLLABORATORS -->
+  <div class=&quot;section&quot;>
+    <div class=&quot;section-head&quot;>
+      <div class=&quot;section-title&quot;>Team</div>
+      <div class=&quot;section-count&quot;>2 people</div>
+    </div>
+    <div class=&quot;file-grid&quot;>
+      <div class=&quot;file-card&quot;>
+        <div style=&quot;display:flex;align-items:center;gap:12px;margin-bottom:10px&quot;>
+          <div style=&quot;width:36px;height:36px;border-radius:50%;background:var(--dark);display:flex;align-items:center;justify-content:center;font-family:'Afacad',sans-serif;font-style:italic;font-size:15px;color:var(--bg)&quot;>N</div>
+          <div>
+            <div class=&quot;file-name&quot; style=&quot;margin-bottom:2px&quot;>Nate</div>
+            <div style=&quot;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)&quot;>Executive Design Director</div>
+          </div>
+        </div>
+        <div class=&quot;file-desc&quot;>Product direction, generation, deployment, strategy. Owns the proxy, GitHub, Railway, Supabase, Vercel.</div>
+        <div class=&quot;file-meta&quot;><span>natescott12 on GitHub</span></div>
+      </div>
+      <div class=&quot;file-card&quot;>
+        <div style=&quot;display:flex;align-items:center;gap:12px;margin-bottom:10px&quot;>
+          <div style=&quot;width:36px;height:36px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Afacad',sans-serif;font-style:italic;font-size:15px;color:var(--bg)&quot;>A</div>
+          <div>
+            <div class=&quot;file-name&quot; style=&quot;margin-bottom:2px&quot;>Anna</div>
+            <div style=&quot;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)&quot;>Icon Profile Builder</div>
+          </div>
+        </div>
+        <div class=&quot;file-desc&quot;>Building persona profiles for all 100 icon archetypes. Voice lines, SMS character, content pillars, cluster. Starting with Luna, Vera, Aria.</div>
+        <div class=&quot;file-meta&quot;><span>Google Drive access · Studio via download</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD NEW FILE -->
+  <div class=&quot;section&quot;>
+    <div class=&quot;section-head&quot;>
+      <div class=&quot;section-title&quot;>Add a File</div>
+    </div>
+    <div class=&quot;add-section&quot;>
+      <div class=&quot;add-label&quot;>Track a new file</div>
+      <div class=&quot;add-row&quot;>
+        <input class=&quot;add-input&quot; id=&quot;add-name&quot; placeholder=&quot;File name (e.g. Admin Panel)&quot;>
+        <input class=&quot;add-input&quot; id=&quot;add-path&quot; placeholder=&quot;Path (e.g. mirage-admin.html)&quot;>
+        <input class=&quot;add-input&quot; id=&quot;add-desc&quot; placeholder=&quot;What it does&quot;>
+        <select class=&quot;add-select&quot; id=&quot;add-type&quot;>
+          <option value=&quot;html&quot;>HTML</option>
+          <option value=&quot;sql&quot;>SQL</option>
+          <option value=&quot;md&quot;>MD</option>
+          <option value=&quot;pdf&quot;>PDF</option>
+          <option value=&quot;json&quot;>JSON</option>
+          <option value=&quot;js&quot;>JS</option>
+        </select>
+        <select class=&quot;add-select&quot; id=&quot;add-section&quot;>
+          <option value=&quot;product&quot;>Core Product</option>
+          <option value=&quot;strategy&quot;>Strategy &amp; Docs</option>
+          <option value=&quot;design&quot;>Design</option>
+          <option value=&quot;investor&quot;>Investor</option>
+        </select>
+        <select class=&quot;add-select&quot; id=&quot;add-status&quot;>
+          <option value=&quot;done&quot;>Done</option>
+          <option value=&quot;wip&quot;>In Progress</option>
+          <option value=&quot;todo&quot;>To Do</option>
+        </select>
+        <button class=&quot;add-btn&quot; onclick=&quot;addFile()&quot;>Add File</button>
+      </div>
+    </div>
+  </div>
+
+  <div class=&quot;last-updated&quot; id=&quot;last-updated&quot;></div>
+
+</div>
+
+<script data-cfasync=&quot;false&quot; src=&quot;/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js&quot;></script><script>
+// Detect iframe context
+if(window.self !== window.top){document.body.classList.add(&quot;in-admin&quot;);}
+
+// ── FILE DATA ────────────────────────────────────────────────────
+const BASE = '';
+
+let FILES = JSON.parse(localStorage.getItem('mirage-files') || 'null') || [
+  // CORE PRODUCT
+  {
+    id: 'pwa', section: 'product', type: 'html', status: 'done',
+    name: 'Subscriber PWA',
+    path: 'mirage-pwa.html',
+    desc: 'Full subscriber app — all screens. Supabase auth wired (real signIn/signUp/signOut/session check). Ready to deploy to Vercel.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'studio', section: 'product', type: 'html', status: 'done',
+    name: 'Icon Studio',
+    path: 'mirage-icon-studio.html',
+    desc: 'Admin content dashboard. Persona tab, Wardrobe prompt layer, Voice Preview, Cluster filter, Export/Import buttons. Flux + Claude API. Hosted proxy.',
+    date: 'Apr 4 2026'
+  },
+  {
+    id: 'shop', section: 'product', type: 'html', status: 'done',
+    name: 'Shop UI',
+    path: 'mirage-shop-ui.html',
+    desc: 'Full shop PWA screen — Drops tab, Wardrobe tab, Get Drops tab. Interactive with live balance, purchase modal, wardrobe grid.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'shop-arch', section: 'product', type: 'html', status: 'done',
+    name: 'Shop Architecture',
+    path: 'mirage-shop.html',
+    desc: 'Drop currency system, wardrobe, product catalog, purchase modal, transaction log, revenue projections, Supabase schema.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'sms', section: 'product', type: 'html', status: 'done',
+    name: 'SMS Architecture',
+    path: 'mirage-sms.html',
+    desc: 'Twilio integration, icon profile builder, live system prompt preview, TCPA compliance, full schema, interactive phone mockup.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'proxy', section: 'product', type: 'js', status: 'done',
+    name: 'Proxy Server',
+    path: 'mirage-proxy/server.js',
+    desc: 'Node.js proxy on port 3579. Routes: /flux/generate, /flux/result/:id, /claude/extract, /fetch-image. Regional cluster routing fix included.',
+    date: 'Apr 4 2026'
+  },
+  {
+    id: 'personas', section: 'product', type: 'json', status: 'done',
+    name: 'Icon Archetypes',
+    path: 'personas.json',
+    desc: '100 icon archetypes with full character profiles. Name, archetype, vibe, aesthetic, setting, energy. Covers Afrofuturist to Scandinavian Minimalist.',
+    date: 'Apr 4 2026'
+  },
+  {
+    id: 'admin', section: 'product', type: 'html', status: 'done',
+    name: 'Admin Panel',
+    path: 'mirage-pwa/admin/index.html',
+    desc: 'Full web CMS. Supabase auth. Dashboard, Icons, Content, Personas, Subscribers, Messages, Requests, Waitlist, Revenue. Live at mirageicons.com/admin.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'splash', section: 'product', type: 'html', status: 'done',
+    name: 'Splash Page',
+    path: 'mirage-pwa/index.html',
+    desc: 'Coming soon page. Mirage logo, tagline, email capture with waitlist localStorage. Live at mirageicons.com.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'pwa-repo', section: 'product', type: 'js', status: 'done',
+    name: 'PWA GitHub Repo',
+    path: 'mirage-pwa/index.html',
+    desc: 'Deployed to Vercel via natescott12/mirage-pwa. Auto-deploys on push. index.html = mirage-pwa.html with Supabase auth wired.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'schema', section: 'product', type: 'sql', status: 'todo',
+    name: 'Supabase Schema',
+    path: 'mirage-supabase-schema.sql',
+    desc: 'Complete SQL schema. Profiles, subscriptions, icons (pre-seeded), content, messages, requests, comments, PPV unlocks, likes/saves. Full RLS policies.',
+    date: 'Apr 5 2026'
+  },
+
+  // STRATEGY &amp; DOCS
+  {
+    id: 'digital-goods', section: 'strategy', type: 'md', status: 'done',
+    name: 'Digital Goods Strategy',
+    path: 'mirage-digital-goods-strategy.md',
+    desc: 'Full drop economy strategy — currency mechanics, scarcity, wardrobe psychology, rollout phases, whale segment math, Supabase schema, revenue projections.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'content-brief', section: 'strategy', type: 'md', status: 'done',
+    name: 'Content Brief',
+    path: 'mirage-content-brief.md',
+    desc: '25 shots per icon (15 free + 10 PPV). Scene, lighting, crop, and prompt direction for every shot. Ready to use as a generation queue in Icon Studio.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'summary', section: 'strategy', type: 'pdf', status: 'done',
+    name: 'Full Project Summary',
+    path: 'mirage-full-summary.pdf',
+    desc: 'Complete session summary — all sessions, every bug fixed, every file built, shop and SMS systems, financial model, competitive research.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'pl', section: 'strategy', type: 'html', status: 'done',
+    name: 'P&amp;L Model',
+    path: 'mirage-pl-model.html',
+    desc: 'Interactive financial model with sliders to 10K subs / 500 icons. $145K net monthly, 84.5% margin, $1.74M annual at scale.',
+    date: 'Apr 4 2026'
+  },
+
+  // DESIGN
+  {
+    id: 'wireframes', section: 'design', type: 'html', status: 'done',
+    name: 'Wireframes',
+    path: 'mirage-wireframes.html',
+    desc: 'Marketing site (4 screens) + PWA (8 screens). Full Mirage design system — Playfair italic, DM Sans, warm white, grain overlays. Ready for Figma.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'website', section: 'design', type: 'html', status: 'done',
+    name: 'Marketing Website',
+    path: 'mirage-website.html',
+    desc: 'Desktop marketing site. Hero, icons page, pricing, manifesto.',
+    date: 'Apr 5 2026'
+  },
+
+  // INVESTOR
+  {
+    id: 'deck', section: 'investor', type: 'pdf', status: 'done',
+    name: 'Investor Deck v4',
+    path: 'mirage-investor-deck-v4.pdf',
+    desc: '16 slides. Cover, manifesto, problem, why Mirage, icons, experience, digital goods economy, pricing, competitive, market, audience, financials, roadmap, tech, ask, close.',
+    date: 'Apr 5 2026'
+  },
+  {
+    id: 'deck-pptx', section: 'investor', type: 'js', status: 'done',
+    name: 'Deck Source (pptxgenjs)',
+    path: 'mirage-deck-v2.js',
+    desc: 'PptxGenJS script to regenerate the investor deck. Edit and run: node mirage-deck-v2.js',
+    date: 'Apr 5 2026'
+  },
+];
+
+// ── RENDER ───────────────────────────────────────────────────────
+function renderAll() {
+  const sections = ['product', 'strategy', 'design', 'investor'];
+  sections.forEach(sec => {
+    const items = FILES.filter(f => f.section === sec);
+    const grid = document.getElementById('grid-' + sec);
+    const count = document.getElementById('count-' + sec);
+    count.textContent = items.length + ' file' + (items.length !== 1 ? 's' : '');
+    grid.innerHTML = items.map(f => renderCard(f)).join('');
+  });
+  document.getElementById('stat-files').textContent = FILES.length;
+  document.getElementById('last-updated').textContent =
+    'Last updated: ' + new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+
+function renderCard(f) {
+  const isDark = f.section === 'investor' &amp;&amp; f.type === 'pdf';
+  const statusMap = { done: 'Done', wip: 'In Progress', todo: 'To Do' };
+  return `
+    <div class=&quot;file-card ${isDark ? 'dark' : ''}&quot; onclick=&quot;openFile('${f.id}')&quot;>
+      <span class=&quot;open-btn&quot;>↗</span>
+      <div style=&quot;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px&quot;>
+        <span class=&quot;file-type-badge ${f.type}&quot;>${f.type.toUpperCase()}</span>
+        <span class=&quot;status-badge ${f.status}&quot;>${statusMap[f.status]}</span>
+      </div>
+      <div class=&quot;file-name&quot;>${f.name}</div>
+      <div class=&quot;file-desc&quot;>${f.desc}</div>
+      <div class=&quot;file-meta&quot;>
+        <span>${f.date}</span>
+        <span onclick=&quot;removeFile(event,'${f.id}')&quot; style=&quot;cursor:pointer;opacity:0.4;font-size:11px&quot; title=&quot;Remove&quot;>✕</span>
+      </div>
+      <div class=&quot;file-path&quot; title=&quot;${f.path}&quot;>${f.path}</div>
+    </div>`;
+}
+
+function openFile(id) {
+  const f = FILES.find(x => x.id === id);
+  if (!f) return;
+  // Try to open local file
+  const link = document.createElement('a');
+  link.href = f.path;
+  link.target = '_blank';
+  link.click();
+}
+
+function removeFile(e, id) {
+  e.stopPropagation();
+  if (!confirm('Remove this file from the dashboard?')) return;
+  FILES = FILES.filter(f => f.id !== id);
+  save();
+  renderAll();
+}
+
+function addFile() {
+  const name = document.getElementById('add-name').value.trim();
+  const path = document.getElementById('add-path').value.trim();
+  const desc = document.getElementById('add-desc').value.trim();
+  const type = document.getElementById('add-type').value;
+  const section = document.getElementById('add-section').value;
+  const status = document.getElementById('add-status').value;
+  if (!name || !path) { alert('Name and path are required.'); return; }
+
+  const fullPath = path;
+  FILES.push({
+    id: 'file-' + Date.now(),
+    section, type, status, name, desc,
+    path: fullPath,
+    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  });
+  save();
+  renderAll();
+  // Clear i"
+          style="width:100%;height:100%;border:none;display:block"
+          sandbox="allow-scripts allow-same-origin allow-downloads allow-forms"
+        ></iframe>
+      </div>
+
+      <div class="pane" id="pane-studio" style="padding:0;height:calc(100vh - 48px);display:none;width:100%;overflow:hidden;position:absolute;top:0;left:0;right:0;bottom:0">
+        <iframe id="studio-frame" src="/studio" style="width:100%;height:100%;border:none;display:block;" sandbox="allow-scripts allow-same-origin allow-downloads allow-forms allow-popups"></iframe>
+      </div>
+
+      <!-- CHECKLIST -->
+      <div class="pane" id="pane-checklist">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Task Checklist</div>
+            <div class="page-sub">April 2026 — track what's done</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="resetChecklist()">Reset all</button>
+        </div>
+        <div id="checklist-progress-wrap" style="margin-bottom:28px">
+          <div style="height:3px;background:#ece9e4;border-radius:2px;overflow:hidden;">
+            <div id="cl-bar" style="height:100%;background:var(--ink);border-radius:2px;transition:width 0.4s ease;width:0%"></div>
+          </div>
+          <div id="cl-label" style="font-size:12px;color:var(--ink-dim);margin-top:6px"></div>
+        </div>
+        <div id="checklist-body"></div>
+      </div>
+
+      <!-- P&L DASHBOARD -->
+      <div class="pane" id="pane-pnl">
+        <div class="page-header">
+          <div>
+            <div class="page-title">P&amp;L Model</div>
+            <div class="page-sub">Interactive financial projections</div>
+          </div>
+        </div>
+        <!-- Subscriber slider -->
+        <div style="background:var(--surface);border:1px solid var(--border);padding:20px;margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-size:13px;font-weight:500">Subscribers</div>
+            <div id="pnl-sub-val" style="font-size:22px;font-weight:500;letter-spacing:-0.5px">500</div>
+          </div>
+          <input type="range" id="pnl-slider" min="100" max="10000" step="100" value="500"
+            oninput="updatePnl()"
+            style="width:100%;accent-color:var(--ink);cursor:pointer">
+          <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--ink-dim)"><span>100</span><span>10,000</span></div>
+        </div>
+        <!-- Tier mix -->
+        <div style="background:var(--surface);border:1px solid var(--border);padding:20px;margin-bottom:16px">
+          <div style="font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:14px">Tier Mix</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+            <div class="field"><label>Glimpse %</label><input type="number" id="pnl-glimpse" value="30" min="0" max="100" oninput="updatePnl()" style="padding:8px 10px;border:1px solid var(--border);background:var(--bg);font-family:'Afacad',sans-serif;font-size:14px;color:var(--ink);outline:none;width:100%"></div>
+            <div class="field"><label>Illusion %</label><input type="number" id="pnl-illusion" value="55" min="0" max="100" oninput="updatePnl()" style="padding:8px 10px;border:1px solid var(--border);background:var(--bg);font-family:'Afacad',sans-serif;font-size:14px;color:var(--ink);outline:none;width:100%"></div>
+            <div class="field"><label>VIP %</label><input type="number" id="pnl-vip" value="15" min="0" max="100" oninput="updatePnl()" style="padding:8px 10px;border:1px solid var(--border);background:var(--bg);font-family:'Afacad',sans-serif;font-size:14px;color:var(--ink);outline:none;width:100%"></div>
+          </div>
+        </div>
+        <!-- Results -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+          <div class="stat-card"><div class="stat-value" id="pnl-gross">—</div><div class="stat-label">Gross / mo</div></div>
+          <div class="stat-card"><div class="stat-value" id="pnl-net">—</div><div class="stat-label">Net / mo</div></div>
+          <div class="stat-card"><div class="stat-value" id="pnl-margin">—</div><div class="stat-label">Net Margin</div></div>
+          <div class="stat-card"><div class="stat-value" id="pnl-annual">—</div><div class="stat-label">Annual Net</div></div>
+        </div>
+        <!-- Cost breakdown -->
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Cost Item</th><th>Monthly</th><th>% of Gross</th></tr></thead>
+            <tbody id="pnl-costs"></tbody>
+          </table>
+        </div>
+        <!-- Growth table -->
+        <div class="table-wrap" style="margin-top:16px">
+          <table>
+            <thead><tr><th>Stage</th><th>Subscribers</th><th>Gross</th><th>Net</th><th>Margin</th></tr></thead>
+            <tbody id="pnl-stages"></tbody>
+          </table>
+        </div>
+      </div>
+
+
+  </div><!-- /main -->
+
+  <!-- SAVE BAR (persona editor) -->
+  <div class="save-bar" id="save-bar" style="display:none">
+    <div class="save-status" id="save-status"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost btn-sm" onclick="resetPersonaForm()">Discard</button>
+      <button class="btn btn-sm" onclick="savePersona()" id="save-bar-btn">Save Persona</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://gmyenvnfuailickepvax.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
+
+// Simple admin credentials (change password!)
+const ADMIN_USERS = {
+  'nate': 'MirageAdmin2026!',
+  'anna': 'MirageAnna2026!'
+};
+
+let sb = null;
+let currentUser = null;
+let allIcons = [];
+let currentIconId = null;
+let hasUnsavedChanges = false;
+
+// ── SUPABASE INIT ────────────────────────────────────────────────────────────
+function initSupabase() {
+  try {
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('Supabase connected');
+  } catch(e) {
+    console.warn('Supabase init failed — running in local mode', e);
+    sb = null;
+  }
+}
+
+// ── AUTH ─────────────────────────────────────────────────────────────────────
+function doLogin() {
+  const user = document.getElementById('login-user').value.trim().toLowerCase();
+  const pass = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-error');
+
+  if (!ADMIN_USERS[user] || ADMIN_USERS[user] !== pass) {
+    err.textContent = 'Incorrect username or password.';
+    return;
+  }
+
+  currentUser = user;
+  document.getElementById('topbar-user').textContent = user;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+  initSupabase();
+  loadDashboard();
+  loadPersonasFromJSON().then(() => loadIcons());
+}
+
+document.getElementById('login-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-error').textContent = '';
+}
+
+// ── NAVIGATION ───────────────────────────────────────────────────────────────
+function showPane(id) {
+  document.querySelectorAll('.pane').forEach(p => { 
+    p.classList.remove('active');
+    if (p.id === 'pane-studio' || p.id === 'pane-projdash') p.style.display = 'none';
+  });
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  document.getElementById('pane-' + id).classList.add('active');
+
+  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', studio:'Icon Studio', projdash:'Project Dashboard' };
+  document.getElementById('topbar-section').textContent = labels[id] || id;
+
+  // highlight sidebar
+  document.querySelectorAll('.sidebar-item').forEach(item => {
+    if (item.getAttribute('onclick')?.includes(`'${id}'`)) item.classList.add('active');
+  });
+
+  // save bar visibility
+  document.getElementById('save-bar').style.display = id === 'personas' ? 'flex' : 'none';
+
+  // Studio needs full height, no padding
+  if (id === 'studio') {
+    const studioPane = document.getElementById('pane-studio');
+    if (studioPane) studioPane.style.display = 'block';
+    // Force iframe to fill pane and inject in-admin class
+    const sf = document.getElementById('studio-frame');
+    if (sf) {
+      sf.style.cssText = 'width:100%;height:100%;border:none;display:block;position:absolute;inset:0;';
+      const injectClass = () => {
+        try {
+          const d = sf.contentDocument;
+          if (d && d.body) {
+            d.body.classList.add('in-admin');
+          }
+        } catch(e) {}
+      };
+      if (sf.contentDocument && sf.contentDocument.readyState === 'complete') {
+        injectClass();
+      } else {
+        sf.addEventListener('load', injectClass, { once: true });
+      }
+    }
+  }
+  if (id === 'projdash') {
+    const dashPane = document.getElementById('pane-projdash');
+    if (dashPane) dashPane.style.display = 'block';
+    const df = document.getElementById('projdash-frame');
+    if (df) {
+      df.style.cssText = 'width:100%;height:100%;border:none;display:block;';
+      const injectDash = () => {
+        try { if (df.contentDocument && df.contentDocument.body) df.contentDocument.body.classList.add('in-admin'); } catch(e) {}
+      };
+      if (df.contentDocument && df.contentDocument.readyState === 'complete') injectDash();
+      else df.addEventListener('load', injectDash, { once: true });
+    }
+  }
+  if (id === 'subscribers') loadSubscribers();
+  if (id === 'requests') loadRequests();
+  if (id === 'checklist') initChecklist();
+  if (id === 'pnl') initPnl();
+}
+
+// ── TOAST ────────────────────────────────────────────────────────────────────
+function toast(msg, duration = 2500) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), duration);
+}
+
+// ── LOAD ICONS ───────────────────────────────────────────────────────────────
+async function loadIcons() {
+  if (sb) {
+    const { data, error } = await sb.from('icons').select('*').order('name');
+    if (!error && data) {
+      allIcons = data;
+    } else {
+      allIcons = getMockIcons();
+    }
+  } else {
+    allIcons = getMockIcons();
+  }
+
+  document.getElementById('badge-icons').textContent = allIcons.length;
+  renderIconGrid(allIcons);
+  populateIconSelect();
+  updateDashboard();
+}
+
+function getMockIcons() {
+  // Loaded from personas.json via initApp
+  return window.__personas || [];
+}
+
+async function loadPersonasFromJSON() {
+  try {
+    const r = await fetch('/personas.json');
+    const data = await r.json();
+    window.__personas = data.map((p, i) => ({
+      id: p.id || String(i + 1),
+      name: p.name,
+      archetype: p.archetype || p.type || '',
+      persona_data: p,
+      status: 'partial'
+    }));
+    return window.__personas;
+  } catch(e) {
+    console.warn('Could not load personas.json:', e.message);
+    return [];
+  }
+}
+
+
+function getPersonaCompletion(icon) {
+  if (!icon.persona_data) return 0;
+  const p = icon.persona_data;
+  const fields = ['tagline','voice','backstory','aesthetic','interests','fears','desires','communication_style','eye_color','hair_color','hair_length','skin_tone','build','age'];
+  const filled = fields.filter(f => p[f] && p[f].toString().trim().length > 0);
+  return Math.round((filled.length / fields.length) * 100);
+}
+
+function getStatusFromCompletion(pct) {
+  if (pct >= 80) return 'complete';
+  if (pct > 0) return 'partial';
+  return 'empty';
+}
+
+function renderIconGrid(icons) {
+  const grid = document.getElementById('icon-grid');
+  if (!icons.length) {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-state-text">No icons found.</div></div>';
+    return;
+  }
+  grid.innerHTML = icons.map(icon => {
+    const pct = getPersonaCompletion(icon);
+    const status = getStatusFromCompletion(pct);
+    const statusLabel = status === 'complete' ? 'Complete' : status === 'partial' ? 'In Progress' : 'Not started';
+    return `
+      <div class="icon-card" onclick="openPersona('${icon.id}')">
+        <div class="icon-card-name">${icon.name}</div>
+        <div class="icon-card-archetype">${icon.archetype || '—'}</div>
+        <div class="icon-card-status">
+          <div class="status-dot ${status}"></div>
+          <div class="status-label">${statusLabel} ${pct > 0 ? '· ' + pct + '%' : ''}</div>
+        </div>
+        <div class="icon-card-progress">
+          <div class="icon-card-progress-fill" style="width:${pct}%"></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function filterIcons() {
+  const q = document.getElementById('icon-search').value.toLowerCase();
+  const s = document.getElementById('icon-filter-status').value;
+  const filtered = allIcons.filter(icon => {
+    const matchQ = !q || icon.name.toLowerCase().includes(q) || (icon.archetype||'').toLowerCase().includes(q);
+    const pct = getPersonaCompletion(icon);
+    const status = getStatusFromCompletion(pct);
+    const matchS = !s || status === s;
+    return matchQ && matchS;
+  });
+  renderIconGrid(filtered);
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────────────────────
+function updateDashboard() {
+  const total = allIcons.length;
+  const done = allIcons.filter(i => getPersonaCompletion(i) >= 80).length;
+  document.getElementById('stat-icons').textContent = total;
+  document.getElementById('stat-personas-done').textContent = done;
+
+  const body = document.getElementById('dashboard-table-body');
+  const launch = allIcons.slice(0, 10);
+  body.innerHTML = launch.map(icon => {
+    const pct = getPersonaCompletion(icon);
+    const status = getStatusFromCompletion(pct);
+    const badge = status === 'complete' ? '#2a7a4a' : status === 'partial' ? '#d4820a' : '#ccc';
+    return `<tr>
+      <td><strong>${icon.name}</strong></td>
+      <td style="color:var(--ink-dim)">${icon.archetype || '—'}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="flex:1;height:3px;background:#ece9e4;border-radius:1px;max-width:80px">
+            <div style="height:100%;width:${pct}%;background:var(--ink);border-radius:1px"></div>
+          </div>
+          <span style="font-size:12px;color:var(--ink-dim)">${pct}%</span>
+        </div>
+      </td>
+      <td style="color:var(--ink-dim)">—</td>
+      <td><span style="font-size:11px;color:${badge};text-transform:uppercase;letter-spacing:0.1em">${status}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+async function loadDashboard() {
+  // Try to get subscriber count
+  if (sb) {
+    const { count } = await sb.from('subscribers').select('*', { count: 'exact', head: true });
+    document.getElementById('stat-subscribers').textContent = count || 0;
+    const { count: contentCount } = await sb.from('content').select('*', { count: 'exact', head: true });
+    document.getElementById('stat-content').textContent = contentCount || 0;
+  } else {
+    document.getElementById('stat-subscribers').textContent = '—';
+    document.getElementById('stat-content').textContent = '—';
+  }
+}
+
+// ── PERSONA BUILDER ───────────────────────────────────────────────────────────
+function populateIconSelect() {
+  const sel = document.getElementById('persona-icon-select');
+  sel.innerHTML = '<option value="">— Select Icon —</option>' +
+    allIcons.map(i => `<option value="${i.id}">${i.name} · ${i.archetype || 'No archetype'}</option>`).join('');
+}
+
+function openPersona(iconId) {
+  showPane('personas');
+  document.getElementById('persona-icon-select').value = iconId;
+  loadPersonaForIcon(iconId);
+}
+
+function loadPersonaForIcon(iconId) {
+  currentIconId = iconId;
+  const icon = allIcons.find(i => i.id === iconId);
+  if (!icon) {
+    document.getElementById('persona-editor').innerHTML = `<div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-text">Select an icon above.</div></div>`;
+    return;
+  }
+
+  const pct = getPersonaCompletion(icon);
+  document.getElementById('persona-sub').textContent = `Editing: ${icon.name} · ${icon.archetype}`;
+  document.getElementById('persona-progress-label').textContent = pct > 0 ? `${pct}% complete` : 'Not started';
+
+  const p = icon.persona_data || {};
+  hasUnsavedChanges = false;
+  setSaveStatus('');
+
+  document.getElementById('persona-editor').innerHTML = buildPersonaForm(p, icon);
+
+  // Wire change tracking
+  document.querySelectorAll('#persona-editor input, #persona-editor select, #persona-editor textarea').forEach(el => {
+    el.addEventListener('input', () => { hasUnsavedChanges = true; setSaveStatus('Unsaved changes'); });
+  });
+
+  // Wire tag chips
+  document.querySelectorAll('.tag-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const group = chip.dataset.group;
+      const multi = chip.dataset.multi === 'true';
+      if (!multi) {
+        document.querySelectorAll(`.tag-chip[data-group="${group}"]`).forEach(c => c.classList.remove('selected'));
+      }
+      chip.classList.toggle('selected');
+      hasUnsavedChanges = true;
+      setSaveStatus('Unsaved changes');
+    });
+  });
+}
+
+function buildPersonaForm(p, icon) {
+  return `
+  <div class="field-group">
+    <div class="field-group-title">Identity</div>
+    <div class="field-row">
+      <div class="field"><label>Full Name</label><input id="f-name" value="${icon.name || ''}" placeholder="e.g. Luna Chen"></div>
+      <div class="field"><label>Archetype</label><input id="f-archetype" value="${icon.archetype || ''}" placeholder="e.g. The Downtown Intellectual"></div>
+    </div>
+    <div class="field-row single">
+      <div class="field"><label>Tagline</label><input id="f-tagline" value="${p.tagline || ''}" placeholder="One sentence that captures her essence"></div>
+    </div>
+    <div class="field-row triple">
+      <div class="field"><label>Age</label><input id="f-age" value="${p.age || ''}" placeholder="e.g. 24"></div>
+      <div class="field"><label>Location</label><input id="f-location" value="${p.location || ''}" placeholder="e.g. Lower East Side, NY"></div>
+      <div class="field"><label>Occupation</label><input id="f-occupation" value="${p.occupation || ''}" placeholder="e.g. Art director"></div>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field-group-title">Voice & Personality</div>
+    <div class="field-row single">
+      <div class="field"><label>Voice / Tone</label><textarea id="f-voice" placeholder="How she speaks, her texting style, what she says and doesn't say…">${p.voice || ''}</textarea></div>
+    </div>
+    <div class="field-row single">
+      <div class="field">
+        <label>Personality Traits</label>
+        <div class="tag-select">
+          ${['Mysterious','Intellectual','Warm','Bold','Vulnerable','Playful','Melancholy','Direct','Romantic','Detached','Fierce','Gentle','Witty','Quiet','Magnetic'].map(t =>
+            `<button class="tag-chip${(p.traits||[]).includes(t)?' selected':''}" data-group="traits" data-multi="true">${t}</button>`
+          ).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Communication Style</label>
+        <select id="f-comm-style">
+          ${['','Sparse and deliberate','Warm and verbose','Playful and teasing','Direct and blunt','Poetic and abstract','Casual and open'].map(s =>
+            `<option${p.communication_style===s?' selected':''}>${s}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Energy Level</label>
+        <select id="f-energy">
+          ${['','Low / still','Medium / balanced','High / electric'].map(s =>
+            `<option${p.energy===s?' selected':''}>${s}</option>`
+          ).join('')}
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field-group-title">Backstory & World</div>
+    <div class="field-row single">
+      <div class="field"><label>Backstory</label><textarea id="f-backstory" style="min-height:120px" placeholder="Where she came from, what shaped her, the experiences she doesn't talk about…">${p.backstory || ''}</textarea></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Desires</label><textarea id="f-desires" placeholder="What she actually wants, even if she won't say it directly…">${p.desires || ''}</textarea></div>
+      <div class="field"><label>Fears</label><textarea id="f-fears" placeholder="What keeps her up at night, what she avoids…">${p.fears || ''}</textarea></div>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field-group-title">Aesthetic & Interests</div>
+    <div class="field-row single">
+      <div class="field"><label>Aesthetic / Visual World</label><textarea id="f-aesthetic" placeholder="Film grain, natural light, specific colors, settings, objects, clothing, mood…">${p.aesthetic || ''}</textarea></div>
+    </div>
+    <div class="field-row single">
+      <div class="field"><label>Interests & References</label><textarea id="f-interests" placeholder="Music, books, places, brands, artists, films, subcultures she inhabits…">${p.interests || ''}</textarea></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Scene Tags</label>
+        <div class="tag-select">
+          ${['Coffee shops','Late nights','Hotel rooms','Art galleries','Outdoor markets','Rooftops','Studio apartments','Libraries','Beaches','Road trips'].map(t =>
+            `<button class="tag-chip${(p.scene_tags||[]).includes(t)?' selected':''}" data-group="scene_tags" data-multi="true">${t}</button>`
+          ).join('')}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field-group-title">Physical Description (for Flux)</div>
+    <div class="field-row triple">
+      <div class="field"><label>Eye Color</label>
+        <select id="f-eye-color">
+          ${['','Brown','Dark brown','Hazel','Green','Blue','Grey','Amber'].map(s =>
+            `<option${p.eye_color===s?' selected':''}>${s}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Eye Shape</label>
+        <select id="f-eye-shape">
+          ${['','Almond','Round','Hooded','Upturned','Downturned','Monolid'].map(s =>
+            `<option${p.eye_shape===s?' selected':''}>${s}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Skin Tone</label>
+        <select id="f-skin-tone">
+          ${['','Fair','Light','Light-medium','Medium','Olive','Medium-dark','Dark','Deep'].map(s =>
+            `<option${p.skin_tone===s?' selected':''}>${s}</option>`
+          ).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="field-row triple">
+      <div class="field"><label>Hair Color</label>
+        <select id="f-hair-color">
+          ${['','Black','Dark brown','Brown','Light brown','Blonde','Platinum','Auburn','Red','Grey'].map(s =>
+            `<option${p.hair_color===s?' selected':''}>${s}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Hair Length</label>
+        <select id="f-hair-length">
+          ${['','Pixie','Bob','Shoulder','Long','Very long'].map(s =>
+            `<option${p.hair_length===s?' selected':''}>${s}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Hair Texture</label>
+        <select id="f-hair-texture">
+          ${['','Straight','Wavy','Curly','Coily','Textured'].map(s =>
+            `<option${p.hair_texture===s?' selected':''}>${s}</option>`
+          ).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="field-row triple">
+      <div class="field"><label>Build</label>
+        <select id="f-build">
+          ${['','Petite','Slim','Athletic','Curvy','Full'].map(s =>
+            `<option${p.build===s?' selected':''}>${s}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Skin Texture</label>
+        <select id="f-skin-texture">
+          ${['','Clear','Freckled','Glowy','Matte','Natural'].map(s =>
+            `<option${p.skin_texture===s?' selected':''}>${s}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Makeup Style</label>
+        <select id="f-makeup">
+          ${['','No makeup','Minimal','Natural','Editorial','Bold'].map(s =>
+            `<option${p.makeup===s?' selected':''}>${s}</option>`
+          ).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="field-row single">
+      <div class="field"><label>Flux Prompt Notes</label><textarea id="f-flux-notes" placeholder="Any additional prompt language to maintain visual consistency across generations…">${p.flux_notes || ''}</textarea></div>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field-group-title">SMS / Messaging Voice</div>
+    <div class="field-row single">
+      <div class="field"><label>How she texts</label><textarea id="f-sms-voice" placeholder="Lowercase only? Uses ellipsis? Voice notes? Sends photos without context? What does she never say?">${p.sms_voice || ''}</textarea></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Opening line example</label><input id="f-sms-opener" value="${p.sms_opener || ''}" placeholder='e.g. "couldn't sleep. thinking about you."'></div>
+      <div class="field"><label>Sample message</label><input id="f-sms-sample" value="${p.sms_sample || ''}" placeholder="A message she might send unprompted"></div>
+    </div>
+  </div>`;
+}
+
+function getSelectedChips(group) {
+  return Array.from(document.querySelectorAll(`.tag-chip[data-group="${group}"].selected`)).map(c => c.textContent);
+}
+
+function collectPersonaData() {
+  return {
+    tagline: document.getElementById('f-tagline')?.value || '',
+    age: document.getElementById('f-age')?.value || '',
+    location: document.getElementById('f-location')?.value || '',
+    occupation: document.getElementById('f-occupation')?.value || '',
+    voice: document.getElementById('f-voice')?.value || '',
+    traits: getSelectedChips('traits'),
+    communication_style: document.getElementById('f-comm-style')?.value || '',
+    energy: document.getElementById('f-energy')?.value || '',
+    backstory: document.getElementById('f-backstory')?.value || '',
+    desires: document.getElementById('f-desires')?.value || '',
+    fears: document.getElementById('f-fears')?.value || '',
+    aesthetic: document.getElementById('f-aesthetic')?.value || '',
+    interests: document.getElementById('f-interests')?.value || '',
+    scene_tags: getSelectedChips('scene_tags'),
+    eye_color: document.getElementById('f-eye-color')?.value || '',
+    eye_shape: document.getElementById('f-eye-shape')?.value || '',
+    skin_tone: document.getElementById('f-skin-tone')?.value || '',
+    hair_color: document.getElementById('f-hair-color')?.value || '',
+    hair_length: document.getElementById('f-hair-length')?.value || '',
+    hair_texture: document.getElementById('f-hair-texture')?.value || '',
+    build: document.getElementById('f-build')?.value || '',
+    skin_texture: document.getElementById('f-skin-texture')?.value || '',
+    makeup: document.getElementById('f-makeup')?.value || '',
+    flux_notes: document.getElementById('f-flux-notes')?.value || '',
+    sms_voice: document.getElementById('f-sms-voice')?.value || '',
+    sms_opener: document.getElementById('f-sms-opener')?.value || '',
+    sms_sample: document.getElementById('f-sms-sample')?.value || '',
+    updated_at: new Date().toISOString(),
+  };
+}
+
+async function savePersona() {
+  if (!currentIconId) { toast('Select an icon first.'); return; }
+
+  const btn = document.getElementById('save-bar-btn');
+  btn.innerHTML = '<span class="spinner"></span>';
+  btn.disabled = true;
+  setSaveStatus('Saving…', 'saving');
+
+  const persona_data = collectPersonaData();
+  const icon = allIcons.find(i => i.id === currentIconId);
+  const nameVal = document.getElementById('f-name')?.value || icon?.name || '';
+  const archetypeVal = document.getElementById('f-archetype')?.value || icon?.archetype || '';
+
+  let saved = false;
+
+  if (sb) {
+    const { error } = await sb.from('icons').update({
+      name: nameVal,
+      archetype: archetypeVal,
+      persona_data: persona_data,
+      updated_at: new Date().toISOString()
+    }).eq('id', currentIconId);
+
+    if (!error) {
+      saved = true;
+    } else {
+      console.error('Supabase save error:', error);
+    }
+  }
+
+  // Always update local state
+  if (icon) {
+    icon.name = nameVal;
+    icon.archetype = archetypeVal;
+    icon.persona_data = persona_data;
+  }
+
+  // Persist to localStorage as fallback
+  const localData = JSON.parse(localStorage.getItem('mirage-personas') || '{}');
+  localData[currentIconId] = { name: nameVal, archetype: archetypeVal, persona_data };
+  localStorage.setItem('mirage-personas', JSON.stringify(localData));
+
+  btn.innerHTML = 'Save Persona';
+  btn.disabled = false;
+  hasUnsavedChanges = false;
+
+  if (saved) {
+    setSaveStatus('Saved to Supabase ✓', 'saved');
+    toast('Saved to Supabase ✓');
+  } else {
+    setSaveStatus('Saved locally (Supabase offline)', 'saved');
+    toast('Saved locally');
+  }
+
+  // Update progress label
+  const pct = getPersonaCompletion(icon);
+  document.getElementById('persona-progress-label').textContent = `${pct}% complete`;
+  updateDashboard();
+}
+
+function resetPersonaForm() {
+  if (!currentIconId) return;
+  loadPersonaForIcon(currentIconId);
+  toast('Changes discarded');
+}
+
+function setSaveStatus(msg, type = '') {
+  const el = document.getElementById('save-status');
+  el.textContent = msg;
+  el.className = 'save-status' + (type ? ' ' + type : '');
+}
+
+// ── SUBSCRIBERS ───────────────────────────────────────────────────────────────
+async function loadSubscribers() {
+  const body = document.getElementById('subscribers-body');
+  if (!sb) {
+    body.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--ink-dim)">Connect Supabase to view subscribers.</td></tr>';
+    return;
+  }
+  const { data, error } = await sb.from('subscribers').select('*').order('created_at', { ascending: false }).limit(50);
+  if (error || !data?.length) {
+    body.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--ink-dim)">No subscribers yet.</td></tr>';
+    return;
+  }
+  body.innerHTML = data.map(s => `<tr>
+    <td>${s.email || '—'}</td>
+    <td style="text-transform:capitalize">${s.tier || '—'}</td>
+    <td style="color:var(--ink-dim)">${s.created_at ? new Date(s.created_at).toLocaleDateString() : '—'}</td>
+    <td><span style="font-size:11px;color:#2a7a4a;text-transform:uppercase;letter-spacing:0.1em">${s.status || 'active'}</span></td>
+  </tr>`).join('');
+}
+
+// ── REQUESTS ─────────────────────────────────────────────────────────────────
+async function loadRequests() {
+  const body = document.getElementById('requests-body');
+  if (!sb) {
+    body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--ink-dim)">Connect Supabase to view requests.</td></tr>';
+    return;
+  }
+  const { data, error } = await sb.from('requests').select('*').order('created_at', { ascending: false }).limit(50);
+  if (error || !data?.length) {
+    body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--ink-dim)">No requests yet.</td></tr>';
+    return;
+  }
+  body.innerHTML = data.map(r => `<tr>
+    <td style="color:var(--ink-dim)">${r.subscriber_id || '—'}</td>
+    <td>${r.icon_id || '—'}</td>
+    <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.description || '—'}</td>
+    <td style="text-transform:capitalize;color:var(--ink-dim)">${r.tier || '—'}</td>
+    <td><span style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:${r.status==='pending'?'#d4820a':'#2a7a4a'}">${r.status || 'pending'}</span></td>
+    <td><button class="btn btn-sm btn-outline" onclick="markRequestDone('${r.id}')">Done</button></td>
+  </tr>`).join('');
+}
+
+async function markRequestDone(id) {
+  if (!sb) return;
+  await sb.from('requests').update({ status: 'complete' }).eq('id', id);
+  loadRequests();
+  toast('Request marked complete');
+}
+
+// ── LOAD LOCAL FALLBACK ───────────────────────────────────────────────────────
+function mergeLocalPersonas() {
+  try {
+    const local = JSON.parse(localStorage.getItem('mirage-personas') || '{}');
+    Object.entries(local).forEach(([id, data]) => {
+      const icon = allIcons.find(i => i.id === id);
+      if (icon && !icon.persona_data) {
+        icon.persona_data = data.persona_data;
+        if (data.name) icon.name = data.name;
+        if (data.archetype) icon.archetype = data.archetype;
+      }
+    });
+  } catch(e) {}
+}
+
+// ── CHECKLIST ─────────────────────────────────────────────────────────────────
+const CHECKLIST_KEY = 'mirage-checklist-v2';
+
+const CHECKLIST_SECTIONS = [
+  { title: 'Security', items: [
+    { id:'s1', text:'Rotate Flux API key at dashboard.bfl.ai — mirage-prod was exposed', tag:'urgent' },
+    { id:'s2', text:"Change Anna's admin password from Mirage2026!", tag:'urgent' },
+  ]},
+  { title: 'PWA Build', items: [
+    { id:'p1', text:'Age Gate screen — QC\'d, pixel-matched to Figma', tag:'design' },
+    { id:'p2', text:'Landing Page (Screen 2) — build from Figma node 12:79', tag:'design' },
+    { id:'p3', text:'World Intro screen — Figma node 12:105', tag:'design' },
+    { id:'p4', text:'World Features screen — Figma node 12:137', tag:'design' },
+    { id:'p5', text:'Free Preview screen — Figma node 12:175', tag:'design' },
+    { id:'p6', text:'PWA Flux integration — generate images in-app', tag:'infra' },
+    { id:'p7', text:'Segpay payment integration', tag:'infra' },
+    { id:'p8', text:'Functional prototype live at mirageicons.com/app', tag:'infra' },
+  ]},
+  { title: 'Backend', items: [
+    { id:'b1', text:"Wire saveIconPersona() in admin to Supabase — sb.from('icons').update()", tag:'infra' },
+    { id:'b2', text:'Wire all personas → Supabase icons table', tag:'infra' },
+    { id:'b3', text:'Supabase backend fully connected to PWA', tag:'infra' },
+    { id:'b4', text:'Add /claude/chat endpoint to Railway proxy for DMs', tag:'infra' },
+  ]},
+  { title: 'Content', items: [
+    { id:'c1', text:'Generate Luna content — 15 free + 10 PPV images', tag:'content' },
+    { id:'c2', text:'Generate Vera content — 15 free + 10 PPV images', tag:'content' },
+    { id:'c3', text:'Generate Aria content — 15 free + 10 PPV images', tag:'content' },
+    { id:'c4', text:'Export Mirage logo as permanent PNG/SVG', tag:'design' },
+  ]},
+  { title: 'Admin', items: [
+    { id:'a1', text:'Admin panel live at mirageicons.com/admin', tag:'infra' },
+    { id:'a2', text:'Icon Studio embedded in admin with Railway proxy', tag:'infra' },
+    { id:'a3', text:'Anna — complete all 100 icon persona profiles', tag:'anna' },
+  ]},
+];
+
+const TAG_COLORS = {
+  urgent: { bg:'#111', color:'#f6eaea' },
+  infra: { bg:'#f0e8e4', color:'#a05a40' },
+  design: { bg:'#e4ede8', color:'#3a7a58' },
+  content: { bg:'#ece9e4', color:'#666' },
+  anna: { bg:'#e8e4f0', color:'#7060aa' },
+};
+
+function getChecklistState() {
+  try { return JSON.parse(localStorage.getItem(CHECKLIST_KEY)) || {}; } catch { return {}; }
+}
+function saveChecklistState(s) { localStorage.setItem(CHECKLIST_KEY, JSON.stringify(s)); }
+
+function initChecklist() {
+  const state = getChecklistState();
+  const body = document.getElementById('checklist-body');
+  if (!body) return;
+
+  let html = '';
+  CHECKLIST_SECTIONS.forEach(section => {
+    html += `<div style="margin-bottom:28px">
+      <div style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-dim);padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:2px">${section.title}</div>`;
+    section.items.forEach(item => {
+      const done = state[item.id];
+      const tc = TAG_COLORS[item.tag] || TAG_COLORS.content;
+      html += `
+        <div class="cl-task ${done ? 'cl-done' : ''}" data-id="${item.id}" onclick="toggleTask('${item.id}')"
+          style="display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid #f0ece8;cursor:pointer;user-select:none">
+          <div style="width:17px;height:17px;border:1.5px solid ${done?'var(--ink)':'#ccc'};border-radius:3px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;background:${done?'var(--ink)':'transparent'};transition:all 0.15s">
+            ${done?`<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.8 7L9 1" stroke="#f6eaea" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`:''}
+          </div>
+          <div style="flex:1">
+            <div style="font-size:15px;letter-spacing:-0.3px;color:${done?'#bbb':'#222'};text-decoration:${done?'line-through':''};text-decoration-color:#ccc;transition:color 0.2s">${item.text}</div>
+            <span style="display:inline-block;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;padding:2px 7px;border-radius:20px;margin-top:4px;background:${tc.bg};color:${tc.color}">${item.tag}</span>
+          </div>
+        </div>`;
+    });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+  updateChecklistProgress();
+}
+
+function toggleTask(id) {
+  const state = getChecklistState();
+  state[id] = !state[id];
+  saveChecklistState(state);
+  initChecklist();
+}
+
+function updateChecklistProgress() {
+  const state = getChecklistState();
+  const allItems = CHECKLIST_SECTIONS.flatMap(s => s.items);
+  const done = allItems.filter(i => state[i.id]).length;
+  const pct = Math.round((done / allItems.length) * 100);
+  const bar = document.getElementById('cl-bar');
+  const label = document.getElementById('cl-label');
+  if (bar) bar.style.width = pct + '%';
+  if (label) label.textContent = `${done} of ${allItems.length} complete`;
+}
+
+function resetChecklist() {
+  saveChecklistState({});
+  initChecklist();
+}
+
+// ── P&L MODEL ─────────────────────────────────────────────────────────────────
+function initPnl() {
+  updatePnl();
+}
+
+function fmt(n) {
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return '$' + Math.round(n/1000) + 'K';
+  return '$' + Math.round(n).toLocaleString();
+}
+
+function updatePnl() {
+  const subs = parseInt(document.getElementById('pnl-slider')?.value || 500);
+  const glimpsePct = parseInt(document.getElementById('pnl-glimpse')?.value || 30) / 100;
+  const illusionPct = parseInt(document.getElementById('pnl-illusion')?.value || 55) / 100;
+  const vipPct = parseInt(document.getElementById('pnl-vip')?.value || 15) / 100;
+
+  document.getElementById('pnl-sub-val').textContent = subs.toLocaleString();
+
+  const glimpseRev = subs * glimpsePct * 4.99;
+  const illusionRev = subs * illusionPct * 14.99;
+  const vipRev = subs * vipPct * 39.99;
+  const gross = glimpseRev + illusionRev + vipRev;
+
+  // Costs
+  const segpay = gross * 0.12;
+  const images = Math.round(subs * 15); // ~15 images/sub/mo
+  const flux = images * 0.04;
+  const claude = Math.max(50, subs * 0.045);
+  const hosting = 50;
+  const totalCosts = segpay + flux + claude + hosting;
+  const net = gross - totalCosts;
+  const margin = gross > 0 ? (net / gross * 100) : 0;
+
+  document.getElementById('pnl-gross').textContent = fmt(gross);
+  document.getElementById('pnl-net').textContent = fmt(net);
+  document.getElementById('pnl-margin').textContent = Math.round(margin) + '%';
+  document.getElementById('pnl-annual').textContent = fmt(net * 12);
+
+  document.getElementById('pnl-costs').innerHTML = [
+    ['Segpay Processing (12%)', segpay, gross],
+    [`Flux API (~${images.toLocaleString()} images)`, flux, gross],
+    ['Claude API', claude, gross],
+    ['Hosting + Infra', hosting, gross],
+    ['<strong>Total Costs</strong>', totalCosts, gross],
+  ].map(([label, cost, g]) => `<tr>
+    <td>${label}</td>
+    <td>$${Math.round(cost).toLocaleString()}</td>
+    <td style="color:var(--ink-dim)">${g > 0 ? (cost/g*100).toFixed(1) : 0}%</td>
+  </tr>`).join('');
+
+  const stages = [
+    { name:'Seed', subs:100 },
+    { name:'Traction', subs:500 },
+    { name:'Growing', subs:1000 },
+    { name:'Established', subs:2500 },
+    { name:'Scaling', subs:5000 },
+    { name:'Serious', subs:7500 },
+    { name:'Breakout ✦', subs:10000 },
+  ];
+
+  document.getElementById('pnl-stages').innerHTML = stages.map(stage => {
+    const g2 = stage.subs * (glimpsePct * 4.99 + illusionPct * 14.99 + vipPct * 39.99);
+    const costs2 = g2 * 0.12 + (stage.subs * 15 * 0.04) + Math.max(50, stage.subs * 0.045) + 50;
+    const n2 = g2 - costs2;
+    const m2 = g2 > 0 ? Math.round(n2/g2*100) : 0;
+    const isActive = Math.abs(stage.subs - subs) < 300;
+    return `<tr style="${isActive ? 'background:var(--bg);font-weight:500' : ''}">
+      <td>${stage.name}</td>
+      <td style="color:var(--ink-dim)">${stage.subs.toLocaleString()}</td>
+      <td>${fmt(g2)}</td>
+      <td style="color:${n2 > 0 ? '#2a7a4a' : '#b03025'}">${fmt(n2)}</td>
+      <td>${m2}%</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  mergeLocalPersonas();
+  document.getElementById('login-user').focus();
+});
+</script>
+</body>
+</html>
