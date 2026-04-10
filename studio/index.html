@@ -1562,7 +1562,7 @@ function publishAll() {
   notify('Publishing ' + items.length + ' image(s) to Mirage...');
   let done = 0;
   items.forEach(async (item) => {
-    const result = await publishToSupabase(item);
+    const result = await uploadToSupabase(item);
     if (result.success) {
       item.publishedToSupabase = true;
       item.supabaseUrl = result.url;
@@ -2052,31 +2052,8 @@ const SUPA_URL = 'https://gmyenvnfuailickepvax.supabase.co';
 const SUPA_KEY = 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
 const SUPA_JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdteWVudm5mdWFpbGlja2VwdmF4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTQzMTIwMywiZXhwIjoyMDkxMDA3MjAzfQ.oY14ULMhWOUVHLklxGtz8Sjm35kjcy35p4qx1cnjrIk';
 
-async function publishToSupabase(item) {
-  try {
-    const filename = (item.icon?.name || 'icon').toLowerCase().replace(/\s+/g,'-') + '_' + Date.now() + '.jpg';
-    const meta = {
-      icon_name: item.icon?.name || selectedIcon?.name || '',
-      caption: item.caption || item.prompt || '',
-      content_type: 'free',
-      price: 0,
-      scene: scene || '',
-      tags: []
-    };
-    const resp = await fetch(PROXY + '/publish', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ imageData: item.imageUrl, filename, meta })
-    });
-    const result = await resp.json();
-    if (!result.success) throw new Error(result.error || 'Publish failed');
-    return { success: true, url: result.url };
-  } catch(e) {
-    console.error('Publish error:', e);
-    return { success: false, error: e.message };
-  }
-}
-async function _publishToSupabase_old(item) {
+// uploadToSupabase removed — using uploadToSupabase instead
+async function _uploadToSupabase_old(item) {
   try {
     // 1. Upload image to Supabase Storage
     // Handle both base64 data URLs and regular URLs
