@@ -2031,9 +2031,20 @@ const SUPA_KEY = 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
 async function publishToSupabase(item) {
   try {
     // 1. Upload image to Supabase Storage
-    const imageResp = await fetch(item.imageUrl);
-    const blob = await imageResp.blob();
-    const filename = item.icon.name.toLowerCase() + '_' + item.id + '.jpg';
+    // Handle both base64 data URLs and regular URLs
+    let blob;
+    if (item.imageUrl && item.imageUrl.startsWith('data:')) {
+      const parts = item.imageUrl.split(',');
+      const byteString = atob(parts[1]);
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+      blob = new Blob([ab], {type: 'image/jpeg'});
+    } else {
+      const imageResp = await fetch(item.imageUrl);
+      blob = await imageResp.blob();
+    }
+    const filename = (item.icon?.name || 'icon').toLowerCase().replace(/\s+/g,'-') + '_' + Date.now() + '.jpg';
     
     const uploadResp = await fetch(SUPA_URL + '/storage/v1/object/content/' + filename, {
       method: 'POST',
