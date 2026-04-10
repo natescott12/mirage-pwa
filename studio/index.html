@@ -702,7 +702,7 @@
       </div>
       <div style="display:flex;gap:8px;align-items:center">
         <button onclick="repairLibrary()" style="padding:7px 14px;background:transparent;border:1px solid var(--border-md);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all 0.15s" onmouseover="this.style.borderColor='var(--border-strong)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--muted)'" id="repair-btn">↺ Repair Images</button>
-        <button onclick="clearLibraryConfirm()" style="padding:7px 14px;background:transparent;border:1px solid rgba(176,48,37,0.3);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--red);font-family:'DM Sans',sans-serif;transition:all 0.15s">Clear Library</button>
+        <button onclick="loadCloudLibrary()" style="padding:7px 14px;background:transparent;border:1px solid rgba(100,180,100,0.4);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--green);font-family:'Afacad',sans-serif;margin-right:6px">Cloud Library</button><button onclick="clearLibraryConfirm()" style="padding:7px 14px;background:transparent;border:1px solid rgba(176,48,37,0.3);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--red);font-family:'DM Sans',sans-serif;transition:all 0.15s">Clear Library</button>
       </div>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px" id="lib-icon-btns"></div>
@@ -2003,6 +2003,80 @@ if (window.self !== window.top) {
 }
 
 init();
+
+var _cf = 'all', _ci = [];
+async function loadCloudLibrary() {
+  document.getElementById('cloud-lib-panel').style.display = 'block';
+  document.getElementById('cloud-lib-grid').innerHTML = '<div style="padding:40px;color:var(--dim);text-align:center;font-size:11px">Loading...</div>';
+  try {
+    var r = await fetch('https://gmyenvnfuailickepvax.supabase.co/rest/v1/content?order=created_at.desc&limit=500', {
+      headers: {'apikey':'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D','Authorization':'Bearer sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D'}
+    });
+    _ci = await r.json();
+    renderCloud();
+  } catch(e) {
+    document.getElementById('cloud-lib-grid').innerHTML = '<div style="padding:40px;color:var(--red);text-align:center;font-size:11px">Error: ' + e.message + '</div>';
+  }
+}
+function renderCloud() {
+  var grid = document.getElementById('cloud-lib-grid');
+  var btns = document.getElementById('cloud-icon-btns');
+  if (!grid) return;
+  if (btns) {
+    var names = ['all'];
+    _ci.forEach(function(x) { if (x.icon_name && names.indexOf(x.icon_name) < 0) names.push(x.icon_name); });
+    btns.innerHTML = names.map(function(n) {
+      var cnt = n === 'all' ? _ci.length : _ci.filter(function(x){return x.icon_name===n;}).length;
+      var active = _cf === n;
+      return '<button data-cf="' + n + '" style="padding:4px 12px;border-radius:20px;border:1px solid var(--border);font-size:10px;cursor:pointer;background:' + (active?'var(--text)':'transparent') + ';color:' + (active?'var(--bg)':'var(--text)') + '">' + n + ' ' + cnt + '</button>';
+    }).join('');
+    btns.onclick = function(e) {
+      var b = e.target.closest('[data-cf]');
+      if (b) { _cf = b.getAttribute('data-cf'); renderCloud(); }
+    };
+  }
+  var list = _cf === 'all' ? _ci : _ci.filter(function(x){return x.icon_name===_cf;});
+  if (!list.length) { grid.innerHTML = '<div style="padding:40px;color:var(--dim);text-align:center;font-size:11px">No images yet.</div>'; return; }
+  window._clist = list;
+  var h = '';
+  for (var i = 0; i < list.length; i++) {
+    var it = list[i];
+    h += '<div data-ci="' + i + '" style="position:relative;cursor:pointer;break-inside:avoid;margin-bottom:4px">';
+    h += '<img src="' + it.image_url + '" style="width:100%;display:block" onerror="this.parentNode.style.opacity=0.3">';
+    h += '<div style="position:absolute;top:4px;right:4px;font-size:8px;padding:2px 5px;text-transform:uppercase;background:' + (it.is_published?'green':'rgba(0,0,0,0.6)') + ';color:#fff">' + (it.is_published?'Live':'Draft') + '</div>';
+    h += '<div style="position:absolute;bottom:4px;left:4px;font-size:9px;color:rgba(255,255,255,0.8);text-transform:uppercase">' + (it.icon_name||'') + '</div>';
+    h += '</div>';
+  }
+  grid.innerHTML = h;
+  grid.onclick = function(e) {
+    var el = e.target.closest('[data-ci]');
+    if (el && window._clist) cloudOpenLb(window._clist[parseInt(el.getAttribute('data-ci'))]);
+  };
+}
+function cloudOpenLb(item) {
+  var lb = document.getElementById('lightbox');
+  if (!lb) return;
+  lb.classList.add('open');
+  var img = lb.querySelector('img');
+  if (img) img.src = item.image_url;
+  window._clbItem = item;
+  document.addEventListener('keydown', lbKey);
+}
+
 </script>
+
+<div id="cloud-lib-panel" style="display:none;position:fixed;inset:0;z-index:600;background:var(--bg);overflow-y:auto;padding:24px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:16px">
+    <div>
+      <div style="font-size:18px;font-weight:600;color:var(--text)">Cloud Library</div>
+      <div style="font-size:11px;color:var(--dim);margin-top:2px">All machines. Draft = saved. Live = in feed.</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div id="cloud-icon-btns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      <button onclick="document.getElementById('cloud-lib-panel').style.display='none'" style="padding:6px 14px;background:transparent;border:1px solid var(--border);border-radius:2px;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;color:var(--text);font-family:'Afacad',sans-serif">Close</button>
+    </div>
+  </div>
+  <div id="cloud-lib-grid" style="columns:5 180px;gap:4px;margin-top:16px"></div>
+</div>
 </body>
 </html>
