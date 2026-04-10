@@ -133,6 +133,7 @@
 localStorage.setItem('mirage_age_verified','1');
 localStorage.setItem('mirage_user', JSON.stringify({name:'Preview',tier:'vip',email:'preview@mirage.dev'}));
 document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(renderSupabaseFeed, 1000);
   document.querySelectorAll('[id^="screen-"]').forEach(function(s){ s.style.display='none'; });
   var app = document.getElementById('screen-app');
   if(app) app.style.display='block';
@@ -140,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function previewMode() {
   localStorage.setItem('mirage_user', JSON.stringify({name:'Preview',tier:'vip',email:'preview@mirage.dev'}));
-  showScreen('app'); setTimeout(renderSupabaseFeed, 500);;
+  showScreen('app'); setTimeout(renderSupabaseFeed, 800);;
 }
 
 const SUPA_URL = 'https://gmyenvnfuailickepvax.supabase.co';
