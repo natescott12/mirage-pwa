@@ -15,10 +15,10 @@
   --surface: #fff;
   --border: rgba(26,23,20,0.1);
   --border-strong: rgba(26,23,20,0.2);
-  --ink: #1a1714;
+  --ink: var(--ink);
   --ink-mid: rgba(26,23,20,0.5);
   --ink-dim: rgba(26,23,20,0.32);
-  --accent: #1a1714;
+  --accent: var(--ink);
   --sidebar: 240px;
 }
 
@@ -447,7 +447,7 @@ tbody tr:hover td { background: var(--bg); }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
     --bg: #f8f6f2; --bg2: #f2efe9; --bg3: #eae6de;
-    --dark: #1a1714; --dim: rgba(26,23,20,0.55); --muted: rgba(26,23,20,0.32);
+    --dark: var(--ink); --dim: rgba(26,23,20,0.55); --muted: rgba(26,23,20,0.32);
     --border: rgba(26,23,20,0.08); --border-md: rgba(26,23,20,0.13);
     --gold: #a07840; --green: #2a6640; --red: #b03025;
   }
