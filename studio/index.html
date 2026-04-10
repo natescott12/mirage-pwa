@@ -2222,42 +2222,58 @@ async function renderSupabaseLibrary() {
   libContainer.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:11px">Loading...</div>';
   const items = await loadLibraryFromSupabase(null);
 
-  // Update icon filter buttons
   const iconBtnsEl = document.getElementById('lib-icon-btns');
   if (iconBtnsEl) {
-    const icons = [...new Set(items.map(i => i.icon_name).filter(Boolean))];
-    iconBtnsEl.innerHTML = ['all'].concat(icons).map(name => {
-      const count = name === 'all' ? items.length : items.filter(i => i.icon_name === name).length;
+    const icons = [...new Set(items.map(function(i) { return i.icon_name; }).filter(Boolean))];
+    iconBtnsEl.innerHTML = ['all'].concat(icons).map(function(name) {
+      const count = name === 'all' ? items.length : items.filter(function(i) { return i.icon_name === name; }).length;
       const active = (window.__libIconFilter || 'all') === name;
-      return '<button onclick="setLibIconFilter(\'' + name + '\')" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);font-size:11px;letter-spacing:0.06em;cursor:pointer;background:' + (active ? 'var(--ink)' : 'transparent') + ';color:' + (active ? 'var(--bg)' : 'var(--ink)') + '">' + name + ' ' + count + '</button>';
+      return '<button data-filter="' + name + '" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);font-size:11px;letter-spacing:0.06em;cursor:pointer;margin-right:6px;background:' + (active ? 'var(--ink)' : 'transparent') + ';color:' + (active ? 'var(--bg)' : 'var(--ink)') + '">' + name + ' ' + count + '</button>';
     }).join('');
+    iconBtnsEl.onclick = function(e) {
+      const btn = e.target.closest('[data-filter]');
+      if (btn) { window.__libIconFilter = btn.dataset.filter; renderSupabaseLibrary(); }
+    };
   }
 
-  // Filter by selected icon
   const filter = window.__libIconFilter || 'all';
-  const filtered = filter === 'all' ? items : items.filter(i => i.icon_name === filter);
-
-  // Update count
+  const filtered = filter === 'all' ? items : items.filter(function(i) { return i.icon_name === filter; });
   const countEl = document.getElementById('lib-total');
   if (countEl) countEl.textContent = filtered.length;
+  const subtitleEl = document.getElementById('lib-subtitle');
+  if (subtitleEl) subtitleEl.textContent = filtered.length + ' total images';
 
   if (!filtered.length) {
     libContainer.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:11px;text-align:center">No images yet. Generate and they will appear here.</div>';
     return;
   }
 
-  libContainer.innerHTML = filtered.map(item => {
+  // Store items for click handler
+  window.__supabaseItems = filtered;
+
+  libContainer.innerHTML = filtered.map(function(item, i) {
     const published = item.is_published;
-    return '<div class="lib-item" style="position:relative;cursor:pointer;break-inside:avoid;margin-bottom:4px;background:#1a1814" onclick="openLightboxSupabase(\'' + item.id + '\',\'' + item.image_url + '\',\'' + item.icon_name + '\',' + published + ',\'' + (item.storage_path||'') + '\')">' +
+    return '<div class="lib-item" data-supa-idx="' + i + '" style="position:relative;cursor:pointer;break-inside:avoid;margin-bottom:4px;background:#1a1814">' +
       '<img src="' + item.image_url + '" style="width:100%;display:block">' +
-      '<div style="position:absolute;top:6px;right:6px;font-size:9px;padding:2px 6px;letter-spacing:0.08em;text-transform:uppercase;font-weight:600;' +
-        (published ? 'background:var(--green);color:#fff' : 'background:rgba(0,0,0,0.5);color:rgba(255,255,255,0.6)') + '">' +
-        (published ? 'Live' : 'Draft') +
-      '</div>' +
-      '<div style="position:absolute;bottom:6px;left:6px;font-size:9px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.06em">' + (item.icon_name||'') + '</div>' +
+      '<div style="position:absolute;top:6px;right:6px;font-size:9px;padding:2px 6px;letter-spacing:0.08em;text-transform:uppercase;font-weight:600;' + (published ? 'background:var(--green);color:#fff' : 'background:rgba(0,0,0,0.5);color:rgba(255,255,255,0.6)') + '">' + (published ? 'Live' : 'Draft') + '</div>' +
+      '<div style="position:absolute;bottom:6px;left:6px;font-size:9px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.06em">' + (item.icon_name || '') + '</div>' +
     '</div>';
   }).join('');
+
+  libContainer.onclick = function(e) {
+    const el = e.target.closest('[data-supa-idx]');
+    if (el && window.__supabaseItems) {
+      const item = window.__supabaseItems[parseInt(el.dataset.supaIdx)];
+      if (item) openLightboxSupabase(item.id, item.image_url, item.icon_name, item.is_published, item.storage_path || '');
+    }
+  };
 }
+
+function setLibIconFilter(name) {
+  window.__libIconFilter = name;
+  renderSupabaseLibrary();
+}
+
 
 function setLibIconFilter(name) {
   window.__libIconFilter = name;
