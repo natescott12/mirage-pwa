@@ -1534,6 +1534,83 @@ function notify(msg,type="success") { const el=$("notification");if(!el)return;e
 function updateQueueCount() { const c=queue.length;setText("queue-count",c);setText("queue-sub",`${c} ${c===1?"drop":"drops"} scheduled`); }
 function updateLibCount() { const c=getTotalCount();setText("lib-total",c);setText("lib-subtitle",`${c} total images · saved automatically per icon`); }
 function selectIcon(id) { selectedIcon=ICONS_DATA.find(i=>i.id===id); if(selectedIcon && typeof loadPersonaIntoStudio==='function') loadPersonaIntoStudio(selectedIcon.id);renderIconList();renderIconCard();renderSceneTabs();renderParams();refreshPrompt();loadCharIntoBuilder();loadMoodboardForIcon();if(typeof loadPersonaForIcon==="function")loadPersonaForIcon();if(typeof loadWardrobeForIcon==="function")loadWardrobeForIcon();if(typeof resetVoicePreview==="function")resetVoicePreview(); }
+
+function loadPersonaIntoStudio(iconId) {
+  // Fetch personas.json and map fields into currentChar + currentPersona
+  fetch('/personas.json')
+    .then(function(r) { return r.json(); })
+    .then(function(personas) {
+      // personas.json is an array — find by name matching selectedIcon
+      var iconName = selectedIcon ? selectedIcon.name : '';
+      var entry = null;
+      if (Array.isArray(personas)) {
+        entry = personas.find(function(p) {
+          return (p.name || p.iconName || '').toLowerCase() === iconName.toLowerCase();
+        });
+      } else {
+        var entries = Object.values(personas);
+        entry = entries.find(function(p) {
+          return (p.name || p.iconName || '').toLowerCase() === iconName.toLowerCase();
+        });
+      }
+      if (!entry) { console.log('loadPersonaIntoStudio: no entry found for', iconName); return; }
+
+      var p = entry.persona_data || entry;
+
+      // ── Merge into currentChar (Character Builder) ──
+      if (typeof currentChar !== 'undefined' && currentChar) {
+        if (p.eye_color)    currentChar.eyeColor    = p.eye_color;
+        if (p.eye_shape)    currentChar.eyeShape    = p.eye_shape;
+        if (p.hair_color)   currentChar.hairColor   = p.hair_color;
+        if (p.hair_length)  currentChar.hairLength  = p.hair_length;
+        if (p.hair_texture) currentChar.hairTexture = p.hair_texture;
+        if (p.skin_tone)    currentChar.skinTone    = p.skin_tone;
+        if (p.skin_texture) currentChar.skinTexture = p.skin_texture;
+        if (p.build)        currentChar.build       = p.build;
+        if (p.makeup)       currentChar.makeup      = p.makeup;
+        if (p.age)          currentChar.age         = p.age;
+
+        // Save back to localStorage
+        try {
+          var CHAR_KEY = typeof CHARACTER_KEY !== 'undefined' ? CHARACTER_KEY : 'mirage-chars';
+          var chars = JSON.parse(localStorage.getItem(CHAR_KEY) || '{}');
+          chars[iconId] = currentChar;
+          localStorage.setItem(CHAR_KEY, JSON.stringify(chars));
+        } catch(e) {}
+      }
+
+      // ── Merge into currentPersona (Voice & Identity) ──
+      if (typeof currentPersona !== 'undefined') {
+        // Map voice/traits to Studio persona fields
+        if (p.voice)                currentPersona.smsDesc       = p.voice;
+        if (p.sms_opener)           currentPersona.phrase1       = p.sms_opener;
+        if (p.sms_sample)           currentPersona.phrase2       = p.sms_sample;
+        if (p.backstory)            currentPersona.phrase3       = p.backstory.slice(0, 120);
+        if (p.communication_style)  currentPersona.cluster       = p.communication_style;
+        if (p.traits && p.traits.length) {
+          // Map traits to contentPillars if available
+          currentPersona.contentPillars = p.traits.slice(0, 3);
+        }
+        if (entry.archetype) currentPersona.femaleArchetype = entry.archetype;
+
+        // Save back to localStorage
+        try {
+          var PERSONA_KEY_LOCAL = typeof PERSONA_KEY !== 'undefined' ? PERSONA_KEY : 'mirage-personas';
+          var saved = JSON.parse(localStorage.getItem(PERSONA_KEY_LOCAL) || '{}');
+          saved[iconId] = currentPersona;
+          localStorage.setItem(PERSONA_KEY_LOCAL, JSON.stringify(saved));
+        } catch(e) {}
+      }
+
+      // ── Re-render both sections ──
+      if (typeof loadCharIntoBuilder === 'function') loadCharIntoBuilder();
+      if (typeof loadPersonaForIcon === 'function') loadPersonaForIcon();
+      if (typeof refreshPrompt === 'function') refreshPrompt();
+      console.log('loadPersonaIntoStudio: loaded', iconName, 'from personas.json');
+    })
+    .catch(function(e) { console.warn('loadPersonaIntoStudio fetch failed:', e); });
+}
+
 function setScene(t) {
   scene=t;
   // Use the first scene prompt for consistency, moodboard handles the visual direction
