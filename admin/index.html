@@ -1463,19 +1463,28 @@ async function loadIcons() {
 }
 
 function getMockIcons() {
-  // Seed with the 3 launch icons + placeholders for demo
-  const base = [
-    { id: 'luna', name: 'Luna', archetype: 'Downtown Intellectual', persona_data: null, status: 'partial' },
-    { id: 'vera', name: 'Vera', archetype: 'The Unapologetic Bold', persona_data: null, status: 'partial' },
-    { id: 'aria', name: 'Aria', archetype: 'The Soft Sadcore', persona_data: null, status: 'empty' },
-  ];
-  // Generate placeholder archetypes
-  const archetypes = ['The Wanderer','The Provocateur','The Dreamer','The Renegade','The Minimalist','The Romantic','The Cynic','The Optimist','The Mystic','The Realist'];
-  for (let i = 4; i <= 100; i++) {
-    base.push({ id: 'icon-' + i, name: 'Icon ' + String(i).padStart(2,'0'), archetype: archetypes[i % archetypes.length], persona_data: null, status: 'empty' });
-  }
-  return base;
+  // Loaded from personas.json via initApp
+  return window.__personas || [];
 }
+
+async function loadPersonasFromJSON() {
+  try {
+    const r = await fetch('/personas.json');
+    const data = await r.json();
+    window.__personas = data.map((p, i) => ({
+      id: p.id || String(i + 1),
+      name: p.name,
+      archetype: p.archetype || p.type || '',
+      persona_data: p,
+      status: 'partial'
+    }));
+    return window.__personas;
+  } catch(e) {
+    console.warn('Could not load personas.json:', e.message);
+    return [];
+  }
+}
+
 
 function getPersonaCompletion(icon) {
   if (!icon.persona_data) return 0;
