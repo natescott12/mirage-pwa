@@ -1512,8 +1512,14 @@ function showPane(id) {
   if (id === 'requests') loadRequests();
   if (id === 'checklist') initChecklist();
   if (id === 'pnl') initPnl();
+ { loadPersonasFromJSON().then(function(p){ window.__personas=p; populateIconSelect(p); }); }
 
-  if (pane === 'personas') { loadPersonasFromJSON().then(function(p){ window.__personas=p; populateIconSelect(p); }); }
+  if (id === 'personas') {
+    loadPersonasFromJSON().then(function(p) {
+      window.__personas = p;
+      populateIconSelect(p);
+    });
+  }
 }
 
 // ── TOAST ────────────────────────────────────────────────────────────────────
