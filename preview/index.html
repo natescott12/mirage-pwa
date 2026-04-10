@@ -140,8 +140,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function previewMode() {
   localStorage.setItem('mirage_user', JSON.stringify({name:'Preview',tier:'vip',email:'preview@mirage.dev'}));
-  showScreen('app');
+  showScreen('app'); setTimeout(renderSupabaseFeed, 500);;
 }
+
+const SUPA_URL = 'https://gmyenvnfuailickepvax.supabase.co';
+const SUPA_KEY = 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
+
+async function loadFeedFromSupabase() {
+  try {
+    const resp = await fetch(SUPA_URL + '/rest/v1/content?is_published=eq.true&order=created_at.desc&limit=50', {
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
+    });
+    if (!resp.ok) return null;
+    const items = await resp.json();
+    return items;
+  } catch(e) {
+    console.error('Feed load error:', e);
+    return null;
+  }
+}
+
+async function renderSupabaseFeed() {
+  const items = await loadFeedFromSupabase();
+  if (!items || !items.length) return; // fall back to mock data
+  const feed = document.getElementById('feed-posts') || document.querySelector('.feed-content, .posts, #posts');
+  if (!feed) return;
+  feed.innerHTML = items.map(item => {
+    const isFree = item.content_type === 'free';
+    return '<div class="post-card" style="margin-bottom:2px">' +
+      '<img src="' + item.image_url + '" style="width:100%;aspect-ratio:3/4;object-fit:cover;' + (!isFree ? 'filter:blur(20px)' : '') + '">' +
+      '<div style="padding:12px 16px">' +
+        '<div style="font-size:12px;color:#8a8880;text-transform:uppercase;letter-spacing:0.1em">' + (item.icon_name || '') + '</div>' +
+        '<div style="font-size:14px;margin-top:4px">' + (item.caption || '') + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
 </script>
 </head>
 <body>
