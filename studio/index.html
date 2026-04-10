@@ -873,7 +873,7 @@ const addToLib = (id, img) => {
   if(img && (img.imageUrl || img.url) && typeof uploadToSupabase === 'function') {
     const icon = ICONS_DATA.find(x => String(x.id) === String(id)) || selectedIcon;
     uploadToSupabase(img.imageUrl || img.url, icon?.name || '', id, { caption: img.caption || '', scene: img.scene || scene || '', prompt: img.prompt || '' })
-      .then(r => { if(r.success) { console.log('Uploaded to Supabase:', r.url); if(typeof renderSupabaseLibrary==='function') renderSupabaseLibrary(); } else { console.warn('Supabase upload failed:', r.error); } });
+      .then(r => { if(r.success) { console.log('Uploaded to Supabase:', r.url); } else { console.warn('Supabase upload failed:', r.error); } });
   }
 };
 const removeFromLib = (iconId, imgId) => { const l=load(LIB_KEY); const k=String(iconId); if(l[k])l[k]=l[k].filter(i=>i.id!==imgId); save(LIB_KEY,l); };
@@ -1550,7 +1550,6 @@ function bulkDelete() { if(!confirm(`Delete ${libSelected.size} images?`))return
 
 // ── TAB SWITCHING ─────────────────────────────────────────────────────────────
 function switchTab(tab) {
-  if (tab === 'library') setTimeout(renderSupabaseLibrary, 300);
   // Hide all tabs
   document.querySelectorAll(".tab-content").forEach(e=>{e.classList.remove("active");e.style.display="none";});
   document.querySelectorAll(".nav-tab").forEach(e=>e.classList.remove("active"));
@@ -2218,39 +2217,6 @@ async function deleteFromSupabase(contentId, storagePath) {
 }
 
 // Supabase-backed library render
-async function renderSupabaseLibrary() {
-  var grid = document.getElementById('library-grid');
-  if (!grid) return;
-  grid.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:11px">Loading...</div>';
-  var items = await loadLibraryFromSupabase(null);
-  if (!items || !items.length) {
-    grid.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:11px;text-align:center">No images yet. Generate and they will appear here.</div>';
-    return;
-  }
-  window.__supaItems = items;
-  var html = '';
-  for (var i = 0; i < items.length; i++) {
-    var item = items[i];
-    var published = item.is_published;
-    html += '<div data-si="' + i + '" style="cursor:pointer;margin-bottom:4px;position:relative;background:#1a1814">';
-    html += '<img src="' + item.image_url + '" style="width:100%;display:block">';
-    html += '<span style="position:absolute;top:4px;right:4px;font-size:9px;padding:2px 5px;text-transform:uppercase;letter-spacing:0.06em;background:' + (published ? 'var(--green)' : 'rgba(0,0,0,0.5)') + ';color:#fff">' + (published ? 'Live' : 'Draft') + '</span>';
-    html += '<span style="position:absolute;bottom:4px;left:4px;color:rgba(255,255,255,0.8);font-size:9px;text-transform:uppercase">' + (item.icon_name || '') + '</span>';
-    html += '</div>';
-  }
-  grid.innerHTML = html;
-  grid.onclick = function(e) {
-    var el = e.target.closest('[data-si]');
-    if (el && window.__supaItems) {
-      var it = window.__supaItems[parseInt(el.getAttribute('data-si'))];
-      if (it) openLightboxSupabase(it.id, it.image_url, it.icon_name, it.is_published, it.storage_path || '');
-    }
-  };
-}
-
-
-function setLibIconFilter(n) { window.__libIconFilter = n; renderSupabaseLibrary(); }
-
 
 function setLibIconFilter(n) { window.__libIconFilter = n; renderSupabaseLibrary(); }
 
