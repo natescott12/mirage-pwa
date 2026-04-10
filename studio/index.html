@@ -1708,13 +1708,21 @@ async function repairLibrary() {
 }
 
 function clearLibraryConfirm() {
-  if (!confirm("Clear all images from the library? This cannot be undone.")) return;
-  save(LIB_KEY, {});
+  const name = selectedIcon ? selectedIcon.name : 'all icons';
+  if (!confirm('Clear library for ' + name + '? This cannot be undone.')) return;
+  if (selectedIcon) {
+    // Clear only the selected icon's images
+    const lib = load(LIB_KEY);
+    delete lib[selectedIcon.id];
+    save(LIB_KEY, lib);
+  } else {
+    save(LIB_KEY, {});
+  }
   renderLibrary();
   updateLibCount();
   renderIconList();
   renderIconCard();
-  notify("Library cleared");
+  notify('Library cleared for ' + name);
 }
 
 // ── PERSONA ───────────────────────────────────────────────────────────────────
