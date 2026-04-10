@@ -2185,52 +2185,33 @@ const SUPA_JWT_LIB = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 async function uploadToSupabase(imageBase64, iconName, iconId, meta) {
   try {
-    // Convert base64 to blob
-    // Strip data URL prefix safely
-    const base64Data = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
-    const byteStr = atob(base64Data);
-    const ab = new ArrayBuffer(byteStr.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
-    const blob = new Blob([ab], {type: 'image/jpeg'});
-
-    // Upload to storage
     const filename = (iconName||'icon').toLowerCase().replace(/\s+/g,'-') + '_' + Date.now() + '.jpg';
-    const uploadResp = await fetch(SUPA_URL_LIB + '/storage/v1/object/content/' + filename, {
+    const resp = await fetch(PROXY + '/publish', {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + SUPA_JWT_LIB, 'apikey': SUPA_KEY_LIB, 'Content-Type': 'image/jpeg', 'x-upsert': 'true' },
-      body: blob
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        imageData: imageBase64,
+        filename: filename,
+        meta: {
+          icon_name: iconName || '',
+          icon_id: String(iconId || ''),
+          caption: meta?.caption || meta?.prompt || '',
+          content_type: 'free',
+          price: 0,
+          scene: meta?.scene || '',
+          tags: []
+        }
+      })
     });
-    if (!uploadResp.ok) throw new Error('Upload failed: ' + uploadResp.status);
-    const publicUrl = SUPA_URL_LIB + '/storage/v1/object/public/content/' + filename;
-
-    // Insert as DRAFT (is_published: false)
-    const row = {
-      icon_name: iconName || '',
-      icon_id: String(iconId || ''),
-      image_url: publicUrl,
-      storage_path: filename,
-      caption: meta.caption || meta.prompt || '',
-      content_type: 'free',
-      price: 0,
-      scene: meta.scene || '',
-      tags: meta.tags || [],
-      is_published: false
-    };
-    const insertResp = await fetch(SUPA_URL_LIB + '/rest/v1/content', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + SUPA_JWT_LIB, 'apikey': SUPA_KEY_LIB, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-      body: JSON.stringify(row)
-    });
-    if (!insertResp.ok) throw new Error('Insert failed: ' + await insertResp.text());
-    const result = await insertResp.json();
-    return { success: true, url: publicUrl, id: result[0]?.id };
+    const result = await resp.json();
+    if (!result.success) throw new Error(result.error || 'Publish failed');
+    console.log('Uploaded via proxy:', result.url);
+    return { success: true, url: result.url, id: result.id };
   } catch(e) {
-    console.error('uploadToSupabase error:', e);
+    console.error('uploadToSupabase error:', e.message);
     return { success: false, error: e.message };
   }
 }
-
 async function loadLibraryFromSupabase(iconId) {
   try {
     const filter = iconId ? '&icon_id=eq.' + String(iconId) : '';
