@@ -1583,7 +1583,7 @@ function toast(msg, duration = 2500) {
 }
 
 // ── LOAD ICONS ───────────────────────────────────────────────────────────────
-async async function loadIcons() {
+async function loadIcons() {
   const personas = await loadPersonasFromJSON();
   window.__personas = personas;
   populateIconSelect(personas);
