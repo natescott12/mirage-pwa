@@ -583,6 +583,19 @@ tbody tr:hover td { background: var(--bg); }
   /* Hide standalone header when in admin iframe */
   body.in-admin header { display: none !important; }
   body.in-admin .shell { padding-top: 32px !important; }
+
+  /* Project Dashboard dark fix */
+  body, html { background: var(--bg) !important; }
+  .content, .pane, .stats-grid, .stat-card, .priority-list, 
+  .priority-item, .section-header, .status-bar, .project-dash { 
+    background: var(--bg) !important; 
+    color: var(--ink) !important;
+  }
+  .stat-card { background: var(--surface) !important; }
+  .stat-value { color: var(--ink) !important; font-style: normal !important; }
+  .section-title { font-style: normal !important; color: var(--ink) !important; }
+  .priority-title { color: var(--ink) !important; }
+  .priority-detail { color: var(--ink-mid) !important; }
 </style>
 </head>
 <body>
