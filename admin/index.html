@@ -382,7 +382,7 @@ tbody tr:hover td { background: var(--bg); }
           </div>
           <div style="display:flex;gap:10px">
             <button class="btn btn-outline" onclick="showPane('icons')">← All Icons</button>
-            <button class="btn" id="save-btn" onclick="savePersona()">Save</button>
+            <button id="save-btn" onclick="savePersona()" style="padding:9px 18px;background:var(--accent);color:#fff;border:none;font-family:'Afacad',sans-serif;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer">Save</button>
           </div>
         </div>
 
@@ -1587,8 +1587,9 @@ async function loadDashboard() {
 // ── PERSONA BUILDER ───────────────────────────────────────────────────────────
 function populateIconSelect() {
   const sel = document.getElementById('persona-icon-select');
+  const icons = (window.__personas && window.__personas.length > 0) ? window.__personas : allIcons;
   sel.innerHTML = '<option value="">— Select Icon —</option>' +
-    allIcons.map(i => `<option value="${i.id}">${i.name} · ${i.archetype || 'No archetype'}</option>`).join('');
+    icons.map(i => '<option value="' + i.id + '">' + i.name + ' · ' + (i.archetype || 'No archetype') + '</option>').join('');
 }
 
 function openPersona(iconId) {
