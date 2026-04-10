@@ -2351,16 +2351,30 @@ async function lbTogglePublish() {
 }
 
 async function lbDelete() {
-  if (!currentLightboxId) return;
   if (!confirm('Delete this image permanently?')) return;
-  const ok = await deleteFromSupabase(currentLightboxId, currentLightboxPath);
-  if (ok) {
-    document.getElementById('lightbox').style.display = 'none';
-    currentLightboxId = null;
+  // If opened via Supabase library
+  if (currentLightboxId) {
+    const ok = await deleteFromSupabase(currentLightboxId, currentLightboxPath);
+    if (ok) {
+      closeLightbox();
+      currentLightboxId = null;
+      notify('Image deleted');
+      renderSupabaseLibrary();
+      renderLibrary();
+    } else { notify('Delete failed'); }
+    return;
+  }
+  // If opened via local library (lbImages)
+  if (lbImages && lbImages.length && typeof lbIdx !== 'undefined') {
+    const item = lbImages[lbIdx];
+    if (!item) return;
+    removeFromLib(item.iconId || (selectedIcon && selectedIcon.id), item.id);
+    lbImages.splice(lbIdx, 1);
+    if (!lbImages.length) { closeLightbox(); renderLibrary(); return; }
+    lbIdx = Math.min(lbIdx, lbImages.length - 1);
+    renderLb();
+    renderLibrary();
     notify('Image deleted');
-    renderSupabaseLibrary();
-  } else {
-    notify('Delete failed');
   }
 }
 
