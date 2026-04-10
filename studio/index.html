@@ -1570,12 +1570,11 @@ function loadPersonaIntoStudio(iconId) {
         if (p.makeup)       currentChar.makeup      = p.makeup;
         if (p.age)          currentChar.age         = p.age;
 
-        // Save back to localStorage
+        // Save back to localStorage using correct key
         try {
-          var CHAR_KEY = typeof CHARACTER_KEY !== 'undefined' ? CHARACTER_KEY : 'mirage-chars';
-          var chars = JSON.parse(localStorage.getItem(CHAR_KEY) || '{}');
+          var chars = JSON.parse(localStorage.getItem('mirage_characters_v1') || '{}');
           chars[iconId] = currentChar;
-          localStorage.setItem(CHAR_KEY, JSON.stringify(chars));
+          localStorage.setItem('mirage_characters_v1', JSON.stringify(chars));
         } catch(e) {}
       }
 
@@ -1603,6 +1602,19 @@ function loadPersonaIntoStudio(iconId) {
       }
 
       // ── Re-render both sections ──
+      // Set currentChar directly so loadCharIntoBuilder doesn't need localStorage round-trip
+      if (typeof currentChar !== 'undefined') {
+        if (p.eye_color)    currentChar.eyeColor    = p.eye_color;
+        if (p.eye_shape)    currentChar.eyeShape    = p.eye_shape;
+        if (p.hair_color)   currentChar.hairColor   = p.hair_color;
+        if (p.hair_length)  currentChar.hairLength  = p.hair_length;
+        if (p.hair_texture) currentChar.hairTexture = p.hair_texture;
+        if (p.skin_tone)    currentChar.skinTone    = p.skin_tone;
+        if (p.skin_texture) currentChar.skinTexture = p.skin_texture;
+        if (p.build)        currentChar.build       = p.build;
+        if (p.makeup)       currentChar.makeup      = p.makeup;
+        if (p.age)          currentChar.age         = p.age;
+      }
       if (typeof loadCharIntoBuilder === 'function') loadCharIntoBuilder();
       if (typeof loadPersonaForIcon === 'function') loadPersonaForIcon();
       if (typeof refreshPrompt === 'function') refreshPrompt();
@@ -1805,6 +1817,9 @@ let currentPersona = {};
 let currentWardrobe = [];
 window.activeCluster = "all";
 
+function getChar(iconId) {
+  try { return JSON.parse(localStorage.getItem('mirage_characters_v1')||'{}')[iconId]||{}; } catch { return {}; }
+}
 function getPersona(iconId) {
   try { return JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}')[iconId]||{}; } catch { return {}; }
 }
