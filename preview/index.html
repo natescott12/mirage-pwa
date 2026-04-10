@@ -164,7 +164,7 @@ async function loadFeedFromSupabase() {
 async function renderSupabaseFeed() {
   const items = await loadFeedFromSupabase();
   if (!items || !items.length) return; // fall back to mock data
-  const feed = document.getElementById('feed-posts') || document.querySelector('.feed-content, .posts, #posts');
+  const feed = document.getElementById('tab-feed') || document.getElementById('feed-posts') || document.querySelector('.feed-content, .posts, #posts');
   if (!feed) return;
   feed.innerHTML = items.map(item => {
     const isFree = item.content_type === 'free';
