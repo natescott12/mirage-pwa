@@ -1700,13 +1700,15 @@ function loadPersonaForIcon(idx) {
     editor.innerHTML = '<div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-text">Select an icon above to begin building her persona.</div></div>';
     return;
   }
-  const persona = (window.__personas || {})[String(idx)];
-  if (!persona) {
+  const wrapper = (window.__personas || {})[String(idx)];
+  if (!wrapper) {
     editor.innerHTML = '<div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-text">Persona not found. Try reloading.</div></div>';
     console.warn('loadPersonaForIcon: missing index', idx);
     return;
   }
-  buildPersonaForm(persona, idx);
+  const icon = { name: wrapper.name || wrapper.iconName || '', archetype: wrapper.archetype || wrapper.tagline || '' };
+  const p = wrapper.persona_data || wrapper;
+  editor.innerHTML = buildPersonaForm(p, icon);
 }
 
 function buildPersonaForm(p, icon) {
