@@ -409,7 +409,7 @@ tbody tr:hover td { background: var(--bg); }
             <div class="page-title">Icons</div>
             <div class="page-sub">All 100 character archetypes</div>
           </div>
-          <button class="btn" onclick="showPane('personas')">+ Build Persona</button>
+          <button class="btn btn-ghost" onclick="showPane('personas')">⊕ Build Persona</button>
         </div>
         <div class="filter-bar">
           <input type="text" placeholder="Search icons…" id="icon-search" oninput="filterIcons()">
@@ -1671,7 +1671,11 @@ function renderIconGrid(icons) {
   const grid = document.getElementById('icon-grid');
   const filter = document.getElementById('icon-filter-status')?.value || '';
 
-  let filtered = icons;
+  // Sort alphabetically by name first
+  const sorted = [...icons].sort(function(a,b) {
+    return (a.name||'').toLowerCase().localeCompare((b.name||'').toLowerCase());
+  });
+  let filtered = sorted;
   if (filter === 'active') filtered = icons.filter(i => i.status === 'active' || i.status === 'live');
   else if (filter === 'inactive') filtered = icons.filter(i => i.status === 'inactive');
   else if (filter === 'complete') filtered = icons.filter(i => {
