@@ -1613,10 +1613,16 @@ async function loadIcons() {
   }
 
   // Luna, Vera, Aria always active by default if not set
-  ['Luna','Vera','Aria'].forEach(name => {
-    const icon = allIcons.find(i => i.name === name);
-    if (icon && icon.status === 'inactive') icon.status = 'active';
+  ['Luna','Vera','Aria'].forEach(function(name) {
+    const icon = allIcons.find(function(i) { return i.name === name; });
+    if (icon) {
+      if (!activeState[icon.id]) {
+        activeState[icon.id] = 'active';
+        icon.status = 'active';
+      }
+    }
   });
+  localStorage.setItem('mirage-active-icons', JSON.stringify(activeState));
 
   document.getElementById('badge-icons').textContent = allIcons.filter(i => i.status !== 'inactive').length;
   renderIconGrid(allIcons);
@@ -1774,8 +1780,18 @@ function populateIconSelect(personasObj) {
 
 function openPersona(iconId) {
   showPane('personas');
-  document.getElementById('persona-icon-select').value = iconId;
-  loadPersonaForIcon(iconId);
+  // Find this icon's persona index
+  const icon = allIcons.find(i => i.id === iconId);
+  if (!icon) return;
+  const idx = icon._personaIdx !== undefined ? icon._personaIdx : (iconId - 1);
+  // Set the select value
+  setTimeout(function() {
+    const sel = document.getElementById('persona-icon-select');
+    if (sel) {
+      sel.value = String(idx);
+      loadPersonaForIcon(String(idx));
+    }
+  }, 300);
 }
 
 function loadPersonaForIcon(idx) {
