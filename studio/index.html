@@ -1393,49 +1393,11 @@ function renderOutput() {
 }
 
 function renderLibrary() {
-  const lib=load(LIB_KEY);
-  const iconsWithImgs=ICONS_DATA.filter(i=>(lib[String(i.id)]||lib[i.id]||[]).length>0);
-  const btns=[{id:"all",name:"All Icons",color:"#1a1714",count:getTotalCount()},...iconsWithImgs.map(i=>({id:i.id,name:i.name,color:i.color,count:(lib[String(i.id)]||[]).length}))];
-  setHTML("lib-icon-btns",btns.map(b=>`
-    <div class="lib-icon-btn ${libIconId===b.id?"active":""}" onclick="setLibIcon('${b.id}')">
-      <div class="lib-dot" style="background:${b.color}"></div>
-      <span class="lib-name">${typeof b.name==="string"?b.name.toLowerCase():b.name}</span>
-      <span class="lib-cnt">${b.count}</span>
-    </div>`).join(""));
-  let images=[];
-  if(libIconId==="all"){
-    ICONS_DATA.forEach(icon=>(lib[String(icon.id)]||[]).forEach(img=>images.push({...img,icon})));
-    images.sort((a,b)=>b.id-a.id);
-  } else {
-    const icon=ICONS_DATA.find(i=>String(i.id)===String(libIconId));
-    if(icon) images=(lib[String(libIconId)]||[]).map(img=>({...img,icon}));
-  }
-  if(libFilter==="free") images=images.filter(i=>i.contentType==="free");
-  if(libFilter==="ppv") images=images.filter(i=>i.contentType==="ppv");
-  if(libFilter==="fav") images=images.filter(i=>i.favourite);
-  lbImages=images;
-  const grid=$("library-grid");
-  if(!grid) return;
-  if(!images.length){
-    grid.innerHTML=`<div style="grid-column:1/-1;padding:60px 32px;text-align:center;border:1px solid var(--border);border-radius:2px;background:var(--bg2)"><div class="serif" style="font-size:24px;color:rgba(26,23,20,0.18);margin-bottom:10px">No images yet</div><div style="font-size:12px;color:rgba(26,23,20,0.28)">Generate images and they'll appear here automatically</div></div>`;
+  // Render from Supabase — cross-machine library
+  if (typeof renderSupabaseLibrary === 'function') {
+    renderSupabaseLibrary();
     return;
   }
-  grid.innerHTML=images.map((img,idx)=>`
-    <div class="lib-card ${libSelected.has(img.id)?"selected":""}" id="lc-${img.id}">
-      ${img.imageUrl
-        ? `<img src="${img.imageUrl}" alt="${img.icon.name}" onclick="openLb(${idx})" loading="lazy" style="width:100%;aspect-ratio:3/4;object-fit:cover;object-position:center top;filter:saturate(0.78) contrast(1.06);display:block;transition:transform 0.3s" />`
-        : `<div style="width:100%;aspect-ratio:3/4;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px"><div style="font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">Expired</div><div style="font-size:9px;color:var(--muted)">Run ↺ Repair</div></div>`
-      }
-      <div class="grain-overlay"></div>
-      <div class="lib-card-fade"></div>
-      <div class="lib-card-name">${img.icon.name.toLowerCase()}</div>
-      <div class="lib-card-type">${img.contentType==="ppv"?`$${img.suggestedPrice}`:"Free"}</div>
-      ${img.favourite?`<div class="lib-card-fav">★</div>`:""}
-      <div class="lib-card-check" onclick="toggleSelect(event,${img.id})">${libSelected.has(img.id)?"✓":""}</div>
-    </div>`).join("");
-  const bb=$("bulk-btns");
-  if(bb) bb.style.display=libSelected.size>0?"flex":"none";
-  updateLibCount();
 }
 
 function renderIconsGrid(filter="") {
