@@ -2220,90 +2220,47 @@ async function renderSupabaseLibrary() {
   const libContainer = document.getElementById('library-grid') || document.getElementById('lib-images') || document.getElementById('lib-grid');
   if (!libContainer) return;
   libContainer.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:11px">Loading...</div>';
-  const items = await loadLibraryFromSupabase(null); // load all, filter client-side
-  if (!items.length) {
+  const items = await loadLibraryFromSupabase(null);
+
+  // Update icon filter buttons
+  const iconBtnsEl = document.getElementById('lib-icon-btns');
+  if (iconBtnsEl) {
+    const icons = [...new Set(items.map(i => i.icon_name).filter(Boolean))];
+    iconBtnsEl.innerHTML = ['all'].concat(icons).map(name => {
+      const count = name === 'all' ? items.length : items.filter(i => i.icon_name === name).length;
+      const active = (window.__libIconFilter || 'all') === name;
+      return '<button onclick="setLibIconFilter(\'' + name + '\')" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);font-size:11px;letter-spacing:0.06em;cursor:pointer;background:' + (active ? 'var(--ink)' : 'transparent') + ';color:' + (active ? 'var(--bg)' : 'var(--ink)') + '">' + name + ' ' + count + '</button>';
+    }).join('');
+  }
+
+  // Filter by selected icon
+  const filter = window.__libIconFilter || 'all';
+  const filtered = filter === 'all' ? items : items.filter(i => i.icon_name === filter);
+
+  // Update count
+  const countEl = document.getElementById('lib-total');
+  if (countEl) countEl.textContent = filtered.length;
+
+  if (!filtered.length) {
     libContainer.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:11px;text-align:center">No images yet. Generate and they will appear here.</div>';
     return;
   }
-  libContainer.innerHTML = items.map(item => {
+
+  libContainer.innerHTML = filtered.map(item => {
     const published = item.is_published;
-    return '<div class="lib-item" style="position:relative;cursor:pointer;break-inside:avoid;margin-bottom:4px;background:#1a1814" onclick="openLightboxSupabase(\''+item.id+'\',\''+item.image_url+'\',\''+item.icon_name+'\','+published+',\''+item.storage_path+'\')">' +
-      '<img src="'+item.image_url+'" style="width:100%;height:auto;display:block;aspect-ratio:3/4;object-fit:cover" onload="this.style.opacity=1" onerror="this.style.opacity=0.2" loading="lazy">' +
-      '<div style="position:absolute;top:6px;right:6px;font-size:9px;padding:2px 6px;letter-spacing:0.08em;text-transform:uppercase;font-weight:600;'+
-        (published ? 'background:var(--green);color:#fff' : 'background:rgba(0,0,0,0.5);color:var(--muted)') + '">' +
+    return '<div class="lib-item" style="position:relative;cursor:pointer;break-inside:avoid;margin-bottom:4px;background:#1a1814" onclick="openLightboxSupabase(\'' + item.id + '\',\'' + item.image_url + '\',\'' + item.icon_name + '\',' + published + ',\'' + (item.storage_path||'') + '\')">' +
+      '<img src="' + item.image_url + '" style="width:100%;display:block">' +
+      '<div style="position:absolute;top:6px;right:6px;font-size:9px;padding:2px 6px;letter-spacing:0.08em;text-transform:uppercase;font-weight:600;' +
+        (published ? 'background:var(--green);color:#fff' : 'background:rgba(0,0,0,0.5);color:rgba(255,255,255,0.6)') + '">' +
         (published ? 'Live' : 'Draft') +
       '</div>' +
+      '<div style="position:absolute;bottom:6px;left:6px;font-size:9px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.06em">' + (item.icon_name||'') + '</div>' +
     '</div>';
   }).join('');
 }
 
-function openLightboxSupabase(id, url, iconName, published, storagePath) {
-  currentLightboxId = id;
-  currentLightboxPath = storagePath;
-  currentLightboxPublished = published;
-  const lb = document.getElementById('lightbox');
-  if (!lb) return;
-  lb.style.display = 'flex';
-  const img = lb.querySelector('img');
-  if (img) img.src = url;
-  // Update publish button state
-  const pubBtn = document.getElementById('lb-publish-btn');
-  if (pubBtn) {
-    pubBtn.textContent = published ? 'Remove from Feed' : 'Publish to Feed';
-    pubBtn.style.background = published ? 'var(--red)' : 'var(--green)';
-  }
-}
+window.setLibIconFilter = function(name) {
+  window.__libIconFilter = name;
+  renderSupabaseLibrary();
+};
 
-let currentLightboxId = null;
-let currentLightboxPath = null;
-let currentLightboxPublished = false;
-
-async function lbTogglePublish() {
-  if (!currentLightboxId) return;
-  const newState = !currentLightboxPublished;
-  const ok = await publishToFeed(currentLightboxId, newState);
-  if (ok) {
-    currentLightboxPublished = newState;
-    notify(newState ? 'Published to feed' : 'Removed from feed');
-    const pubBtn = document.getElementById('lb-publish-btn');
-    if (pubBtn) {
-      pubBtn.textContent = newState ? 'Remove from Feed' : 'Publish to Feed';
-      pubBtn.style.background = newState ? 'var(--red)' : 'var(--green)';
-    }
-    renderSupabaseLibrary();
-  } else {
-    notify('Failed to update');
-  }
-}
-
-async function lbDelete() {
-  if (!confirm('Delete this image permanently?')) return;
-  // If opened via Supabase library
-  if (currentLightboxId) {
-    const ok = await deleteFromSupabase(currentLightboxId, currentLightboxPath);
-    if (ok) {
-      closeLightbox();
-      currentLightboxId = null;
-      notify('Image deleted');
-      renderSupabaseLibrary();
-      renderLibrary();
-    } else { notify('Delete failed'); }
-    return;
-  }
-  // If opened via local library (lbImages)
-  if (lbImages && lbImages.length && typeof lbIdx !== 'undefined') {
-    const item = lbImages[lbIdx];
-    if (!item) return;
-    removeFromLib(item.iconId || (selectedIcon && selectedIcon.id), item.id);
-    lbImages.splice(lbIdx, 1);
-    if (!lbImages.length) { closeLightbox(); renderLibrary(); return; }
-    lbIdx = Math.min(lbIdx, lbImages.length - 1);
-    renderLb();
-    renderLibrary();
-    notify('Image deleted');
-  }
-}
-
-</script>
-</body>
-</html>
