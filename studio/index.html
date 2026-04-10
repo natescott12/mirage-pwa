@@ -2034,7 +2034,6 @@ async function publishToSupabase(item) {
     const filename = (item.icon?.name || 'icon').toLowerCase().replace(/\s+/g,'-') + '_' + Date.now() + '.jpg';
     const meta = {
       icon_name: item.icon?.name || selectedIcon?.name || '',
-      icon_id: item.icon?.id || selectedIcon?.id || '',
       caption: item.caption || item.prompt || '',
       content_type: 'free',
       price: 0,
