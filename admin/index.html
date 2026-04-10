@@ -1512,6 +1512,8 @@ function showPane(id) {
   if (id === 'requests') loadRequests();
   if (id === 'checklist') initChecklist();
   if (id === 'pnl') initPnl();
+
+  if (pane === 'personas') { loadPersonasFromJSON().then(function(p){ window.__personas=p; populateIconSelect(p); }); }
 }
 
 // ── TOAST ────────────────────────────────────────────────────────────────────
@@ -1662,11 +1664,21 @@ async function loadDashboard() {
 }
 
 // ── PERSONA BUILDER ───────────────────────────────────────────────────────────
-function populateIconSelect() {
+function populateIconSelect(personasObj) {
   const sel = document.getElementById('persona-icon-select');
-  const icons = (window.__personas && window.__personas.length > 0) ? window.__personas : allIcons;
-  sel.innerHTML = '<option value="">— Select Icon —</option>' +
-    icons.map(i => '<option value="' + i.id + '">' + i.name + ' · ' + (i.archetype || 'No archetype') + '</option>').join('');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Select Icon —</option>';
+  if (!personasObj) return;
+  const entries = Object.entries(personasObj);
+  entries.sort((a,b) => (a[1].name||'').toLowerCase().localeCompare((b[1].name||'').toLowerCase()));
+  for (const [key, p] of entries) {
+    const name = p.name || p.iconName || p.icon_name || ('Icon '+key);
+    const arch = p.archetype || p.tagline || '';
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = arch ? name+' · '+arch : name;
+    sel.appendChild(opt);
+  }
 }
 
 function openPersona(iconId) {
@@ -1675,42 +1687,20 @@ function openPersona(iconId) {
   loadPersonaForIcon(iconId);
 }
 
-function loadPersonaForIcon(iconId) {
-  currentIconId = iconId;
-  const icon = allIcons.find(i => i.id === iconId);
-  if (!icon) {
-    document.getElementById('persona-editor').innerHTML = `<div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-text">Select an icon above.</div></div>`;
+function loadPersonaForIcon(idx) {
+  const editor = document.getElementById('persona-editor');
+  if (!editor) return;
+  if (!idx || idx === '') {
+    editor.innerHTML = '<div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-text">Select an icon above to begin building her persona.</div></div>';
     return;
   }
-
-  const pct = getPersonaCompletion(icon);
-  document.getElementById('persona-sub').textContent = `Editing: ${icon.name} · ${icon.archetype}`;
-  document.getElementById('persona-progress-label').textContent = pct > 0 ? `${pct}% complete` : 'Not started';
-
-  const p = icon.persona_data || {};
-  hasUnsavedChanges = false;
-  setSaveStatus('');
-
-  document.getElementById('persona-editor').innerHTML = buildPersonaForm(p, icon);
-
-  // Wire change tracking
-  document.querySelectorAll('#persona-editor input, #persona-editor select, #persona-editor textarea').forEach(el => {
-    el.addEventListener('input', () => { hasUnsavedChanges = true; setSaveStatus('Unsaved changes'); });
-  });
-
-  // Wire tag chips
-  document.querySelectorAll('.tag-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      const group = chip.dataset.group;
-      const multi = chip.dataset.multi === 'true';
-      if (!multi) {
-        document.querySelectorAll(`.tag-chip[data-group="${group}"]`).forEach(c => c.classList.remove('selected'));
-      }
-      chip.classList.toggle('selected');
-      hasUnsavedChanges = true;
-      setSaveStatus('Unsaved changes');
-    });
-  });
+  const persona = (window.__personas || {})[String(idx)];
+  if (!persona) {
+    editor.innerHTML = '<div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-text">Persona not found. Try reloading.</div></div>';
+    console.warn('loadPersonaForIcon: missing index', idx);
+    return;
+  }
+  buildPersonaForm(persona, idx);
 }
 
 function buildPersonaForm(p, icon) {
