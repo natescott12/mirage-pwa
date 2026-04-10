@@ -1447,6 +1447,7 @@ function toast(msg, duration = 2500) {
 
 // ── LOAD ICONS ───────────────────────────────────────────────────────────────
 async function loadIcons() {
+  await loadPersonasFromJSON();
   if (sb) {
     const { data, error } = await sb.from('icons').select('*').order('name');
     if (!error && data) {
