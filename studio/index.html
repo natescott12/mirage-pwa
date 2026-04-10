@@ -1539,7 +1539,25 @@ function selectIconAndGenerate(id) { selectIcon(id);switchTab("generate"); }
 function openIconLibrary() { libIconId=selectedIcon.id;renderLibrary();switchTab("library"); }
 function addToQueue(id) { const item=generatedContent.find(c=>c.id===id);if(!item||item.status==="queued")return;item.status="queued";queue.push({...item});updateQueueCount();renderOutput();renderQueue();notify(`${item.icon.name} · Added to queue`); }
 function removeFromQueue(id) { queue=queue.filter(q=>q.id!==id);const item=generatedContent.find(c=>c.id===id);if(item)item.status="pending";updateQueueCount();renderQueue();renderOutput(); }
-function publishAll() { if(!queue.length)return notify("Queue is empty","error");notify(`Publishing ${queue.length} drops...`); }
+function publishAll() {
+  const items = generatedContent.filter(c => c.imageUrl && !c.publishedToSupabase);
+  if (!items.length) { notify('No new images to publish'); return; }
+  notify('Publishing ' + items.length + ' image(s) to Mirage...');
+  let done = 0;
+  items.forEach(async (item) => {
+    const result = await publishToSupabase(item);
+    if (result.success) {
+      item.publishedToSupabase = true;
+      item.supabaseUrl = result.url;
+      notify(item.icon.name + ' published to Mirage');
+    } else {
+      notify('Failed: ' + result.error);
+    }
+    done++;
+    if (done === items.length) renderOutput();
+  });
+}
+function _publishAll_orig() { if(!queue.length)return notify("Queue is empty","error");notify(`Publishing ${queue.length} drops...`); }
 function copyPrompt(id) { const item=generatedContent.find(c=>c.id===id);if(!item)return;navigator.clipboard.writeText(item.fluxPrompt||buildPrompt());notify("Prompt copied"); }
 function toggleOutputFav(id) { const item=generatedContent.find(c=>c.id===id);if(!item)return;item.favourite=!item.favourite;if(item.savedToLib)toggleFav(item.icon.id,item.id);renderOutput(); }
 function setLibIcon(id) { libIconId=id;libSelected.clear();renderLibrary(); }
@@ -2004,6 +2022,66 @@ if (window.self !== window.top) {
 }
 
 init();
+
+const SUPA_URL = 'https://gmyenvnfuailickepvax.supabase.co';
+const SUPA_KEY = 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
+
+async function publishToSupabase(item) {
+  try {
+    // 1. Upload image to Supabase Storage
+    const imageResp = await fetch(item.imageUrl);
+    const blob = await imageResp.blob();
+    const filename = item.icon.name.toLowerCase() + '_' + item.id + '.jpg';
+    
+    const uploadResp = await fetch(SUPA_URL + '/storage/v1/object/content/' + filename, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Content-Type': 'image/jpeg',
+        'x-upsert': 'true'
+      },
+      body: blob
+    });
+    
+    if (!uploadResp.ok) throw new Error('Storage upload failed: ' + uploadResp.status);
+    const publicUrl = SUPA_URL + '/storage/v1/object/public/content/' + filename;
+    
+    // 2. Insert row into content table
+    const contentRow = {
+      icon_name: item.icon.name,
+      icon_id: item.icon.id,
+      image_url: publicUrl,
+      caption: item.caption || '',
+      content_type: item.contentType || 'free',
+      price: item.suggestedPrice || 0,
+      scene: item.scene || '',
+      tags: item.tags || [],
+      is_published: true
+    };
+    
+    const insertResp = await fetch(SUPA_URL + '/rest/v1/content', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + SUPA_KEY,
+        'apikey': SUPA_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify(contentRow)
+    });
+    
+    if (!insertResp.ok) {
+      const err = await insertResp.text();
+      throw new Error('DB insert failed: ' + err);
+    }
+    
+    return { success: true, url: publicUrl };
+  } catch (e) {
+    console.error('Supabase publish error:', e);
+    return { success: false, error: e.message };
+  }
+}
+
 </script>
 </body>
 </html>
