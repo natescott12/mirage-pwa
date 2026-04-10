@@ -873,7 +873,7 @@ const addToLib = (id, img) => {
   if(img && (img.imageUrl || img.url) && typeof uploadToSupabase === 'function') {
     const icon = ICONS_DATA.find(x => String(x.id) === String(id)) || selectedIcon;
     uploadToSupabase(img.imageUrl || img.url, icon?.name || '', id, { caption: img.caption || '', scene: img.scene || scene || '', prompt: img.prompt || '' })
-      .then(r => { if(r.success) { console.log('Uploaded to Supabase:', r.url); } else { console.warn('Supabase upload failed:', r.error); } });
+      .then(r => { if(r.success) { console.log('Uploaded to Supabase:', r.url); if(typeof renderSupabaseLibrary==='function') renderSupabaseLibrary(); } else { console.warn('Supabase upload failed:', r.error); } });
   }
 };
 const removeFromLib = (iconId, imgId) => { const l=load(LIB_KEY); const k=String(iconId); if(l[k])l[k]=l[k].filter(i=>i.id!==imgId); save(LIB_KEY,l); };
