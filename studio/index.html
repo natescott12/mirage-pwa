@@ -860,7 +860,18 @@ const CHAR_KEY = "mirage_characters_v1";
 const load = key => { try { return JSON.parse(localStorage.getItem(key))||{}; } catch { return {}; } };
 const save = (key, val) => { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) { console.warn(e); } };
 const getIconLib = id => (load(LIB_KEY)[String(id)]||[]);
-const addToLib = (id, img) => { const l=load(LIB_KEY); const k=String(id); if(!l[k])l[k]=[]; l[k].unshift(img); save(LIB_KEY,l); };
+const addToLib = (id, img) => {
+  const l=load(LIB_KEY); const k=String(id);
+  if(!l[k])l[k]=[];
+  l[k].unshift(img);
+  save(LIB_KEY,l);
+  // Auto-upload to Supabase as draft
+  if(img && img.url && typeof uploadToSupabase === 'function') {
+    const icon = ICONS_DATA.find(x => String(x.id) === String(id)) || selectedIcon;
+    uploadToSupabase(img.url, icon?.name || '', id, { caption: img.caption || '', scene: img.scene || scene || '', prompt: img.prompt || '' })
+      .then(r => { if(r.success) { console.log('Uploaded to Supabase:', r.url); } else { console.warn('Supabase upload failed:', r.error); } });
+  }
+};
 const removeFromLib = (iconId, imgId) => { const l=load(LIB_KEY); const k=String(iconId); if(l[k])l[k]=l[k].filter(i=>i.id!==imgId); save(LIB_KEY,l); };
 const toggleFav = (iconId, imgId) => { const l=load(LIB_KEY); const k=String(iconId); if(l[k]){const i=l[k].find(x=>x.id===imgId);if(i)i.favourite=!i.favourite;} save(LIB_KEY,l); };
 const getTotalCount = () => Object.values(load(LIB_KEY)).reduce((s,a)=>s+a.length,0);
