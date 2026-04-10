@@ -1586,6 +1586,7 @@ function bulkDelete() { if(!confirm(`Delete ${libSelected.size} images?`))return
 
 // ── TAB SWITCHING ─────────────────────────────────────────────────────────────
 function switchTab(tab) {
+  if (tab === 'library') setTimeout(renderSupabaseLibrary, 300);
   // Hide all tabs
   document.querySelectorAll(".tab-content").forEach(e=>{e.classList.remove("active");e.style.display="none";});
   document.querySelectorAll(".nav-tab").forEach(e=>e.classList.remove("active"));
@@ -2254,7 +2255,7 @@ async function deleteFromSupabase(contentId, storagePath) {
 
 // Supabase-backed library render
 async function renderSupabaseLibrary() {
-  const libContainer = document.getElementById('lib-images') || document.getElementById('lib-grid');
+  const libContainer = document.getElementById('library-grid') || document.getElementById('lib-images') || document.getElementById('lib-grid');
   if (!libContainer) return;
   libContainer.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:11px">Loading...</div>';
   const items = await loadLibraryFromSupabase(selectedIcon?.id);
