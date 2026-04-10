@@ -2094,6 +2094,7 @@ async function _publishToSupabase_old(item) {
       price: item.suggestedPrice || 0,
       scene: item.scene || '',
       tags: item.tags || [],
+      storage_path: filename,
       is_published: true
     };
     
