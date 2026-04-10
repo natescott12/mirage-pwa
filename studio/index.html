@@ -2027,6 +2027,7 @@ init();
 
 const SUPA_URL = 'https://gmyenvnfuailickepvax.supabase.co';
 const SUPA_KEY = 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
+const SUPA_JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdteWVudm5mdWFpbGlja2VwdmF4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTQzMTIwMywiZXhwIjoyMDkxMDA3MjAzfQ.oY14ULMhWOUVHLklxGtz8Sjm35kjcy35p4qx1cnjrIk';
 
 async function publishToSupabase(item) {
   try {
@@ -2074,7 +2075,7 @@ async function _publishToSupabase_old(item) {
     const uploadResp = await fetch(SUPA_URL + '/storage/v1/object/content/' + filename, {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_JWT,
         'Content-Type': 'image/jpeg',
         'x-upsert': 'true'
       },
@@ -2100,7 +2101,7 @@ async function _publishToSupabase_old(item) {
     const insertResp = await fetch(SUPA_URL + '/rest/v1/content', {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_JWT,
         'apikey': SUPA_KEY,
         'Content-Type': 'application/json',
         'Prefer': 'return=representation'
