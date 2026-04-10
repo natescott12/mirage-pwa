@@ -859,7 +859,25 @@ const CHAR_KEY = "mirage_characters_v1";
 const load = key => { try { return JSON.parse(localStorage.getItem(key))||{}; } catch { return {}; } };
 const save = (key, val) => { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) { console.warn(e); } };
 const getIconLib = id => (load(LIB_KEY)[id]||[]);
-const addToLib = (id, img) => { const l=load(LIB_KEY); if(!l[id])l[id]=[]; l[id].unshift(img); save(LIB_KEY,l); };
+const addToLib = (id, img) => {
+  const l=load(LIB_KEY);
+  if(!l[id])l[id]=[];
+  l[id].unshift(img);
+  save(LIB_KEY,l);
+  // Auto-upload to Supabase via proxy
+  if(img && (img.imageUrl || img.url)) {
+    const icon = ICONS_DATA.find(x => String(x.id) === String(id)) || selectedIcon;
+    fetch('https://mirage-proxy-production.up.railway.app/publish', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        imageData: img.imageUrl || img.url,
+        filename: (icon && icon.name ? icon.name.toLowerCase().replace(/\s+/g,'-') : 'icon') + '_' + Date.now() + '.jpg',
+        meta: { icon_name: icon&&icon.name||'', icon_id: String(id||''), caption: img.caption||img.prompt||'', content_type:'free', price:0, scene:img.scene||scene||'', tags:[] }
+      })
+    }).then(r=>r.json()).then(r=>{ if(r.success) console.log('Uploaded to Supabase:', r.url); else console.warn('Upload failed:', r.error); }).catch(e=>console.warn('Upload error:', e.message));
+  }
+};
 const removeFromLib = (iconId, imgId) => { const l=load(LIB_KEY); if(l[iconId])l[iconId]=l[iconId].filter(i=>i.id!==imgId); save(LIB_KEY,l); };
 const toggleFav = (iconId, imgId) => { const l=load(LIB_KEY); if(l[iconId]){const i=l[iconId].find(x=>x.id===imgId);if(i)i.favourite=!i.favourite;} save(LIB_KEY,l); };
 const getTotalCount = () => Object.values(load(LIB_KEY)).reduce((s,a)=>s+a.length,0);
