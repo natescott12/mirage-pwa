@@ -2177,8 +2177,8 @@ async function uploadToSupabase(imageBase64, iconName, iconId, meta) {
 }
 async function loadLibraryFromSupabase(iconId) {
   try {
-    const filter = iconId ? '&icon_id=eq.' + String(iconId) : '';
-    const resp = await fetch(SUPA_URL_LIB + '/rest/v1/content?order=created_at.desc&limit=100' + filter, {
+    const filter = iconId ? '&icon_name=eq.' + encodeURIComponent(String(iconId)) : '';
+    const resp = await fetch(SUPA_URL_LIB + '/rest/v1/content?order=created_at.desc&limit=200' + filter, {
       headers: { 'apikey': SUPA_KEY_LIB, 'Authorization': 'Bearer ' + SUPA_KEY_LIB }
     });
     if (!resp.ok) return [];
@@ -2220,7 +2220,7 @@ async function renderSupabaseLibrary() {
   const libContainer = document.getElementById('library-grid') || document.getElementById('lib-images') || document.getElementById('lib-grid');
   if (!libContainer) return;
   libContainer.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:11px">Loading...</div>';
-  const items = await loadLibraryFromSupabase(selectedIcon?.id);
+  const items = await loadLibraryFromSupabase(null); // load all, filter client-side
   if (!items.length) {
     libContainer.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:11px;text-align:center">No images yet. Generate and they will appear here.</div>';
     return;
