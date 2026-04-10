@@ -1698,6 +1698,7 @@ function loadPersonaForIcon(idx) {
   if (!editor) return;
   if (!idx || idx === '') {
     editor.innerHTML = '<div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-text">Select an icon above to begin building her persona.</div></div>';
+    window.currentIconId = null;
     return;
   }
   const wrapper = (window.__personas || {})[String(idx)];
@@ -1708,6 +1709,18 @@ function loadPersonaForIcon(idx) {
   }
   const icon = { name: wrapper.name || wrapper.iconName || '', archetype: wrapper.archetype || wrapper.tagline || '' };
   const p = wrapper.persona_data || wrapper;
+
+  // Set global state that savePersona depends on
+  window.currentIconId = wrapper.id || parseInt(idx) + 1;
+
+  // Ensure allIcons has this entry so savePersona can find it
+  if (typeof allIcons !== 'undefined') {
+    const existing = allIcons.find(i => i.id === window.currentIconId);
+    if (!existing) {
+      allIcons.push({ id: window.currentIconId, name: icon.name, archetype: icon.archetype, persona_data: p });
+    }
+  }
+
   editor.innerHTML = buildPersonaForm(p, icon);
 }
 
