@@ -1393,11 +1393,13 @@ function renderOutput() {
 }
 
 function renderLibrary() {
-  // Render from Supabase — cross-machine library
-  if (typeof renderSupabaseLibrary === 'function') {
-    renderSupabaseLibrary();
-    return;
-  }
+  const lib=load(LIB_KEY);
+  const all=Object.values(lib).flat();
+  const countEl=document.getElementById('lib-total');
+  if(countEl) countEl.textContent=all.length;
+  const subEl=document.getElementById('lib-subtitle');
+  if(subEl) subEl.textContent=all.length+' total images · saved automatically per icon';
+  renderIconList();
 }
 
 function renderIconsGrid(filter="") {
@@ -2219,24 +2221,38 @@ async function deleteFromSupabase(contentId, storagePath) {
 async function renderSupabaseLibrary() {
   var grid = document.getElementById('library-grid');
   if (!grid) return;
-  grid.innerHTML = 'Loading...';
-  var items = await loadLibraryFromSupabase(null);
-  if (!items || !items.length) { grid.innerHTML = 'No images yet.'; return; }
-  window.__supaItems = items;
-  var html = '';
-  for (var i = 0; i < items.length; i++) {
-    var item = items[i];
-    html += '<div data-si="' + i + '" style="cursor:pointer;margin-bottom:4px;position:relative"><img src="' + item.image_url + '" style="width:100%;display:block"><span style="position:absolute;top:4px;right:4px;background:' + (item.is_published ? 'green' : 'rgba(0,0,0,0.5)') + ';color:#fff;font-size:9px;padding:2px 5px">' + (item.is_published ? 'LIVE' : 'DRAFT') + '</span><span style="position:absolute;bottom:4px;left:4px;color:#fff;font-size:9px">' + (item.icon_name || '') + '</span></div>';
-  }
-  grid.innerHTML = html;
-  grid.onclick = function(e) {
-    var el = e.target.closest('[data-si]');
-    if (el && window.__supaItems) {
-      var it = window.__supaItems[parseInt(el.getAttribute('data-si'))];
-      if (it) openLightboxSupabase(it.id, it.image_url, it.icon_name, it.is_published, it.storage_path || '');
+  grid.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:11px">Loading...</div>';
+  try {
+    var items = await loadLibraryFromSupabase(null);
+    if (!items || !items.length) {
+      grid.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:11px;text-align:center">No images yet.</div>';
+      return;
     }
-  };
+    window.__supaItems = items;
+    var html = '';
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      html += '<div data-si="' + i + '" style="cursor:pointer;margin-bottom:4px;position:relative;background:#111">';
+      html += '<img src="' + it.image_url + '" style="width:100%;display:block">';
+      html += '<span style="position:absolute;top:4px;right:4px;background:' + (it.is_published ? '#2a8650' : 'rgba(0,0,0,0.5)') + ';color:#fff;font-size:9px;padding:2px 5px">' + (it.is_published ? 'LIVE' : 'DRAFT') + '</span>';
+      html += '<span style="position:absolute;bottom:4px;left:4px;color:#fff;font-size:9px">' + (it.icon_name || '') + '</span>';
+      html += '</div>';
+    }
+    grid.innerHTML = html;
+    grid.onclick = function(e) {
+      var el = e.target.closest('[data-si]');
+      if (el) {
+        var it = window.__supaItems[parseInt(el.getAttribute('data-si'))];
+        if (it) openLightboxSupabase(it.id, it.image_url, it.icon_name, it.is_published, it.storage_path || '');
+      }
+    };
+  } catch(err) {
+    grid.innerHTML = '<div style="padding:20px;color:red;font-size:11px">Error: ' + err.message + '</div>';
+  }
 }
+
+function setLibIconFilter(n) { window.__libIconFilter = n; renderSupabaseLibrary(); }
+
 
 function setLibIconFilter(n) { window.__libIconFilter = n; renderSupabaseLibrary(); }
 
