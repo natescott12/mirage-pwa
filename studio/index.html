@@ -82,14 +82,14 @@
   .output-img { width: 100%; height: 100%; object-fit: cover; object-position: center top; filter: saturate(0.78) contrast(1.06); display: block; cursor: zoom-in; }
   .grain-overlay { position: absolute; inset: 0; z-index: 2; pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E"); opacity: 0.7; mix-blend-mode: multiply; }
   .img-fade { position: absolute; bottom: 0; left: 0; right: 0; height: 50%; background: linear-gradient(to top, rgba(248,246,242,0.95) 10%, transparent); z-index: 3; }
-  .img-name { position: absolute; bottom: 8px; left: 12px; z-index: 4; font-family: 'Playfair Display', serif; font-style: italic; font-size: 34px; color: var(--text); line-height: 0.9; letter-spacing: -0.02em; }
+  .img-name { position: absolute; bottom: 8px; left: 12px; z-index: 4; font-family: 'DM Sans', serif; font-style: italic; font-size: 34px; color: var(--text); line-height: 0.9; letter-spacing: -0.02em; }
   .img-badge { position: absolute; top: 8px; right: 8px; z-index: 4; padding: 3px 9px; background: rgba(248,246,242,0.92); border-radius: 2px; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text); }
   .img-series { position: absolute; top: 8px; left: 8px; z-index: 4; padding: 3px 9px; background: rgba(26,23,20,0.6); border-radius: 2px; font-size: 9px; letter-spacing: 0.1em; color: rgba(248,246,242,0.9); }
   .img-save { position: absolute; bottom: 8px; right: 8px; z-index: 5; padding: 4px 10px; background: rgba(26,23,20,0.55); border-radius: 2px; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(248,246,242,0.9); text-decoration: none; }
   .img-fav { position: absolute; top: 36px; right: 8px; z-index: 4; width: 26px; height: 26px; background: rgba(248,246,242,0.85); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; }
   .output-generating { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
   .output-meta { padding: 12px 13px; }
-  .output-caption { font-family: 'Playfair Display', serif; font-style: italic; font-size: 14px; color: var(--dim); margin-bottom: 7px; line-height: 1.5; }
+  .output-caption { font-family: 'DM Sans', sans-serif; font-style: normal; font-size: 14px; color: var(--dim); margin-bottom: 7px; line-height: 1.5; }
   .output-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; margin-top: 7px; }
   .output-tag { padding: 2px 8px; background: rgba(26,23,20,0.04); border: 1px solid var(--border); border-radius: 1px; font-size: 9px; color: var(--muted); }
   .output-actions { display: flex; gap: 6px; }
@@ -105,7 +105,7 @@
   .lib-icon-btn.active .lib-name { color: var(--bg); }
   .lib-icon-btn.active .lib-cnt { color: rgba(248,246,242,0.5); }
   .lib-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .lib-name { font-family: 'Playfair Display', serif; font-style: italic; font-size: 15px; color: var(--text); }
+  .lib-name { font-family: 'DM Sans', sans-serif; font-style: normal; font-size: 15px; color: var(--text); }
   .lib-cnt { font-size: 9px; color: var(--muted); }
   .lib-filter { padding: 5px 12px; border: 1px solid var(--border-md); border-radius: 2px; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; color: var(--muted); background: transparent; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
   .lib-filter.active { background: var(--bg2); border-color: var(--border-strong); color: var(--text); }
@@ -115,7 +115,7 @@
   .lib-card img { width: 100%; aspect-ratio: 3/4; object-fit: cover; object-position: center top; filter: saturate(0.78) contrast(1.06); display: block; transition: transform 0.3s; }
   .lib-card:hover img { transform: scale(1.03); }
   .lib-card-fade { position: absolute; bottom: 0; left: 0; right: 0; height: 55%; background: linear-gradient(to top, rgba(26,23,20,0.75), transparent); z-index: 2; }
-  .lib-card-name { position: absolute; bottom: 7px; left: 9px; z-index: 3; font-family: 'Playfair Display', serif; font-style: italic; font-size: 20px; color: var(--bg); line-height: 1; }
+  .lib-card-name { position: absolute; bottom: 7px; left: 9px; z-index: 3; font-family: 'DM Sans', serif; font-style: italic; font-size: 20px; color: var(--bg); line-height: 1; }
   .lib-card-type { position: absolute; top: 7px; right: 7px; z-index: 3; padding: 2px 7px; background: rgba(248,246,242,0.9); border-radius: 1px; font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text); }
   .lib-card-fav { position: absolute; top: 7px; left: 7px; z-index: 3; font-size: 13px; }
   .lib-card-check { position: absolute; bottom: 7px; right: 7px; z-index: 3; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid rgba(248,246,242,0.6); display: flex; align-items: center; justify-content: center; font-size: 9px; color: transparent; transition: all 0.15s; }
@@ -279,7 +279,7 @@
   .persona-builder.collapsed .persona-builder-body { display: none; }
   .persona-builder-body { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
   .persona-phrase-row { display: flex; gap: 6px; align-items: center; }
-  .persona-phrase-num { font-family: 'Playfair Display', serif; font-style: italic; font-size: 14px; color: var(--muted); width: 16px; flex-shrink: 0; }
+  .persona-phrase-num { font-family: 'DM Sans', sans-serif; font-style: normal; font-size: 14px; color: var(--muted); width: 16px; flex-shrink: 0; }
   .persona-input { width: 100%; padding: 7px 10px; background: var(--bg); border: 1px solid var(--border-md); border-radius: 2px; font-size: 12px; color: var(--text); outline: none; font-family: 'DM Sans', sans-serif; transition: border-color 0.15s; }
   .persona-input:focus { border-color: var(--border-strong); }
   .persona-textarea { width: 100%; padding: 8px 10px; background: var(--bg); border: 1px solid var(--border-md); border-radius: 2px; font-size: 12px; color: var(--text); outline: none; font-family: 'DM Sans', sans-serif; resize: vertical; min-height: 68px; line-height: 1.6; transition: border-color 0.15s; }
