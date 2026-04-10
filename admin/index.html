@@ -1299,6 +1299,83 @@ function addFile() {
         </div>
       </div>
 
+      <!-- DESIGN SYSTEM PANE -->
+      <div class="pane" id="pane-design">
+        <h2 style="font-size:22px;font-weight:600;margin-bottom:4px">Design System</h2>
+        <p style="color:var(--ink-dim);font-size:13px;margin-bottom:32px">Mirage visual language — reference for all design and dev work</p>
+
+        <div style="margin-bottom:40px">
+          <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:16px">Colors</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px">
+            <div style="background:var(--bg);border:1px solid var(--border);padding:16px"><div style="font-size:12px;font-weight:600">--bg</div><div style="font-size:11px;color:var(--ink-dim)">#0f0e0d · Page bg</div></div>
+            <div style="background:var(--surface);border:1px solid var(--border);padding:16px"><div style="font-size:12px;font-weight:600">--surface</div><div style="font-size:11px;color:var(--ink-dim)">#1a1814 · Cards</div></div>
+            <div style="background:var(--accent);border:1px solid var(--border);padding:16px;color:#fff"><div style="font-size:12px;font-weight:600">--accent</div><div style="font-size:11px;opacity:0.8">#c9622f · CTA</div></div>
+            <div style="background:var(--ink);border:1px solid var(--border);padding:16px;color:var(--bg)"><div style="font-size:12px;font-weight:600">--ink</div><div style="font-size:11px;opacity:0.6">#fff · Text</div></div>
+            <div style="border:1px solid var(--border);padding:16px"><div style="font-size:12px;font-weight:600;color:var(--ink-mid)">--ink-mid</div><div style="font-size:11px;color:var(--ink-dim)">55% white</div></div>
+            <div style="border:1px solid var(--border);padding:16px"><div style="font-size:12px;font-weight:600;color:var(--ink-dim)">--ink-dim</div><div style="font-size:11px;color:var(--ink-dim)">35% white</div></div>
+            <div style="background:#2a6640;border:1px solid var(--border);padding:16px;color:#fff"><div style="font-size:12px;font-weight:600">--green</div><div style="font-size:11px;opacity:0.8">Live, success</div></div>
+            <div style="background:#b03025;border:1px solid var(--border);padding:16px;color:#fff"><div style="font-size:12px;font-weight:600">--red</div><div style="font-size:11px;opacity:0.8">Danger, delete</div></div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:40px">
+          <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:16px">Typography</div>
+          <div style="background:var(--surface);border:1px solid var(--border);padding:24px;display:grid;gap:16px">
+            <div><div style="font-family:'Afacad',sans-serif;font-size:28px;font-weight:600">Afacad — Primary UI</div><div style="font-size:11px;color:var(--ink-dim)">All admin, studio, labels, buttons, nav. No Playfair in admin/studio.</div></div>
+            <div><div style="font-family:'DM Sans',sans-serif;font-size:16px;font-weight:300">DM Sans Light — Secondary</div><div style="font-size:11px;color:var(--ink-dim)">Body copy, descriptions</div></div>
+            <div style="border-top:1px solid var(--border);padding-top:16px;display:grid;gap:8px">
+              <div style="display:flex;gap:16px;align-items:baseline"><span style="font-size:22px;font-weight:600">22/600</span><span style="font-size:11px;color:var(--ink-dim)">Pane titles</span></div>
+              <div style="display:flex;gap:16px;align-items:baseline"><span style="font-size:16px;font-weight:500">16/500</span><span style="font-size:11px;color:var(--ink-dim)">Section headers</span></div>
+              <div style="display:flex;gap:16px;align-items:baseline"><span style="font-size:13px">13/400</span><span style="font-size:11px;color:var(--ink-dim)">Body</span></div>
+              <div style="display:flex;gap:16px;align-items:baseline"><span style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase">11/CAPS</span><span style="font-size:11px;color:var(--ink-dim)">Labels</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:40px">
+          <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:16px">Buttons</div>
+          <div style="background:var(--surface);border:1px solid var(--border);padding:24px;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+            <button style="padding:9px 18px;background:var(--accent);color:#fff;border:none;font-family:'Afacad',sans-serif;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer">Primary</button>
+            <button style="padding:9px 18px;background:var(--ink);color:var(--bg);border:none;font-family:'Afacad',sans-serif;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer">Secondary</button>
+            <button style="padding:9px 18px;background:transparent;color:var(--ink);border:1px solid var(--border-strong);font-family:'Afacad',sans-serif;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer">Ghost</button>
+            <button style="padding:9px 18px;background:transparent;color:var(--red);border:1px solid rgba(176,48,37,0.4);font-family:'Afacad',sans-serif;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer">Danger</button>
+            <span style="padding:2px 8px;background:var(--green);color:#fff;font-size:9px;letter-spacing:0.1em;text-transform:uppercase">LIVE</span>
+            <span style="padding:2px 8px;background:rgba(255,255,255,0.1);color:var(--ink-mid);font-size:9px;letter-spacing:0.1em;text-transform:uppercase">DRAFT</span>
+            <span style="padding:2px 8px;background:var(--accent);color:#fff;font-size:9px;letter-spacing:0.1em;text-transform:uppercase">PPV</span>
+          </div>
+        </div>
+
+        <div style="margin-bottom:40px">
+          <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:16px">Stack & URLs</div>
+          <div style="background:var(--surface);border:1px solid var(--border);padding:24px;display:grid;gap:10px;font-size:12px">
+            <div style="display:grid;grid-template-columns:160px 1fr;gap:8px"><span style="color:var(--ink-dim)">PWA</span><span>mirage-pwa.vercel.app · mirageicons.com</span></div>
+            <div style="display:grid;grid-template-columns:160px 1fr;gap:8px"><span style="color:var(--ink-dim)">Studio</span><span>mirage-pwa.vercel.app/studio</span></div>
+            <div style="display:grid;grid-template-columns:160px 1fr;gap:8px"><span style="color:var(--ink-dim)">Admin</span><span>mirage-pwa.vercel.app/admin (nate/MirageAdmin2026!)</span></div>
+            <div style="display:grid;grid-template-columns:160px 1fr;gap:8px"><span style="color:var(--ink-dim)">Proxy</span><span>mirage-proxy-production.up.railway.app</span></div>
+            <div style="display:grid;grid-template-columns:160px 1fr;gap:8px"><span style="color:var(--ink-dim)">Supabase</span><span>gmyenvnfuailickepvax.supabase.co</span></div>
+            <div style="display:grid;grid-template-columns:160px 1fr;gap:8px"><span style="color:var(--ink-dim)">Image Gen</span><span>Flux Kontext Pro via BFL API</span></div>
+            <div style="display:grid;grid-template-columns:160px 1fr;gap:8px"><span style="color:var(--ink-dim)">AI Layer</span><span>Claude API (claude-sonnet-4-20250514)</span></div>
+            <div style="display:grid;grid-template-columns:160px 1fr;gap:8px"><span style="color:var(--ink-dim)">GitHub</span><span>natescott12/mirage-pwa · natescott12/mirage-proxy</span></div>
+            <div style="display:grid;grid-template-columns:160px 1fr;gap:8px"><span style="color:var(--ink-dim)">Payments</span><span>Segpay — 12% processing (pending)</span></div>
+            <div style="display:grid;grid-template-columns:160px 1fr;gap:8px"><span style="color:var(--ink-dim)">SMS</span><span>Twilio — 3 numbers at $1.15/mo (pending)</span></div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:40px">
+          <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:16px">Dev Rules</div>
+          <div style="background:var(--surface);border:1px solid var(--border);padding:24px;display:grid;gap:8px;font-size:12px">
+            <div style="display:flex;gap:12px"><span style="color:var(--red)">✕</span><span>Never use browser btoa() for GitHub pushes — Python from Terminal only</span></div>
+            <div style="display:flex;gap:12px"><span style="color:var(--red)">✕</span><span>Never replace renderLibrary() — sacred localStorage version</span></div>
+            <div style="display:flex;gap:12px"><span style="color:var(--red)">✕</span><span>Never put onclick with quotes inside JS template literal HTML strings — use data attributes</span></div>
+            <div style="display:flex;gap:12px"><span style="color:var(--green)">✓</span><span>Cloud Library is a separate overlay — loadCloudLibrary() only, never mixed with renderLibrary</span></div>
+            <div style="display:flex;gap:12px"><span style="color:var(--green)">✓</span><span>addToLib auto-uploads to Supabase via Railway proxy /publish</span></div>
+            <div style="display:flex;gap:12px"><span style="color:var(--green)">✓</span><span>Proxy fetches BFL signed URLs server-side — never send base64 from browser</span></div>
+            <div style="display:flex;gap:12px"><span style="color:var(--green)">✓</span><span>Use mirage-pwa.vercel.app not mirageicons.com for fresh deploys</span></div>
+            <div style="display:flex;gap:12px"><span style="color:var(--green)">✓</span><span>personas.json in repo root — 100 icons for Persona Builder and Studio</span></div>
+          </div>
+        </div>
+      </div>
+
 
   </div><!-- /main -->
 
