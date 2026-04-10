@@ -867,11 +867,13 @@ const addToLib = (id, img) => {
   // Auto-upload to Supabase via proxy
   if(img && (img.imageUrl || img.url)) {
     const icon = ICONS_DATA.find(x => String(x.id) === String(id)) || selectedIcon;
+    const rawUrl = img.imageUrl || img.url;
+    // If it's a URL (not base64), send the URL to proxy and let it fetch server-side
     fetch('https://mirage-proxy-production.up.railway.app/publish', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
-        imageData: img.imageUrl || img.url,
+        imageData: rawUrl,
         filename: (icon && icon.name ? icon.name.toLowerCase().replace(/\s+/g,'-') : 'icon') + '_' + Date.now() + '.jpg',
         meta: { icon_name: icon&&icon.name||'', icon_id: String(id||''), caption: img.caption||img.prompt||'', content_type:'free', price:0, scene:img.scene||scene||'', tags:[] }
       })
