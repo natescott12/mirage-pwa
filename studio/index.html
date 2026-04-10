@@ -1559,7 +1559,7 @@ function removeFromQueue(id) { queue=queue.filter(q=>q.id!==id);const item=gener
 function publishAll() { if(!queue.length)return notify("Queue is empty","error");notify(`Publishing ${queue.length} drops...`); }
 function copyPrompt(id) { const item=generatedContent.find(c=>c.id===id);if(!item)return;navigator.clipboard.writeText(item.fluxPrompt||buildPrompt());notify("Prompt copied"); }
 function toggleOutputFav(id) { const item=generatedContent.find(c=>c.id===id);if(!item)return;item.favourite=!item.favourite;if(item.savedToLib)toggleFav(item.icon.id,item.id);renderOutput(); }
-function setLibIcon(id) { libIconId=id;libSelected.clear();renderLibrary(); }
+function setLibIcon(id) { libIconId=(id==='all'?'all':isNaN(id)?id:Number(id));libSelected.clear();renderLibrary(); }
 function setFilter(f,el) { libFilter=f;document.querySelectorAll(".lib-filter").forEach(e=>e.classList.remove("active"));el.classList.add("active");libSelected.clear();renderLibrary(); }
 function toggleSelect(e,id) { e.stopPropagation();if(libSelected.has(id))libSelected.delete(id);else libSelected.add(id);const c=document.getElementById(`lc-${id}`);if(c){c.classList.toggle("selected",libSelected.has(id));const cb=c.querySelector(".lib-card-check");if(cb)cb.textContent=libSelected.has(id)?"✓":"";}const bb=$("bulk-btns");if(bb)bb.style.display=libSelected.size>0?"flex":"none"; }
 function selectAll() { const ids=lbImages.map(i=>i.id);if(libSelected.size===ids.length)libSelected.clear();else ids.forEach(id=>libSelected.add(id));renderLibrary(); }
