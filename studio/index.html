@@ -2228,7 +2228,7 @@ async function renderSupabaseLibrary() {
   libContainer.innerHTML = items.map(item => {
     const published = item.is_published;
     return '<div class="lib-item" style="position:relative;cursor:pointer;break-inside:avoid;margin-bottom:4px;background:#1a1814" onclick="openLightboxSupabase(\''+item.id+'\',\''+item.image_url+'\',\''+item.icon_name+'\','+published+',\''+item.storage_path+'\')">' +
-      '<img src="'+item.image_url+'" style="width:100%;height:auto;display:block;aspect-ratio:3/4;object-fit:cover" crossorigin="anonymous" onload="this.style.opacity=1" onerror="this.style.opacity=0.2" loading="lazy">' +
+      '<img src="'+item.image_url+'" style="width:100%;height:auto;display:block;aspect-ratio:3/4;object-fit:cover" onload="this.style.opacity=1" onerror="this.style.opacity=0.2" loading="lazy">' +
       '<div style="position:absolute;top:6px;right:6px;font-size:9px;padding:2px 6px;letter-spacing:0.08em;text-transform:uppercase;font-weight:600;'+
         (published ? 'background:var(--green);color:#fff' : 'background:rgba(0,0,0,0.5);color:var(--muted)') + '">' +
         (published ? 'Live' : 'Draft') +
