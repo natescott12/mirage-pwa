@@ -866,9 +866,9 @@ const addToLib = (id, img) => {
   l[k].unshift(img);
   save(LIB_KEY,l);
   // Auto-upload to Supabase as draft
-  if(img && img.url && typeof uploadToSupabase === 'function') {
+  if(img && (img.imageUrl || img.url) && typeof uploadToSupabase === 'function') {
     const icon = ICONS_DATA.find(x => String(x.id) === String(id)) || selectedIcon;
-    uploadToSupabase(img.url, icon?.name || '', id, { caption: img.caption || '', scene: img.scene || scene || '', prompt: img.prompt || '' })
+    uploadToSupabase(img.imageUrl || img.url, icon?.name || '', id, { caption: img.caption || '', scene: img.scene || scene || '', prompt: img.prompt || '' })
       .then(r => { if(r.success) { console.log('Uploaded to Supabase:', r.url); } else { console.warn('Supabase upload failed:', r.error); } });
   }
 };
