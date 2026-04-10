@@ -2185,6 +2185,174 @@ function loadPersonaIntoStudio(iconId) {
   }
 }
 
+
+// ── SUPABASE LIBRARY ─────────────────────────────────────────────────────────
+const SUPA_URL_LIB = 'https://gmyenvnfuailickepvax.supabase.co';
+const SUPA_KEY_LIB = 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
+const SUPA_JWT_LIB = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdteWVudm5mdWFpbGlja2VwdmF4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTQzMTIwMywiZXhwIjoyMDkxMDA3MjAzfQ.oY14ULMhWOUVHLklxGtz8Sjm35kjcy35p4qx1cnjrIk';
+
+async function uploadToSupabase(imageBase64, iconName, iconId, meta) {
+  try {
+    // Convert base64 to blob
+    const parts = imageBase64.split(',');
+    const byteStr = atob(parts[1] || parts[0]);
+    const ab = new ArrayBuffer(byteStr.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
+    const blob = new Blob([ab], {type: 'image/jpeg'});
+
+    // Upload to storage
+    const filename = (iconName||'icon').toLowerCase().replace(/\s+/g,'-') + '_' + Date.now() + '.jpg';
+    const uploadResp = await fetch(SUPA_URL_LIB + '/storage/v1/object/content/' + filename, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + SUPA_JWT_LIB, 'apikey': SUPA_KEY_LIB, 'Content-Type': 'image/jpeg', 'x-upsert': 'true' },
+      body: blob
+    });
+    if (!uploadResp.ok) throw new Error('Upload failed: ' + uploadResp.status);
+    const publicUrl = SUPA_URL_LIB + '/storage/v1/object/public/content/' + filename;
+
+    // Insert as DRAFT (is_published: false)
+    const row = {
+      icon_name: iconName || '',
+      icon_id: String(iconId || ''),
+      image_url: publicUrl,
+      storage_path: filename,
+      caption: meta.caption || meta.prompt || '',
+      content_type: 'free',
+      price: 0,
+      scene: meta.scene || '',
+      tags: meta.tags || [],
+      is_published: false
+    };
+    const insertResp = await fetch(SUPA_URL_LIB + '/rest/v1/content', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + SUPA_JWT_LIB, 'apikey': SUPA_KEY_LIB, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+      body: JSON.stringify(row)
+    });
+    if (!insertResp.ok) throw new Error('Insert failed: ' + await insertResp.text());
+    const result = await insertResp.json();
+    return { success: true, url: publicUrl, id: result[0]?.id };
+  } catch(e) {
+    console.error('uploadToSupabase error:', e);
+    return { success: false, error: e.message };
+  }
+}
+
+async function loadLibraryFromSupabase(iconId) {
+  try {
+    const filter = iconId ? '&icon_id=eq.' + String(iconId) : '';
+    const resp = await fetch(SUPA_URL_LIB + '/rest/v1/content?order=created_at.desc&limit=100' + filter, {
+      headers: { 'apikey': SUPA_KEY_LIB, 'Authorization': 'Bearer ' + SUPA_KEY_LIB }
+    });
+    if (!resp.ok) return [];
+    return await resp.json();
+  } catch(e) { return []; }
+}
+
+async function publishToFeed(contentId, publish) {
+  try {
+    const resp = await fetch(SUPA_URL_LIB + '/rest/v1/content?id=eq.' + contentId, {
+      method: 'PATCH',
+      headers: { 'Authorization': 'Bearer ' + SUPA_JWT_LIB, 'apikey': SUPA_KEY_LIB, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_published: publish })
+    });
+    return resp.ok;
+  } catch(e) { return false; }
+}
+
+async function deleteFromSupabase(contentId, storagePath) {
+  try {
+    // Delete from DB
+    await fetch(SUPA_URL_LIB + '/rest/v1/content?id=eq.' + contentId, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + SUPA_JWT_LIB, 'apikey': SUPA_KEY_LIB }
+    });
+    // Delete from storage
+    if (storagePath) {
+      await fetch(SUPA_URL_LIB + '/storage/v1/object/content/' + storagePath, {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + SUPA_JWT_LIB, 'apikey': SUPA_KEY_LIB }
+      });
+    }
+    return true;
+  } catch(e) { return false; }
+}
+
+// Supabase-backed library render
+async function renderSupabaseLibrary() {
+  const libContainer = document.getElementById('lib-images') || document.getElementById('lib-grid');
+  if (!libContainer) return;
+  libContainer.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:11px">Loading...</div>';
+  const items = await loadLibraryFromSupabase(selectedIcon?.id);
+  if (!items.length) {
+    libContainer.innerHTML = '<div style="padding:20px;color:var(--muted);font-size:11px;text-align:center">No images yet. Generate and they will appear here.</div>';
+    return;
+  }
+  libContainer.innerHTML = items.map(item => {
+    const published = item.is_published;
+    return '<div class="lib-item" style="position:relative;cursor:pointer;break-inside:avoid;margin-bottom:4px" onclick="openLightboxSupabase(\''+item.id+'\',\''+item.image_url+'\',\''+item.icon_name+'\','+published+',\''+item.storage_path+'\')">' +
+      '<img src="'+item.image_url+'" style="width:100%;display:block">' +
+      '<div style="position:absolute;top:6px;right:6px;font-size:9px;padding:2px 6px;letter-spacing:0.08em;text-transform:uppercase;font-weight:600;'+
+        (published ? 'background:var(--green);color:#fff' : 'background:rgba(0,0,0,0.5);color:var(--muted)') + '">' +
+        (published ? 'Live' : 'Draft') +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function openLightboxSupabase(id, url, iconName, published, storagePath) {
+  currentLightboxId = id;
+  currentLightboxPath = storagePath;
+  currentLightboxPublished = published;
+  const lb = document.getElementById('lightbox');
+  if (!lb) return;
+  lb.style.display = 'flex';
+  const img = lb.querySelector('img');
+  if (img) img.src = url;
+  // Update publish button state
+  const pubBtn = document.getElementById('lb-publish-btn');
+  if (pubBtn) {
+    pubBtn.textContent = published ? 'Remove from Feed' : 'Publish to Feed';
+    pubBtn.style.background = published ? 'var(--red)' : 'var(--green)';
+  }
+}
+
+let currentLightboxId = null;
+let currentLightboxPath = null;
+let currentLightboxPublished = false;
+
+async function lbTogglePublish() {
+  if (!currentLightboxId) return;
+  const newState = !currentLightboxPublished;
+  const ok = await publishToFeed(currentLightboxId, newState);
+  if (ok) {
+    currentLightboxPublished = newState;
+    notify(newState ? 'Published to feed' : 'Removed from feed');
+    const pubBtn = document.getElementById('lb-publish-btn');
+    if (pubBtn) {
+      pubBtn.textContent = newState ? 'Remove from Feed' : 'Publish to Feed';
+      pubBtn.style.background = newState ? 'var(--red)' : 'var(--green)';
+    }
+    renderSupabaseLibrary();
+  } else {
+    notify('Failed to update');
+  }
+}
+
+async function lbDelete() {
+  if (!currentLightboxId) return;
+  if (!confirm('Delete this image permanently?')) return;
+  const ok = await deleteFromSupabase(currentLightboxId, currentLightboxPath);
+  if (ok) {
+    document.getElementById('lightbox').style.display = 'none';
+    currentLightboxId = null;
+    notify('Image deleted');
+    renderSupabaseLibrary();
+  } else {
+    notify('Delete failed');
+  }
+}
+
 </script>
 </body>
 </html>
