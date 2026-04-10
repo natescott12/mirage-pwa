@@ -237,7 +237,59 @@ tbody tr:hover td { background: var(--bg); }
 .status-bar { background: transparent !important; border-color: var(--border) !important; }
 .status-item { color: var(--ink-mid) !important; background: transparent !important; }
 
-</style>
+
+    .activate-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+    .activate-bar-info { display: flex; align-items: center; gap: 10px; }
+    .activate-bar-name { font-size: 14px; font-weight: 500; color: var(--ink); }
+    .icon-status-badge {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 3px 7px;
+      border-radius: 3px;
+    }
+    .icon-status-badge.in-progress { background: rgba(201,98,47,0.2); color: var(--accent); }
+    .icon-status-badge.draft { background: rgba(255,255,255,0.08); color: var(--ink-mid); }
+    .icon-status-badge.live { background: var(--green); color: #fff; }
+    .icon-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .icon-card:hover { border-color: var(--border-strong); }
+    .icon-card-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 600;
+      flex-shrink: 0;
+    }
+    .icon-card-info { flex: 1; min-width: 0; }
+    .icon-card-name { font-size: 13px; font-weight: 500; color: var(--ink); }
+    .icon-card-archetype { font-size: 11px; color: var(--ink-mid); margin-top: 2px; }
+    .icon-card-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .persona-pct { font-size: 11px; color: var(--ink-dim); }
+    #icon-grid { display: flex; flex-direction: column; gap: 8px; }
+
+  </style>
 </head>
 <body>
 
@@ -1531,22 +1583,43 @@ function toast(msg, duration = 2500) {
 }
 
 // ── LOAD ICONS ───────────────────────────────────────────────────────────────
-async function loadIcons() {
-  await loadPersonasFromJSON();
-  if (sb) {
-    const { data, error } = await sb.from('icons').select('*').order('name');
-    if (!error && data) {
-      allIcons = data;
-    } else {
-      allIcons = getMockIcons();
-    }
+async async function loadIcons() {
+  const personas = await loadPersonasFromJSON();
+  window.__personas = personas;
+  populateIconSelect(personas);
+
+  // Load activation state from localStorage
+  const activeState = JSON.parse(localStorage.getItem('mirage-active-icons') || '{}');
+
+  // Build allIcons from personas — array format for renderIconGrid
+  if (Array.isArray(personas)) {
+    allIcons = personas.map((p, i) => ({
+      id: p.id || (i + 1),
+      name: p.name || p.iconName || ('Icon ' + i),
+      archetype: p.archetype || '',
+      persona_data: p.persona_data || p,
+      status: activeState[p.id || (i+1)] || p.status || 'inactive',
+      _personaIdx: i
+    }));
   } else {
-    allIcons = getMockIcons();
+    allIcons = Object.entries(personas).map(([key, p]) => ({
+      id: p.id || parseInt(key) + 1,
+      name: p.name || p.iconName || ('Icon ' + key),
+      archetype: p.archetype || '',
+      persona_data: p.persona_data || p,
+      status: activeState[p.id || parseInt(key)+1] || p.status || 'inactive',
+      _personaIdx: parseInt(key)
+    }));
   }
 
-  document.getElementById('badge-icons').textContent = allIcons.length;
+  // Luna, Vera, Aria always active by default if not set
+  ['Luna','Vera','Aria'].forEach(name => {
+    const icon = allIcons.find(i => i.name === name);
+    if (icon && icon.status === 'inactive') icon.status = 'active';
+  });
+
+  document.getElementById('badge-icons').textContent = allIcons.filter(i => i.status !== 'inactive').length;
   renderIconGrid(allIcons);
-  populateIconSelect();
   updateDashboard();
 }
 
@@ -1590,26 +1663,38 @@ function getStatusFromCompletion(pct) {
 
 function renderIconGrid(icons) {
   const grid = document.getElementById('icon-grid');
-  if (!icons.length) {
+  const filter = document.getElementById('icon-filter-status')?.value || '';
+
+  let filtered = icons;
+  if (filter === 'active') filtered = icons.filter(i => i.status === 'active' || i.status === 'live');
+  else if (filter === 'inactive') filtered = icons.filter(i => i.status === 'inactive');
+  else if (filter === 'complete') filtered = icons.filter(i => {
+    const pct = getPersonaCompletion(i);
+    return pct >= 80;
+  });
+
+  if (!filtered.length) {
     grid.innerHTML = '<div class="empty-state"><div class="empty-state-text">No icons found.</div></div>';
     return;
   }
-  grid.innerHTML = icons.map(icon => {
+
+  grid.innerHTML = filtered.map(icon => {
     const pct = getPersonaCompletion(icon);
-    const status = getStatusFromCompletion(pct);
-    const statusLabel = status === 'complete' ? 'Complete' : status === 'partial' ? 'In Progress' : 'Not started';
-    return `
-      <div class="icon-card" onclick="openPersona('${icon.id}')">
-        <div class="icon-card-name">${icon.name}</div>
-        <div class="icon-card-archetype">${icon.archetype || '—'}</div>
-        <div class="icon-card-status">
-          <div class="status-dot ${status}"></div>
-          <div class="status-label">${statusLabel} ${pct > 0 ? '· ' + pct + '%' : ''}</div>
-        </div>
-        <div class="icon-card-progress">
-          <div class="icon-card-progress-fill" style="width:${pct}%"></div>
-        </div>
-      </div>`;
+    const status = icon.status || 'inactive';
+    const statusClass = status === 'live' ? 'live' : status === 'active' ? 'in-progress' : 'draft';
+    const statusLabel = status === 'live' ? 'LIVE' : status === 'active' ? 'ACTIVE' : 'INACTIVE';
+    const initial = (icon.name || '?')[0].toUpperCase();
+    return '<div class="icon-card" data-id="' + icon.id + '" onclick="openPersona(' + icon.id + ')">' +
+      '<div class="icon-card-avatar">' + initial + '</div>' +
+      '<div class="icon-card-info">' +
+        '<div class="icon-card-name">' + (icon.name || '') + '</div>' +
+        '<div class="icon-card-archetype">' + (icon.archetype || '') + '</div>' +
+      '</div>' +
+      '<div class="icon-card-meta">' +
+        '<span class="status-tag ' + statusClass + '">' + statusLabel + '</span>' +
+        '<span class="persona-pct">' + pct + '%</span>' +
+      '</div>' +
+    '</div>';
   }).join('');
 }
 
@@ -1697,32 +1782,91 @@ function loadPersonaForIcon(idx) {
   const editor = document.getElementById('persona-editor');
   if (!editor) return;
   if (!idx || idx === '') {
-    editor.innerHTML = '<div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-text">Select an icon above to begin building her persona.</div></div>';
+    editor.innerHTML = '<div class="empty-state"><div class="empty-state-icon">\u25ce</div><div class="empty-state-text">Select an icon above to begin building her persona.</div></div>';
     window.currentIconId = null;
     return;
   }
-  const wrapper = (window.__personas || {})[String(idx)];
+  const personas = window.__personas || {};
+  const wrapper = Array.isArray(personas) ? personas[parseInt(idx)] : personas[String(idx)];
   if (!wrapper) {
-    editor.innerHTML = '<div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-text">Persona not found. Try reloading.</div></div>';
+    editor.innerHTML = '<div class="empty-state"><div class="empty-state-icon">\u25ce</div><div class="empty-state-text">Persona not found. Try reloading.</div></div>';
     console.warn('loadPersonaForIcon: missing index', idx);
     return;
   }
-  const icon = { name: wrapper.name || wrapper.iconName || '', archetype: wrapper.archetype || wrapper.tagline || '' };
+
+  const iconObj = { name: wrapper.name || wrapper.iconName || '', archetype: wrapper.archetype || '' };
   const p = wrapper.persona_data || wrapper;
+  const iconId = wrapper.id || parseInt(idx) + 1;
 
-  // Set global state that savePersona depends on
-  window.currentIconId = wrapper.id || parseInt(idx) + 1;
+  window.currentIconId = iconId;
 
-  // Ensure allIcons has this entry so savePersona can find it
+  // Ensure in allIcons
   if (typeof allIcons !== 'undefined') {
-    const existing = allIcons.find(i => i.id === window.currentIconId);
+    let existing = allIcons.find(i => i.id === iconId);
     if (!existing) {
-      allIcons.push({ id: window.currentIconId, name: icon.name, archetype: icon.archetype, persona_data: p });
+      existing = { id: iconId, name: iconObj.name, archetype: iconObj.archetype, persona_data: p, status: 'inactive', _personaIdx: parseInt(idx) };
+      allIcons.push(existing);
     }
   }
 
-  editor.innerHTML = buildPersonaForm(p, icon);
+  // Get current activation status
+  const activeState = JSON.parse(localStorage.getItem('mirage-active-icons') || '{}');
+  const currentStatus = activeState[iconId] || wrapper.status || 'inactive';
+  const isActive = currentStatus === 'active' || currentStatus === 'live';
+
+  // Render activate bar + form
+  const activateBar = '<div class="activate-bar">' +
+    '<div class="activate-bar-info">' +
+      '<span class="icon-status-badge ' + (isActive ? 'in-progress' : 'draft') + '">' + currentStatus.toUpperCase() + '</span>' +
+      '<span class="activate-bar-name">' + iconObj.name + '</span>' +
+    '</div>' +
+    '<button class="btn ' + (isActive ? 'btn-ghost' : 'btn-primary') + '" ' +
+      'data-iconid="' + iconId + '" ' +
+      'data-action="' + (isActive ? 'deactivate' : 'activate') + '" ' +
+      'onclick="toggleIconActivation(this)">' +
+      (isActive ? 'Deactivate' : '\u2713 Activate Icon') +
+    '</button>' +
+  '</div>';
+
+  editor.innerHTML = activateBar + buildPersonaForm(p, iconObj);
 }
+function toggleIconActivation(btn) {
+  const iconId = parseInt(btn.getAttribute('data-iconid'));
+  const action = btn.getAttribute('data-action');
+  const newStatus = action === 'activate' ? 'active' : 'inactive';
+
+  // Update localStorage
+  const activeState = JSON.parse(localStorage.getItem('mirage-active-icons') || '{}');
+  activeState[iconId] = newStatus;
+  localStorage.setItem('mirage-active-icons', JSON.stringify(activeState));
+
+  // Update allIcons in memory
+  if (typeof allIcons !== 'undefined') {
+    const icon = allIcons.find(i => i.id === iconId);
+    if (icon) icon.status = newStatus;
+  }
+
+  // Update badge
+  const activeCount = (typeof allIcons !== 'undefined') ? allIcons.filter(i => i.status === 'active' || i.status === 'live').length : 0;
+  const badge = document.getElementById('badge-icons');
+  if (badge) badge.textContent = activeCount;
+
+  // Flip the button
+  btn.setAttribute('data-action', action === 'activate' ? 'deactivate' : 'activate');
+  btn.textContent = action === 'activate' ? 'Deactivate' : '\u2713 Activate Icon';
+  btn.className = 'btn ' + (action === 'activate' ? 'btn-ghost' : 'btn-primary');
+
+  // Update status badge
+  const statusBadge = btn.closest('.activate-bar')?.querySelector('.icon-status-badge');
+  if (statusBadge) {
+    statusBadge.textContent = newStatus.toUpperCase();
+    statusBadge.className = 'icon-status-badge ' + (newStatus === 'active' ? 'in-progress' : 'draft');
+  }
+
+  toast(action === 'activate' ? iconId + ' activated \u2713' : 'Deactivated');
+  updateDashboard();
+}
+
 
 function buildPersonaForm(p, icon) {
   return `
