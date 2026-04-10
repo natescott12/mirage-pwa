@@ -2081,6 +2081,41 @@ function cloudOpenLb(item) {
   document.addEventListener('keydown', lbKey);
 }
 
+
+async function clearCloudLibrary() {
+  if (!confirm('Delete ALL images from the cloud library? This cannot be undone.')) return;
+  var JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdteWVudm5mdWFpbGlja2VwdmF4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTQzMTIwMywiZXhwIjoyMDkxMDA3MjAzfQ.oY14ULMhWOUVHLklxGtz8Sjm35kjcy35p4qx1cnjrIk';
+  var SUPA = 'https://gmyenvnfuailickepvax.supabase.co';
+  var KEY = 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
+  try {
+    // Delete all DB rows
+    await fetch(SUPA + '/rest/v1/content?id=neq.00000000-0000-0000-0000-000000000000', {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + JWT, 'apikey': KEY }
+    });
+    // List and delete storage files
+    var r = await fetch(SUPA + '/storage/v1/object/list/content', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + JWT, 'apikey': KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prefix: '', limit: 200 })
+    });
+    var files = await r.json();
+    if (files && files.length) {
+      var names = files.map(function(f) { return f.name; }).filter(Boolean);
+      await fetch(SUPA + '/storage/v1/object/content', {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + JWT, 'apikey': KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prefixes: names })
+      });
+    }
+    _cloudItems = [];
+    renderCloud();
+    notify('Cloud library cleared');
+  } catch(e) {
+    notify('Error: ' + e.message);
+  }
+}
+
 </script>
 
 <div id="cloud-lib-panel" style="display:none;position:fixed;inset:0;z-index:600;background:var(--bg);overflow-y:auto;padding:24px">
