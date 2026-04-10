@@ -2205,8 +2205,9 @@ const SUPA_JWT_LIB = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 async function uploadToSupabase(imageBase64, iconName, iconId, meta) {
   try {
     // Convert base64 to blob
-    const parts = imageBase64.split(',');
-    const byteStr = atob(parts[1] || parts[0]);
+    // Strip data URL prefix safely
+    const base64Data = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
+    const byteStr = atob(base64Data);
     const ab = new ArrayBuffer(byteStr.length);
     const ia = new Uint8Array(ab);
     for (let i = 0; i < byteStr.length; i++) ia[i] = byteStr.charCodeAt(i);
