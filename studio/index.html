@@ -1514,7 +1514,9 @@ $("lightbox").addEventListener("click",function(e){if(e.target===this)closeLight
 function notify(msg,type="success") { const el=$("notification");if(!el)return;el.textContent=msg;el.className=type;el.style.display="block";clearTimeout(el._t);el._t=setTimeout(()=>{el.style.display="none";},3500); }
 function updateQueueCount() { const c=queue.length;setText("queue-count",c);setText("queue-sub",`${c} ${c===1?"drop":"drops"} scheduled`); }
 function updateLibCount() { const c=getTotalCount();setText("lib-total",c);setText("lib-subtitle",`${c} total images · saved automatically per icon`); }
-function selectIcon(id) { selectedIcon=ICONS_DATA.find(i=>i.id===id);renderIconList();renderIconCard();renderSceneTabs();renderParams();refreshPrompt();loadCharIntoBuilder();loadMoodboardForIcon();if(typeof loadPersonaForIcon==="function")loadPersonaForIcon();if(typeof loadWardrobeForIcon==="function")loadWardrobeForIcon();if(typeof resetVoicePreview==="function")resetVoicePreview(); }
+function selectIcon(
+id) {
+  loadPersonaIntoStudio(icon?.id || icon); selectedIcon=ICONS_DATA.find(i=>i.id===id);renderIconList();renderIconCard();renderSceneTabs();renderParams();refreshPrompt();loadCharIntoBuilder();loadMoodboardForIcon();if(typeof loadPersonaForIcon==="function")loadPersonaForIcon();if(typeof loadWardrobeForIcon==="function")loadWardrobeForIcon();if(typeof resetVoicePreview==="function")resetVoicePreview(); }
 function setScene(t) {
   scene=t;
   // Use the first scene prompt for consistency, moodboard handles the visual direction
@@ -2079,6 +2081,62 @@ async function publishToSupabase(item) {
   } catch (e) {
     console.error('Supabase publish error:', e);
     return { success: false, error: e.message };
+  }
+}
+
+
+// ── PERSONA BRIDGE: Load persona data from Persona Builder into Studio ───────
+function loadPersonaIntoStudio(iconId) {
+  if (!iconId) return;
+  
+  // Load from localStorage (same key Persona Builder uses)
+  const personaKey = 'mirage_persona_' + iconId;
+  const raw = localStorage.getItem(personaKey) || localStorage.getItem('persona_' + iconId);
+  if (!raw) return;
+  
+  try {
+    const persona = JSON.parse(raw);
+    
+    // Auto-select character builder traits
+    const traitMap = {
+      eyeColor: persona.eyeColor || persona.physical?.eyeColor,
+      eyeShape: persona.eyeShape || persona.physical?.eyeShape,
+      hairColor: persona.hairColor || persona.physical?.hairColor,
+      hairLength: persona.hairLength || persona.physical?.hairLength,
+      hairTexture: persona.hairTexture || persona.physical?.hairTexture,
+      skinTone: persona.skinTone || persona.physical?.skinTone,
+      skinTexture: persona.skinTexture || persona.physical?.skinTexture,
+      freckles: persona.freckles || persona.physical?.freckles,
+      makeup: persona.makeup || persona.physical?.makeup,
+      build: persona.build || persona.physical?.build,
+      age: persona.age || persona.physical?.age
+    };
+    
+    // Apply to character builder chips
+    Object.entries(traitMap).forEach(([trait, value]) => {
+      if (!value) return;
+      const chip = document.querySelector('[data-trait="' + trait + '"][data-value="' + value + '"]');
+      if (chip) {
+        // Deselect others in group
+        document.querySelectorAll('[data-trait="' + trait + '"]').forEach(c => c.classList.remove('selected'));
+        chip.classList.add('selected');
+        if (window.charBuilder) window.charBuilder[trait] = value;
+      }
+    });
+    
+    // Load voice/backstory into persona panel
+    if (persona.voice) {
+      const voiceEl = document.getElementById('persona-voice') || document.querySelector('[data-field="voice"]');
+      if (voiceEl) voiceEl.value = persona.voice;
+    }
+    if (persona.backstory) {
+      const backstoryEl = document.getElementById('persona-backstory') || document.querySelector('[data-field="backstory"]');
+      if (backstoryEl) backstoryEl.value = persona.backstory;
+    }
+    
+    console.log('Persona loaded for icon:', iconId, traitMap);
+  } catch(e) {
+    console.warn('Could not load persona:', e);
   }
 }
 
