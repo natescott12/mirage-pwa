@@ -14,7 +14,7 @@
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'DM Sans', sans-serif; font-weight: 300; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
-  .serif { font-family: 'Afacad', sans-serif; font-style: italic; }
+  .serif { font-family: 'Afacad', sans-serif; font-style: normal; }
   .eyebrow { font-size: 10px; letter-spacing: 0.22em; color: var(--muted); text-transform: uppercase; }
   ::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 2px; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -24,7 +24,7 @@
 
   /* HEADER */
   #header { height: 60px; background: var(--bg); border-bottom: 1px solid var(--border-md); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; flex-shrink: 0; z-index: 50; }
-  .logo { font-family: 'Afacad', sans-serif; font-style: italic; font-size: 24px; }
+  .logo { font-family: 'Afacad', sans-serif; font-style: normal; font-size: 24px; }
   .nav-tab { padding: 6px 14px; border-radius: 2px; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; border: 1px solid transparent; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
   .nav-tab:hover { border-color: var(--border-md); }
   .nav-tab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
@@ -51,12 +51,12 @@
   .icon-list-item { padding: 11px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; cursor: pointer; transition: background 0.1s; }
   .icon-list-item:hover { background: rgba(26,23,20,0.03); }
   .icon-list-item.selected { background: rgba(26,23,20,0.05); }
-  .icon-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Afacad', sans-serif; font-style: italic; font-size: 13px; color: rgba(255,255,255,0.9); flex-shrink: 0; }
+  .icon-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Afacad', sans-serif; font-style: normal; font-size: 13px; color: rgba(255,255,255,0.9); flex-shrink: 0; }
   .icon-lib-badge { font-size: 9px; color: var(--muted); background: var(--bg3); padding: 1px 6px; border-radius: 999px; margin-left: auto; flex-shrink: 0; }
   .panel-center { overflow-y: auto; padding: 22px 26px; }
   .icon-card { padding: 18px; background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; margin-bottom: 20px; }
   .icon-card-header { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
-  .icon-card-avatar { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Afacad', sans-serif; font-style: italic; font-size: 18px; color: rgba(255,255,255,0.9); flex-shrink: 0; }
+  .icon-card-avatar { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Afacad', sans-serif; font-style: normal; font-size: 18px; color: rgba(255,255,255,0.9); flex-shrink: 0; }
   .icon-card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
   .icon-card-field { padding: 8px 11px; background: rgba(26,23,20,0.04); border-radius: 2px; }
   .icon-card-field-label { font-size: 9px; letter-spacing: 0.16em; color: var(--muted); text-transform: uppercase; margin-bottom: 3px; }
@@ -70,7 +70,7 @@
   .scene-opt.active { background: rgba(26,23,20,0.07); border-color: var(--border-strong); color: var(--text); }
   .param-opt { padding: 6px 10px; border-radius: 2px; font-size: 11px; cursor: pointer; border: 1px solid var(--border); transition: all 0.12s; color: var(--muted); font-family: 'DM Sans', sans-serif; }
   .param-opt.active { background: rgba(26,23,20,0.07); border-color: var(--border-strong); color: var(--text); }
-  #prompt-preview { padding: 12px 13px; background: rgba(26,23,20,0.03); border: 1px solid var(--border); border-radius: 2px; font-size: 11px; color: var(--muted); line-height: 1.75; font-style: italic; margin-bottom: 18px; }
+  #prompt-preview { padding: 12px 13px; background: rgba(26,23,20,0.03); border: 1px solid var(--border); border-radius: 2px; font-size: 11px; color: var(--muted); line-height: 1.75; font-style: normal; margin-bottom: 18px; }
   #btn-generate { width: 100%; padding: 14px; background: var(--text); color: var(--bg); font-size: 11px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; border: none; border-radius: 2px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: opacity 0.15s; font-family: 'DM Sans', sans-serif; }
   #btn-generate:hover { opacity: 0.85; } #btn-generate:disabled { opacity: 0.4; cursor: default; }
   .spinner { width: 13px; height: 13px; border: 1.5px solid rgba(248,246,242,0.25); border-top-color: var(--bg); border-radius: 50%; animation: spin 0.8s linear infinite; }
@@ -82,7 +82,7 @@
   .output-img { width: 100%; height: 100%; object-fit: cover; object-position: center top; filter: saturate(0.78) contrast(1.06); display: block; cursor: zoom-in; }
   .grain-overlay { position: absolute; inset: 0; z-index: 2; pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E"); opacity: 0.7; mix-blend-mode: multiply; }
   .img-fade { position: absolute; bottom: 0; left: 0; right: 0; height: 50%; background: linear-gradient(to top, rgba(248,246,242,0.95) 10%, transparent); z-index: 3; }
-  .img-name { position: absolute; bottom: 8px; left: 12px; z-index: 4; font-family: 'DM Sans', serif; font-style: italic; font-size: 34px; color: var(--text); line-height: 0.9; letter-spacing: -0.02em; }
+  .img-name { position: absolute; bottom: 8px; left: 12px; z-index: 4; font-family: 'DM Sans', serif; font-style: normal; font-size: 34px; color: var(--text); line-height: 0.9; letter-spacing: -0.02em; }
   .img-badge { position: absolute; top: 8px; right: 8px; z-index: 4; padding: 3px 9px; background: rgba(248,246,242,0.92); border-radius: 2px; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text); }
   .img-series { position: absolute; top: 8px; left: 8px; z-index: 4; padding: 3px 9px; background: rgba(26,23,20,0.6); border-radius: 2px; font-size: 9px; letter-spacing: 0.1em; color: rgba(248,246,242,0.9); }
   .img-save { position: absolute; bottom: 8px; right: 8px; z-index: 5; padding: 4px 10px; background: rgba(26,23,20,0.55); border-radius: 2px; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(248,246,242,0.9); text-decoration: none; }
@@ -115,7 +115,7 @@
   .lib-card img { width: 100%; aspect-ratio: 3/4; object-fit: cover; object-position: center top; filter: saturate(0.78) contrast(1.06); display: block; transition: transform 0.3s; }
   .lib-card:hover img { transform: scale(1.03); }
   .lib-card-fade { position: absolute; bottom: 0; left: 0; right: 0; height: 55%; background: linear-gradient(to top, rgba(26,23,20,0.75), transparent); z-index: 2; }
-  .lib-card-name { position: absolute; bottom: 7px; left: 9px; z-index: 3; font-family: 'DM Sans', serif; font-style: italic; font-size: 20px; color: var(--bg); line-height: 1; }
+  .lib-card-name { position: absolute; bottom: 7px; left: 9px; z-index: 3; font-family: 'DM Sans', serif; font-style: normal; font-size: 20px; color: var(--bg); line-height: 1; }
   .lib-card-type { position: absolute; top: 7px; right: 7px; z-index: 3; padding: 2px 7px; background: rgba(248,246,242,0.9); border-radius: 1px; font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text); }
   .lib-card-fav { position: absolute; top: 7px; left: 7px; z-index: 3; font-size: 13px; }
   .lib-card-check { position: absolute; bottom: 7px; right: 7px; z-index: 3; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid rgba(248,246,242,0.6); display: flex; align-items: center; justify-content: center; font-size: 9px; color: transparent; transition: all 0.15s; }
@@ -165,7 +165,7 @@
   .icons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap: 9px; margin-top: 20px; }
   .icon-grid-card { padding: 16px 18px; background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; cursor: pointer; display: flex; gap: 12px; align-items: flex-start; transition: border-color 0.15s; }
   .icon-grid-card:hover { border-color: var(--border-strong); }
-  .icon-grid-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Afacad', sans-serif; font-style: italic; font-size: 15px; color: rgba(255,255,255,0.9); flex-shrink: 0; }
+  .icon-grid-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Afacad', sans-serif; font-style: normal; font-size: 15px; color: rgba(255,255,255,0.9); flex-shrink: 0; }
 
   /* CHARACTER BUILDER */
   .char-builder { background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; margin-bottom: 20px; overflow: hidden; }
@@ -189,7 +189,7 @@
   .skin-swatch.selected { border-color: var(--text); box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--text); }
   .char-save-btn { width: 100%; padding: 9px; background: transparent; border: 1px solid var(--border-strong); color: var(--dim); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; margin-top: 4px; }
   .char-save-btn:hover { background: var(--text); color: var(--bg); border-color: var(--text); }
-  .char-prompt-preview { padding: 10px 12px; background: rgba(26,23,20,0.03); border: 1px solid var(--border); border-radius: 2px; font-size: 10px; color: var(--muted); line-height: 1.7; font-style: italic; margin-top: 8px; }
+  .char-prompt-preview { padding: 10px 12px; background: rgba(26,23,20,0.03); border: 1px solid var(--border); border-radius: 2px; font-size: 10px; color: var(--muted); line-height: 1.7; font-style: normal; margin-top: 8px; }
 
 
   /* EDITABLE PROMPT */
@@ -198,12 +198,12 @@
     width: 100%; min-height: 110px; padding: 12px 13px;
     background: rgba(26,23,20,0.03); border: 1px solid var(--border);
     border-radius: 2px; font-size: 11px; color: var(--text);
-    line-height: 1.75; font-style: italic; resize: vertical;
+    line-height: 1.75; font-style: normal; resize: vertical;
     font-family: 'DM Sans', sans-serif; outline: none;
     transition: border-color 0.15s;
   }
   .prompt-textarea:focus { border-color: var(--border-strong); background: rgba(26,23,20,0.02); font-style: normal; }
-  .prompt-textarea.locked { color: var(--muted); font-style: italic; }
+  .prompt-textarea.locked { color: var(--muted); font-style: normal; }
   .prompt-controls {
     display: flex; gap: 6px; align-items: center; margin-top: 6px;
   }
@@ -269,7 +269,7 @@
   .mb-extract-btn { width: 100%; padding: 9px; border: 1px solid var(--border-strong); background: transparent; color: var(--dim); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .mb-extract-btn:hover { background: var(--text); color: var(--bg); border-color: var(--text); }
   .mb-extract-btn:disabled { opacity: 0.4; cursor: default; }
-  .mb-extracted { padding: 10px 12px; background: rgba(42,102,64,0.06); border: 1px solid rgba(42,102,64,0.2); border-radius: 2px; font-size: 10px; color: var(--dim); line-height: 1.7; font-style: italic; margin-top: 8px; display: none; }
+  .mb-extracted { padding: 10px 12px; background: rgba(42,102,64,0.06); border: 1px solid rgba(42,102,64,0.2); border-radius: 2px; font-size: 10px; color: var(--dim); line-height: 1.7; font-style: normal; margin-top: 8px; display: none; }
   .mb-extracted.visible { display: block; }
 
 
@@ -292,7 +292,7 @@
   .persona-cluster-chip.selected { background: var(--text); color: var(--bg); border-color: var(--text); }
   .persona-save-btn { width: 100%; padding: 9px; background: transparent; border: 1px solid var(--border-strong); color: var(--dim); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
   .persona-save-btn:hover { background: var(--text); color: var(--bg); border-color: var(--text); }
-  .persona-system-preview { padding: 10px 12px; background: rgba(26,23,20,0.03); border: 1px solid var(--border); border-radius: 2px; font-size: 9.5px; color: var(--muted); line-height: 1.75; font-style: italic; margin-top: 6px; max-height: 80px; overflow-y: auto; }
+  .persona-system-preview { padding: 10px 12px; background: rgba(26,23,20,0.03); border: 1px solid var(--border); border-radius: 2px; font-size: 9.5px; color: var(--muted); line-height: 1.75; font-style: normal; margin-top: 6px; max-height: 80px; overflow-y: auto; }
 
   /* WARDROBE CHIPS */
   .wardrobe-chip { padding: 5px 11px; border-radius: 2px; font-size: 11px; cursor: pointer; border: 1px solid var(--border-md); background: transparent; color: var(--dim); transition: all 0.12s; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
@@ -308,9 +308,9 @@
   .voice-preview.collapsed .voice-preview-body { display: none; }
   .voice-preview-body { padding: 12px 14px; }
   .voice-msgs { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; min-height: 60px; max-height: 200px; overflow-y: auto; }
-  .voice-msg-icon { padding: 8px 12px; background: var(--bg3); border-radius: 10px 10px 10px 2px; font-size: 12px; color: var(--dim); line-height: 1.5; max-width: 90%; align-self: flex-start; font-style: italic; }
+  .voice-msg-icon { padding: 8px 12px; background: var(--bg3); border-radius: 10px 10px 10px 2px; font-size: 12px; color: var(--dim); line-height: 1.5; max-width: 90%; align-self: flex-start; font-style: normal; }
   .voice-msg-user { padding: 8px 12px; background: var(--text); color: var(--bg); border-radius: 10px 10px 2px 10px; font-size: 12px; line-height: 1.5; max-width: 90%; align-self: flex-end; }
-  .voice-msg-thinking { padding: 8px 12px; background: var(--bg3); border-radius: 10px 10px 10px 2px; font-size: 11px; color: var(--muted); font-style: italic; align-self: flex-start; }
+  .voice-msg-thinking { padding: 8px 12px; background: var(--bg3); border-radius: 10px 10px 10px 2px; font-size: 11px; color: var(--muted); font-style: normal; align-self: flex-start; }
   .voice-input-row { display: flex; gap: 6px; }
   .voice-input { flex: 1; padding: 8px 10px; background: var(--bg); border: 1px solid var(--border-md); border-radius: 2px; font-size: 12px; color: var(--text); outline: none; font-family: 'DM Sans', sans-serif; }
   .voice-send-btn { padding: 8px 14px; background: var(--text); color: var(--bg); border: none; border-radius: 2px; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: opacity 0.15s; white-space: nowrap; }
@@ -347,7 +347,7 @@
         <div class="eyebrow" id="lb-arch"></div>
       </div>
       <div class="lb-divider"></div>
-      <div style="font-family:'Afacad',sans-serif;font-style:italic;font-size:16px;color:var(--dim);line-height:1.5" id="lb-caption"></div>
+      <div style="font-family:'Afacad',sans-serif;font-style:normal;font-size:16px;color:var(--dim);line-height:1.5" id="lb-caption"></div>
       <div class="lb-divider"></div>
       <div style="display:flex;flex-direction:column;gap:8px">
         <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--muted)">Drop time</span><span id="lb-drop"></span></div>
@@ -403,7 +403,7 @@
         <div class="icon-card-header">
           <div class="icon-card-avatar" id="card-avatar"></div>
           <div style="flex:1">
-            <input id="edit-name" class="char-input" style="font-family:'Afacad',sans-serif;font-style:italic;font-size:22px;background:transparent;border-color:transparent;padding:0;margin-bottom:3px" placeholder="Icon name" oninput="updateIconField('name',this.value)" />
+            <input id="edit-name" class="char-input" style="font-family:'Afacad',sans-serif;font-style:normal;font-size:22px;background:transparent;border-color:transparent;padding:0;margin-bottom:3px" placeholder="Icon name" oninput="updateIconField('name',this.value)" />
             <input id="edit-arch" class="char-input" style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);background:transparent;border-color:transparent;padding:0;margin-bottom:4px" placeholder="Archetype" oninput="updateIconField('archetype',this.value)" />
             <input id="edit-vibe" class="char-input" style="font-size:12px;color:var(--dim);background:transparent;border-color:transparent;padding:0" placeholder="Vibe / personality..." oninput="updateIconField('vibe',this.value)" />
           </div>
@@ -1326,7 +1326,7 @@ function renderIconList(filter="") {
     const cnt=getCount(icon.id);
     return `<div class="icon-list-item ${icon.id===selectedIcon.id?"selected":""}" onclick="selectIcon(${icon.id})">
       <div class="icon-avatar" style="background:${icon.color}">${icon.name[0]}</div>
-      <div style="flex:1;min-width:0"><div style="font-family:'Afacad',sans-serif;font-style:italic;font-size:14px;margin-bottom:1px">${icon.name}</div><div style="font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${icon.archetype}</div></div>
+      <div style="flex:1;min-width:0"><div style="font-family:'Afacad',sans-serif;font-style:normal;font-size:14px;margin-bottom:1px">${icon.name}</div><div style="font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${icon.archetype}</div></div>
       ${cnt>0?`<span class="icon-lib-badge">${cnt}</span>`:""}
       ${icon.id===selectedIcon.id?'<div style="width:4px;height:4px;border-radius:50%;background:var(--text);flex-shrink:0"></div>':""}
     </div>`;
@@ -1454,7 +1454,7 @@ function renderIconsGrid(filter="") {
     return `<div class="icon-grid-card" onclick="selectIconAndGenerate(${icon.id})">
       <div class="icon-grid-avatar" style="background:${icon.color}">${icon.name[0]}</div>
       <div style="flex:1;min-width:0">
-        <div style="font-family:'Afacad',sans-serif;font-style:italic;font-size:17px;margin-bottom:2px">${icon.name}</div>
+        <div style="font-family:'Afacad',sans-serif;font-style:normal;font-size:17px;margin-bottom:2px">${icon.name}</div>
         <div style="font-size:10px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px">${icon.archetype}</div>
         <div style="font-size:12px;color:var(--dim);line-height:1.6">${icon.vibe}</div>
         <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">
@@ -1476,11 +1476,11 @@ function renderQueue() {
   }
   el.innerHTML=queue.map((item,idx)=>`
     <div class="queue-item">
-      <div style="font-family:'Afacad',sans-serif;font-style:italic;font-size:14px;color:var(--muted);width:22px;flex-shrink:0">${idx+1}</div>
-      <div class="queue-thumb">${item.imageUrl?`<img src="${item.imageUrl}" />`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Afacad',sans-serif;font-style:italic;color:var(--muted)">${item.icon.name[0]}</div>`}</div>
+      <div style="font-family:'Afacad',sans-serif;font-style:normal;font-size:14px;color:var(--muted);width:22px;flex-shrink:0">${idx+1}</div>
+      <div class="queue-thumb">${item.imageUrl?`<img src="${item.imageUrl}" />`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Afacad',sans-serif;font-style:normal;color:var(--muted)">${item.icon.name[0]}</div>`}</div>
       <div style="flex:1;min-width:0">
-        <div style="font-family:'Afacad',sans-serif;font-style:italic;font-size:16px;margin-bottom:3px">${item.icon.name}</div>
-        <div style="font-family:'Afacad',sans-serif;font-style:italic;font-size:12px;color:var(--dim)">"${item.caption||"..."}"</div>
+        <div style="font-family:'Afacad',sans-serif;font-style:normal;font-size:16px;margin-bottom:3px">${item.icon.name}</div>
+        <div style="font-family:'Afacad',sans-serif;font-style:normal;font-size:12px;color:var(--dim)">"${item.caption||"..."}"</div>
       </div>
       <div style="text-align:right;flex-shrink:0"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">${item.dropTime||"TBD"}</div><div style="font-size:9px;padding:2px 8px;border:1px solid var(--border-md);border-radius:1px;color:var(--muted);text-transform:uppercase">${item.contentType==="ppv"?`$${item.suggestedPrice}`:"Free"}</div></div>
       <div class="queue-remove" onclick="removeFromQueue(${item.id})">×</div>
@@ -1493,7 +1493,7 @@ function renderSchedule() {
   const slots=[{time:"9:00 AM",type:"Free",s:"morning light"},{time:"1:00 PM",type:"PPV",s:"midday"},{time:"7:00 PM",type:"Free",s:"golden hour"},{time:"11:00 PM",type:"PPV",s:"night"}];
   el.innerHTML=icons.map(icon=>`
     <div class="sch-card">
-      <div class="sch-head"><div class="icon-avatar" style="background:${icon.color};width:34px;height:34px;font-size:13px">${icon.name[0]}</div><div><div style="font-family:'Afacad',sans-serif;font-style:italic;font-size:20px">${icon.name.toLowerCase()}</div><div style="font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">${icon.archetype}</div></div></div>
+      <div class="sch-head"><div class="icon-avatar" style="background:${icon.color};width:34px;height:34px;font-size:13px">${icon.name[0]}</div><div><div style="font-family:'Afacad',sans-serif;font-style:normal;font-size:20px">${icon.name.toLowerCase()}</div><div style="font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">${icon.archetype}</div></div></div>
       <div style="padding:8px 0">${slots.map(sl=>`<div class="sch-slot"><div><div style="font-size:12px;color:var(--dim)">${sl.time}</div><div style="font-size:9px;color:var(--muted)">${sl.s}</div></div><div style="font-size:9px;padding:2px 8px;border:1px solid var(--border-md);border-radius:1px;color:var(--muted)">${sl.type}</div></div>`).join("")}</div>
       <div style="padding:0 16px 14px"><button onclick="selectIconAndGenerate(${icon.id})" style="width:100%;padding:10px;background:var(--text);color:var(--bg);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;border:none;border-radius:2px;cursor:pointer;font-family:'DM Sans',sans-serif">Generate Drops →</button></div>
     </div>`).join("");
