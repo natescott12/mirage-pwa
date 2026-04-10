@@ -409,7 +409,7 @@ tbody tr:hover td { background: var(--bg); }
             <div class="page-title">Icons</div>
             <div class="page-sub">All 100 character archetypes</div>
           </div>
-          <button class="btn btn-ghost" onclick="showPane('personas')">⊕ Build Persona</button>
+          <button style="background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:4px;font-family:Afacad,sans-serif;font-size:13px;font-weight:500;cursor:pointer;letter-spacing:0.05em;" onclick="showPane('personas')">+ Build Persona</button>
         </div>
         <div class="filter-bar">
           <input type="text" placeholder="Search icons…" id="icon-search" oninput="filterIcons()">
@@ -1625,6 +1625,7 @@ async function loadIcons() {
   localStorage.setItem('mirage-active-icons', JSON.stringify(activeState));
 
   document.getElementById('badge-icons').textContent = allIcons.filter(i => i.status !== 'inactive').length;
+  allIcons.sort(function(a,b){ return (a.name||'').toLowerCase().localeCompare((b.name||'').toLowerCase()); });
   renderIconGrid(allIcons);
   updateDashboard();
 }
