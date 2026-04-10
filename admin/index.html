@@ -1943,23 +1943,6 @@ async async function savePersona() {
   const nameVal = document.getElementById('f-name')?.value || icon?.name || '';
   const archetypeVal = document.getElementById('f-archetype')?.value || icon?.archetype || '';
 
-  let saved = false;
-
-  if (sb) {
-    const { error } = await sb.from('icons').update({
-      name: nameVal,
-      archetype: archetypeVal,
-      persona_data: persona_data,
-      updated_at: new Date().toISOString()
-    }).eq('id', currentIconId);
-
-    if (!error) {
-      saved = true;
-    } else {
-      console.error('Supabase save error:', error);
-    }
-  }
-
   // Always update local state
   if (icon) {
     icon.name = nameVal;
@@ -1967,27 +1950,48 @@ async async function savePersona() {
     icon.persona_data = persona_data;
   }
 
-  // Persist to localStorage as fallback
+  // Persist to localStorage
   const localData = JSON.parse(localStorage.getItem('mirage-personas') || '{}');
   localData[currentIconId] = { name: nameVal, archetype: archetypeVal, persona_data };
   localStorage.setItem('mirage-personas', JSON.stringify(localData));
 
-  btn.innerHTML = 'Save Persona';
-  btn.disabled = false;
-  hasUnsavedChanges = false;
-
-  if (saved) {
-    setSaveStatus('Saved to Supabase ✓', 'saved');
-    toast('Saved to Supabase ✓');
+  // Save to Supabase if available
+  if (sb) {
+    sb.from('icons').update({
+      name: nameVal,
+      archetype: archetypeVal,
+      persona_data: persona_data,
+      updated_at: new Date().toISOString()
+    }).eq('id', currentIconId).then(function(result) {
+      btn.innerHTML = 'Save Persona';
+      btn.disabled = false;
+      hasUnsavedChanges = false;
+      if (result.error) {
+        console.error('Supabase save error:', result.error);
+        setSaveStatus('Saved locally (Supabase error)', 'saved');
+        toast('Saved locally');
+      } else {
+        setSaveStatus('Saved to Supabase ✓', 'saved');
+        toast('Saved to Supabase ✓');
+      }
+      const pct = getPersonaCompletion(icon);
+      if (document.getElementById('persona-progress-label')) {
+        document.getElementById('persona-progress-label').textContent = pct + '% complete';
+      }
+      updateDashboard();
+    });
   } else {
+    btn.innerHTML = 'Save Persona';
+    btn.disabled = false;
+    hasUnsavedChanges = false;
     setSaveStatus('Saved locally (Supabase offline)', 'saved');
     toast('Saved locally');
+    const pct = getPersonaCompletion(icon);
+    if (document.getElementById('persona-progress-label')) {
+      document.getElementById('persona-progress-label').textContent = pct + '% complete';
+    }
+    updateDashboard();
   }
-
-  // Update progress label
-  const pct = getPersonaCompletion(icon);
-  document.getElementById('persona-progress-label').textContent = `${pct}% complete`;
-  updateDashboard();
 }
 
 function resetPersonaForm() {
