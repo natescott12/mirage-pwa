@@ -1531,7 +1531,7 @@ $("lightbox").addEventListener("click",function(e){if(e.target===this)closeLight
 function notify(msg,type="success") { const el=$("notification");if(!el)return;el.textContent=msg;el.className=type;el.style.display="block";clearTimeout(el._t);el._t=setTimeout(()=>{el.style.display="none";},3500); }
 function updateQueueCount() { const c=queue.length;setText("queue-count",c);setText("queue-sub",`${c} ${c===1?"drop":"drops"} scheduled`); }
 function updateLibCount() { const c=getTotalCount();setText("lib-total",c);setText("lib-subtitle",`${c} total images · saved automatically per icon`); }
-function selectIcon(id) { selectedIcon=ICONS_DATA.find(i=>i.id===id);renderIconList();renderIconCard();renderSceneTabs();renderParams();refreshPrompt();loadCharIntoBuilder();loadMoodboardForIcon();if(typeof loadPersonaForIcon==="function")loadPersonaForIcon();if(typeof loadWardrobeForIcon==="function")loadWardrobeForIcon();if(typeof resetVoicePreview==="function")resetVoicePreview(); }
+function selectIcon(id) { selectedIcon=ICONS_DATA.find(i=>i.id===id); if(selectedIcon && typeof loadPersonaIntoStudio==='function') loadPersonaIntoStudio(selectedIcon.id);renderIconList();renderIconCard();renderSceneTabs();renderParams();refreshPrompt();loadCharIntoBuilder();loadMoodboardForIcon();if(typeof loadPersonaForIcon==="function")loadPersonaForIcon();if(typeof loadWardrobeForIcon==="function")loadWardrobeForIcon();if(typeof resetVoicePreview==="function")resetVoicePreview(); }
 function setScene(t) {
   scene=t;
   // Use the first scene prompt for consistency, moodboard handles the visual direction
