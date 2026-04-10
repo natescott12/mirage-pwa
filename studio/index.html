@@ -2030,6 +2030,31 @@ const SUPA_KEY = 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
 
 async function publishToSupabase(item) {
   try {
+    const filename = (item.icon?.name || 'icon').toLowerCase().replace(/\s+/g,'-') + '_' + Date.now() + '.jpg';
+    const meta = {
+      icon_name: item.icon?.name || selectedIcon?.name || '',
+      icon_id: item.icon?.id || selectedIcon?.id || '',
+      caption: item.caption || item.prompt || '',
+      content_type: 'free',
+      price: 0,
+      scene: scene || '',
+      tags: []
+    };
+    const resp = await fetch(PROXY + '/publish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageData: item.imageUrl, filename, meta })
+    });
+    const result = await resp.json();
+    if (!result.success) throw new Error(result.error || 'Publish failed');
+    return { success: true, url: result.url };
+  } catch(e) {
+    console.error('Publish error:', e);
+    return { success: false, error: e.message };
+  }
+}
+async function _publishToSupabase_old(item) {
+  try {
     // 1. Upload image to Supabase Storage
     // Handle both base64 data URLs and regular URLs
     let blob;
