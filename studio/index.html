@@ -978,6 +978,8 @@ function processMbFiles(files) {
       saveIconMoodboard(selectedIcon.id, items);
       renderMoodboard();
       refreshPrompt();
+      // Upload to Supabase Storage asynchronously
+      uploadMoodboardImageToCloud(selectedIcon, items[items.length-1]);
     };
     reader.readAsDataURL(file);
   });
@@ -1192,6 +1194,57 @@ function buildPrompt() {
     selectedIcon.aesthetic,
   ].filter(s=>s&&s.trim());
   return parts.join(", ");
+}
+
+async function uploadMoodboardImageToCloud(icon, item) {
+  if (!icon || !item || item.url) return;
+  try {
+    const resp = await fetch(PROXY + '/upload-moodboard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ iconName: icon.name, imageId: String(item.id), base64: item.base64 })
+    });
+    const data = await resp.json();
+    if (!data.url) return;
+    // Update item with URL in localStorage
+    const items = getIconMoodboard(icon.id);
+    const idx = items.findIndex(i => i.id === item.id);
+    if (idx !== -1) { items[idx].url = data.url; saveIconMoodboard(icon.id, items); }
+    // Sync full URL list to Supabase
+    await syncMoodboardUrlsToSupabase(icon.name, icon.id);
+  } catch(e) { console.warn('Moodboard upload failed:', e.message); }
+}
+
+async function syncMoodboardUrlsToSupabase(iconName, iconId) {
+  if (!window.sbStudio) return;
+  const items = getIconMoodboard(iconId);
+  const images = items.filter(i => i.url).map(i => ({
+    id: i.id, url: i.url, label: i.label, active: i.active, createdAt: i.createdAt
+  }));
+  if (!images.length) return;
+  const { data: existing } = await window.sbStudio.from('personas').select('character_data').eq('icon_name', iconName).single();
+  const merged = { ...(existing?.character_data || {}), moodboard_images: images };
+  await window.sbStudio.from('personas').upsert({ icon_name: iconName, character_data: merged }, { onConflict: 'icon_name' });
+}
+
+async function loadMoodboardFromSupabase(icon) {
+  if (!window.sbStudio) return;
+  const existing = getIconMoodboard(icon.id);
+  if (existing.length > 0) return; // Already have local data
+  const { data } = await window.sbStudio.from('personas').select('character_data').eq('icon_name', icon.name).single();
+  const images = data?.character_data?.moodboard_images;
+  if (!images || !images.length) return;
+  // Fetch each image URL and convert to base64 for localStorage
+  const items = [];
+  for (const img of images) {
+    try {
+      const resp = await fetch(img.url);
+      const blob = await resp.blob();
+      const b64 = await new Promise(res => { const fr = new FileReader(); fr.onload = e => res(e.target.result); fr.readAsDataURL(blob); });
+      items.push({ id: img.id, base64: b64, url: img.url, label: img.label, active: img.active, createdAt: img.createdAt });
+    } catch(e) { console.warn('Failed to load moodboard image:', img.url); }
+  }
+  if (items.length) { saveIconMoodboard(icon.id, items); renderMoodboard(); }
 }
 
 function refreshPrompt() {
