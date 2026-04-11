@@ -1980,21 +1980,21 @@ function buildPersonaForm(p, icon) {
     <div class="field-row triple">
       <div class="field"><label>Eye Color</label>
         <select id="f-eye-color">
-          ${['','Brown','Dark brown','Hazel','Green','Blue','Grey','Amber'].map(s =>
+          ${['','brown','dark brown','hazel','green','blue','grey','amber','black'].map(s =>
             `<option${p.eye_color===s?' selected':''}>${s}</option>`
           ).join('')}
         </select>
       </div>
       <div class="field"><label>Eye Shape</label>
         <select id="f-eye-shape">
-          ${['','Almond','Round','Hooded','Upturned','Downturned','Monolid'].map(s =>
+          ${['','almond','round','hooded','upturned','monolid','wide-set','deep-set'].map(s =>
             `<option${p.eye_shape===s?' selected':''}>${s}</option>`
           ).join('')}
         </select>
       </div>
       <div class="field"><label>Skin Tone</label>
         <select id="f-skin-tone">
-          ${['','Fair','Light','Light-medium','Medium','Olive','Medium-dark','Dark','Deep'].map(s =>
+          ${['','fair','light','light-medium','medium','olive','medium-dark','dark','deep'].map(s =>
             `<option${p.skin_tone===s?' selected':''}>${s}</option>`
           ).join('')}
         </select>
@@ -2003,21 +2003,21 @@ function buildPersonaForm(p, icon) {
     <div class="field-row triple">
       <div class="field"><label>Hair Color</label>
         <select id="f-hair-color">
-          ${['','Black','Dark brown','Brown','Light brown','Blonde','Platinum','Auburn','Red','Grey'].map(s =>
+          ${['','black','dark brown','medium brown','light brown','dirty blonde','blonde','platinum','auburn','red','grey','white'].map(s =>
             `<option${p.hair_color===s?' selected':''}>${s}</option>`
           ).join('')}
         </select>
       </div>
       <div class="field"><label>Hair Length</label>
         <select id="f-hair-length">
-          ${['','Pixie','Bob','Shoulder','Long','Very long'].map(s =>
+          ${['','buzzed','pixie','ear-length','chin-length','shoulder-length','mid-back','long','waist-length'].map(s =>
             `<option${p.hair_length===s?' selected':''}>${s}</option>`
           ).join('')}
         </select>
       </div>
       <div class="field"><label>Hair Texture</label>
         <select id="f-hair-texture">
-          ${['','Straight','Wavy','Curly','Coily','Textured'].map(s =>
+          ${['','straight','wavy','curly','coily','kinky'].map(s =>
             `<option${p.hair_texture===s?' selected':''}>${s}</option>`
           ).join('')}
         </select>
@@ -2026,21 +2026,21 @@ function buildPersonaForm(p, icon) {
     <div class="field-row triple">
       <div class="field"><label>Build</label>
         <select id="f-build">
-          ${['','Petite','Slim','Athletic','Curvy','Full'].map(s =>
+          ${['','very lean','lean','slim','average','athletic','curvy','full-figured'].map(s =>
             `<option${p.build===s?' selected':''}>${s}</option>`
           ).join('')}
         </select>
       </div>
       <div class="field"><label>Skin Texture</label>
         <select id="f-skin-texture">
-          ${['','Clear','Freckled','Glowy','Matte','Natural'].map(s =>
+          ${['','clear smooth','light freckles','heavy freckles','textured','moles','sun-kissed'].map(s =>
             `<option${p.skin_texture===s?' selected':''}>${s}</option>`
           ).join('')}
         </select>
       </div>
       <div class="field"><label>Makeup Style</label>
         <select id="f-makeup">
-          ${['','No makeup','Minimal','Natural','Editorial','Bold'].map(s =>
+          ${['','bare-faced','minimal','natural','editorial','bold','dark'].map(s =>
             `<option${p.makeup===s?' selected':''}>${s}</option>`
           ).join('')}
         </select>
