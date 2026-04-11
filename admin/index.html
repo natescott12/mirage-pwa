@@ -2141,12 +2141,14 @@ function savePersona() {
 
   // Save to Supabase if available
   if (sb) {
-    sb.from('icons').update({
+    // Upsert — works for both existing icons (Luna/Vera/Aria) and new ones (Sloane etc)
+    sb.from('icons').upsert({
+      id: currentIconId,
       name: nameVal,
       archetype: archetypeVal,
       persona_data: persona_data,
       updated_at: new Date().toISOString()
-    }).eq('id', currentIconId).then(function(result) {
+    }, { onConflict: 'id' }).then(function(result) {
       btn.innerHTML = 'Save Persona';
       btn.disabled = false;
       hasUnsavedChanges = false;
