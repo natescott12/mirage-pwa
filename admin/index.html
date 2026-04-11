@@ -1844,7 +1844,7 @@ function loadPersonaForIcon(idx) {
   const activateBar = '<div class="activate-bar">' +
     '<div class="activate-bar-info">' +
       '<span class="icon-status-badge ' + (isActive ? 'in-progress' : 'draft') + '">' + currentStatus.toUpperCase() + '</span>' +
-      '<span class="activate-bar-name">' + icon.name + '</span>' +
+      '<span class="activate-bar-name">' + iconObj.name + '</span>' +
     '</div>' +
     '<button style="background:' + (isActive ? 'transparent' : 'var(--accent)') + ';color:' + (isActive ? 'rgba(255,255,255,0.55)' : '#fff') + ';border:1px solid ' + (isActive ? 'rgba(255,255,255,0.18)' : 'var(--accent)') + ';padding:7px 14px;border-radius:4px;font-family:Afacad,sans-serif;font-size:12px;font-weight:500;cursor:pointer;" ' +
       'data-iconid="' + iconId + '" ' +
