@@ -1247,6 +1247,44 @@ async function loadMoodboardFromSupabase(icon) {
   if (items.length) { saveIconMoodboard(icon.id, items); renderMoodboard(); }
 }
 
+async function uploadMoodboardImageToCloud(icon, item) {
+  if (!icon || !item || item.url) return;
+  try {
+    const r = await fetch(PROXY + '/upload-moodboard', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({iconName:icon.name, imageId:String(item.id), base64:item.base64}) });
+    const d = await r.json();
+    if (!d.url) return;
+    const items = getIconMoodboard(icon.id);
+    const i = items.findIndex(x => x.id === item.id);
+    if (i !== -1) { items[i].url = d.url; saveIconMoodboard(icon.id, items); }
+    await syncMoodboardToSupabase(icon.name, icon.id);
+  } catch(e) { console.warn('Moodboard upload failed:', e.message); }
+}
+async function syncMoodboardToSupabase(iconName, iconId) {
+  if (!window.sbStudio) return;
+  const items = getIconMoodboard(iconId);
+  const images = items.filter(i=>i.url).map(i=>({id:i.id,url:i.url,label:i.label,active:i.active,createdAt:i.createdAt}));
+  if (!images.length) return;
+  const {data:row} = await window.sbStudio.from('personas').select('character_data').eq('icon_name',iconName).single();
+  const merged = {...(row?.character_data||{}), moodboard_images: images};
+  await window.sbStudio.from('personas').upsert({icon_name:iconName, character_data:merged},{onConflict:'icon_name'});
+}
+async function loadMoodboardFromCloud(icon) {
+  if (!window.sbStudio || !icon) return;
+  if (getIconMoodboard(icon.id).length > 0) return;
+  const {data:row} = await window.sbStudio.from('personas').select('character_data').eq('icon_name',icon.name).single();
+  const images = row?.character_data?.moodboard_images;
+  if (!images || !images.length) return;
+  const items = [];
+  for (const img of images) {
+    try {
+      const resp = await fetch(img.url);
+      const blob = await resp.blob();
+      const b64 = await new Promise(res => { const fr = new FileReader(); fr.onload = e => res(e.target.result); fr.readAsDataURL(blob); });
+      items.push({id:img.id, base64:b64, url:img.url, label:img.label||'', active:img.active!==false, createdAt:img.createdAt});
+    } catch(e) { console.warn('Failed moodboard img:', img.url); }
+  }
+  if (items.length) { saveIconMoodboard(icon.id, items); renderMoodboard(); notify('✦ Moodboard synced from cloud'); }
+}
 function refreshPrompt() {
   if(promptLocked) return;
   const el=$("prompt-preview");
