@@ -2289,7 +2289,6 @@ window.addEventListener('load', function() {
           name: p.name,
           archetype: p.archetype || '',
           persona_data: p.persona_data || {},
-          character_data: charData,
           updated_at: new Date().toISOString()
         }, { onConflict: 'id' }).then(function(r) {
           if (!r.error) console.log('Synced to Supabase:', p.name);
