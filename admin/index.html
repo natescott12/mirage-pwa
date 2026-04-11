@@ -1856,7 +1856,7 @@ function loadPersonaForIcon(idx) {
 
   // Now fetch from Supabase and overwrite with full saved data
   if (sb) {
-    sb.from('personas').select('*').ilike('icon_name', iconObj.name).single().then(function(r) {
+    sb.from('personas').select('icon_name, persona_data, character_data').ilike('icon_name', iconObj.name).single().then(function(r) {
       if (r.error || !r.data) return;
       const sp = r.data.persona_data || {};
 
@@ -1889,6 +1889,18 @@ function loadPersonaForIcon(idx) {
       setF('f-hair-texture', sp.hair_texture);
       setF('f-build', sp.build);
       setF('f-makeup', sp.makeup);
+
+      // Fallback: populate physical fields from character_data if persona_data fields empty
+      var cd = r.data.character_data || {};
+      if (!sp.eye_color && cd.eyeColor) setF('f-eye-color', cd.eyeColor);
+      if (!sp.eye_shape && cd.eyeShape) setF('f-eye-shape', cd.eyeShape);
+      if (!sp.hair_color && cd.hairColor) setF('f-hair-color', cd.hairColor);
+      if (!sp.hair_length && cd.hairLength) setF('f-hair-length', cd.hairLength);
+      if (!sp.hair_texture && cd.hairTexture) setF('f-hair-texture', cd.hairTexture);
+      if (!sp.skin_tone && cd.skinTone) setF('f-skin-tone', cd.skinTone);
+      if (!sp.skin_texture && cd.skinTexture) setF('f-skin-texture', cd.skinTexture);
+      if (!sp.build && cd.build) setF('f-build', cd.build);
+      if (!sp.makeup && cd.makeup) setF('f-makeup', cd.makeup);
 
       // Traits chips
       if (sp.traits && sp.traits.length) {
