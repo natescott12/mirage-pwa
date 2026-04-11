@@ -1140,7 +1140,18 @@ async function checkProxy() {
 // ── FLUX ──────────────────────────────────────────────────────────────────────
 async function generateFlux(prompt) {
   if(!proxyOk) throw new Error("Proxy not running — start node server.js");
-  const r=await fetch(PROXY+"/flux/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt,model:"flux-pro-1.1",width:768,height:1024})});
+  // Use Kontext Pro (img-to-img) if we have a prior image, else flux-pro-1.1 (text-to-image)
+  const lib = JSON.parse(localStorage.getItem('mirage_library_v1')||'[]');
+  const iconImages = lib.filter(item => selectedIcon && item.iconId === selectedIcon.id);
+  const lastImage = iconImages.length ? iconImages[iconImages.length-1] : null;
+  const useKontext = !!lastImage?.base64;
+  const model = useKontext ? 'flux-kontext-pro' : 'flux-pro-1.1';
+  const body = {prompt, model, width:768, height:1024};
+  if (useKontext && lastImage.base64) {
+    const b64 = lastImage.base64.includes(',') ? lastImage.base64.split(',')[1] : lastImage.base64;
+    body.input_image = b64;
+  }
+  const r=await fetch(PROXY+"/flux/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
   if(!r.ok){const e=await r.json();throw new Error(e.error||"Submit failed");}
   const {id}=await r.json();
   for(let i=0;i<90;i++){
