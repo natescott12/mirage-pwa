@@ -1298,6 +1298,16 @@ function selectChip(group, val, el) {
 function saveCharacter() {
   saveChar(selectedIcon.id, currentChar);
   notify(selectedIcon.name+" character profile saved");
+  // Sync full currentChar to Supabase for cross-machine access
+  if (window.sbStudio && selectedIcon) {
+    window.sbStudio.from('personas').update({
+      character_data: currentChar,
+      updated_at: new Date().toISOString()
+    }).ilike('icon_name', selectedIcon.name).then(function(r) {
+      if (!r.error) console.log('Character synced to Supabase:', selectedIcon.name);
+      else console.warn('Character sync error:', r.error);
+    });
+  }
 }
 
 function toggleCharBuilder() {
