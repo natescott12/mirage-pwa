@@ -1536,6 +1536,20 @@ function updateQueueCount() { const c=queue.length;setText("queue-count",c);setT
 function updateLibCount() { const c=getTotalCount();setText("lib-total",c);setText("lib-subtitle",`${c} total images · saved automatically per icon`); }
 function selectIcon(id) { selectedIcon=ICONS_DATA.find(i=>i.id===id); if(selectedIcon && typeof loadPersonaIntoStudio==='function') loadPersonaIntoStudio(selectedIcon.id);renderIconList();renderIconCard();renderSceneTabs();renderParams();refreshPrompt();loadCharIntoBuilder();loadMoodboardForIcon();if(typeof loadPersonaForIcon==="function")loadPersonaForIcon();if(typeof loadWardrobeForIcon==="function")loadWardrobeForIcon();if(typeof resetVoicePreview==="function")resetVoicePreview(); }
 
+
+async function fetchPersonaFromSupabase(iconName) {
+  if (!sbStudio) return null;
+  try {
+    const { data, error } = await sbStudio
+      .from('icons')
+      .select('id, name, archetype, persona_data, character_data')
+      .ilike('name', iconName)
+      .single();
+    if (error || !data) return null;
+    return data;
+  } catch(e) { return null; }
+}
+
 function loadPersonaIntoStudio(iconId) {
   var iconName = selectedIcon ? selectedIcon.name : '';
   if (!iconName) return;
@@ -1600,20 +1614,32 @@ function loadPersonaIntoStudio(iconId) {
     console.log('loadPersonaIntoStudio: loaded', iconName);
   }
 
-  // 1. Check admin localStorage first (mirage_personas_v1)
-  try {
-    var adminPersonas = JSON.parse(localStorage.getItem('mirage_personas_v1') || '{}');
-    var adminEntry = Object.values(adminPersonas).find(function(e) {
-      return (e.name || '').toLowerCase() === iconName.toLowerCase();
-    });
-    if (adminEntry && adminEntry.persona_data && Object.keys(adminEntry.persona_data).some(function(k) { return adminEntry.persona_data[k]; })) {
-      console.log('loadPersonaIntoStudio: using admin localStorage data for', iconName);
-      applyPersonaData(adminEntry.persona_data, adminEntry.archetype);
+  // 1. Check Supabase first (cross-machine sync)
+  fetchPersonaFromSupabase(iconName).then(function(sbData) {
+    if (sbData && sbData.persona_data && Object.keys(sbData.persona_data).some(function(k) { return sbData.persona_data[k]; })) {
+      console.log('loadPersonaIntoStudio: using Supabase data for', iconName);
+      // Also merge character_data if present
+      if (sbData.character_data && typeof currentChar !== 'undefined') {
+        Object.assign(currentChar, sbData.character_data);
+      }
+      applyPersonaData(sbData.persona_data, sbData.archetype);
       return;
     }
-  } catch(e) {}
 
-  // 2. Fall back to personas.json
+    // 2. Check admin localStorage (same machine)
+    try {
+      var adminPersonas = JSON.parse(localStorage.getItem('mirage_personas_v1') || '{}');
+      var adminEntry = Object.values(adminPersonas).find(function(e) {
+        return (e.name || '').toLowerCase() === iconName.toLowerCase();
+      });
+      if (adminEntry && adminEntry.persona_data && Object.keys(adminEntry.persona_data).some(function(k) { return adminEntry.persona_data[k]; })) {
+        console.log('loadPersonaIntoStudio: using localStorage data for', iconName);
+        applyPersonaData(adminEntry.persona_data, adminEntry.archetype);
+        return;
+      }
+    } catch(e) {}
+
+    // 3. Fall back to personas.json
   fetch('/personas.json')
     .then(function(r) { return r.json(); })
     .then(function(personas) {
@@ -1627,6 +1653,7 @@ function loadPersonaIntoStudio(iconId) {
       applyPersonaData(entry.persona_data || entry, entry.archetype);
     })
     .catch(function(e) { console.warn('loadPersonaIntoStudio fetch failed:', e); });
+  }); // end fetchPersonaFromSupabase
 }
 
 function setScene(t) {
