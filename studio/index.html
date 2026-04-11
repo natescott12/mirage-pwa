@@ -1143,14 +1143,14 @@ async function generateFlux(prompt) {
   const r=await fetch(PROXY+"/flux/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt,model:"flux-pro-1.1",width:768,height:1024})});
   if(!r.ok){const e=await r.json();throw new Error(e.error||"Submit failed");}
   const {id}=await r.json();
-  for(let i=0;i<60;i++){
-    await new Promise(r=>setTimeout(r,2000));
+  for(let i=0;i<90;i++){
+    await new Promise(r=>setTimeout(r,3000));
     const p=await fetch(PROXY+"/flux/result/"+id);
     const d=await p.json();
     if(d.status==="Ready") return d.result.sample;
     if(d.status==="Error"||d.status==="Failed") throw new Error("Flux: "+d.status);
   }
-  throw new Error("Flux timed out after 2 minutes");
+  throw new Error("Flux timed out after 4 minutes");
 }
 
 // ── PROMPT ENGINE ─────────────────────────────────────────────────────────────
