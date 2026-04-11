@@ -2101,6 +2101,20 @@ function collectPersonaData() {
 }
 
 function savePersona() {
+  // Derive currentIconId from dropdown if not set
+  if (!currentIconId) {
+    const sel = document.getElementById('persona-icon-select');
+    if (sel && sel.value && window.__personas) {
+      const idx = sel.value;
+      const wrapper = window.__personas[String(idx)];
+      if (wrapper) {
+        currentIconId = wrapper.id || (parseInt(idx) + 1);
+        if (typeof allIcons !== 'undefined' && !allIcons.find(i => i.id === currentIconId)) {
+          allIcons.push({ id: currentIconId, name: wrapper.name || '', archetype: wrapper.archetype || '', persona_data: wrapper.persona_data || {}, status: 'inactive', _personaIdx: parseInt(idx) });
+        }
+      }
+    }
+  }
   if (!currentIconId) { toast('Select an icon first.'); return; }
 
   const btn = document.getElementById('save-bar-btn');
