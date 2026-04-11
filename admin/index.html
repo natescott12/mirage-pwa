@@ -1790,13 +1790,18 @@ function openPersona(iconId) {
   if (!icon) return;
   const idx = icon._personaIdx !== undefined ? icon._personaIdx : (iconId - 1);
   // Set the select value
-  setTimeout(function() {
+  // Wait for personas to load then select
+  function _trySelect(attempts) {
     const sel = document.getElementById('persona-icon-select');
-    if (sel) {
-      sel.value = String(idx);
-      loadPersonaForIcon(String(idx));
+    if (!sel) return;
+    if (!window.__personas && attempts > 0) {
+      setTimeout(function() { _trySelect(attempts - 1); }, 200);
+      return;
     }
-  }, 300);
+    sel.value = String(idx);
+    loadPersonaForIcon(String(idx));
+  }
+  _trySelect(10);
 }
 
 function loadPersonaForIcon(idx) {
