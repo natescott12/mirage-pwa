@@ -1816,14 +1816,12 @@ function loadPersonaForIcon(idx) {
   const wrapper = Array.isArray(personas) ? personas[parseInt(idx)] : personas[String(idx)];
   if (!wrapper) {
     editor.innerHTML = '<div class="empty-state"><div class="empty-state-icon">\u25ce</div><div class="empty-state-text">Persona not found. Try reloading.</div></div>';
-    console.warn('loadPersonaForIcon: missing index', idx);
     return;
   }
 
   const iconObj = { name: wrapper.name || wrapper.iconName || '', archetype: wrapper.archetype || '' };
   const p = wrapper.persona_data || wrapper;
   const iconId = wrapper.id || parseInt(idx) + 1;
-
   window.currentIconId = iconId;
 
   // Ensure in allIcons
@@ -1835,12 +1833,12 @@ function loadPersonaForIcon(idx) {
     }
   }
 
-  // Get current activation status
+  // Get activation status
   const activeState = JSON.parse(localStorage.getItem('mirage-active-icons') || '{}');
   const currentStatus = activeState[iconId] || wrapper.status || 'inactive';
   const isActive = currentStatus === 'active' || currentStatus === 'live';
 
-  // Render activate bar + form
+  // Render form first with local data
   const activateBar = '<div class="activate-bar">' +
     '<div class="activate-bar-info">' +
       '<span class="icon-status-badge ' + (isActive ? 'in-progress' : 'draft') + '">' + currentStatus.toUpperCase() + '</span>' +
@@ -1850,11 +1848,62 @@ function loadPersonaForIcon(idx) {
       'data-iconid="' + iconId + '" ' +
       'data-action="' + (isActive ? 'deactivate' : 'activate') + '" ' +
       'onclick="toggleIconActivation(this)">' +
-      (isActive ? 'Deactivate' : '✓ Activate Icon') +
+      (isActive ? 'Deactivate' : '\u2713 Activate Icon') +
     '</button>' +
   '</div>';
 
   editor.innerHTML = activateBar + buildPersonaForm(p, iconObj);
+
+  // Now fetch from Supabase and overwrite with full saved data
+  if (sb) {
+    sb.from('personas').select('*').ilike('icon_name', iconObj.name).single().then(function(r) {
+      if (r.error || !r.data) return;
+      const sp = r.data.persona_data || {};
+
+      function setF(id, val) { const el = document.getElementById(id); if (el && val !== undefined && val !== '') el.value = val; }
+
+      setF('f-name', iconObj.name);
+      setF('f-archetype', sp.archetype || iconObj.archetype);
+      setF('f-tagline', sp.tagline);
+      setF('f-age', sp.age);
+      setF('f-location', sp.location);
+      setF('f-occupation', sp.occupation);
+      setF('f-voice', sp.voice);
+      setF('f-comm-style', sp.communication_style);
+      setF('f-energy', sp.energy);
+      setF('f-backstory', sp.backstory);
+      setF('f-desires', sp.desires);
+      setF('f-fears', sp.fears);
+      setF('f-aesthetic', sp.aesthetic);
+      setF('f-interests', sp.interests);
+      setF('f-flux-notes', sp.flux_notes);
+      setF('f-sms-voice', sp.sms_voice);
+      setF('f-sms-opener', sp.sms_opener);
+      setF('f-sms-sample', sp.sms_sample);
+      setF('f-eye-color', sp.eye_color);
+      setF('f-eye-shape', sp.eye_shape);
+      setF('f-skin-tone', sp.skin_tone);
+      setF('f-skin-texture', sp.skin_texture);
+      setF('f-hair-color', sp.hair_color);
+      setF('f-hair-length', sp.hair_length);
+      setF('f-hair-texture', sp.hair_texture);
+      setF('f-build', sp.build);
+      setF('f-makeup', sp.makeup);
+
+      // Traits chips
+      if (sp.traits && sp.traits.length) {
+        document.querySelectorAll('.tag-chip[data-group="traits"]').forEach(function(c) {
+          c.classList.toggle('selected', sp.traits.map(function(t){return t.toLowerCase();}).includes(c.textContent.trim().toLowerCase()));
+        });
+      }
+      // Scene tags
+      if (sp.scene_tags && sp.scene_tags.length) {
+        document.querySelectorAll('.tag-chip[data-group="scene_tags"]').forEach(function(c) {
+          c.classList.toggle('selected', sp.scene_tags.includes(c.textContent.trim()));
+        });
+      }
+    });
+  }
 }
 function toggleIconActivation(btn) {
   const iconId = parseInt(btn.getAttribute('data-iconid'));
