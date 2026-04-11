@@ -2273,17 +2273,41 @@ async function clearCloudLibrary() {
 </div>
 
 <script>
-// One-time sync: push any localStorage persona data to Supabase on load
+// Two-way sync on load
 window.addEventListener('load', function() {
   setTimeout(function() {
     if (!window.sbStudio) return;
+
+    // Pull ALL personas from Supabase into localStorage (so any machine gets the data)
+    window.sbStudio.from('personas').select('icon_name, icon_id, persona_data, character_data').then(function(r) {
+      if (r.error || !r.data) return;
+      try {
+        var personas = JSON.parse(localStorage.getItem('mirage_personas_v1') || '{}');
+        var chars = JSON.parse(localStorage.getItem('mirage_characters_v1') || '{}');
+        r.data.forEach(function(row) {
+          var id = row.icon_id || row.icon_name;
+          // Write persona_data to mirage_personas_v1
+          personas[id] = { name: row.icon_name, archetype: (row.persona_data || {}).archetype || '', persona_data: row.persona_data || {} };
+          // Write character_data to mirage_characters_v1 keyed by Studio icon id
+          if (row.character_data && Object.keys(row.character_data).length) {
+            chars[id] = row.character_data;
+            // Also store by name for easy lookup
+            chars[row.icon_name] = row.character_data;
+          }
+        });
+        localStorage.setItem('mirage_personas_v1', JSON.stringify(personas));
+        localStorage.setItem('mirage_characters_v1', JSON.stringify(chars));
+        console.log('Pulled', r.data.length, 'personas from Supabase into localStorage');
+      } catch(e) { console.warn('Pull sync failed', e); }
+    });
+
+    // Also push any local-only personas up to Supabase
     try {
       var personas = JSON.parse(localStorage.getItem('mirage_personas_v1') || '{}');
       var chars = JSON.parse(localStorage.getItem('mirage_characters_v1') || '{}');
       Object.keys(personas).forEach(function(id) {
         var p = personas[id];
         if (!p || !p.name) return;
-        var charData = chars[id] || {};
         window.sbStudio.from('personas').upsert({
           icon_name: p.name,
           icon_id: String(id),
@@ -2295,7 +2319,7 @@ window.addEventListener('load', function() {
           else console.warn('Sync error for', p.name, r.error);
         });
       });
-    } catch(e) { console.warn('Sync failed', e); }
+    } catch(e) { console.warn('Push sync failed', e); }
   }, 2000);
 });
 </script>
