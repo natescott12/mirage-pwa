@@ -1543,16 +1543,30 @@ function loadPersonaIntoStudio(iconId) {
   function applyPersonaData(p, entryArchetype) {
     // ── Character Builder ──
     if (typeof currentChar !== 'undefined' && currentChar) {
-      if (p.eye_color)    currentChar.eyeColor    = p.eye_color;
-      if (p.eye_shape)    currentChar.eyeShape    = p.eye_shape;
-      if (p.hair_color)   currentChar.hairColor   = p.hair_color;
-      if (p.hair_length)  currentChar.hairLength  = p.hair_length;
-      if (p.hair_texture) currentChar.hairTexture = p.hair_texture;
-      if (p.skin_tone)    currentChar.skinTone    = p.skin_tone;
-      if (p.skin_texture) currentChar.skinTexture = p.skin_texture;
-      if (p.build)        currentChar.build       = p.build;
-      if (p.makeup)       currentChar.makeup      = p.makeup;
-      if (p.age)          currentChar.age         = p.age;
+      // Normalize to lowercase to match Studio chip values
+    if (p.eye_color)    currentChar.eyeColor    = p.eye_color.toLowerCase();
+      if (p.eye_shape)    currentChar.eyeShape    = p.eye_shape.toLowerCase();
+      if (p.hair_color)   currentChar.hairColor   = p.hair_color.toLowerCase();
+      if (p.hair_length)  currentChar.hairLength  = p.hair_length.toLowerCase();
+      if (p.hair_texture) currentChar.hairTexture = p.hair_texture.toLowerCase();
+      if (p.skin_tone)    currentChar.skinTone    = p.skin_tone.toLowerCase();
+      if (p.skin_texture) currentChar.skinTexture = p.skin_texture.toLowerCase();
+      if (p.build)        currentChar.build       = p.build.toLowerCase();
+      if (p.makeup)       currentChar.makeup      = p.makeup.toLowerCase();
+      if (p.age) {
+        var ageNum = parseInt(p.age);
+        if (!isNaN(ageNum)) {
+          if (ageNum < 23) currentChar.age = 'early 20s';
+          else if (ageNum < 27) currentChar.age = 'mid 20s';
+          else if (ageNum < 30) currentChar.age = 'late 20s';
+          else if (ageNum < 33) currentChar.age = 'early 30s';
+          else if (ageNum < 37) currentChar.age = 'mid 30s';
+          else if (ageNum < 40) currentChar.age = 'late 30s';
+          else currentChar.age = '40s';
+        } else {
+          currentChar.age = p.age.toLowerCase();
+        }
+      }
       try {
         var chars = JSON.parse(localStorage.getItem(CHAR_KEY) || '{}');
         chars[iconId] = currentChar;
@@ -1575,6 +1589,12 @@ function loadPersonaIntoStudio(iconId) {
       } catch(e) {}
     }
     if (typeof loadCharIntoBuilder === 'function') loadCharIntoBuilder();
+    // Force chip re-selection after a tick to ensure DOM is ready
+    setTimeout(function() {
+      if (typeof renderAllChips === 'function') renderAllChips();
+      if (typeof updateCharPreview === 'function') updateCharPreview();
+      if (typeof updateCharSummary === 'function') updateCharSummary();
+    }, 50);
     if (typeof loadPersonaForIcon === 'function') loadPersonaForIcon();
     if (typeof refreshPrompt === 'function') refreshPrompt();
     console.log('loadPersonaIntoStudio: loaded', iconName);
