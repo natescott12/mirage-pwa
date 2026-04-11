@@ -1846,12 +1846,12 @@ function loadPersonaForIcon(idx) {
       '<span class="icon-status-badge ' + (isActive ? 'in-progress' : 'draft') + '">' + currentStatus.toUpperCase() + '</span>' +
       '<span class="activate-bar-name">' + iconObj.name + '</span>' +
     '</div>' +
-    '<button class="btn ' + (isActive ? 'btn-ghost' : 'btn-primary') + '" ' +
+    '<button style="background:' + (isActive ? 'transparent' : 'var(--accent)') + ';color:' + (isActive ? 'rgba(255,255,255,0.55)' : '#fff') + ';border:1px solid ' + (isActive ? 'rgba(255,255,255,0.18)' : 'var(--accent)') + ';padding:7px 14px;border-radius:4px;font-family:Afacad,sans-serif;font-size:12px;font-weight:500;cursor:pointer;letter-spacing:0.05em;" ' +
       'data-iconid="' + iconId + '" ' +
       'data-action="' + (isActive ? 'deactivate' : 'activate') + '" ' +
       'onclick="toggleIconActivation(this)">' +
       (isActive ? 'Deactivate' : '\u2713 Activate Icon') +
-    '</button>' +
+    '</button>'' +
   '</div>';
 
   editor.innerHTML = activateBar + buildPersonaForm(p, iconObj);
@@ -2121,9 +2121,9 @@ function savePersona() {
   }
 
   // Persist to localStorage
-  const localData = JSON.parse(localStorage.getItem('mirage-personas') || '{}');
+  const localData = JSON.parse(localStorage.getItem('mirage_personas_v1') || '{}');
   localData[currentIconId] = { name: nameVal, archetype: archetypeVal, persona_data };
-  localStorage.setItem('mirage-personas', JSON.stringify(localData));
+  localStorage.setItem('mirage_personas_v1', JSON.stringify(localData));
 
   // Save to Supabase if available
   if (sb) {
@@ -2228,7 +2228,7 @@ async function markRequestDone(id) {
 // ── LOAD LOCAL FALLBACK ───────────────────────────────────────────────────────
 function mergeLocalPersonas() {
   try {
-    const local = JSON.parse(localStorage.getItem('mirage-personas') || '{}');
+    const local = JSON.parse(localStorage.getItem('mirage_personas_v1') || '{}');
     Object.entries(local).forEach(([id, data]) => {
       const icon = allIcons.find(i => i.id === id);
       if (icon && !icon.persona_data) {
