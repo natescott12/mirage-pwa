@@ -1557,12 +1557,12 @@ async function fetchPersonaFromSupabase(iconName) {
   if (!sbStudio) return null;
   try {
     const { data, error } = await sbStudio
-      .from('icons')
-      .select('id, name, archetype, persona_data, character_data')
-      .ilike('name', iconName)
+      .from('personas')
+      .select('icon_name, icon_id, persona_data, character_data')
+      .ilike('icon_name', iconName)
       .single();
     if (error || !data) return null;
-    return data;
+    return { name: data.icon_name, archetype: data.persona_data?.archetype || '', persona_data: data.persona_data, character_data: data.character_data };
   } catch(e) { return null; }
 }
 
@@ -2284,13 +2284,13 @@ window.addEventListener('load', function() {
         var p = personas[id];
         if (!p || !p.name) return;
         var charData = chars[id] || {};
-        window.sbStudio.from('icons').upsert({
-          id: parseInt(id),
-          name: p.name,
-          archetype: p.archetype || '',
+        window.sbStudio.from('personas').upsert({
+          icon_name: p.name,
+          icon_id: String(id),
           persona_data: p.persona_data || {},
+          character_data: chars[id] || {},
           updated_at: new Date().toISOString()
-        }, { onConflict: 'id' }).then(function(r) {
+        }, { onConflict: 'icon_name' }).then(function(r) {
           if (!r.error) console.log('Synced to Supabase:', p.name);
           else console.warn('Sync error for', p.name, r.error);
         });
