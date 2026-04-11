@@ -328,6 +328,22 @@
   body.in-admin #header { display: none !important; }
   body.in-admin #app { height: 100vh !important; }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function() {
+  try {
+    window.sbStudio = supabase.createClient(
+      'https://gmyenvnfuailickepvax.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdteWVudm5mdWFpbGlja2VwdmF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MzEyMDMsImV4cCI6MjA5MTAwNzIwM30.lz8A2jBmzOI2JVoOmPdwqmEfKyPO3RHE2tjOXHYmwkA'
+    );
+    console.log('Studio Supabase connected');
+  } catch(e) {
+    window.sbStudio = null;
+    console.warn('Studio Supabase failed', e);
+  }
+})();
+</script>
 </head>
 <body>
 
@@ -2255,5 +2271,34 @@ async function clearCloudLibrary() {
   </div>
   <div id="cloud-lib-grid" style="columns:5 180px;gap:4px;margin-top:16px"></div>
 </div>
+
+<script>
+// One-time sync: push any localStorage persona data to Supabase on load
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    if (!window.sbStudio) return;
+    try {
+      var personas = JSON.parse(localStorage.getItem('mirage_personas_v1') || '{}');
+      var chars = JSON.parse(localStorage.getItem('mirage_characters_v1') || '{}');
+      Object.keys(personas).forEach(function(id) {
+        var p = personas[id];
+        if (!p || !p.name) return;
+        var charData = chars[id] || {};
+        window.sbStudio.from('icons').upsert({
+          id: parseInt(id),
+          name: p.name,
+          archetype: p.archetype || '',
+          persona_data: p.persona_data || {},
+          character_data: charData,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'id' }).then(function(r) {
+          if (!r.error) console.log('Synced to Supabase:', p.name);
+          else console.warn('Sync error for', p.name, r.error);
+        });
+      });
+    } catch(e) { console.warn('Sync failed', e); }
+  }, 2000);
+});
+</script>
 </body>
 </html>
