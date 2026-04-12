@@ -2202,7 +2202,7 @@ function savePersona() {
 
   // Save to Supabase if available
   if (sb) {
-    // Upsert — works for both existing icons (Luna/Vera/Aria) and new ones (Sloane etc)
+    // Upsert — works for both existing icons (Luna/Vera/Aria) and new ones (Sloan etc)
     sb.from('personas').upsert({
       icon_name: nameVal,
       icon_id: String(currentIconId),
