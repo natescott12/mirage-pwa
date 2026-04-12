@@ -912,6 +912,45 @@
 </div>
 
 <script>
+// ── MG INIT — must be first in script block 2 ────────────────────
+window.MG = {
+  framing: new Set(),
+  angle: new Set(),
+  perspective: new Set(),
+  baseStyles: new Set(["35mm film natural light candid unposed organic"]),
+  wardrobeTab: "tops",
+  wardrobeSelected: new Set(),
+  WARDROBE: {
+    tops:[
+      {id:"t1",label:"Bralette",prompt:"bralette top"},{id:"t2",label:"Bikini top",prompt:"bikini top"},
+      {id:"t3",label:"Sports bra",prompt:"sports bra"},{id:"t4",label:"White tee",prompt:"white t-shirt relaxed fit"},
+      {id:"t5",label:"Vintage tee",prompt:"vintage band t-shirt worn in"},{id:"t6",label:"Boyfriend shirt",prompt:"oversized boyfriend shirt half tucked"},
+      {id:"t7",label:"Linen top",prompt:"linen top natural drape"},{id:"t8",label:"Striped button-up",prompt:"striped cotton button-up shirt"},
+      {id:"t9",label:"Black tee",prompt:"fitted black t-shirt"},{id:"t10",label:"Tank top",prompt:"ribbed tank top"},
+      {id:"t11",label:"Crop top",prompt:"cropped top"},{id:"t12",label:"Tube top",prompt:"tube top"}
+    ],
+    bottoms:[
+      {id:"b1",label:"Jeans",prompt:"straight leg jeans"},{id:"b2",label:"Loose jeans",prompt:"loose fit jeans relaxed"},
+      {id:"b3",label:"Baggy jeans",prompt:"baggy oversized jeans"},{id:"b4",label:"Black pants",prompt:"black tailored pants"},
+      {id:"b5",label:"Vintage shorts",prompt:"vintage cut-off denim shorts"},{id:"b6",label:"Sweatpants",prompt:"sweatpants relaxed"},
+      {id:"b7",label:"Biker shorts",prompt:"black biker shorts"},{id:"b8",label:"Cargo pants",prompt:"cargo pants utilitarian"},
+      {id:"b9",label:"Baggy shorts",prompt:"baggy shorts"},{id:"b10",label:"Long skirt",prompt:"long flowing skirt"},
+      {id:"b11",label:"Short skirt",prompt:"short skirt"},{id:"b12",label:"Denim skirt",prompt:"denim mini skirt"}
+    ],
+    accessories:[
+      {id:"a1",label:"Silver earrings",prompt:"delicate silver earrings"},{id:"a2",label:"Silver hoops",prompt:"silver hoop earrings"},
+      {id:"a3",label:"Gold hoops",prompt:"gold hoop earrings"},{id:"a4",label:"Rings",prompt:"stacked rings mixed metals"},
+      {id:"a5",label:"Watch",prompt:"vintage watch on wrist"},{id:"a6",label:"Gold necklace",prompt:"thin gold necklace"},
+      {id:"a7",label:"Silver chain",prompt:"silver chain necklace"},{id:"a8",label:"Small bag",prompt:"small shoulder bag"},
+      {id:"a9",label:"Large tote",prompt:"oversized canvas tote bag"},{id:"a10",label:"Flip flops",prompt:"simple flip flops"},
+      {id:"a11",label:"Sandals",prompt:"strappy sandals"},{id:"a12",label:"Loafers",prompt:"leather loafers"},
+      {id:"a13",label:"Kitten heels",prompt:"kitten heel shoes"},{id:"a14",label:"Boots",prompt:"ankle boots"}
+    ],
+    look:[]
+  }
+};
+// ─────────────────────────────────────────────────────────────────
+
 // ── SAFE DOM HELPERS ──────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 const setText = (id, v) => { const e=$(id); if(e) e.textContent=v; };
@@ -2567,42 +2606,7 @@ function addShotChip(group, inputEl, containerId) {
 // ╔══════════════════════════════════════════════════════════════╗
 // MIRAGE CHIP ENGINE v2 — unified state on window.MG
 // ╚══════════════════════════════════════════════════════════════╝
-window.MG = window.MG || {
-  framing: new Set(),
-  angle: new Set(),
-  perspective: new Set(),
-  baseStyles: new Set(["35mm film natural light candid unposed organic"]),
-  wardrobeTab: "tops",
-  wardrobeSelected: new Set(),
-  WARDROBE: {
-    tops:[
-      {id:"t1",label:"Bralette",prompt:"bralette top"},{id:"t2",label:"Bikini top",prompt:"bikini top"},
-      {id:"t3",label:"Sports bra",prompt:"sports bra"},{id:"t4",label:"White tee",prompt:"white t-shirt relaxed fit"},
-      {id:"t5",label:"Vintage tee",prompt:"vintage band t-shirt worn in"},{id:"t6",label:"Boyfriend shirt",prompt:"oversized boyfriend shirt half tucked"},
-      {id:"t7",label:"Linen top",prompt:"linen top natural drape"},{id:"t8",label:"Striped button-up",prompt:"striped cotton button-up shirt"},
-      {id:"t9",label:"Black tee",prompt:"fitted black t-shirt"},{id:"t10",label:"Tank top",prompt:"ribbed tank top"},
-      {id:"t11",label:"Crop top",prompt:"cropped top"},{id:"t12",label:"Tube top",prompt:"tube top"}
-    ],
-    bottoms:[
-      {id:"b1",label:"Jeans",prompt:"straight leg jeans"},{id:"b2",label:"Loose jeans",prompt:"loose fit jeans relaxed"},
-      {id:"b3",label:"Baggy jeans",prompt:"baggy oversized jeans"},{id:"b4",label:"Black pants",prompt:"black tailored pants"},
-      {id:"b5",label:"Vintage shorts",prompt:"vintage cut-off denim shorts"},{id:"b6",label:"Sweatpants",prompt:"sweatpants relaxed"},
-      {id:"b7",label:"Biker shorts",prompt:"black biker shorts"},{id:"b8",label:"Cargo pants",prompt:"cargo pants utilitarian"},
-      {id:"b9",label:"Baggy shorts",prompt:"baggy shorts"},{id:"b10",label:"Long skirt",prompt:"long flowing skirt"},
-      {id:"b11",label:"Short skirt",prompt:"short skirt"},{id:"b12",label:"Denim skirt",prompt:"denim mini skirt"}
-    ],
-    accessories:[
-      {id:"a1",label:"Silver earrings",prompt:"delicate silver earrings"},{id:"a2",label:"Silver hoops",prompt:"silver hoop earrings"},
-      {id:"a3",label:"Gold hoops",prompt:"gold hoop earrings"},{id:"a4",label:"Rings",prompt:"stacked rings mixed metals"},
-      {id:"a5",label:"Watch",prompt:"vintage watch on wrist"},{id:"a6",label:"Gold necklace",prompt:"thin gold necklace"},
-      {id:"a7",label:"Silver chain",prompt:"silver chain necklace"},{id:"a8",label:"Small bag",prompt:"small shoulder bag"},
-      {id:"a9",label:"Large tote",prompt:"oversized canvas tote bag"},{id:"a10",label:"Flip flops",prompt:"simple flip flops"},
-      {id:"a11",label:"Sandals",prompt:"strappy sandals"},{id:"a12",label:"Loafers",prompt:"leather loafers"},
-      {id:"a13",label:"Kitten heels",prompt:"kitten heel shoes"},{id:"a14",label:"Boots",prompt:"ankle boots"}
-    ],
-    look:[]
-  }
-};
+
 
 // Keep window.selected* aliases pointing to MG for legacy code
 window.selectedFraming = window.MG.framing;
