@@ -408,7 +408,7 @@
 
 <!-- LIGHTBOX -->
 <div id="lightbox">
-  <button class="lb-close" onclick="closeLightbox()">✕</button>
+  <button class="lb-close" onclick="MG.lbClose()">✕</button>
   <div class="lb-inner">
     <div class="lb-img-side">
       <button class="lb-nav prev" onclick="lbNav(-1)">‹</button>
@@ -2788,7 +2788,7 @@ function toggleFav(id) {
 </script>
 
 <!-- Lightbox -->
-<div class="lb-overlay" id="lb-overlay" onclick="lbClose(event)">
+<div class="lb-overlay" id="lb-overlay" onclick="if(event.target===this)MG.lbClose()">
   <div class="lb-img-wrap" onclick="event.stopPropagation()">
     <button class="lb-close" onclick="closeLightbox()">✕</button>
     <button class="lb-nav lb-prev" onclick="lbNav(-1)">‹</button>
@@ -3020,6 +3020,7 @@ window.addShotChip=function(g,inp,cid){MG.addShotChip(g,inp,cid);};
 window.getActivePrompt=function(){return MG.build();};
 window.lbOpen=function(idx){MG.lbOpen(idx);};
 window.lbClose=function(){MG.lbClose();};
+window.closeLightbox=function(){MG.lbClose();};
 window.lbNav=function(dir){MG.lbNav(dir);};
 window.lbUseRef=function(){MG.lbUseRef();};
 window.lbDownload=function(){MG.lbDownload();};
