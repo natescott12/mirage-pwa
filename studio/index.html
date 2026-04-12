@@ -1031,10 +1031,10 @@ const addToLib = (id, img) => {
 };
 const removeFromLib = (iconId, imgId) => { const l=load(LIB_KEY); if(l[iconId])l[iconId]=l[iconId].filter(i=>i.id!==imgId); save(LIB_KEY,l); };
 const toggleFav = (iconId, imgId) => { const l=load(LIB_KEY); if(l[iconId]){const i=l[iconId].find(x=>x.id===imgId);if(i)i.favourite=!i.favourite;} save(LIB_KEY,l); };
-const getTotalCount = () => Object.values(load(LIB_KEY)).reduce((s,a)=>s+a.length,0);
-const getCount = id => getIconLib(id).length;
-const getChar = id => (load(CHAR_KEY)[id]||{});
-const saveChar = (id, char) => { const c=load(CHAR_KEY); c[id]={...char}; save(CHAR_KEY,c); };
+function getTotalCount() { return Object.values(load(LIB_KEY)).reduce((s,a)=>s+a.length,0); }
+function getCount(id) { return getIconLib(id).length; }
+function getChar(id) { return (load(CHAR_KEY)[id]||{}); }
+function saveChar(id, char) { const c=load(CHAR_KEY); c[id]={...char}; save(CHAR_KEY,c); }
 
 
 // ── MOODBOARD ─────────────────────────────────────────────────────────────────
