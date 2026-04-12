@@ -1257,8 +1257,14 @@ const LOCAL_PROXY  = "http://localhost:3579";
 const PROXY = HOSTED_PROXY; // Switch to LOCAL_PROXY if running locally
 let proxyOk = false;
 async function checkProxy() {
-  try { const r=await fetch(PROXY+"/health",{signal:AbortSignal.timeout(3000)}); proxyOk=(await r.json()).status==="ok"; }
-  catch { proxyOk=false; }
+  for(let attempt=0; attempt<3; attempt++) {
+    try {
+      const r=await fetch(PROXY+"/health",{signal:AbortSignal.timeout(5000)});
+      proxyOk=(await r.json()).status==="ok";
+      if(proxyOk) break;
+    } catch { proxyOk=false; }
+    if(!proxyOk && attempt<2) await new Promise(r=>setTimeout(r,2000));
+  }
   const el=$("proxy-status"); if(!el) return;
   el.style.color = proxyOk?"var(--green)":"var(--gold)";
   el.innerHTML = proxyOk
