@@ -1491,9 +1491,7 @@ function refreshPrompt() {
 }
 
 function getActivePrompt() {
-  const el=$("prompt-preview");
-  const v = el ? el.value.trim() : "";
-  return v.length>10 ? v : buildPrompt();
+  return mgBuildPrompt() || buildPrompt();
 }
 
 function togglePromptLock() {
@@ -2310,16 +2308,7 @@ function loadWardrobeForIcon() {
   renderWardrobeChips();
 }
 
-function renderWardrobeChips() {
-  const el = $('wardrobe-chips'); if (!el) return;
-  const _tab = (typeof currentWardrobeTab !== 'undefined') ? currentWardrobeTab : (typeof _activeWardrobeTab !== 'undefined' ? _activeWardrobeTab : 'tops');
-  const items = selectedIcon ? getWardrobeForTab(selectedIcon.id, _tab) : currentWardrobe;
-  el.innerHTML = items.map(item => `
-    <div class="wardrobe-chip ${selectedWardrobeIds.has(item.id) ? 'selected' : ''}" onclick="selectWardrobeItem('${item.id}')" title="${item.prompt}">
-      ${item.label}${item.custom ? `<span onclick="event.stopPropagation();removeWardrobeItem('${item.id}')" style="opacity:.5;font-size:9px;cursor:pointer;margin-left:3px">✕</span>` : ''}
-    </div>
-  `).join('');
-}
+
 
 function selectWardrobeItem(id) {
   if (selectedWardrobeIds.has(id)) selectedWardrobeIds.delete(id);
@@ -2579,13 +2568,7 @@ function getWardrobeForTab(iconId, tab) {
 function saveWardrobeTab(iconId, tab, items) {
   try { localStorage.setItem('mirage_wardrobe_v1_'+iconId+'_'+tab, JSON.stringify(items)); } catch(e) {}
 }
-function switchWardrobeTab(tab) {
-  window._activeWardrobeTab = tab; currentWardrobeTab = tab;
-  document.querySelectorAll('.wardrobe-tab-btn').forEach(function(b){b.classList.remove('active');});
-  var btn=document.getElementById('wtab-'+tab); if(btn) btn.classList.add('active');
-  if(typeof selectedIcon!=='undefined'&&selectedIcon) currentWardrobe=getWardrobeForTab(selectedIcon.id,tab);
-  renderWardrobeChips();
-}
+
 function toggleShot(el, group, value) {
   var map={framing:window.selectedFraming,angle:window.selectedAngle,perspective:window.selectedPerspective,base:window.selectedBaseStyles};
   var s=map[group]; if(!s){s=new Set(); map[group]=s; window[group]=s;}
@@ -2640,10 +2623,7 @@ function addShotChip(group, inputEl, containerId) {
 }
 
 // ── WARDROBE CHIPS ──────────────────────────────────────────────────
-function getWardrobeForTab(iconId, tab) {
-  try { var s = localStorage.getItem("mirage_wardrobe_v1_"+iconId+"_"+tab); if(s) return JSON.parse(s); } catch(e) {}
-  return JSON.parse(JSON.stringify(window.MG.WARDROBE[tab] || []));
-}
+
 
 function saveWardrobeTab(iconId, tab, items) {
   try { localStorage.setItem("mirage_wardrobe_v1_"+iconId+"_"+tab, JSON.stringify(items)); } catch(e) {}
@@ -2932,26 +2912,13 @@ const WARDROBE_DEFAULTS = {
 let currentWardrobeTab = 'tops'; var _activeWardrobeTab = 'tops';
 let selectedWardrobeIds = new Set();
 
-function getWardrobeForTab(iconId, tab) {
-  try {
-    const s = localStorage.getItem(WARDROBE_KEY + '_' + iconId + '_' + tab);
-    if (s) return JSON.parse(s);
-  } catch(e) {}
-  return JSON.parse(JSON.stringify(WARDROBE_DEFAULTS[tab] || []));
-}
+
 
 function saveWardrobeTab(iconId, tab, items) {
   try { localStorage.setItem(WARDROBE_KEY + '_' + iconId + '_' + tab, JSON.stringify(items)); } catch(e) {}
 }
 
-function switchWardrobeTab(tab) {
-  currentWardrobeTab = tab;
-  document.querySelectorAll('.wardrobe-tab-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById('wtab-' + tab);
-  if (btn) btn.classList.add('active');
-  if (selectedIcon) currentWardrobe = getWardrobeForTab(selectedIcon.id, tab);
-  renderWardrobeChips();
-}
+
 
 function removeWardrobeItem(id) {
   const items = selectedIcon ? getWardrobeForTab(selectedIcon.id, currentWardrobeTab).filter(i => i.id !== id) : [];
@@ -3161,20 +3128,11 @@ var WDEF = {
 var _activeWardrobeTab = 'tops';
 
 
-function getWardrobeForTab(iconId, tab) {
-  try { var s = localStorage.getItem('mirage_wardrobe_v1_'+iconId+'_'+tab); if(s) return JSON.parse(s); } catch(e) {}
-  return JSON.parse(JSON.stringify(WDEF[tab]||[]));
-}
+
 function saveWardrobeTab(iconId, tab, items) {
   try { localStorage.setItem('mirage_wardrobe_v1_'+iconId+'_'+tab, JSON.stringify(items)); } catch(e) {}
 }
-function switchWardrobeTab(tab) {
-  _activeWardrobeTab = tab; currentWardrobeTab = tab;
-  document.querySelectorAll('.wardrobe-tab-btn').forEach(function(b){b.classList.remove('active');});
-  var btn = document.getElementById('wtab-'+tab); if(btn) btn.classList.add('active');
-  if(typeof selectedIcon!=='undefined'&&selectedIcon) currentWardrobe = getWardrobeForTab(selectedIcon.id, tab);
-  renderWardrobeChips();
-}
+
 function removeWardrobeItem(id) {
   var items = selectedIcon ? getWardrobeForTab(selectedIcon.id, _activeWardrobeTab).filter(function(i){return i.id!==id;}) : [];
   if(selectedIcon) saveWardrobeTab(selectedIcon.id, _activeWardrobeTab, items);
