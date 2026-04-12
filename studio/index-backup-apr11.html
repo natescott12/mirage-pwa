@@ -1,0 +1,2440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mirage · Icon Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0e0d; --bg2: #161412; --bg3: #1e1c1a;
+    --text: #ffffff; --dim: rgba(255,255,255,0.55); --muted: rgba(255,255,255,0.32);
+    --border: rgba(255,255,255,0.07); --border-md: rgba(255,255,255,0.12); --border-strong: rgba(255,255,255,0.18);
+    --green: #3a8650; --gold: #c09850; --red: #d04035;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; font-weight: 300; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
+  .serif { font-family: 'Afacad', sans-serif; font-style: normal; }
+  .eyebrow { font-size: 10px; letter-spacing: 0.22em; color: var(--muted); text-transform: uppercase; }
+  ::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 2px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeInFast { from { opacity:0; } to { opacity:1; } }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+  /* HEADER */
+  #header { height: 60px; background: var(--bg); border-bottom: 1px solid var(--border-md); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; flex-shrink: 0; z-index: 50; }
+  .logo { font-family: 'Afacad', sans-serif; font-style: normal; font-size: 24px; }
+  .nav-tab { padding: 6px 14px; border-radius: 2px; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; border: 1px solid transparent; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+  .nav-tab:hover { border-color: var(--border-md); }
+  .nav-tab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .badge { background: rgba(248,246,242,0.25); color: var(--bg); border-radius: 999px; padding: 1px 6px; font-size: 9px; margin-left: 5px; }
+  .nav-tab:not(.active) .badge { background: rgba(26,23,20,0.1); color: var(--text); }
+
+  /* NOTIFICATION */
+  #notification { position: fixed; top: 16px; right: 16px; z-index: 9999; padding: 11px 18px; border-radius: 2px; font-size: 11px; letter-spacing: 0.1em; display: none; animation: fadeIn 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+  #notification.success { background: var(--text); color: var(--bg); }
+  #notification.error { background: var(--red); color: #fff; }
+
+  /* APP */
+  #app { flex: 1; overflow: hidden; }
+  .tab-content { display: none; height: 100%; }
+  .tab-content.active { display: block; }
+  #tab-generate.tab-content.active { display: grid; grid-template-columns: 280px 1fr 360px; }
+  #tab-library.tab-content.active, #tab-icons.tab-content.active, #tab-queue.tab-content.active, #tab-schedule.tab-content.active { display: block; overflow-y: auto; padding: 28px 32px; height: 100%; }
+
+  /* GENERATE TAB */
+  .panel-left { border-right: 1px solid var(--border); display: flex; flex-direction: column; background: var(--bg); overflow: hidden; }
+  .panel-head { padding: 14px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .search-input { width: 100%; padding: 8px 12px; background: rgba(26,23,20,0.05); border: 1px solid var(--border-md); border-radius: 2px; font-size: 13px; color: var(--text); outline: none; font-family: 'DM Sans', sans-serif; margin-top: 10px; }
+  #icon-list { flex: 1; overflow-y: auto; }
+  .icon-list-item { padding: 11px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; cursor: pointer; transition: background 0.1s; }
+  .icon-list-item:hover { background: rgba(26,23,20,0.03); }
+  .icon-list-item.selected { background: rgba(26,23,20,0.05); }
+  .icon-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Afacad', sans-serif; font-style: normal; font-size: 13px; color: rgba(255,255,255,0.9); flex-shrink: 0; }
+  .icon-lib-badge { font-size: 9px; color: var(--muted); background: var(--bg3); padding: 1px 6px; border-radius: 999px; margin-left: auto; flex-shrink: 0; }
+  .panel-center { overflow-y: auto; padding: 22px 26px; }
+  .icon-card { padding: 18px; background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; margin-bottom: 20px; }
+  .icon-card-header { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
+  .icon-card-avatar { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Afacad', sans-serif; font-style: normal; font-size: 18px; color: rgba(255,255,255,0.9); flex-shrink: 0; }
+  .icon-card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .icon-card-field { padding: 8px 11px; background: rgba(26,23,20,0.04); border-radius: 2px; }
+  .icon-card-field-label { font-size: 9px; letter-spacing: 0.16em; color: var(--muted); text-transform: uppercase; margin-bottom: 3px; }
+  .icon-card-field-val { font-size: 11px; color: var(--dim); line-height: 1.5; }
+  .view-library-btn { display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; background: rgba(26,23,20,0.04); border: 1px solid var(--border); border-radius: 2px; cursor: pointer; margin-top: 8px; transition: border-color 0.15s; }
+  .view-library-btn:hover { border-color: var(--border-strong); }
+  .section-label { font-size: 10px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; }
+  .time-tab { padding: 5px 12px; border-radius: 2px; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; border: 1px solid var(--border-md); transition: all 0.15s; background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; }
+  .time-tab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .scene-opt { padding: 6px 12px; border-radius: 2px; font-size: 11px; cursor: pointer; border: 1px solid var(--border); transition: all 0.15s; color: var(--muted); font-family: 'DM Sans', sans-serif; }
+  .scene-opt.active { background: rgba(26,23,20,0.07); border-color: var(--border-strong); color: var(--text); }
+  .param-opt { padding: 6px 10px; border-radius: 2px; font-size: 11px; cursor: pointer; border: 1px solid var(--border); transition: all 0.12s; color: var(--muted); font-family: 'DM Sans', sans-serif; }
+  .param-opt.active { background: rgba(26,23,20,0.07); border-color: var(--border-strong); color: var(--text); }
+  #prompt-preview { padding: 12px 13px; background: rgba(26,23,20,0.03); border: 1px solid var(--border); border-radius: 2px; font-size: 11px; color: var(--muted); line-height: 1.75; font-style: normal; margin-bottom: 18px; }
+  #btn-generate { width: 100%; padding: 14px; background: var(--text); color: var(--bg); font-size: 11px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; border: none; border-radius: 2px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: opacity 0.15s; font-family: 'DM Sans', sans-serif; }
+  #btn-generate:hover { opacity: 0.85; } #btn-generate:disabled { opacity: 0.4; cursor: default; }
+  .spinner { width: 13px; height: 13px; border: 1.5px solid rgba(248,246,242,0.25); border-top-color: var(--bg); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  .panel-right { border-left: 1px solid var(--border); display: flex; flex-direction: column; background: var(--bg2); overflow: hidden; }
+  .panel-right-head { padding: 13px 18px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+  #output-list { flex: 1; overflow-y: auto; padding: 13px; display: flex; flex-direction: column; gap: 13px; }
+  .output-card { border: 1px solid var(--border-md); border-radius: 2px; overflow: hidden; background: var(--bg); animation: fadeIn 0.4s ease; }
+  .output-img-area { height: 260px; position: relative; overflow: hidden; background: rgba(26,23,20,0.06); }
+  .output-img { width: 100%; height: 100%; object-fit: cover; object-position: center top; filter: saturate(0.78) contrast(1.06); display: block; cursor: zoom-in; }
+  .grain-overlay { position: absolute; inset: 0; z-index: 2; pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E"); opacity: 0.7; mix-blend-mode: multiply; }
+  .img-fade { position: absolute; bottom: 0; left: 0; right: 0; height: 50%; background: linear-gradient(to top, rgba(248,246,242,0.95) 10%, transparent); z-index: 3; }
+  .img-name { position: absolute; bottom: 8px; left: 12px; z-index: 4; font-family: 'DM Sans', serif; font-style: normal; font-size: 34px; color: var(--text); line-height: 0.9; letter-spacing: -0.02em; }
+  .img-badge { position: absolute; top: 8px; right: 8px; z-index: 4; padding: 3px 9px; background: rgba(248,246,242,0.92); border-radius: 2px; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text); }
+  .img-series { position: absolute; top: 8px; left: 8px; z-index: 4; padding: 3px 9px; background: rgba(26,23,20,0.6); border-radius: 2px; font-size: 9px; letter-spacing: 0.1em; color: rgba(248,246,242,0.9); }
+  .img-save { position: absolute; bottom: 8px; right: 8px; z-index: 5; padding: 4px 10px; background: rgba(26,23,20,0.55); border-radius: 2px; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(248,246,242,0.9); text-decoration: none; }
+  .img-fav { position: absolute; top: 36px; right: 8px; z-index: 4; width: 26px; height: 26px; background: rgba(248,246,242,0.85); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; }
+  .output-generating { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+  .output-meta { padding: 12px 13px; }
+  .output-caption { font-family: 'DM Sans', sans-serif; font-style: normal; font-size: 14px; color: var(--dim); margin-bottom: 7px; line-height: 1.5; }
+  .output-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; margin-top: 7px; }
+  .output-tag { padding: 2px 8px; background: rgba(26,23,20,0.04); border: 1px solid var(--border); border-radius: 1px; font-size: 9px; color: var(--muted); }
+  .output-actions { display: flex; gap: 6px; }
+  .btn-primary { flex: 1; padding: 8px; background: var(--text); color: var(--bg); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; text-align: center; border-radius: 2px; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; transition: opacity 0.15s; }
+  .btn-primary:hover { opacity: 0.85; } .btn-primary.queued { background: rgba(26,23,20,0.08); color: var(--muted); cursor: default; }
+  .btn-secondary { padding: 8px 12px; border: 1px solid var(--border-md); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 2px; cursor: pointer; color: var(--muted); background: transparent; font-family: 'DM Sans', sans-serif; transition: border-color 0.15s; }
+  .btn-secondary:hover { border-color: var(--border-strong); color: var(--text); }
+
+  /* LIBRARY TAB */
+  .lib-icon-btn { display: flex; align-items: center; gap: 7px; padding: 7px 14px; border: 1px solid var(--border-md); border-radius: 2px; cursor: pointer; transition: all 0.15s; background: transparent; font-family: 'DM Sans', sans-serif; margin-bottom: 4px; }
+  .lib-icon-btn:hover { border-color: var(--border-strong); }
+  .lib-icon-btn.active { background: var(--text); border-color: var(--text); color: var(--bg); }
+  .lib-icon-btn.active .lib-name { color: var(--bg); }
+  .lib-icon-btn.active .lib-cnt { color: rgba(248,246,242,0.5); }
+  .lib-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .lib-name { font-family: 'DM Sans', sans-serif; font-style: normal; font-size: 15px; color: var(--text); }
+  .lib-cnt { font-size: 9px; color: var(--muted); }
+  .lib-filter { padding: 5px 12px; border: 1px solid var(--border-md); border-radius: 2px; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; color: var(--muted); background: transparent; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+  .lib-filter.active { background: var(--bg2); border-color: var(--border-strong); color: var(--text); }
+  .library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; margin-top: 20px; }
+  .lib-card { position: relative; border-radius: 2px; overflow: hidden; cursor: pointer; border: 2px solid transparent; transition: border-color 0.15s; animation: fadeIn 0.3s ease; }
+  .lib-card.selected { border-color: var(--text); }
+  .lib-card img { width: 100%; aspect-ratio: 3/4; object-fit: cover; object-position: center top; filter: saturate(0.78) contrast(1.06); display: block; transition: transform 0.3s; }
+  .lib-card:hover img { transform: scale(1.03); }
+  .lib-card-fade { position: absolute; bottom: 0; left: 0; right: 0; height: 55%; background: linear-gradient(to top, rgba(26,23,20,0.75), transparent); z-index: 2; }
+  .lib-card-name { position: absolute; bottom: 7px; left: 9px; z-index: 3; font-family: 'DM Sans', serif; font-style: normal; font-size: 20px; color: var(--bg); line-height: 1; }
+  .lib-card-type { position: absolute; top: 7px; right: 7px; z-index: 3; padding: 2px 7px; background: rgba(248,246,242,0.9); border-radius: 1px; font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text); }
+  .lib-card-fav { position: absolute; top: 7px; left: 7px; z-index: 3; font-size: 13px; }
+  .lib-card-check { position: absolute; bottom: 7px; right: 7px; z-index: 3; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid rgba(248,246,242,0.6); display: flex; align-items: center; justify-content: center; font-size: 9px; color: transparent; transition: all 0.15s; }
+  .lib-card.selected .lib-card-check { background: var(--text); border-color: var(--text); color: var(--bg); }
+
+  /* LIGHTBOX */
+  #lightbox { position: fixed; inset: 0; z-index: 500; background: rgba(26,23,20,0.92); display: none; align-items: center; justify-content: center; animation: fadeInFast 0.2s ease; }
+  #lightbox.open { display: flex; }
+  .lb-inner { display: flex; max-width: 1100px; width: 90vw; max-height: 90vh; border-radius: 2px; overflow: hidden; }
+  .lb-img-side { flex: 1; position: relative; background: #111; min-width: 0; }
+  .lb-img-side img { width: 100%; height: 100%; object-fit: contain; filter: saturate(0.78) contrast(1.06); }
+  .lb-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(248,246,242,0.9); border: none; border-radius: 2px; padding: 10px 14px; cursor: pointer; font-size: 18px; z-index: 10; }
+  .lb-nav.prev { left: 12px; } .lb-nav.next { right: 12px; }
+  .lb-info { width: 290px; background: var(--bg); padding: 24px 20px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; flex-shrink: 0; }
+  .lb-close { position: absolute; top: 16px; right: 16px; background: rgba(26,23,20,0.6); color: var(--bg); border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; z-index: 510; }
+  .lb-divider { height: 1px; background: var(--border); }
+  .lb-actions { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
+  .lb-btn { width: 100%; padding: 10px; border-radius: 2px; font-size: 10px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; text-align: center; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; transition: opacity 0.15s; text-decoration: none; display: block; }
+  .lb-btn.primary { background: var(--text); color: var(--bg); } .lb-btn.primary:hover { opacity: 0.85; }
+  .lb-btn.secondary { background: transparent; border: 1px solid var(--border-strong); color: var(--dim); } .lb-btn.secondary:hover { color: var(--text); border-color: var(--text); }
+  .lb-btn.danger { background: transparent; border: 1px solid rgba(176,48,37,0.3); color: var(--red); }
+
+  /* QUEUE TAB */
+  .queue-item { display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; margin-bottom: 8px; animation: fadeIn 0.3s ease; }
+  .queue-thumb { width: 48px; height: 56px; border-radius: 2px; overflow: hidden; flex-shrink: 0; background: rgba(26,23,20,0.06); }
+  .queue-thumb img { width: 100%; height: 100%; object-fit: cover; object-position: center top; filter: saturate(0.7); }
+  .queue-remove { font-size: 18px; color: var(--muted); cursor: pointer; padding: 4px 8px; flex-shrink: 0; }
+  .queue-remove:hover { color: var(--text); }
+
+  /* SCHEDULE */
+  .schedule-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 24px; }
+  .sch-card { background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; overflow: hidden; }
+  .sch-head { padding: 13px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .sch-slot { display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; background: rgba(26,23,20,0.03); border: 1px solid var(--border); border-radius: 2px; margin: 4px 16px; }
+  .pipeline-card { background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; overflow: hidden; margin-top: 16px; }
+  .pipeline-head { padding: 13px 18px; border-bottom: 1px solid var(--border); }
+  .pipeline-item { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--border); }
+  .pipeline-item:last-child { border-bottom: none; }
+  .pip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .pip-dot.live { background: var(--green); }
+  .pip-dot.soon { background: var(--gold); animation: pulse 2s ease infinite; }
+  .pip-status { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; padding: 2px 8px; border-radius: 1px; flex-shrink: 0; margin-left: auto; }
+  .pip-status.live { color: var(--green); border: 1px solid rgba(42,102,64,0.3); }
+  .pip-status.soon { color: var(--gold); border: 1px solid rgba(160,120,64,0.3); }
+
+  /* ICONS TAB */
+  .icons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap: 9px; margin-top: 20px; }
+  .icon-grid-card { padding: 16px 18px; background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; cursor: pointer; display: flex; gap: 12px; align-items: flex-start; transition: border-color 0.15s; }
+  .icon-grid-card:hover { border-color: var(--border-strong); }
+  .icon-grid-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Afacad', sans-serif; font-style: normal; font-size: 15px; color: rgba(255,255,255,0.9); flex-shrink: 0; }
+
+  /* CHARACTER BUILDER */
+  .char-builder { background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; margin-bottom: 20px; overflow: hidden; }
+  .char-builder-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .char-builder-title { font-size: 10px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; }
+  .char-builder-body { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .char-builder.collapsed .char-builder-body { display: none; }
+  .char-section-label { font-size: 9px; letter-spacing: 0.18em; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+  .char-field { display: flex; flex-direction: column; gap: 5px; }
+  .char-input { width: 100%; padding: 7px 10px; background: var(--bg); border: 1px solid var(--border-md); border-radius: 2px; font-size: 12px; color: var(--text); outline: none; font-family: 'DM Sans', sans-serif; transition: border-color 0.15s; }
+  .char-input:focus { border-color: var(--border-strong); }
+  .char-input::placeholder { color: var(--muted); }
+  .char-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .char-chip { padding: 5px 11px; border-radius: 2px; font-size: 11px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all 0.12s; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
+  .char-chip:hover { border-color: var(--border-md); color: var(--text); }
+  .char-chip.selected { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .char-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .skin-swatches { display: flex; gap: 5px; flex-wrap: wrap; }
+  .skin-swatch { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; flex-shrink: 0; }
+  .skin-swatch:hover { transform: scale(1.1); }
+  .skin-swatch.selected { border-color: var(--text); box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--text); }
+  .char-save-btn { width: 100%; padding: 9px; background: transparent; border: 1px solid var(--border-strong); color: var(--dim); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; margin-top: 4px; }
+  .char-save-btn:hover { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .char-prompt-preview { padding: 10px 12px; background: rgba(26,23,20,0.03); border: 1px solid var(--border); border-radius: 2px; font-size: 10px; color: var(--muted); line-height: 1.7; font-style: normal; margin-top: 8px; }
+
+
+  /* EDITABLE PROMPT */
+  .prompt-area { position: relative; margin-bottom: 18px; }
+  .prompt-textarea {
+    width: 100%; min-height: 110px; padding: 12px 13px;
+    background: rgba(26,23,20,0.03); border: 1px solid var(--border);
+    border-radius: 2px; font-size: 11px; color: var(--text);
+    line-height: 1.75; font-style: normal; resize: vertical;
+    font-family: 'DM Sans', sans-serif; outline: none;
+    transition: border-color 0.15s;
+  }
+  .prompt-textarea:focus { border-color: var(--border-strong); background: rgba(26,23,20,0.02); font-style: normal; }
+  .prompt-textarea.locked { color: var(--muted); font-style: normal; }
+  .prompt-controls {
+    display: flex; gap: 6px; align-items: center; margin-top: 6px;
+  }
+  .prompt-ctrl-btn {
+    padding: 5px 12px; border-radius: 2px; font-size: 9px; letter-spacing: 0.12em;
+    text-transform: uppercase; cursor: pointer; border: 1px solid var(--border-md);
+    background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s; flex-shrink: 0;
+  }
+  .prompt-ctrl-btn:hover { border-color: var(--border-strong); color: var(--text); }
+  .prompt-ctrl-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .prompt-char-count { font-size: 9px; color: var(--muted); margin-left: auto; letter-spacing: 0.06em; }
+  .prompt-live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: pulse 2s ease infinite; flex-shrink: 0; }
+  .prompt-live-label { font-size: 9px; color: var(--green); letter-spacing: 0.08em; }
+
+
+  /* ── MOODBOARD ─────────────────────────────── */
+  .moodboard { background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; margin-bottom: 20px; overflow: hidden; }
+  .moodboard-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .moodboard-header:hover { background: rgba(26,23,20,0.02); }
+  .moodboard-body { padding: 14px 16px; }
+  .moodboard.collapsed .moodboard-body { display: none; }
+
+  .moodboard-dropzone {
+    border: 1.5px dashed var(--border-strong); border-radius: 2px; padding: 22px 16px;
+    text-align: center; cursor: pointer; transition: all 0.15s; margin-bottom: 12px;
+    background: rgba(26,23,20,0.02);
+  }
+  .moodboard-dropzone:hover, .moodboard-dropzone.dragover { border-color: var(--text); background: rgba(26,23,20,0.05); }
+  .moodboard-dropzone-icon { font-size: 20px; margin-bottom: 6px; opacity: 0.4; }
+  .moodboard-dropzone-text { font-size: 11px; color: var(--muted); line-height: 1.6; }
+  .moodboard-dropzone-text strong { color: var(--dim); font-weight: 400; }
+
+  .moodboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; }
+  .moodboard-item { position: relative; border-radius: 2px; overflow: hidden; border: 2px solid transparent; transition: border-color 0.15s; aspect-ratio: 4/5; }
+  .moodboard-item.active { border-color: var(--text); }
+  .moodboard-item.inactive { opacity: 0.45; }
+  .moodboard-item img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; filter: saturate(0.8); }
+
+  .mb-item-overlay { position: absolute; inset: 0; opacity: 0; transition: opacity 0.15s; background: rgba(26,23,20,0.65); display: flex; flex-direction: column; align-items: stretch; padding: 6px; gap: 4px; }
+  .moodboard-item:hover .mb-item-overlay { opacity: 1; }
+  .mb-label-row-item { display: flex; gap: 3px; flex-wrap: wrap; margin-bottom: 2px; }
+  .mb-label-pill { padding: 2px 7px; border: 1px solid rgba(248,246,242,0.4); border-radius: 1px; font-size: 7px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; font-family: 'DM Sans', sans-serif; color: rgba(248,246,242,0.7); background: transparent; transition: all 0.12s; }
+  .mb-label-pill.active { background: rgba(248,246,242,0.9); color: var(--text); border-color: transparent; }
+  .mb-item-actions { display: flex; gap: 4px; margin-top: auto; }
+  .mb-toggle { flex: 1; padding: 4px 6px; background: rgba(248,246,242,0.9); border: none; border-radius: 1px; font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; font-family: 'DM Sans', sans-serif; color: var(--text); }
+  .mb-delete { padding: 4px 7px; background: rgba(176,48,37,0.85); border: none; border-radius: 1px; font-size: 10px; cursor: pointer; color: #fff; }
+
+  .mb-label-chip { position: absolute; top: 5px; left: 5px; padding: 2px 7px; border-radius: 1px; font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; font-family: 'DM Sans', sans-serif; }
+  .mb-label-vibe { background: rgba(160,120,64,0.85); color: #fff; }
+  .mb-label-lighting { background: rgba(26,23,20,0.75); color: rgba(248,246,242,0.9); }
+  .mb-label-color { background: rgba(42,102,64,0.85); color: #fff; }
+  .mb-label-face { background: rgba(96,72,120,0.85); color: #fff; }
+  .mb-label-style { background: rgba(100,80,60,0.85); color: #fff; }
+
+  .mb-active-dot { position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .moodboard-item.inactive .mb-active-dot { background: var(--muted); }
+
+  .mb-label-selector { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+  .mb-label-btn { padding: 4px 10px; border: 1px solid var(--border-md); border-radius: 1px; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; font-family: 'DM Sans', sans-serif; color: var(--muted); background: transparent; transition: all 0.12s; }
+  .mb-label-btn.selected { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+  .mb-extract-btn { width: 100%; padding: 9px; border: 1px solid var(--border-strong); background: transparent; color: var(--dim); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .mb-extract-btn:hover { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .mb-extract-btn:disabled { opacity: 0.4; cursor: default; }
+  .mb-extracted { padding: 10px 12px; background: rgba(42,102,64,0.06); border: 1px solid rgba(42,102,64,0.2); border-radius: 2px; font-size: 10px; color: var(--dim); line-height: 1.7; font-style: normal; margin-top: 8px; display: none; }
+  .mb-extracted.visible { display: block; }
+
+
+  /* PERSONA BUILDER */
+  .persona-builder { background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; margin-bottom: 20px; overflow: hidden; }
+  .persona-builder-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .persona-builder.collapsed .persona-builder-body { display: none; }
+  .persona-builder-body { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .persona-phrase-row { display: flex; gap: 6px; align-items: center; }
+  .persona-phrase-num { font-family: 'DM Sans', sans-serif; font-style: normal; font-size: 14px; color: var(--muted); width: 16px; flex-shrink: 0; }
+  .persona-input { width: 100%; padding: 7px 10px; background: var(--bg); border: 1px solid var(--border-md); border-radius: 2px; font-size: 12px; color: var(--text); outline: none; font-family: 'DM Sans', sans-serif; transition: border-color 0.15s; }
+  .persona-input:focus { border-color: var(--border-strong); }
+  .persona-textarea { width: 100%; padding: 8px 10px; background: var(--bg); border: 1px solid var(--border-md); border-radius: 2px; font-size: 12px; color: var(--text); outline: none; font-family: 'DM Sans', sans-serif; resize: vertical; min-height: 68px; line-height: 1.6; transition: border-color 0.15s; }
+  .persona-textarea:focus { border-color: var(--border-strong); }
+  .persona-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .persona-chip { padding: 5px 11px; border-radius: 2px; font-size: 11px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all 0.12s; font-family: 'DM Sans', sans-serif; }
+  .persona-chip.selected { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .persona-cluster-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .persona-cluster-chip { padding: 5px 11px; border-radius: 2px; font-size: 11px; cursor: pointer; border: 1px solid var(--border-md); background: transparent; color: var(--dim); transition: all 0.12s; font-family: 'DM Sans', sans-serif; font-weight: 400; }
+  .persona-cluster-chip.selected { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .persona-save-btn { width: 100%; padding: 9px; background: transparent; border: 1px solid var(--border-strong); color: var(--dim); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+  .persona-save-btn:hover { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .persona-system-preview { padding: 10px 12px; background: rgba(26,23,20,0.03); border: 1px solid var(--border); border-radius: 2px; font-size: 9.5px; color: var(--muted); line-height: 1.75; font-style: normal; margin-top: 6px; max-height: 80px; overflow-y: auto; }
+
+  /* WARDROBE CHIPS */
+  .wardrobe-chip { padding: 5px 11px; border-radius: 2px; font-size: 11px; cursor: pointer; border: 1px solid var(--border-md); background: transparent; color: var(--dim); transition: all 0.12s; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
+  .wardrobe-chip.selected { background: var(--gold); color: #f8f6f2; border-color: var(--gold); }
+  .wardrobe-add-row { display: flex; gap: 6px; margin-top: 8px; }
+  .wardrobe-add-input { flex: 1; padding: 6px 10px; background: var(--bg); border: 1px solid var(--border-md); border-radius: 2px; font-size: 11px; color: var(--text); outline: none; font-family: 'DM Sans', sans-serif; }
+  .wardrobe-add-btn { padding: 6px 12px; background: transparent; border: 1px solid var(--border-md); border-radius: 2px; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; color: var(--muted); font-family: 'DM Sans', sans-serif; transition: all 0.15s; white-space: nowrap; }
+  .wardrobe-add-btn:hover { border-color: var(--border-strong); color: var(--text); }
+
+  /* VOICE PREVIEW */
+  .voice-preview { background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; margin-bottom: 16px; overflow: hidden; }
+  .voice-preview-header { padding: 11px 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .voice-preview.collapsed .voice-preview-body { display: none; }
+  .voice-preview-body { padding: 12px 14px; }
+  .voice-msgs { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; min-height: 60px; max-height: 200px; overflow-y: auto; }
+  .voice-msg-icon { padding: 8px 12px; background: var(--bg3); border-radius: 10px 10px 10px 2px; font-size: 12px; color: var(--dim); line-height: 1.5; max-width: 90%; align-self: flex-start; font-style: normal; }
+  .voice-msg-user { padding: 8px 12px; background: var(--text); color: var(--bg); border-radius: 10px 10px 2px 10px; font-size: 12px; line-height: 1.5; max-width: 90%; align-self: flex-end; }
+  .voice-msg-thinking { padding: 8px 12px; background: var(--bg3); border-radius: 10px 10px 10px 2px; font-size: 11px; color: var(--muted); font-style: normal; align-self: flex-start; }
+  .voice-input-row { display: flex; gap: 6px; }
+  .voice-input { flex: 1; padding: 8px 10px; background: var(--bg); border: 1px solid var(--border-md); border-radius: 2px; font-size: 12px; color: var(--text); outline: none; font-family: 'DM Sans', sans-serif; }
+  .voice-send-btn { padding: 8px 14px; background: var(--text); color: var(--bg); border: none; border-radius: 2px; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: opacity 0.15s; white-space: nowrap; }
+  .voice-send-btn:disabled { opacity: 0.4; cursor: default; }
+
+  /* ICONS CLUSTER FILTER */
+  .cluster-filter { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  .cluster-btn { padding: 6px 14px; border-radius: 2px; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; border: 1px solid var(--border-md); background: transparent; color: var(--muted); transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+  .cluster-btn:hover { border-color: var(--border-strong); color: var(--text); }
+  .cluster-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .icon-cluster-badge { display: inline-block; padding: 2px 7px; border-radius: 1px; font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 5px; border: 1px solid var(--border-md); color: var(--muted); }
+
+  /* Hide header when embedded in admin */
+  body.in-admin #header { display: none !important; }
+  body.in-admin #app { height: 100vh !important; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function() {
+  try {
+    window.sbStudio = supabase.createClient(
+      'https://gmyenvnfuailickepvax.supabase.co',
+      'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D'
+    );
+    console.log('Studio Supabase connected');
+  } catch(e) {
+    window.sbStudio = null;
+    console.warn('Studio Supabase failed', e);
+  }
+})();
+</script>
+<!-- v2 -->
+</head>
+<body>
+
+<div id="notification"></div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <button class="lb-close" onclick="closeLightbox()">✕</button>
+  <div class="lb-inner">
+    <div class="lb-img-side">
+      <button class="lb-nav prev" onclick="lbNav(-1)">‹</button>
+      <button class="lb-nav next" onclick="lbNav(1)">›</button>
+      <img id="lb-img" src="" alt="" />
+    </div>
+    <div class="lb-info">
+      <div>
+        <div class="serif" style="font-size:36px;margin-bottom:3px" id="lb-name"></div>
+        <div class="eyebrow" id="lb-arch"></div>
+      </div>
+      <div class="lb-divider"></div>
+      <div style="font-family:'Afacad',sans-serif;font-style:normal;font-size:16px;color:var(--dim);line-height:1.5" id="lb-caption"></div>
+      <div class="lb-divider"></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--muted)">Drop time</span><span id="lb-drop"></span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--muted)">Content</span><span id="lb-type"></span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--muted)">Series</span><span id="lb-series" style="max-width:150px;text-align:right"></span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--muted)">Date</span><span id="lb-date"></span></div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px" id="lb-tags"></div>
+      <div style="padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:2px;font-size:10px;color:var(--muted);line-height:1.7;font-style:italic" id="lb-prompt"></div>
+      <div class="lb-actions">
+        <button class="lb-btn primary" id="lb-queue-btn" onclick="lbAddToQueue()">Add to Queue</button>
+        <button class="lb-btn secondary" onclick="lbFav()">★ Favourite</button>
+        <a class="lb-btn secondary" id="lb-dl" href="" download="" target="_blank">↓ Download</a>
+        <button class="lb-btn danger" onclick="lbDelete()">Delete Image</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div id="header">
+  <div style="display:flex;align-items:center;gap:20px">
+    <div class="logo">Mirage</div>
+    <div style="width:1px;height:18px;background:var(--border-md)"></div>
+    <div class="eyebrow">Icon Studio</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:20px">
+    <div id="proxy-status" style="font-size:10px;letter-spacing:0.1em;cursor:pointer" onclick="checkProxy()">Checking...</div>
+    <div style="display:flex;gap:4px">
+      <div class="nav-tab active" data-tab="generate" onclick="switchTab('generate')">Generate</div>
+      <div class="nav-tab" data-tab="library" onclick="switchTab('library')">Library <span class="badge" id="lib-total">0</span></div>
+      <div class="nav-tab" data-tab="icons" onclick="switchTab('icons')">Icons</div>
+      <div class="nav-tab" data-tab="queue" onclick="switchTab('queue')">Queue <span class="badge" id="queue-count">0</span></div>
+      <div class="nav-tab" data-tab="schedule" onclick="switchTab('schedule')">Schedule</div>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+
+  <!-- GENERATE -->
+  <div id="tab-generate" class="tab-content active">
+    <div class="panel-left">
+      <div class="panel-head">
+        <div class="eyebrow">The Icons · <span id="icon-count">100</span></div>
+        <input class="search-input" placeholder="Search icons..." oninput="filterIcons(this.value)" />
+      </div>
+      <div id="icon-list"></div>
+    </div>
+    <div class="panel-center">
+      <!-- Icon Profile Card -->
+      <div class="icon-card">
+        <div class="icon-card-header">
+          <div class="icon-card-avatar" id="card-avatar"></div>
+          <div style="flex:1">
+            <input id="edit-name" class="char-input" style="font-family:'Afacad',sans-serif;font-style:normal;font-size:22px;background:transparent;border-color:transparent;padding:0;margin-bottom:3px" placeholder="Icon name" oninput="updateIconField('name',this.value)" />
+            <input id="edit-arch" class="char-input" style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);background:transparent;border-color:transparent;padding:0;margin-bottom:4px" placeholder="Archetype" oninput="updateIconField('archetype',this.value)" />
+            <input id="edit-vibe" class="char-input" style="font-size:12px;color:var(--dim);background:transparent;border-color:transparent;padding:0" placeholder="Vibe / personality..." oninput="updateIconField('vibe',this.value)" />
+          </div>
+        </div>
+        <div class="view-library-btn" onclick="openIconLibrary()">
+          <span style="font-size:11px;color:var(--dim)">📸 View image library</span>
+          <span style="font-size:10px;color:var(--muted)" id="card-lib-count">0 images</span>
+        </div>
+      </div>
+
+      <!-- Moodboard -->
+      <div class="moodboard" id="moodboard">
+        <div class="moodboard-header" onclick="toggleMoodboard()">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="char-builder-title">Moodboard</div>
+            <div style="font-size:9px;color:var(--muted);background:var(--bg3);padding:2px 8px;border-radius:999px" id="mb-count">0 references</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="font-size:10px;color:var(--muted)" id="mb-summary">Visual references for generation</div>
+            <div id="mb-chevron" style="font-size:10px;color:var(--muted)">▼</div>
+          </div>
+        </div>
+        <div class="moodboard-body" id="moodboard-body">
+
+          <!-- Drop zone -->
+          <div class="moodboard-dropzone" id="mb-dropzone"
+            onclick="document.getElementById('mb-file-input').click()"
+            ondragover="mbDragOver(event)"
+            ondragleave="mbDragLeave(event)"
+            ondrop="mbDrop(event)">
+            <div class="moodboard-dropzone-icon">⊕</div>
+            <div class="moodboard-dropzone-text"><strong>Drop images here</strong> or click to upload<br>Editorial refs · lighting · color · face</div>
+          </div>
+          <input type="file" id="mb-file-input" accept="image/*" multiple style="display:none" onchange="mbFilePicked(event)" />
+
+          <!-- Image grid -->
+          <div class="moodboard-grid" id="mb-grid"></div>
+
+          <!-- Extract button -->
+          <button class="mb-extract-btn" id="mb-extract-btn" onclick="extractMoodboard()" style="display:none">
+            <span id="mb-extract-spinner" style="display:none;width:11px;height:11px;border-width:1.5px;border-color:rgba(26,23,20,0.2);border-top-color:var(--text)" class="spinner"></span>
+            ✦ Extract aesthetic from moodboard
+          </button>
+
+          <!-- Extracted description -->
+          <div class="mb-extracted" id="mb-extracted"></div>
+
+        </div>
+      </div>
+
+      <!-- Character Builder -->
+      <div class="char-builder" id="char-builder">
+        <div class="char-builder-header" onclick="toggleCharBuilder()">
+          <div class="char-builder-title">Character Builder</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="font-size:10px;color:var(--muted)" id="char-summary">Click to expand</div>
+            <div id="char-chevron" style="font-size:10px;color:var(--muted)">▼</div>
+          </div>
+        </div>
+        <div class="char-builder-body" id="char-builder-body">
+
+          <!-- Ethnicity / Heritage -->
+          <div class="char-field">
+            <div class="char-section-label">Ethnicity / Heritage</div>
+            <input id="cb-ethnicity" class="char-input" placeholder="e.g. East Asian, Afro-Caribbean, Southern European..." oninput="updateChar('ethnicity',this.value)" />
+          </div>
+
+          <!-- Skin tone -->
+          <div class="char-field">
+            <div class="char-section-label">Skin Tone</div>
+            <div class="skin-swatches" id="skin-swatches"></div>
+            <input id="cb-skin" class="char-input" style="margin-top:6px" placeholder="or describe e.g. warm olive, cool porcelain..." oninput="updateChar('skinTone',this.value)" />
+          </div>
+
+          <!-- Skin texture -->
+          <div class="char-field">
+            <div class="char-section-label">Skin Texture</div>
+            <div class="char-chips" id="chips-skinTexture"></div>
+          </div>
+
+          <!-- Skin texture -->
+          <div class="char-field">
+            <div class="char-section-label">Skin Texture</div>
+            <div class="char-chips" id="chips-skinTexture"></div>
+          </div>
+
+          <!-- Eyes -->
+          <div class="char-grid">
+            <div class="char-field">
+              <div class="char-section-label">Eye Color</div>
+              <div class="char-chips" id="chips-eyeColor"></div>
+              <input id="cb-eye-color-custom" class="char-input" style="margin-top:5px" placeholder="custom..." oninput="updateChar('eyeColor',this.value)" />
+            </div>
+            <div class="char-field">
+              <div class="char-section-label">Eye Shape</div>
+              <div class="char-chips" id="chips-eyeShape"></div>
+            </div>
+          </div>
+
+          <!-- Hair -->
+          <div class="char-field">
+            <div class="char-section-label">Hair Color</div>
+            <div class="char-chips" id="chips-hairColor"></div>
+            <input id="cb-hair-color-custom" class="char-input" style="margin-top:5px" placeholder="custom e.g. strawberry blonde, ash brown..." oninput="updateChar('hairColor',this.value)" />
+          </div>
+          <div class="char-grid">
+            <div class="char-field">
+              <div class="char-section-label">Hair Length</div>
+              <div class="char-chips" id="chips-hairLength"></div>
+            </div>
+            <div class="char-field">
+              <div class="char-section-label">Hair Texture</div>
+              <div class="char-chips" id="chips-hairTexture"></div>
+            </div>
+          </div>
+          <div class="char-field">
+            <div class="char-section-label">Hair Style</div>
+            <input id="cb-hair-style" class="char-input" placeholder="e.g. loose waves, messy bun, blunt cut, slicked back..." oninput="updateChar('hairStyle',this.value)" />
+          </div>
+
+          <!-- Face details -->
+          <div class="char-grid">
+            <div class="char-field">
+              <div class="char-section-label">Freckles</div>
+              <div class="char-chips" id="chips-freckles"></div>
+            </div>
+            <div class="char-field">
+              <div class="char-section-label">Makeup</div>
+              <div class="char-chips" id="chips-makeup"></div>
+            </div>
+          </div>
+
+          <!-- Body -->
+          <div class="char-grid">
+            <div class="char-field">
+              <div class="char-section-label">Build</div>
+              <div class="char-chips" id="chips-build"></div>
+            </div>
+            <div class="char-field">
+              <div class="char-section-label">Age Range</div>
+              <div class="char-chips" id="chips-age"></div>
+            </div>
+          </div>
+
+          <!-- Distinguishing features -->
+          <div class="char-field">
+            <div class="char-section-label">Distinguishing Features</div>
+            <input id="cb-features" class="char-input" placeholder="e.g. small scar on chin, gap teeth, birthmark on neck, nose ring..." oninput="updateChar('features',this.value)" />
+          </div>
+
+          <!-- Tattoos -->
+          <div class="char-field">
+            <div class="char-section-label">Tattoos / Piercings</div>
+            <input id="cb-tattoos" class="char-input" placeholder="e.g. fine line tattoo on forearm, double ear piercings..." oninput="updateChar('tattoos',this.value)" />
+          </div>
+
+          <!-- Setting -->
+          <div class="char-field">
+            <div class="char-section-label">Typical Setting</div>
+            <input id="cb-setting" class="char-input" placeholder="e.g. Lower East Side apartment, bookshelf walls..." oninput="updateIconField('setting',this.value)" />
+          </div>
+
+          <!-- Style -->
+          <div class="char-field">
+            <div class="char-section-label">Signature Style</div>
+            <input id="cb-style" class="char-input" placeholder="e.g. turtleneck pulled low, vintage Levi's, no jewelry..." oninput="updateIconField('style',this.value)" />
+          </div>
+
+          <!-- Character prompt preview -->
+          <div>
+            <div class="char-section-label" style="margin-bottom:6px">Character Description (injected into every prompt)</div>
+            <div class="char-prompt-preview" id="char-prompt-preview">Fill in the fields above to build the character description...</div>
+          </div>
+
+          <button class="char-save-btn" onclick="saveCharacter()">Save Character Profile</button>
+        </div>
+      </div>
+
+      <!-- Persona Builder -->
+      <div class="persona-builder collapsed" id="persona-builder">
+        <div class="persona-builder-header" onclick="togglePersonaBuilder()">
+          <div class="char-builder-title">Persona · Voice & Identity</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="font-size:10px;color:var(--muted)" id="persona-summary">Click to expand</div>
+            <div id="persona-chevron" style="font-size:10px;color:var(--muted)">▼</div>
+          </div>
+        </div>
+        <div class="persona-builder-body">
+          <div class="char-field">
+            <div class="char-section-label">Brand Voice · 3 Signature Phrases</div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <div class="persona-phrase-row"><span class="persona-phrase-num">1</span><input class="persona-input" id="pv-phrase1" placeholder="e.g. can't sleep. you up?" oninput="updatePersona('phrase1',this.value)" /></div>
+              <div class="persona-phrase-row"><span class="persona-phrase-num">2</span><input class="persona-input" id="pv-phrase2" placeholder="e.g. fire escape. 3am. bring coffee." oninput="updatePersona('phrase2',this.value)" /></div>
+              <div class="persona-phrase-row"><span class="persona-phrase-num">3</span><input class="persona-input" id="pv-phrase3" placeholder="e.g. thought about you today. weird." oninput="updatePersona('phrase3',this.value)" /></div>
+            </div>
+          </div>
+          <div class="char-field">
+            <div class="char-section-label">SMS Character Description</div>
+            <textarea class="persona-textarea" id="pv-sms-desc" placeholder="How she texts. Voice rules. What she never says. What she always does. This feeds directly into Claude for in-character responses..." oninput="updatePersona('smsDesc',this.value)"></textarea>
+          </div>
+          <div class="char-field">
+            <div class="char-section-label">Content Pillars</div>
+            <div class="persona-chips" id="persona-pillar-chips"></div>
+          </div>
+          <div class="char-field">
+            <div class="char-section-label">Female Archetype</div>
+            <div class="persona-chips" id="persona-archetype-chips"></div>
+          </div>
+          <div class="char-field">
+            <div class="char-section-label">Cluster</div>
+            <div class="persona-cluster-chips" id="persona-cluster-chips"></div>
+          </div>
+          <div class="char-field">
+            <div class="char-section-label" style="display:flex;justify-content:space-between"><span>Claude System Prompt Preview</span><span style="color:var(--green);font-size:9px">Auto-generated ✦</span></div>
+            <div class="persona-system-preview" id="persona-system-preview">Fill in the fields above to generate the system prompt...</div>
+          </div>
+          <button class="persona-save-btn" onclick="savePersona()">Save Persona ✦</button>
+        </div>
+      </div>
+      <div style="margin-bottom:20px">
+        <div class="section-label">Scene · Time of Day</div>
+        <div style="display:flex;gap:5px;margin-bottom:10px" id="time-tabs"></div>
+
+      </div>
+      <div style="margin-bottom:20px">
+        <div class="section-label">Style Parameters</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="params-grid"></div>
+      </div>
+      <div style="margin-bottom:20px">
+        <div class="section-label" style="display:flex;justify-content:space-between;align-items:center"><span>Wardrobe · Inject into Prompt</span><span style="font-size:9px;color:var(--gold)">✦ Prompt layer</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px" id="wardrobe-chips"></div>
+        <div class="wardrobe-add-row">
+          <input class="wardrobe-add-input" id="wardrobe-add-input" placeholder="Add wardrobe item e.g. fitted black leather jacket, Schott..." onkeydown="if(event.key==='Enter')addWardrobeItem()" />
+          <button class="wardrobe-add-btn" onclick="addWardrobeItem()">+ Add</button>
+        </div>
+      </div>
+      <div class="prompt-area">
+        <div class="section-label" style="margin-bottom:8px;display:flex;align-items:center;gap:8px">
+          Flux Prompt
+          <div class="prompt-live-dot" id="prompt-live-dot"></div>
+          <span class="prompt-live-label" id="prompt-live-label">Live</span>
+        </div>
+        <textarea
+          id="prompt-preview"
+          class="prompt-textarea"
+          placeholder="Fill in the character builder and select a scene to generate your prompt..."
+          oninput="onPromptEdit()"
+        ></textarea>
+        <div class="prompt-controls">
+          <button class="prompt-ctrl-btn" onclick="rewritePrompt()" title="Regenerate prompt from current settings">↺ Rewrite</button>
+          <button class="prompt-ctrl-btn" id="lock-btn" onclick="togglePromptLock()" title="Lock prompt to prevent auto-updates">🔓 Auto</button>
+          <button class="prompt-ctrl-btn" onclick="copyFullPrompt()" title="Copy prompt to clipboard">Copy</button>
+          <span class="prompt-char-count" id="prompt-char-count">0 chars</span>
+        </div>
+      </div>
+      <button id="btn-generate" onclick="handleGenerate()">Generate · <span id="btn-name">Sloane</span> · Flux Pro</button>
+    </div>
+    <div class="panel-right">
+      <div class="panel-right-head">
+        <div class="eyebrow">Output · <span id="output-count">0</span></div>
+        <div style="font-size:10px;color:var(--muted);cursor:pointer" onclick="clearOutput()">Clear</div>
+      </div>
+      <!-- Voice Preview -->
+      <div class="voice-preview collapsed" id="voice-preview" style="margin:10px 13px 0;flex-shrink:0">
+        <div class="voice-preview-header" onclick="toggleVoicePreview()">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)">Voice Preview</div>
+            <div style="width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s ease infinite"></div>
+          </div>
+          <div style="font-size:9px;color:var(--muted)" id="voice-chevron">▼ Test in-character SMS</div>
+        </div>
+        <div class="voice-preview-body">
+          <div class="voice-msgs" id="voice-msgs">
+            <div class="voice-msg-icon" id="voice-welcome">Select an icon and fill out the Persona tab to test her voice...</div>
+          </div>
+          <div class="voice-input-row">
+            <input class="voice-input" id="voice-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendVoiceMessage()" />
+            <button class="voice-send-btn" id="voice-send-btn" onclick="sendVoiceMessage()">Send</button>
+          </div>
+        </div>
+      </div>
+      <div id="output-list"><div style="padding:70px 20px;text-align:center"><div class="serif" style="font-size:20px;color:rgba(26,23,20,0.18);margin-bottom:8px">No drops yet</div><div style="font-size:11px;color:rgba(26,23,20,0.28);line-height:1.8">Select an icon and generate<br>your first drop</div></div></div>
+    </div>
+  </div>
+
+  <!-- LIBRARY -->
+  <div id="tab-library" class="tab-content">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px">
+      <div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+          <button onclick="switchTab('generate')" style="padding:5px 14px;background:transparent;border:1px solid var(--border-md);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all 0.15s" onmouseover="this.style.borderColor='var(--border-strong)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--muted)'">← Generate</button>
+          <button onclick="switchTab('icons')" style="padding:5px 14px;background:transparent;border:1px solid var(--border-md);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all 0.15s" onmouseover="this.style.borderColor='var(--border-strong)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--muted)'">Icons →</button>
+        </div>
+        <div class="serif" style="font-size:32px;margin-bottom:4px">Image Library</div>
+        <div style="font-size:11px;color:var(--muted)" id="lib-subtitle">All generated images · saved automatically per icon</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button onclick="repairLibrary()" style="padding:7px 14px;background:transparent;border:1px solid var(--border-md);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all 0.15s" onmouseover="this.style.borderColor='var(--border-strong)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--muted)'" id="repair-btn">↺ Repair Images</button>
+        <button onclick="loadCloudLibrary()" style="padding:7px 14px;background:transparent;border:1px solid rgba(100,180,100,0.4);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--green);font-family:'Afacad',sans-serif;margin-right:6px">Cloud Library</button><button onclick="clearLibraryConfirm()" style="padding:7px 14px;background:transparent;border:1px solid rgba(176,48,37,0.3);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--red);font-family:'DM Sans',sans-serif;transition:all 0.15s">Clear Library</button>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px" id="lib-icon-btns"></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
+      <div class="lib-filter active" onclick="setFilter('all',this)">All</div>
+      <div class="lib-filter" onclick="setFilter('free',this)">Free</div>
+      <div class="lib-filter" onclick="setFilter('ppv',this)">PPV</div>
+      <div class="lib-filter" onclick="setFilter('fav',this)">★ Favourites</div>
+      <div style="margin-left:auto;font-size:10px;color:var(--muted);cursor:pointer" onclick="selectAll()">Select all</div>
+      <div id="bulk-btns" style="display:none;gap:8px">
+        <button onclick="bulkQueue()" style="padding:6px 14px;background:var(--text);color:var(--bg);border:none;border-radius:2px;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif">Queue Selected</button>
+        <button onclick="bulkDelete()" style="padding:6px 14px;background:transparent;color:var(--red);border:1px solid rgba(176,48,37,0.3);border-radius:2px;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif">Delete Selected</button>
+      </div>
+    </div>
+    <div class="library-grid" id="library-grid"></div>
+  </div>
+
+  <!-- ICONS -->
+  <div id="tab-icons" class="tab-content">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end">
+      <div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+          <button onclick="switchTab('generate')" style="padding:5px 14px;background:transparent;border:1px solid var(--border-md);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all 0.15s" onmouseover="this.style.borderColor='var(--border-strong)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--muted)'">← Generate</button>
+          <button onclick="switchTab('library')" style="padding:5px 14px;background:transparent;border:1px solid var(--border-md);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all 0.15s" onmouseover="this.style.borderColor='var(--border-strong)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--muted)'">Library →</button>
+        </div>
+        <div class="serif" style="font-size:32px;margin-bottom:4px">The Icons</div>
+        <div style="font-size:11px;color:var(--muted)">100 archetypes · American Apparel direction</div></div>
+      <input class="search-input" style="width:220px;margin-top:0" placeholder="Search..." oninput="filterIconsGrid(this.value)" />
+    </div>
+    <div class="cluster-filter" id="cluster-filter">
+      <div class="cluster-btn active" onclick="setCluster('all',this)">All Icons</div>
+      <div class="cluster-btn" onclick="setCluster('Downtown',this)">Downtown</div>
+      <div class="cluster-btn" onclick="setCluster('Wild',this)">Wild</div>
+      <div class="cluster-btn" onclick="setCluster('Soft',this)">Soft</div>
+      <div class="cluster-btn" onclick="setCluster('Edge',this)">Edge</div>
+      <div class="cluster-btn" onclick="setCluster('Global',this)">Global</div>
+    </div>
+    <div class="icons-grid" id="icons-grid"></div>
+  </div>
+
+  <!-- QUEUE -->
+  <div id="tab-queue" class="tab-content">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px">
+      <div><div class="serif" style="font-size:32px;margin-bottom:4px">Drop Queue</div><div style="font-size:11px;color:var(--muted)" id="queue-sub">0 drops scheduled</div></div>
+      <button onclick="publishAll()" style="padding:10px 24px;background:var(--text);color:var(--bg);border:none;border-radius:2px;font-size:10px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif">Publish All → Mirage</button>
+    </div>
+    <div id="queue-list"><div style="padding:60px 32px;text-align:center;border:1px solid var(--border);border-radius:2px;background:var(--bg2)"><div class="serif" style="font-size:24px;color:rgba(26,23,20,0.18);margin-bottom:10px">Queue is empty</div><div style="font-size:12px;color:rgba(26,23,20,0.28)">Generate content and add drops to the queue</div></div></div>
+  </div>
+
+  <!-- SCHEDULE -->
+  <div id="tab-schedule" class="tab-content">
+    <div style="margin-bottom:24px"><div class="serif" style="font-size:32px;margin-bottom:4px">Daily Schedule</div><div style="font-size:11px;color:var(--muted)">Automated drop cadence · 4 drops per day per icon</div></div>
+    <div class="schedule-grid" id="schedule-grid"></div>
+    <div class="pipeline-card">
+      <div class="pipeline-head"><div class="eyebrow">Pipeline Status</div></div>
+      <div class="pipeline-item"><div class="pip-dot live"></div><div style="flex:1"><div style="font-size:13px;margin-bottom:2px">Flux Pro 1.1 · Image Generation</div><div style="font-size:11px;color:var(--muted)">Connected via local proxy · api.bfl.ai</div></div><div class="pip-status live">Live</div></div>
+      <div class="pipeline-item"><div class="pip-dot live"></div><div style="flex:1"><div style="font-size:13px;margin-bottom:2px">Image Library · localStorage</div><div style="font-size:11px;color:var(--muted)">Auto-saves all generations per icon · persists between sessions</div></div><div class="pip-status live">Live</div></div>
+      <div class="pipeline-item"><div class="pip-dot soon"></div><div style="flex:1"><div style="font-size:13px;margin-bottom:2px">Weavy Workflows · Icon Pipelines</div><div style="font-size:11px;color:var(--muted)">Node workflows per icon — launching soon</div></div><div class="pip-status soon">Soon</div></div>
+      <div class="pipeline-item"><div class="pip-dot soon"></div><div style="flex:1"><div style="font-size:13px;margin-bottom:2px">Mirage Platform · Auto-publish</div><div style="font-size:11px;color:var(--muted)">Connects queue to live platform</div></div><div class="pip-status soon">Soon</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── SAFE DOM HELPERS ──────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const setText = (id, v) => { const e=$(id); if(e) e.textContent=v; };
+const setVal = (id, v) => { const e=$(id); if(e) e.value=v; };
+const setHTML = (id, v) => { const e=$(id); if(e) e.innerHTML=v; };
+
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const ICONS_DATA = [
+  {id:1,name:"Sloane",archetype:"The Downtown Intellectual",vibe:"Reads Sontag, smokes on fire escapes, owns one leather jacket she's had for 10 years",aesthetic:"Cool grey tones, overcast window light, angular",setting:"Lower East Side apartment, bookshelf walls, black coffee",style:"Turtleneck pulled low, vintage Levi's, no jewelry",energy:"Direct stare, never smiling, thinks before she speaks",hair:"Dark, grown-out bob",color:"#8a8a9a"},
+  {id:2,name:"Vera",archetype:"The Unapologetic Bold",vibe:"Knows exactly what she wants and isn't shy about it",aesthetic:"Warm golden hour, bathroom mirror energy, high contrast",setting:"LA apartment, ring light glow, unmade bed",style:"Crop top, high waist, gold hoops, thick liner",energy:"Confrontational stare, owns every room",hair:"Long, dark, slightly tousled",color:"#c4763a"},
+  {id:3,name:"Aria",archetype:"The Soft Sadcore",vibe:"Listens to Grouper at 3am, writes in her notes app, feels everything",aesthetic:"Soft blown-out whites, morning window light, delicate",setting:"Portland studio apartment, white sheets, plants everywhere",style:"Oversized vintage tee, no makeup, bare feet",energy:"Never direct eye contact, looks out windows a lot",hair:"Light, fine, loose bun",color:"#a0b4b8"},
+  {id:4,name:"Zoe",archetype:"The Art School Dropout",vibe:"Has three half-finished canvases and a perfect aesthetic",aesthetic:"Paint-stained, warm studio light, organized chaos",setting:"Brooklyn studio, canvases everywhere, plant in the window",style:"Paint-stained overalls, braless, no shoes",energy:"Distracted but present, always thinking",hair:"Natural, curly, paint in it",color:"#b8804a"},
+  {id:5,name:"Mila",archetype:"The Eastern European Mystery",vibe:"Grew up in Prague, moved to NYC at 19, never explains herself",aesthetic:"Cold blue tones, harsh shadows, cinematic",setting:"Williamsburg rooftop, fire escape, subway platform",style:"All black everything, leather, minimal",energy:"Inscrutable, magnetic, says little",hair:"Platinum blonde, severe cut",color:"#6a7a8a"},
+  {id:6,name:"June",archetype:"The Southern Gothic",vibe:"Magnolias and menthols, front porch at midnight",aesthetic:"Humid, hazy, warm amber tones",setting:"Louisiana porch, Spanish moss, old ceiling fans",style:"Thin cotton dress, bare shoulders",energy:"Slow drawl, knows more than she lets on",hair:"Dark auburn, humidity-curled",color:"#a06040"},
+  {id:7,name:"Rei",archetype:"The Tokyo Minimalist",vibe:"Studied fashion at Bunka, owns 12 white tshirts",aesthetic:"Crisp, clean, stark white studio light",setting:"Tokyo apartment, concrete floors, single plant",style:"Architectural silhouettes, no color, extreme proportion",energy:"Calm, precise, unhurried",hair:"Jet black, blunt cut",color:"#606060"},
+  {id:8,name:"Dani",archetype:"The West Coast Wanderer",vibe:"Van life but make it artsy, Joshua Tree at sunrise",aesthetic:"Desert warm tones, natural light, grain heavy",setting:"Van interior, California high desert, gas stations",style:"Faded band tee, cutoffs, bare feet",energy:"Free but grounded, no performance",hair:"Sun-bleached waves",color:"#c8a060"},
+  {id:9,name:"Ines",archetype:"The Parisian Non-Chalant",vibe:"Effortless is the only effort she makes",aesthetic:"Warm afternoon light, cigarette smoke, old mirrors",setting:"Paris 11th, zinc bar, old bookshop",style:"Breton stripe, Levi's, silk scarf",energy:"Bored but engaged, supremely unbothered",hair:"Dark, naturally wavy",color:"#8a7060"},
+  {id:10,name:"Sable",archetype:"The Soft Goth",vibe:"Reads tarot, black nail polish, heart of gold",aesthetic:"Candlelight, dark velvet, silver jewelry",setting:"Moody bedroom, candles everywhere, crystals",style:"Black lace, silver rings, dark lipstick",energy:"Gentle but intense, deeply feeling",hair:"Black, long, slightly crimped",color:"#604878"},
+  {id:11,name:"Cleo",archetype:"The Retro Bombshell",vibe:"50s housewife who definitely had an affair",aesthetic:"High contrast, red lipstick, vintage chrome",setting:"Diner, Cadillac backseat, motel with neon signs",style:"High-waist pencil skirt, cat-eye glasses",energy:"Knowing smile, always one step ahead",hair:"Dark pin curls",color:"#c03030"},
+  {id:12,name:"Piper",archetype:"The Skate Park Regular",vibe:"Ollied her first gap at 14, doesn't take shit from anyone",aesthetic:"Concrete, golden hour, motion blur",setting:"LA skate park, Venice boardwalk",style:"Baggy cords, sports bra, worn Vans",energy:"Competitive but cool, effortless",hair:"Bleached ends, dark roots",color:"#808060"},
+  {id:13,name:"Nora",archetype:"The Jazz Club Regular",vibe:"Only goes out after midnight, knows every bartender",aesthetic:"Low amber light, cigarette smoke, vintage grain",setting:"NYC jazz clubs, late night diners",style:"Slip dress, vintage fur, always overdressed",energy:"Nostalgic, romantic, slightly melancholy",hair:"Dark red, 40s wave",color:"#906040"},
+  {id:14,name:"Cass",archetype:"The Wilderness Girl",vibe:"Spent her teens camping, can start a fire in 30 seconds",aesthetic:"Green canopy light, river mist, natural",setting:"Pacific Northwest forest, mountain lakes",style:"Flannel, worn jeans, hiking boots",energy:"Self-sufficient, calm",hair:"Dirty blonde, always in a braid",color:"#507050"},
+  {id:15,name:"Lux",archetype:"The Club Kid Veteran",vibe:"Was at the Limelight in 1997, has seen everything",aesthetic:"Neon and shadow, flash photography, late night grit",setting:"After-hours clubs, taxi backseats",style:"Metallic, asymmetric, avant-garde",energy:"Knows everyone, tells no secrets",hair:"Platinum, cropped",color:"#9060b0"},
+  {id:16,name:"Hazel",archetype:"The Academic Rebel",vibe:"PhD dropout who decided living was more interesting",aesthetic:"Library light, weathered books, coffee stains",setting:"University library, indie coffee shop",style:"Blazer over nothing, reading glasses",energy:"Sharp wit, disarming intelligence",hair:"Strawberry blonde, messy bun",color:"#906848"},
+  {id:17,name:"Rue",archetype:"The Textile Artist",vibe:"Weaves by day, slow life, intentional about everything",aesthetic:"Natural fibers, warm terracotta, handmade textures",setting:"New Mexico studio, Marfa, desert town",style:"Linen everything, natural dye colors",energy:"Slow, deliberate, deeply present",hair:"Dark, long, wrapped in cloth",color:"#b87050"},
+  {id:18,name:"Billie",archetype:"The Musician's Muse",vibe:"Every guitarist has written a song about her",aesthetic:"Backstage light, cigarette glow, worn velvet",setting:"Music venue backstage, tour bus",style:"Band tee knotted up, vintage jeans, cowboy boots",energy:"Magnetic without trying",hair:"Dark, long, tousled",color:"#886040"},
+  {id:19,name:"Petra",archetype:"The Berlin Techno Regular",vibe:"Dances alone, doesn't need your attention",aesthetic:"Industrial, strobe-adjacent, dark and angular",setting:"Berghain-adjacent spaces, warehouse",style:"Black technical wear, boots, architectural",energy:"In her own world, magnetic from a distance",hair:"Buzzed sides, dark top",color:"#405060"},
+  {id:20,name:"Opal",archetype:"The Gemstone Collector",vibe:"Believes in energy, collects rocks, laughs at herself",aesthetic:"Crystal refraction light, warm and iridescent",setting:"Santa Fe market, mineral shop",style:"Boho but expensive, layered gold",energy:"Open, warm, slightly mystical",hair:"Copper, long, natural wave",color:"#c08060"},
+  {id:21,name:"Margo",archetype:"The Noir Detective",vibe:"Has seen too much, trusts no one, protects everyone",aesthetic:"Rain-slicked streets, neon reflections",setting:"City at night, old phone booths",style:"Trench coat, wide brim hat, red lips",energy:"Measured, watchful, occasionally devastating",hair:"Dark waves",color:"#506070"},
+  {id:22,name:"Sage",archetype:"The Herbalist",vibe:"Grows her own food, makes her own medicine",aesthetic:"Garden morning light, herb bundles, earthy",setting:"Northern California farm, farmers market",style:"Linen apron, bare arms, soil on hands",energy:"Grounded, nurturing, quietly powerful",hair:"Silver-streaked dark",color:"#607848"},
+  {id:23,name:"Vivienne",archetype:"The Fashion Week Insider",vibe:"Front row but makes it look accidental",aesthetic:"Sharp, editorial, controlled chaos",setting:"Paris showrooms, backstage",style:"One perfect piece worn perfectly",energy:"Sees everything, says little",hair:"Perfectly imperfect",color:"#807060"},
+  {id:24,name:"Roux",archetype:"The Chef's Table Regular",vibe:"Eats alone at the bar, knows the chef, orders off-menu",aesthetic:"Warm kitchen light, late dinner service",setting:"Fine dining, farmers market at dawn",style:"Simple linen, no jewelry",energy:"Sensory, present, enjoys everything slowly",hair:"Copper bob",color:"#b07848"},
+  {id:25,name:"Nova",archetype:"The Astrologer",vibe:"Has your chart memorized, eerily accurate",aesthetic:"Indigo night sky, star maps, candlelit",setting:"Rooftop observatory, astrology studio",style:"Deep indigo, silver celestial jewelry",energy:"Cosmic, knowing, slightly otherworldly",hair:"Dark with highlights",color:"#404880"},
+];
+const RN=["Dex","Imara","Celeste","Faye","Suki","Lena","Ash","Isolde","Zinnia","Wren","Paloma","Thea","Marcella","Kira","Roxanne","Indigo","Hana","Blythe","Sera","Vita","Cora","Elara","Moxie","Fern","Rider","Isadora","Coco","Lyra","Margot","Odette","Seren","Darya","Remi","Clair","Vashti","Ebony","Isla","Thalia","Cressida","Yuki","Mina","Raina","Fleur","Celine","Soleil","Anya","Leila","Coda","Briar","Sienna","Carmen","Esme","Saoirse","Xiomara","Nell","Aurore","Kestrel","Vesper","Cali","Meridian","Simone","Willa","Lola","Temperance","Clover","Sadie","Iris","Mae","Elektra","Bloom","Zara","Clementine","Lyric","Archive","Zephyr"];
+const RA=["Gender Fluid Icon","Afrofuturist","Opera Singer","True Crime Obsessive","Harajuku Veteran","Russian Literature Major","Wildfire Fighter","Medieval Scholar","Flower Market Regular","Field Ornithologist","Flamenco Dancer","Scandinavian Minimalist","Roman Holiday","Deep Sea Diver","Moulin Rouge Alumni","Synesthete","Ikebana Master","British Punk Granddaughter","Monastery Guest","Vita Sackville-West Type","Rust Belt Romantic","Space Physicist","Amateur Boxer","Librarian After Hours","Motorcycle Courier","Modern Dance Pioneer","Vintage Store Owner","String Quartet","Documentary Filmmaker","Lake House Recluse","Welsh Mountain Shepherd","Bolshoi Defector","Rooftop Beekeeper","Forensic Botanist","Surf Legend","Jazz Composer","Scottish Whisky Distiller","Greek Tragedy Scholar","Polo Playing Heiress","Ski Patrol Captain","Bram Stoker Librarian","Monsoon Photographer","Perfumer's Apprentice","Courier Cyclist","Solar Farm Engineer","Figure Skater Retired","Iranian Poet in Exile","Sound Designer","Blacksmith","Fresco Restorer","Colombian Coffee Grower","Romani Traveler","Irish Folklore Collector","Lucha Libre Legend","Forensic Anthropologist","Northern Lights Chaser","Falconer","Evening News Anchor","Wildfire Ecologist","Cartographer","Beauvoir Type","Prairie Conservationist","Tango Teacher","Prohibition Bartender","Seed Saver","Country Songwriter","Botanical Illustrator","Grief Counselor","Mythology Scholar","Mycologist","Competitive Sailor","Louisiana Chef","Spoken Word Poet","Ink Conservator","Storm Chaser"];
+for(let i=0;i<75;i++) ICONS_DATA.push({id:i+26,name:RN[i],archetype:RA[i],vibe:"Rich inner world, distinctive aesthetic, unmistakable energy",aesthetic:"Editorial, intimate, American Apparel 2000s",setting:"Authentic environments, natural light only",style:"Distinctive to archetype, never costume",energy:"Real, specific, magnetic",hair:"Natural to character",color:`hsl(${(i*37)%360},35%,45%)`});
+
+const SCENES = {
+  morning:["window light, morning coffee","tangled in sheets, dawn light","rooftop at sunrise","bathroom mirror, just woken up"],
+  day:["fire escape, midday shadow","parking lot, direct overhead sun","studio window, working","corner diner, afternoon light"],
+  evening:["golden hour, long shadows","bar stool, low amber light","backstage, pre-show","kitchen counter, cooking"],
+  night:["neon sign, wet street","club bathroom mirror","taxi backseat, city blur","rooftop, city lights below"],
+};
+const PARAMS = {
+  grain:["heavy 35mm grain","medium film grain","light grain overlay"],
+  color:["desaturated 40%","desaturated 25%","warm tone shift","cool muted tones"],
+  crop:["tight body crop","waist up","three quarter","environmental portrait"],
+  light:["overcast window","golden hour side light","harsh overhead","low ambient only"],
+};
+const SKIN_TONES = [
+  {label:"Fair porcelain",hex:"#f5e6d8",prompt:"fair porcelain skin"},
+  {label:"Light",hex:"#f0d5b8",prompt:"light skin"},
+  {label:"Light beige",hex:"#e8c49a",prompt:"light beige skin, warm undertones"},
+  {label:"Warm beige",hex:"#d4a574",prompt:"warm beige skin"},
+  {label:"Medium tan",hex:"#c08050",prompt:"medium tan skin"},
+  {label:"Warm olive",hex:"#a06840",prompt:"warm olive complexion"},
+  {label:"Medium brown",hex:"#885030",prompt:"medium brown skin"},
+  {label:"Rich brown",hex:"#6a3820",prompt:"rich brown skin"},
+  {label:"Deep brown",hex:"#4a2010",prompt:"deep brown skin"},
+  {label:"Deep ebony",hex:"#2a1008",prompt:"deep ebony skin"},
+];
+const CHIPS = {
+  skinTexture:["clear smooth","light freckles","heavy freckles","textured","moles","sun-kissed"],
+  eyeColor:["brown","dark brown","hazel","green","blue","grey","amber","black"],
+  eyeShape:["almond","round","hooded","monolid","upturned","wide-set","deep-set"],
+  hairColor:["black","dark brown","medium brown","light brown","dirty blonde","blonde","platinum","auburn","red","grey","white"],
+  hairLength:["buzzed","pixie","ear-length","chin-length","shoulder-length","mid-back","long","waist-length"],
+  hairTexture:["straight","wavy","curly","coily","kinky"],
+  freckles:["none","light dusting","across nose","heavy","all over"],
+  makeup:["bare-faced","minimal","natural","editorial","bold","dark"],
+  build:["very lean","lean","slim","average","athletic","curvy","full-figured"],
+  age:["early 20s","mid 20s","late 20s","early 30s","mid 30s","late 30s","40s"],
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let selectedIcon = ICONS_DATA[0];
+let scene = "morning", scenePrompt = SCENES.morning[0];
+let params = {grain:PARAMS.grain[0],color:PARAMS.color[0],crop:PARAMS.crop[0],light:PARAMS.light[0]};
+let generating = false, generatedContent = [], queue = [];
+let libIconId = "all", libFilter = "all", libSelected = new Set();
+let lbImages = [], lbIdx = 0;
+let promptLocked = false;
+let currentChar = {};
+
+// ── STORAGE ───────────────────────────────────────────────────────────────────
+const LIB_KEY = "mirage_library_v2";
+const CHAR_KEY = "mirage_characters_v1";
+const load = key => { try { return JSON.parse(localStorage.getItem(key))||{}; } catch { return {}; } };
+const save = (key, val) => { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) { console.warn(e); } };
+const getIconLib = id => (load(LIB_KEY)[id]||[]);
+const addToLib = (id, img) => {
+  const l=load(LIB_KEY);
+  if(!l[id])l[id]=[];
+  l[id].unshift(img);
+  save(LIB_KEY,l);
+  // Auto-upload to Supabase via proxy
+  if(img && (img.imageUrl || img.url)) {
+    const icon = ICONS_DATA.find(x => String(x.id) === String(id)) || selectedIcon;
+    const rawUrl = img.imageUrl || img.url;
+    // If it's a URL (not base64), send the URL to proxy and let it fetch server-side
+    fetch('https://mirage-proxy-production.up.railway.app/publish', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        imageData: rawUrl,
+        filename: (icon && icon.name ? icon.name.toLowerCase().replace(/\s+/g,'-') : 'icon') + '_' + Date.now() + '.jpg',
+        meta: { icon_name: icon&&icon.name||'', icon_id: String(id||''), caption: img.caption||img.prompt||'', content_type:'free', price:0, scene:img.scene||scene||'', tags:[] }
+      })
+    }).then(r=>r.json()).then(r=>{ if(r.success) console.log('Uploaded to Supabase:', r.url); else console.warn('Upload failed:', r.error); }).catch(e=>console.warn('Upload error:', e.message));
+  }
+};
+const removeFromLib = (iconId, imgId) => { const l=load(LIB_KEY); if(l[iconId])l[iconId]=l[iconId].filter(i=>i.id!==imgId); save(LIB_KEY,l); };
+const toggleFav = (iconId, imgId) => { const l=load(LIB_KEY); if(l[iconId]){const i=l[iconId].find(x=>x.id===imgId);if(i)i.favourite=!i.favourite;} save(LIB_KEY,l); };
+const getTotalCount = () => Object.values(load(LIB_KEY)).reduce((s,a)=>s+a.length,0);
+const getCount = id => getIconLib(id).length;
+const getChar = id => (load(CHAR_KEY)[id]||{});
+const saveChar = (id, char) => { const c=load(CHAR_KEY); c[id]={...char}; save(CHAR_KEY,c); };
+
+
+// ── MOODBOARD ─────────────────────────────────────────────────────────────────
+const MB_KEY = "mirage_moodboard_v1";
+let pendingMbLabel = "vibe";
+let mbExtracting = false;
+
+function loadMoodboard() {
+  try { return JSON.parse(localStorage.getItem(MB_KEY))||{}; } catch { return {}; }
+}
+function saveMoodboard(mb) {
+  try { localStorage.setItem(MB_KEY, JSON.stringify(mb)); } catch(e) { console.warn("Moodboard storage full",e); }
+}
+function getIconMoodboard(iconId) {
+  return (loadMoodboard()[iconId]||[]);
+}
+function saveIconMoodboard(iconId, items) {
+  const mb = loadMoodboard();
+  mb[iconId] = items;
+  saveMoodboard(mb);
+}
+
+function toggleMoodboard() {
+  const b=$("moodboard"); if(!b) return;
+  b.classList.toggle("collapsed");
+  const ch=$("mb-chevron");
+  if(ch) ch.textContent=b.classList.contains("collapsed")?"▶":"▼";
+}
+
+function selectMbLabel(el) {
+  document.querySelectorAll(".mb-label-btn").forEach(b=>b.classList.remove("selected"));
+  el.classList.add("selected");
+  pendingMbLabel = el.dataset.label;
+}
+
+function mbDragOver(e) {
+  e.preventDefault();
+  const dz=$("mb-dropzone"); if(dz) dz.classList.add("dragover");
+}
+function mbDragLeave(e) {
+  const dz=$("mb-dropzone"); if(dz) dz.classList.remove("dragover");
+}
+function mbDrop(e) {
+  e.preventDefault();
+  const dz=$("mb-dropzone"); if(dz) dz.classList.remove("dragover");
+  const files = Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith("image/"));
+  if(files.length) processMbFiles(files);
+}
+function mbFilePicked(e) {
+  const files = Array.from(e.target.files).filter(f=>f.type.startsWith("image/"));
+  if(files.length) processMbFiles(files);
+  e.target.value = ""; // reset so same file can be re-picked
+}
+
+function processMbFiles(files) {
+  let fileIndex = 0;
+  files.forEach(file=>{
+    const uniqueId = Date.now() + fileIndex; // unique per file
+    fileIndex++;
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const base64=e.target.result;
+      const items=getIconMoodboard(selectedIcon.id);
+      if(items.length>=8){notify("Max 8 moodboard images per icon","error");return;}
+      items.push({
+        id: uniqueId,
+        base64,
+        label: pendingMbLabel,
+        active: true,
+        createdAt: new Date().toISOString()
+      });
+      saveIconMoodboard(selectedIcon.id, items);
+      renderMoodboard();
+      refreshPrompt();
+      // Upload to Supabase Storage asynchronously
+      uploadMoodboardImageToCloud(selectedIcon, items[items.length-1]);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function toggleMbItem(id) {
+  id = Number(id);
+  const items=getIconMoodboard(selectedIcon.id);
+  const item=items.find(i=>Number(i.id)===id);
+  if(item) item.active=!item.active;
+  saveIconMoodboard(selectedIcon.id, items);
+  renderMoodboard();
+  refreshPrompt();
+}
+
+function setMbItemLabel(id, label, el) {
+  id = Number(id);
+  // Update label on this specific item
+  const items=getIconMoodboard(selectedIcon.id);
+  const item=items.find(i=>Number(i.id)===id);
+  if(item) item.label=label;
+  saveIconMoodboard(selectedIcon.id, items);
+  // Update pill UI without full re-render
+  const card=document.getElementById("mbi-"+id);
+  if(card) card.querySelectorAll(".mb-label-pill").forEach(p=>p.classList.toggle("active",p.textContent===label));
+  // Update the label chip
+  const chip=card?card.querySelector(".mb-label-chip"):null;
+  if(chip) { chip.className="mb-label-chip mb-label-"+label; chip.textContent=label; }
+}
+
+function deleteMbItem(id) {
+  id = Number(id); // HTML attributes pass strings, IDs are stored as numbers
+  const items=getIconMoodboard(selectedIcon.id).filter(i=>Number(i.id)!==id);
+  saveIconMoodboard(selectedIcon.id, items);
+  renderMoodboard();
+  refreshPrompt();
+}
+
+function renderMoodboard() {
+  const items=getIconMoodboard(selectedIcon.id);
+  const grid=$("mb-grid");
+  const extractBtn=$("mb-extract-btn");
+  const countEl=$("mb-count");
+  const summaryEl=$("mb-summary");
+
+  if(countEl) countEl.textContent=`${items.length} reference${items.length!==1?"s":""}`;
+  if(summaryEl) summaryEl.textContent=items.length?`${items.filter(i=>i.active).length} active for generation`:"Visual references for generation";
+  if(extractBtn) extractBtn.style.display=items.length?"flex":"none";
+
+  if(!grid) return;
+  if(!items.length) {
+    grid.innerHTML="";
+    return;
+  }
+
+  const mbLabels = ["vibe","lighting","color","face","style"];
+  grid.innerHTML=items.map(item=>`
+    <div class="moodboard-item ${item.active?"active":"inactive"}" id="mbi-${item.id}">
+      <img src="${item.base64}" alt="${item.label}" />
+      <div class="mb-active-dot"></div>
+      <div class="mb-item-overlay">
+        <div class="mb-label-row-item">
+          ${mbLabels.map(l=>`<button class="mb-label-pill ${item.label===l?"active":""}" onclick="setMbItemLabel(${item.id},'${l}',this)">${l}</button>`).join("")}
+        </div>
+        <div class="mb-item-actions">
+          <button class="mb-toggle" onclick="toggleMbItem(${item.id})">${item.active?"Deactivate":"Activate"}</button>
+          <button class="mb-delete" onclick="deleteMbItem(${item.id})">✕</button>
+        </div>
+      </div>
+    </div>`).join("");
+}
+
+// Extract aesthetic language from moodboard using Claude vision
+async function extractMoodboard() {
+  const items=getIconMoodboard(selectedIcon.id).filter(i=>i.active);
+  if(!items.length) { notify("No active moodboard images","error"); return; }
+  if(mbExtracting) return;
+  mbExtracting=true;
+
+  const btn=$("mb-extract-btn");
+  const spinner=$("mb-extract-spinner");
+  const extracted=$("mb-extracted");
+  if(btn) { btn.disabled=true; btn.innerHTML='<div class="spinner" style="width:11px;height:11px;border-width:1.5px;border-color:rgba(26,23,20,0.15);border-top-color:var(--text)"></div> Analysing moodboard...'; }
+
+  try {
+    // Route through proxy to avoid CORS
+    const response = await fetch(PROXY + "/claude/extract", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ images: items.map(i => i.base64) })
+    });
+
+    const data = await response.json();
+    if(!response.ok) throw new Error(JSON.stringify(data) || "Extract failed");
+
+    const desc = data.aesthetic;
+    
+    // Store the extracted description per icon
+    const mb = loadMoodboard();
+    if(!mb[selectedIcon.id+"_extracted"]) mb[selectedIcon.id+"_extracted"]={};
+    mb[selectedIcon.id+"_extracted"] = desc;
+    saveMoodboard(mb);
+
+    if(extracted) { extracted.textContent='"'+desc+'"'; extracted.classList.add("visible"); }
+    refreshPrompt();
+    notify("✦ Moodboard aesthetic extracted");
+
+  } catch(err) {
+    notify("Extract failed — "+err.message,"error");
+  } finally {
+    mbExtracting=false;
+    if(btn) { btn.disabled=false; btn.innerHTML='✦ Extract aesthetic from moodboard'; }
+  }
+}
+
+function getMoodboardAesthetic() {
+  // Returns the stored extracted aesthetic string for this icon
+  try {
+    const mb=loadMoodboard();
+    return mb[selectedIcon.id+"_extracted"]||"";
+  } catch { return ""; }
+}
+
+function getMoodboardActiveImages() {
+  // Returns base64 strings of active moodboard images for Flux Kontext
+  return getIconMoodboard(selectedIcon.id).filter(i=>i.active).map(i=>i.base64);
+}
+
+function loadMoodboardForIcon() {
+  renderMoodboard();
+  // Show extracted if it exists
+  const mb=loadMoodboard();
+  const desc=mb[selectedIcon.id+"_extracted"]||"";
+  const extracted=$("mb-extracted");
+  if(extracted) {
+    if(desc) { extracted.textContent='"'+desc+'"'; extracted.classList.add("visible"); }
+    else { extracted.classList.remove("visible"); }
+  }
+}
+
+// ── PROXY ─────────────────────────────────────────────────────────────────────
+// Proxy URL — tries hosted Railway instance first, falls back to localhost
+// Update HOSTED_PROXY once Railway is deployed
+const HOSTED_PROXY = "https://mirage-proxy-production.up.railway.app";
+const LOCAL_PROXY  = "http://localhost:3579";
+const PROXY = HOSTED_PROXY; // Switch to LOCAL_PROXY if running locally
+let proxyOk = false;
+async function checkProxy() {
+  try { const r=await fetch(PROXY+"/health",{signal:AbortSignal.timeout(3000)}); proxyOk=(await r.json()).status==="ok"; }
+  catch { proxyOk=false; }
+  const el=$("proxy-status"); if(!el) return;
+  el.style.color = proxyOk?"var(--green)":"var(--gold)";
+  el.innerHTML = proxyOk
+    ? `<span style="display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>Proxy connected · Flux ready</span>`
+    : `<span style="display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s ease infinite;display:inline-block"></span>Proxy offline — run node server.js</span>`;
+}
+
+// ── FLUX ──────────────────────────────────────────────────────────────────────
+async function generateFlux(prompt) {
+  if(!proxyOk) throw new Error("Proxy not running — start node server.js");
+  // Use Kontext Pro (img-to-img) if we have a prior image, else flux-pro-1.1 (text-to-image)
+  const lib = JSON.parse(localStorage.getItem('mirage_library_v1')||'[]');
+  const iconImages = lib.filter(item => selectedIcon && item.iconId === selectedIcon.id);
+  const lastImage = iconImages.length ? iconImages[iconImages.length-1] : null;
+  const useKontext = !!lastImage?.base64;
+  const model = useKontext ? 'flux-kontext-pro' : 'flux-pro-1.1';
+  const body = {prompt, model, width:768, height:1024};
+  if (useKontext && lastImage.base64) {
+    const b64 = lastImage.base64.includes(',') ? lastImage.base64.split(',')[1] : lastImage.base64;
+    body.input_image = b64;
+  }
+  const r=await fetch(PROXY+"/flux/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  if(!r.ok){const e=await r.json();throw new Error(e.error||"Submit failed");}
+  const {id}=await r.json();
+  for(let i=0;i<90;i++){
+    await new Promise(r=>setTimeout(r,3000));
+    const p=await fetch(PROXY+"/flux/result/"+id);
+    const d=await p.json();
+    if(d.status==="Ready") return d.result.sample;
+    if(d.status==="Error"||d.status==="Failed") throw new Error("Flux: "+d.status);
+  }
+  throw new Error("Flux timed out after 4 minutes");
+}
+
+// ── PROMPT ENGINE ─────────────────────────────────────────────────────────────
+function buildCharDesc() {
+  const c = currentChar;
+  const parts = [];
+  if(c.age) parts.push(c.age+" year old woman");
+  if(c.ethnicity) parts.push(c.ethnicity+" heritage");
+  if(c.skinTonePrompt) parts.push(c.skinTonePrompt);
+  else if(c.skinTone) parts.push(c.skinTone);
+  if(c.skinTexture&&c.skinTexture!=="clear smooth") parts.push(c.skinTexture);
+  if(c.eyeColor) parts.push(c.eyeColor+" eyes");
+  if(c.eyeShape) parts.push(c.eyeShape+" eye shape");
+  if(c.freckles&&c.freckles!=="none") parts.push(c.freckles+" freckles");
+  if(c.hairColor) parts.push(c.hairColor+" hair");
+  if(c.hairLength) parts.push(c.hairLength+" length");
+  if(c.hairTexture) parts.push(c.hairTexture);
+  if(c.hairStyle) parts.push(c.hairStyle);
+  if(c.build) parts.push(c.build+" build");
+  if(c.makeup&&c.makeup!=="bare-faced") parts.push(c.makeup+" makeup");
+  if(c.features) parts.push(c.features);
+  if(c.tattoos) parts.push(c.tattoos);
+  return parts.join(", ");
+}
+
+function buildPrompt() {
+  const charDesc = buildCharDesc();
+  const mbAesthetic = getMoodboardAesthetic();
+  const sceneDesc = scene ? scene + " light" : "";
+  const wardrobeDesc = getSelectedWardrobePrompt ? getSelectedWardrobePrompt() : "";
+  const parts = [
+    "editorial fashion photography, American Apparel 2000s aesthetic, 35mm film, natural light only, intimate and raw, no studio, Corinne Day style, Juergen Teller",
+    selectedIcon.name.toLowerCase()+", "+selectedIcon.archetype.toLowerCase(),
+    charDesc,
+    mbAesthetic,
+    wardrobeDesc,
+    selectedIcon.style,
+    selectedIcon.energy,
+    sceneDesc,
+    params.grain+", "+params.color+", "+params.crop+", "+params.light,
+    selectedIcon.aesthetic,
+  ].filter(s=>s&&s.trim());
+  return parts.join(", ");
+}
+
+async function uploadMoodboardImageToCloud(icon, item) {
+  if (!icon || !item || item.url) return;
+  try {
+    const resp = await fetch(PROXY + '/upload-moodboard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ iconName: icon.name, imageId: String(item.id), base64: item.base64 })
+    });
+    const data = await resp.json();
+    if (!data.url) return;
+    // Update item with URL in localStorage
+    const items = getIconMoodboard(icon.id);
+    const idx = items.findIndex(i => i.id === item.id);
+    if (idx !== -1) { items[idx].url = data.url; saveIconMoodboard(icon.id, items); }
+    // Sync full URL list to Supabase
+    await syncMoodboardUrlsToSupabase(icon.name, icon.id);
+  } catch(e) { console.warn('Moodboard upload failed:', e.message); }
+}
+
+async function syncMoodboardUrlsToSupabase(iconName, iconId) {
+  if (!window.sbStudio) return;
+  const items = getIconMoodboard(iconId);
+  const images = items.filter(i => i.url).map(i => ({
+    id: i.id, url: i.url, label: i.label, active: i.active, createdAt: i.createdAt
+  }));
+  if (!images.length) return;
+  const { data: existing } = await window.sbStudio.from('personas').select('character_data').eq('icon_name', iconName).single();
+  const merged = { ...(existing?.character_data || {}), moodboard_images: images };
+  await window.sbStudio.from('personas').upsert({ icon_name: iconName, character_data: merged }, { onConflict: 'icon_name' });
+}
+
+async function loadMoodboardFromSupabase(icon) {
+  if (!window.sbStudio) return;
+  const existing = getIconMoodboard(icon.id);
+  if (existing.length > 0) return; // Already have local data
+  const { data } = await window.sbStudio.from('personas').select('character_data').eq('icon_name', icon.name).single();
+  const images = data?.character_data?.moodboard_images;
+  if (!images || !images.length) return;
+  // Fetch each image URL and convert to base64 for localStorage
+  const items = [];
+  for (const img of images) {
+    try {
+      const resp = await fetch(img.url);
+      const blob = await resp.blob();
+      const b64 = await new Promise(res => { const fr = new FileReader(); fr.onload = e => res(e.target.result); fr.readAsDataURL(blob); });
+      items.push({ id: img.id, base64: b64, url: img.url, label: img.label, active: img.active, createdAt: img.createdAt });
+    } catch(e) { console.warn('Failed to load moodboard image:', img.url); }
+  }
+  if (items.length) { saveIconMoodboard(icon.id, items); renderMoodboard(); }
+}
+
+async function uploadMoodboardImageToCloud(icon, item) {
+  if (!icon || !item || item.url) return;
+  try {
+    const r = await fetch(PROXY + '/upload-moodboard', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({iconName:icon.name, imageId:String(item.id), base64:item.base64}) });
+    const d = await r.json();
+    if (!d.url) return;
+    const items = getIconMoodboard(icon.id);
+    const i = items.findIndex(x => x.id === item.id);
+    if (i !== -1) { items[i].url = d.url; saveIconMoodboard(icon.id, items); }
+    await syncMoodboardToSupabase(icon.name, icon.id);
+  } catch(e) { console.warn('Moodboard upload failed:', e.message); }
+}
+async function syncMoodboardToSupabase(iconName, iconId) {
+  if (!window.sbStudio) return;
+  const items = getIconMoodboard(iconId);
+  const images = items.filter(i=>i.url).map(i=>({id:i.id,url:i.url,label:i.label,active:i.active,createdAt:i.createdAt}));
+  if (!images.length) return;
+  const {data:row} = await window.sbStudio.from('personas').select('character_data').eq('icon_name',iconName).single();
+  const merged = {...(row?.character_data||{}), moodboard_images: images};
+  await window.sbStudio.from('personas').upsert({icon_name:iconName, character_data:merged},{onConflict:'icon_name'});
+}
+async function loadMoodboardFromCloud(icon) {
+  if (!window.sbStudio || !icon) return;
+  if (getIconMoodboard(icon.id).length > 0) return;
+  const {data:row} = await window.sbStudio.from('personas').select('character_data').eq('icon_name',icon.name).single();
+  const images = row?.character_data?.moodboard_images;
+  if (!images || !images.length) return;
+  const items = [];
+  for (const img of images) {
+    try {
+      const resp = await fetch(img.url);
+      const blob = await resp.blob();
+      const b64 = await new Promise(res => { const fr = new FileReader(); fr.onload = e => res(e.target.result); fr.readAsDataURL(blob); });
+      items.push({id:img.id, base64:b64, url:img.url, label:img.label||'', active:img.active!==false, createdAt:img.createdAt});
+    } catch(e) { console.warn('Failed moodboard img:', img.url); }
+  }
+  if (items.length) { saveIconMoodboard(icon.id, items); renderMoodboard(); notify('✦ Moodboard synced from cloud'); }
+}
+function refreshPrompt() {
+  if(promptLocked) return;
+  const el=$("prompt-preview");
+  if(!el) return;
+  const p = buildPrompt();
+  el.value = p;
+  const cc=$("prompt-char-count");
+  if(cc) cc.textContent = p.length+" chars";
+}
+
+function getActivePrompt() {
+  const el=$("prompt-preview");
+  const v = el ? el.value.trim() : "";
+  return v.length>10 ? v : buildPrompt();
+}
+
+function togglePromptLock() {
+  promptLocked = !promptLocked;
+  const btn=$("lock-btn");
+  const dot=$("prompt-live-dot");
+  const lbl=$("prompt-live-label");
+  const ta=$("prompt-preview");
+  if(btn) { btn.textContent=promptLocked?"🔒 Locked":"🔓 Auto"; btn.classList.toggle("active",promptLocked); }
+  if(dot) dot.style.background=promptLocked?"var(--gold)":"var(--green)";
+  if(lbl) { lbl.textContent=promptLocked?"Locked":"Live"; lbl.style.color=promptLocked?"var(--gold)":"var(--green)"; }
+  if(ta) ta.classList.toggle("locked",promptLocked);
+  if(!promptLocked) refreshPrompt();
+}
+
+function rewritePrompt() { promptLocked=false; togglePromptLock(); togglePromptLock(); refreshPrompt(); }
+
+function onPromptEdit() {
+  const el=$("prompt-preview");
+  if(!el) return;
+  const cc=$("prompt-char-count");
+  if(cc) cc.textContent=el.value.length+" chars";
+  // Don't auto-lock — user can edit freely. Use Lock button to freeze.
+}
+
+function copyFullPrompt() {
+  const el=$("prompt-preview");
+  if(el) navigator.clipboard.writeText(el.value);
+  notify("Prompt copied");
+}
+
+// ── CHARACTER BUILDER ─────────────────────────────────────────────────────────
+function loadCharIntoBuilder() {
+  currentChar = {...getChar(selectedIcon.id)};
+  // Text fields — all null-safe
+  setVal("cb-ethnicity", currentChar.ethnicity||"");
+  setVal("cb-skin", currentChar.skinTone||"");
+  setVal("cb-eye-color-custom", currentChar.eyeColor&&!CHIPS.eyeColor.includes(currentChar.eyeColor)?currentChar.eyeColor:"");
+  setVal("cb-hair-color-custom", currentChar.hairColor&&!CHIPS.hairColor.includes(currentChar.hairColor)?currentChar.hairColor:"");
+  setVal("cb-hair-style", currentChar.hairStyle||"");
+  setVal("cb-features", currentChar.features||"");
+  setVal("cb-tattoos", currentChar.tattoos||"");
+  setVal("cb-setting", selectedIcon.setting||"");
+  setVal("cb-style", selectedIcon.style||"");
+  // Profile fields
+  setVal("edit-name", selectedIcon.name);
+  setVal("edit-arch", selectedIcon.archetype);
+  setVal("edit-vibe", selectedIcon.vibe);
+  renderSkinSwatches();
+  renderAllChips();
+  updateCharPreview();
+  updateCharSummary();
+}
+
+function updateChar(field, val) {
+  currentChar[field]=val;
+  updateCharPreview();
+  updateCharSummary();
+  refreshPrompt();
+}
+
+function updateIconField(field, val) {
+  selectedIcon[field]=val;
+  refreshPrompt();
+}
+
+function selectSkinSwatch(idx, el) {
+  const tone=SKIN_TONES[idx];
+  if(!tone) return;
+  currentChar.skinTonePrompt=tone.prompt;
+  currentChar.skinTone=tone.label;
+  setVal("cb-skin", tone.label);
+  document.querySelectorAll(".skin-swatch").forEach(s=>s.classList.remove("selected"));
+  el.classList.add("selected");
+  updateCharPreview();
+  updateCharSummary();
+  refreshPrompt();
+}
+
+function selectChip(group, val, el) {
+  currentChar[group] = currentChar[group]===val ? "" : val;
+  const container=el.closest(".char-chips");
+  if(container) container.querySelectorAll(".char-chip").forEach(c=>c.classList.toggle("selected",c.dataset.val===currentChar[group]));
+  updateCharPreview();
+  updateCharSummary();
+  refreshPrompt();
+}
+
+function saveCharacter() {
+  saveChar(selectedIcon.id, currentChar);
+  notify(selectedIcon.name+" character profile saved");
+  // Sync full currentChar to Supabase for cross-machine access
+  if (window.sbStudio && selectedIcon) {
+    window.sbStudio.from('personas').update({
+      character_data: currentChar,
+      updated_at: new Date().toISOString()
+    }).ilike('icon_name', selectedIcon.name).then(function(r) {
+      if (!r.error) console.log('Character synced to Supabase:', selectedIcon.name);
+      else console.warn('Character sync error:', r.error);
+    });
+  }
+}
+
+function toggleCharBuilder() {
+  const b=$("char-builder");
+  if(!b) return;
+  b.classList.toggle("collapsed");
+  const ch=$("char-chevron");
+  if(ch) ch.textContent=b.classList.contains("collapsed")?"▶":"▼";
+}
+
+function updateCharPreview() {
+  const desc=buildCharDesc();
+  const el=$("char-prompt-preview");
+  if(el) el.textContent=desc||"Fill in the fields above to build the character description...";
+}
+
+function updateCharSummary() {
+  const c=currentChar;
+  const parts=[c.ethnicity,c.skinTone,c.hairColor,c.eyeColor].filter(Boolean);
+  setText("char-summary", parts.length?parts.slice(0,3).join(" · "):"Not configured");
+}
+
+function renderSkinSwatches() {
+  const el=$("skin-swatches");
+  if(!el) return;
+  el.innerHTML=SKIN_TONES.map((t,i)=>`<div class="skin-swatch ${currentChar.skinTonePrompt===t.prompt||currentChar.skinTone===t.label?"selected":""}" style="background:${t.hex}" title="${t.label}" onclick="selectSkinSwatch(${i},this)"></div>`).join("");
+}
+
+function renderAllChips() {
+  Object.entries(CHIPS).forEach(([key,opts])=>{
+    const el=$("chips-"+key);
+    if(!el) return;
+    el.innerHTML=opts.map(o=>`<div class="char-chip ${currentChar[key]===o?"selected":""}" data-val="${o}" onclick="selectChip('${key}','${o}',this)">${o}</div>`).join("");
+  });
+}
+
+// ── RENDERS ───────────────────────────────────────────────────────────────────
+function renderIconList(filter="") {
+  const el=$("icon-list"); if(!el) return;
+  const f=ICONS_DATA.filter(i=>i.name.toLowerCase().includes(filter.toLowerCase())||i.archetype.toLowerCase().includes(filter.toLowerCase()));
+  setText("icon-count", f.length);
+  el.innerHTML=f.map(icon=>{
+    const cnt=getCount(icon.id);
+    return `<div class="icon-list-item ${icon.id===selectedIcon.id?"selected":""}" onclick="selectIcon(${icon.id})">
+      <div class="icon-avatar" style="background:${icon.color}">${icon.name[0]}</div>
+      <div style="flex:1;min-width:0"><div style="font-family:'Afacad',sans-serif;font-style:normal;font-size:14px;margin-bottom:1px">${icon.name}</div><div style="font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${icon.archetype}</div></div>
+      ${cnt>0?`<span class="icon-lib-badge">${cnt}</span>`:""}
+      ${icon.id===selectedIcon.id?'<div style="width:4px;height:4px;border-radius:50%;background:var(--text);flex-shrink:0"></div>':""}
+    </div>`;
+  }).join("");
+}
+
+function renderIconCard() {
+  const i=selectedIcon;
+  const av=$("card-avatar"); if(av){av.style.background=i.color;av.textContent=i.name[0];}
+  setText("btn-name", i.name);
+  setVal("edit-name", i.name);
+  setVal("edit-arch", i.archetype);
+  setVal("edit-vibe", i.vibe);
+  const cnt=getCount(i.id);
+  setText("card-lib-count", `${cnt} ${cnt===1?"image":"images"}`);
+}
+
+function renderSceneTabs() {
+  const tt=$("time-tabs"); if(!tt) return;
+  tt.innerHTML=Object.keys(SCENES).map(t=>`<div class="time-tab ${t===scene?"active":""}" data-scene="${t}" onclick="setScene(this.dataset.scene)">${t}</div>`).join("");
+}
+
+function renderParams() {
+  const el=$("params-grid"); if(!el) return;
+  el.innerHTML=Object.entries(PARAMS).map(([k,opts])=>`
+    <div>
+      <div style="font-size:9px;letter-spacing:0.16em;color:var(--muted);text-transform:uppercase;margin-bottom:6px">${k}</div>
+      <div class="param-opts" style="display:flex;flex-direction:column;gap:4px">
+        ${opts.map((o,i)=>`<div class="param-opt ${params[k]===o?"active":""}" data-param="${k}" data-idx="${i}" onclick="setParam(this)">${o}</div>`).join("")}
+      </div>
+    </div>`).join("");
+}
+
+function renderOutput() {
+  const el=$("output-list"); if(!el) return;
+  setText("output-count", generatedContent.length);
+  if(!generatedContent.length){
+    el.innerHTML=`<div style="padding:70px 20px;text-align:center"><div class="serif" style="font-size:20px;color:rgba(26,23,20,0.18);margin-bottom:8px">No drops yet</div><div style="font-size:11px;color:rgba(26,23,20,0.28);line-height:1.8">Select an icon and generate<br>your first drop</div></div>`;
+    return;
+  }
+  el.innerHTML=generatedContent.map(item=>`
+    <div class="output-card" id="oc-${item.id}">
+      <div class="output-img-area">
+        ${item.imageUrl
+          ?`<img class="output-img" src="${item.imageUrl}" onclick="openLbFromOutput(${item.id})" />`
+          :`<div class="output-generating"><div class="spinner" style="width:20px;height:20px;border-width:2px;border-color:rgba(26,23,20,0.1);border-top-color:var(--text)"></div><div style="font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-top:10px">Generating via Flux Pro...</div><div style="font-size:9px;color:var(--muted);margin-top:4px">~30 seconds</div></div>`}
+        <div class="grain-overlay"></div>
+        <div class="img-fade"></div>
+        <div class="img-name">${item.icon.name.toLowerCase()}</div>
+        <div class="img-badge">${item.contentType==="ppv"?`PPV · $${item.suggestedPrice}`:"Free"}</div>
+        ${item.series?`<div class="img-series">${item.series}</div>`:""}
+        ${item.imageUrl?`<a class="img-save" href="${item.imageUrl}" download="${item.icon.name}-${item.id}.jpg" target="_blank">↓ Save</a>`:""}
+        <div class="img-fav" onclick="toggleOutputFav(${item.id})">${item.favourite?"★":"☆"}</div>
+      </div>
+      <div class="output-meta">
+        <div class="output-caption">"${item.caption||"..."}"</div>
+        <div style="display:flex;gap:10px;font-size:10px;color:var(--muted);margin-bottom:8px">
+          <span>Drop · ${item.dropTime||"TBD"}</span><span>·</span><span>${item.icon.archetype}</span>
+          ${item.savedToLib?`<span>·</span><span style="color:var(--green)">✓ Library</span>`:""}
+        </div>
+        <div class="output-tags">${(item.tags||[]).map(t=>`<span class="output-tag">${t}</span>`).join("")}</div>
+        <div class="output-actions">
+          ${item.status==="queued"?`<button class="btn-primary queued">✓ In Queue</button>`:`<button class="btn-primary" onclick="addToQueue(${item.id})">Add to Queue</button>`}
+          <button class="btn-secondary" onclick="copyPrompt(${item.id})">Copy Prompt</button>
+        </div>
+      </div>
+    </div>`).join("");
+}
+
+function renderLibrary() {
+  const lib=load(LIB_KEY);
+  const iconsWithImgs=ICONS_DATA.filter(i=>(lib[i.id]||[]).length>0);
+  const btns=[{id:"all",name:"All Icons",color:"#1a1714",count:getTotalCount()},...iconsWithImgs.map(i=>({id:i.id,name:i.name,color:i.color,count:(lib[i.id]||[]).length}))];
+  setHTML("lib-icon-btns",btns.map(b=>`
+    <div class="lib-icon-btn ${libIconId===b.id?"active":""}" onclick="setLibIcon(this.dataset.id)" data-id="${b.id}">
+      <div class="lib-dot" style="background:${b.color}"></div>
+      <span class="lib-name">${typeof b.name==="string"?b.name.toLowerCase():b.name}</span>
+      <span class="lib-cnt">${b.count}</span>
+    </div>`).join(""));
+  let images=[];
+  if(libIconId==="all"){
+    ICONS_DATA.forEach(icon=>(lib[icon.id]||[]).forEach(img=>images.push({...img,icon})));
+    images.sort((a,b)=>b.id-a.id);
+  } else {
+    const icon=ICONS_DATA.find(i=>i.id===libIconId);
+    if(icon) images=(lib[libIconId]||[]).map(img=>({...img,icon}));
+  }
+  if(libFilter==="free") images=images.filter(i=>i.contentType==="free");
+  if(libFilter==="ppv") images=images.filter(i=>i.contentType==="ppv");
+  if(libFilter==="fav") images=images.filter(i=>i.favourite);
+  lbImages=images;
+  const grid=$("library-grid");
+  if(!grid) return;
+  if(!images.length){
+    grid.innerHTML=`<div style="grid-column:1/-1;padding:60px 32px;text-align:center;border:1px solid var(--border);border-radius:2px;background:var(--bg2)"><div class="serif" style="font-size:24px;color:rgba(26,23,20,0.18);margin-bottom:10px">No images yet</div><div style="font-size:12px;color:rgba(26,23,20,0.28)">Generate images and they'll appear here automatically</div></div>`;
+    return;
+  }
+  grid.innerHTML=images.map((img,idx)=>`
+    <div class="lib-card ${libSelected.has(img.id)?"selected":""}" id="lc-${img.id}">
+      ${img.imageUrl
+        ? `<img src="${img.imageUrl}" alt="${img.icon.name}" onclick="openLb(${idx})" loading="lazy" style="width:100%;aspect-ratio:3/4;object-fit:cover;object-position:center top;filter:saturate(0.78) contrast(1.06);display:block;transition:transform 0.3s" />`
+        : `<div style="width:100%;aspect-ratio:3/4;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px"><div style="font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">Expired</div><div style="font-size:9px;color:var(--muted)">Run ↺ Repair</div></div>`
+      }
+      <div class="grain-overlay"></div>
+      <div class="lib-card-fade"></div>
+      <div class="lib-card-name">${img.icon.name.toLowerCase()}</div>
+      <div class="lib-card-type">${img.contentType==="ppv"?`$${img.suggestedPrice}`:"Free"}</div>
+      ${img.favourite?`<div class="lib-card-fav">★</div>`:""}
+      <div class="lib-card-check" onclick="toggleSelect(event,${img.id})">${libSelected.has(img.id)?"✓":""}</div>
+    </div>`).join("");
+  const bb=$("bulk-btns");
+  if(bb) bb.style.display=libSelected.size>0?"flex":"none";
+  updateLibCount();
+}
+
+function renderIconsGrid(filter="") {
+  const el=$("icons-grid"); if(!el) return;
+  const clusterFilter = window.activeCluster || "all";
+  let f=ICONS_DATA.filter(i=>i.name.toLowerCase().includes(filter.toLowerCase())||i.archetype.toLowerCase().includes(filter.toLowerCase()));
+  if(clusterFilter !== "all") f = f.filter(i => (i.cluster||"Downtown") === clusterFilter);
+  el.innerHTML=f.map(icon=>{
+    const cnt=getCount(icon.id);
+    const persona = getPersona(icon.id);
+    const cluster = icon.cluster || inferCluster(icon);
+    return `<div class="icon-grid-card" onclick="selectIconAndGenerate(${icon.id})">
+      <div class="icon-grid-avatar" style="background:${icon.color}">${icon.name[0]}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:'Afacad',sans-serif;font-style:normal;font-size:17px;margin-bottom:2px">${icon.name}</div>
+        <div style="font-size:10px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px">${icon.archetype}</div>
+        <div style="font-size:12px;color:var(--dim);line-height:1.6">${icon.vibe}</div>
+        <div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap">
+          <span class="icon-cluster-badge">${cluster}</span>
+          ${persona.contentPillars&&persona.contentPillars.length?persona.contentPillars.slice(0,2).map(p=>`<span class="icon-cluster-badge" style="color:var(--gold);border-color:rgba(160,120,64,0.3)">${p}</span>`).join(''):''}
+          ${persona.smsDesc?`<span class="icon-cluster-badge" style="color:var(--green);border-color:rgba(42,102,64,0.3)">✦ Voice set</span>`:''}
+        </div>
+        ${cnt>0?`<div style="font-size:9px;color:var(--muted);margin-top:5px">📸 ${cnt} in library</div>`:""}
+      </div>
+    </div>`;
+  }).join("")||`<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--muted);font-size:12px">No icons in this cluster</div>`;
+}
+
+function renderQueue() {
+  const el=$("queue-list"); if(!el) return;
+  if(!queue.length){
+    el.innerHTML=`<div style="padding:60px 32px;text-align:center;border:1px solid var(--border);border-radius:2px;background:var(--bg2)"><div class="serif" style="font-size:24px;color:rgba(26,23,20,0.18);margin-bottom:10px">Queue is empty</div><div style="font-size:12px;color:rgba(26,23,20,0.28)">Generate content and add drops to the queue</div></div>`;
+    return;
+  }
+  el.innerHTML=queue.map((item,idx)=>`
+    <div class="queue-item">
+      <div style="font-family:'Afacad',sans-serif;font-style:normal;font-size:14px;color:var(--muted);width:22px;flex-shrink:0">${idx+1}</div>
+      <div class="queue-thumb">${item.imageUrl?`<img src="${item.imageUrl}" />`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Afacad',sans-serif;font-style:normal;color:var(--muted)">${item.icon.name[0]}</div>`}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:'Afacad',sans-serif;font-style:normal;font-size:16px;margin-bottom:3px">${item.icon.name}</div>
+        <div style="font-family:'Afacad',sans-serif;font-style:normal;font-size:12px;color:var(--dim)">"${item.caption||"..."}"</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">${item.dropTime||"TBD"}</div><div style="font-size:9px;padding:2px 8px;border:1px solid var(--border-md);border-radius:1px;color:var(--muted);text-transform:uppercase">${item.contentType==="ppv"?`$${item.suggestedPrice}`:"Free"}</div></div>
+      <div class="queue-remove" onclick="removeFromQueue(${item.id})">×</div>
+    </div>`).join("");
+}
+
+function renderSchedule() {
+  const el=$("schedule-grid"); if(!el) return;
+  const icons=ICONS_DATA.slice(0,3);
+  const slots=[{time:"9:00 AM",type:"Free",s:"morning light"},{time:"1:00 PM",type:"PPV",s:"midday"},{time:"7:00 PM",type:"Free",s:"golden hour"},{time:"11:00 PM",type:"PPV",s:"night"}];
+  el.innerHTML=icons.map(icon=>`
+    <div class="sch-card">
+      <div class="sch-head"><div class="icon-avatar" style="background:${icon.color};width:34px;height:34px;font-size:13px">${icon.name[0]}</div><div><div style="font-family:'Afacad',sans-serif;font-style:normal;font-size:20px">${icon.name.toLowerCase()}</div><div style="font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">${icon.archetype}</div></div></div>
+      <div style="padding:8px 0">${slots.map(sl=>`<div class="sch-slot"><div><div style="font-size:12px;color:var(--dim)">${sl.time}</div><div style="font-size:9px;color:var(--muted)">${sl.s}</div></div><div style="font-size:9px;padding:2px 8px;border:1px solid var(--border-md);border-radius:1px;color:var(--muted)">${sl.type}</div></div>`).join("")}</div>
+      <div style="padding:0 16px 14px"><button onclick="selectIconAndGenerate(${icon.id})" style="width:100%;padding:10px;background:var(--text);color:var(--bg);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;border:none;border-radius:2px;cursor:pointer;font-family:'DM Sans',sans-serif">Generate Drops →</button></div>
+    </div>`).join("");
+}
+
+// ── LIGHTBOX ──────────────────────────────────────────────────────────────────
+function openLb(idx) { lbIdx=idx; renderLb(); $("lightbox").classList.add("open"); document.addEventListener("keydown",lbKey); }
+function openLbFromOutput(id) {
+  const item=generatedContent.find(c=>c.id===id);
+  if(!item||!item.imageUrl) return;
+  lbImages=[{...item}]; lbIdx=0; renderLb(); $("lightbox").classList.add("open"); document.addEventListener("keydown",lbKey);
+}
+function closeLightbox() { $("lightbox").classList.remove("open"); document.removeEventListener("keydown",lbKey); }
+function lbKey(e) { if(e.key==="ArrowLeft")lbNav(-1); if(e.key==="ArrowRight")lbNav(1); if(e.key==="Escape")closeLightbox(); }
+function lbNav(d) { lbIdx=(lbIdx+d+lbImages.length)%lbImages.length; renderLb(); }
+function renderLb() {
+  const img=lbImages[lbIdx]; if(!img) return;
+  const lbi=$("lb-img"); if(lbi) lbi.src=img.imageUrl;
+  setText("lb-name", img.icon?img.icon.name:"");
+  setText("lb-arch", img.icon?img.icon.archetype:"");
+  setText("lb-caption", `"${img.caption||"..."}"`);
+  setText("lb-drop", img.dropTime||"TBD");
+  setText("lb-type", img.contentType==="ppv"?`PPV · $${img.suggestedPrice}`:"Free");
+  setText("lb-series", img.series||"—");
+  setText("lb-date", img.createdAt?new Date(img.createdAt).toLocaleDateString():"—");
+  setHTML("lb-tags", (img.tags||[]).map(t=>`<span style="padding:2px 8px;background:var(--bg2);border:1px solid var(--border-md);border-radius:1px;font-size:10px;color:var(--muted)">${t}</span>`).join(""));
+  setText("lb-prompt", img.fluxPrompt||"—");
+  const dl=$("lb-dl"); if(dl){dl.href=img.imageUrl;dl.download=`${img.icon?img.icon.name:"icon"}-${img.id}.jpg`;}
+  const qb=$("lb-queue-btn"); if(qb){qb.textContent=queue.find(q=>q.id===img.id)?"✓ In Queue":"Add to Queue";qb.disabled=!!queue.find(q=>q.id===img.id);}
+}
+function lbAddToQueue() { const img=lbImages[lbIdx];if(!img||queue.find(q=>q.id===img.id))return;queue.push({...img,status:"queued"});updateQueueCount();renderQueue();renderLb();notify(`${img.icon?img.icon.name:"Icon"} added to queue`); }
+function lbFav() { const img=lbImages[lbIdx];if(!img)return;img.favourite=!img.favourite;if(img.icon)toggleFav(img.icon.id,img.id);renderLibrary();notify(img.favourite?"★ Favourite":"Removed"); }
+function lbDelete() { const img=lbImages[lbIdx];if(!img||!confirm("Delete this image?"))return;if(img.icon)removeFromLib(img.icon.id,img.id);lbImages.splice(lbIdx,1);if(!lbImages.length){closeLightbox();renderLibrary();return;}lbIdx=Math.min(lbIdx,lbImages.length-1);renderLb();renderLibrary();updateLibCount();notify("Deleted"); }
+$("lightbox").addEventListener("click",function(e){if(e.target===this)closeLightbox();});
+
+// ── ACTIONS ───────────────────────────────────────────────────────────────────
+function notify(msg,type="success") { const el=$("notification");if(!el)return;el.textContent=msg;el.className=type;el.style.display="block";clearTimeout(el._t);el._t=setTimeout(()=>{el.style.display="none";},3500); }
+function updateQueueCount() { const c=queue.length;setText("queue-count",c);setText("queue-sub",`${c} ${c===1?"drop":"drops"} scheduled`); }
+function updateLibCount() { const c=getTotalCount();setText("lib-total",c);setText("lib-subtitle",`${c} total images · saved automatically per icon`); }
+function selectIcon(id) { selectedIcon=ICONS_DATA.find(i=>i.id===id); if(selectedIcon && typeof loadPersonaIntoStudio==='function') loadPersonaIntoStudio(selectedIcon.id);renderIconList();renderIconCard();renderSceneTabs();renderParams();refreshPrompt();loadCharIntoBuilder();loadMoodboardForIcon();if(typeof loadPersonaForIcon==="function")loadPersonaForIcon();if(typeof loadWardrobeForIcon==="function")loadWardrobeForIcon();if(typeof resetVoicePreview==="function")resetVoicePreview(); }
+
+
+async function fetchPersonaFromSupabase(iconName) {
+  if (!sbStudio) return null;
+  try {
+    const { data, error } = await sbStudio
+      .from('personas')
+      .select('icon_name, icon_id, persona_data, character_data')
+      .ilike('icon_name', iconName)
+      .single();
+    if (error || !data) return null;
+    return { name: data.icon_name, archetype: data.persona_data?.archetype || '', persona_data: data.persona_data, character_data: data.character_data };
+  } catch(e) { return null; }
+}
+
+function loadPersonaIntoStudio(iconId) {
+  var iconName = selectedIcon ? selectedIcon.name : '';
+  if (!iconName) return;
+
+  function applyPersonaData(p, entryArchetype) {
+    // ── Character Builder ──
+    if (typeof currentChar !== 'undefined' && currentChar) {
+      // Normalize to lowercase to match Studio chip values
+    if (p.eye_color)    currentChar.eyeColor    = p.eye_color.toLowerCase();
+      if (p.eye_shape)    currentChar.eyeShape    = p.eye_shape.toLowerCase();
+      if (p.hair_color)   currentChar.hairColor   = p.hair_color.toLowerCase();
+      if (p.hair_length)  currentChar.hairLength  = p.hair_length.toLowerCase();
+      if (p.hair_texture) currentChar.hairTexture = p.hair_texture.toLowerCase();
+      if (p.skin_tone)    currentChar.skinTone    = p.skin_tone.toLowerCase();
+      if (p.skin_texture) currentChar.skinTexture = p.skin_texture.toLowerCase();
+      if (p.build)        currentChar.build       = p.build.toLowerCase();
+      if (p.makeup)       currentChar.makeup      = p.makeup.toLowerCase();
+      if (p.age) {
+        var ageNum = parseInt(p.age);
+        if (!isNaN(ageNum)) {
+          if (ageNum < 23) currentChar.age = 'early 20s';
+          else if (ageNum < 27) currentChar.age = 'mid 20s';
+          else if (ageNum < 30) currentChar.age = 'late 20s';
+          else if (ageNum < 33) currentChar.age = 'early 30s';
+          else if (ageNum < 37) currentChar.age = 'mid 30s';
+          else if (ageNum < 40) currentChar.age = 'late 30s';
+          else currentChar.age = '40s';
+        } else {
+          currentChar.age = p.age.toLowerCase();
+        }
+      }
+      try {
+        var chars = JSON.parse(localStorage.getItem(CHAR_KEY) || '{}');
+        chars[iconId] = currentChar;
+        localStorage.setItem(CHAR_KEY, JSON.stringify(chars));
+      } catch(e) {}
+    }
+    // ── Persona / Voice ──
+    if (typeof currentPersona !== 'undefined') {
+      if (p.voice)               currentPersona.smsDesc         = p.voice;
+      if (p.sms_opener)          currentPersona.phrase1         = p.sms_opener;
+      if (p.sms_sample)          currentPersona.phrase2         = p.sms_sample;
+      if (p.backstory)           currentPersona.phrase3         = p.backstory.slice(0, 120);
+      if (p.communication_style) currentPersona.cluster         = p.communication_style;
+      if (p.traits && p.traits.length) currentPersona.contentPillars = p.traits.slice(0, 3);
+      if (entryArchetype)        currentPersona.femaleArchetype = entryArchetype;
+      try {
+        var saved = JSON.parse(localStorage.getItem(PERSONA_KEY) || '{}');
+        saved[iconId] = currentPersona;
+        localStorage.setItem(PERSONA_KEY, JSON.stringify(saved));
+      } catch(e) {}
+    }
+    if (typeof loadCharIntoBuilder === 'function') loadCharIntoBuilder();
+    // Force chip re-selection after a tick to ensure DOM is ready
+    setTimeout(function() {
+      if (typeof renderAllChips === 'function') renderAllChips();
+      if (typeof updateCharPreview === 'function') updateCharPreview();
+      if (typeof updateCharSummary === 'function') updateCharSummary();
+    }, 50);
+    if (typeof loadPersonaForIcon === 'function') loadPersonaForIcon();
+    if (typeof refreshPrompt === 'function') refreshPrompt();
+    console.log('loadPersonaIntoStudio: loaded', iconName);
+  }
+
+  // 1. Check Supabase first (cross-machine sync)
+  fetchPersonaFromSupabase(iconName).then(function(sbData) {
+    if (sbData && sbData.persona_data && Object.keys(sbData.persona_data).some(function(k) { return sbData.persona_data[k]; })) {
+      console.log('loadPersonaIntoStudio: using Supabase data for', iconName);
+      // Also merge character_data if present
+      if (sbData.character_data && typeof currentChar !== 'undefined') {
+        Object.assign(currentChar, sbData.character_data);
+      }
+      applyPersonaData(sbData.persona_data, sbData.archetype);
+      return;
+    }
+
+    // 2. Check admin localStorage (same machine)
+    try {
+      var adminPersonas = JSON.parse(localStorage.getItem('mirage_personas_v1') || '{}');
+      var adminEntry = Object.values(adminPersonas).find(function(e) {
+        return (e.name || '').toLowerCase() === iconName.toLowerCase();
+      });
+      if (adminEntry && adminEntry.persona_data && Object.keys(adminEntry.persona_data).some(function(k) { return adminEntry.persona_data[k]; })) {
+        console.log('loadPersonaIntoStudio: using localStorage data for', iconName);
+        applyPersonaData(adminEntry.persona_data, adminEntry.archetype);
+        return;
+      }
+    } catch(e) {}
+
+    // 3. Fall back to personas.json
+  fetch('/personas.json')
+    .then(function(r) { return r.json(); })
+    .then(function(personas) {
+      var entry = null;
+      if (Array.isArray(personas)) {
+        entry = personas.find(function(p) { return (p.name || '').toLowerCase() === iconName.toLowerCase(); });
+      } else {
+        entry = Object.values(personas).find(function(p) { return (p.name || '').toLowerCase() === iconName.toLowerCase(); });
+      }
+      if (!entry) { console.log('loadPersonaIntoStudio: no entry in personas.json for', iconName); return; }
+      applyPersonaData(entry.persona_data || entry, entry.archetype);
+    })
+    .catch(function(e) { console.warn('loadPersonaIntoStudio fetch failed:', e); });
+  }); // end fetchPersonaFromSupabase
+}
+
+function setScene(t) {
+  scene=t;
+  // Use the first scene prompt for consistency, moodboard handles the visual direction
+  scenePrompt=SCENES[t][0];
+  renderSceneTabs();
+  refreshPrompt();
+}
+
+function setParam(el) {
+  const k=el.dataset.param;
+  const i=parseInt(el.dataset.idx);
+  params[k]=PARAMS[k][i];
+  const container=el.closest(".param-opts");
+  if(container) container.querySelectorAll(".param-opt").forEach(e=>e.classList.remove("active"));
+  el.classList.add("active");
+  refreshPrompt();
+}
+function filterIcons(v) { renderIconList(v); }
+function filterIconsGrid(v) { renderIconsGrid(v); }
+function clearOutput() { generatedContent=[];renderOutput(); }
+function selectIconAndGenerate(id) { selectIcon(id);switchTab("generate"); }
+function openIconLibrary() { libIconId=selectedIcon.id;renderLibrary();switchTab("library"); }
+function addToQueue(id) { const item=generatedContent.find(c=>c.id===id);if(!item||item.status==="queued")return;item.status="queued";queue.push({...item});updateQueueCount();renderOutput();renderQueue();notify(`${item.icon.name} · Added to queue`); }
+function removeFromQueue(id) { queue=queue.filter(q=>q.id!==id);const item=generatedContent.find(c=>c.id===id);if(item)item.status="pending";updateQueueCount();renderQueue();renderOutput(); }
+function publishAll() { if(!queue.length)return notify("Queue is empty","error");notify(`Publishing ${queue.length} drops...`); }
+function copyPrompt(id) { const item=generatedContent.find(c=>c.id===id);if(!item)return;navigator.clipboard.writeText(item.fluxPrompt||buildPrompt());notify("Prompt copied"); }
+function toggleOutputFav(id) { const item=generatedContent.find(c=>c.id===id);if(!item)return;item.favourite=!item.favourite;if(item.savedToLib)toggleFav(item.icon.id,item.id);renderOutput(); }
+function setLibIcon(id) { libIconId=(id==='all'?'all':isNaN(id)?id:Number(id));libSelected.clear();renderLibrary(); }
+function setFilter(f,el) { libFilter=f;document.querySelectorAll(".lib-filter").forEach(e=>e.classList.remove("active"));el.classList.add("active");libSelected.clear();renderLibrary(); }
+function toggleSelect(e,id) { e.stopPropagation();if(libSelected.has(id))libSelected.delete(id);else libSelected.add(id);const c=document.getElementById(`lc-${id}`);if(c){c.classList.toggle("selected",libSelected.has(id));const cb=c.querySelector(".lib-card-check");if(cb)cb.textContent=libSelected.has(id)?"✓":"";}const bb=$("bulk-btns");if(bb)bb.style.display=libSelected.size>0?"flex":"none"; }
+function selectAll() { const ids=lbImages.map(i=>i.id);if(libSelected.size===ids.length)libSelected.clear();else ids.forEach(id=>libSelected.add(id));renderLibrary(); }
+function bulkQueue() { let n=0;libSelected.forEach(id=>{const img=lbImages.find(i=>i.id===id);if(img&&!queue.find(q=>q.id===id)){queue.push({...img,status:"queued"});n++;}});updateQueueCount();renderQueue();libSelected.clear();renderLibrary();notify(`Added ${n} to queue`); }
+function bulkDelete() { if(!confirm(`Delete ${libSelected.size} images?`))return;libSelected.forEach(id=>{const img=lbImages.find(i=>i.id===id);if(img)removeFromLib(img.icon.id,id);});libSelected.clear();renderLibrary();updateLibCount();notify("Deleted"); }
+
+// ── TAB SWITCHING ─────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  // Hide all tabs
+  document.querySelectorAll(".tab-content").forEach(e=>{e.classList.remove("active");e.style.display="none";});
+  document.querySelectorAll(".nav-tab").forEach(e=>e.classList.remove("active"));
+  // Show target tab
+  const tabEl=$("tab-"+tab);
+  if(tabEl){
+    tabEl.classList.add("active");
+    // Set correct display type per tab
+    if(tab==="generate") {
+      tabEl.style.display="grid";
+      tabEl.style.height="100%";
+      tabEl.style.overflow="hidden";
+      tabEl.style.padding="0";
+    } else {
+      tabEl.style.display="block";
+      tabEl.style.overflowY="auto";
+      tabEl.style.padding="28px 32px";
+      tabEl.style.height="100%";
+    }
+  }
+  // Activate nav tab using data-tab attribute
+  document.querySelectorAll(".nav-tab").forEach(t=>{
+    if(t.dataset.tab===tab) t.classList.add("active");
+  });
+  if(tab==="icons") renderIconsGrid();
+  if(tab==="queue") renderQueue();
+  if(tab==="schedule") renderSchedule();
+  if(tab==="library") renderLibrary();
+}
+
+// ── GENERATE ──────────────────────────────────────────────────────────────────
+async function handleGenerate() {
+  if(generating) return;
+  generating=true;
+  const btn=$("btn-generate");
+  if(btn){btn.disabled=true;btn.innerHTML=`<div class="spinner"></div> Generating ${selectedIcon.name}...`;}
+  const fluxPrompt=getActivePrompt();
+  const CAPTIONS=["couldn't sleep. this is what 4am looks like.","window light does something to me.","some mornings deserve to be documented.","this is the version of me nobody sees.","golden hour found me before i found it.","the city never actually sleeps and neither do i.","bathroom mirror series. unfiltered.","rooftop at sunrise. worth it.","between everything and nothing.","quiet hours are the loudest ones.","soft light. hard truths.","this is where i disappear."];
+  const DROPS=["9am","1pm","7pm","11pm"];
+  const caption=CAPTIONS[Math.floor(Math.random()*CAPTIONS.length)];
+  const dropTime=DROPS[Math.floor(Math.random()*DROPS.length)];
+  const contentType=Math.random()>0.5?"ppv":"free";
+  const suggestedPrice=contentType==="ppv"?[4.99,6.99,9.99][Math.floor(Math.random()*3)]:null;
+  const tags=[selectedIcon.archetype.toLowerCase().split(" ").pop(),scene,"editorial","35mm","mirage"];
+  const now=new Date().toISOString();
+  const id=Date.now();
+  const item={id,icon:selectedIcon,scene:scenePrompt,params:{...params},fluxPrompt,imageUrl:null,caption,contentType,suggestedPrice,tags,dropTime,series:`${selectedIcon.name} · ${scene.charAt(0).toUpperCase()+scene.slice(1)} Series`,status:"generating",savedToLib:false,favourite:false,createdAt:now};
+  generatedContent.unshift(item);
+  renderOutput();
+  try {
+    notify(`Generating ${selectedIcon.name} via Flux Pro...`);
+    const imageUrl=await generateFlux(fluxPrompt);
+
+    // Convert Flux's temporary signed URL to base64 so it persists in localStorage
+    notify(`✦ Saving ${selectedIcon.name} to library...`);
+    // Show immediately — base64 in background
+    const idx=generatedContent.findIndex(c=>c.id===id);
+    if(idx>-1){generatedContent[idx].imageUrl=imageUrl;generatedContent[idx].status="pending";generatedContent[idx].savedToLib=true;}
+    addToLib(selectedIcon.id,{id,imageUrl,caption,contentType,suggestedPrice,tags,dropTime,series:item.series,fluxPrompt,favourite:false,createdAt:now});
+    updateLibCount();renderOutput();renderIconList();renderIconCard();
+    notify(`✦ ${selectedIcon.name} · Generated`);
+    setTimeout(async()=>{
+      try{
+        const r=await fetch(PROXY+"/fetch-image?url="+encodeURIComponent(imageUrl),{signal:AbortSignal.timeout(25000)});
+        if(r.ok){
+          const blob=await r.blob();
+          const b64=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(blob);});
+          const lib=load(LIB_KEY);
+          if(lib[selectedIcon.id]){const img=lib[selectedIcon.id].find(i=>i.id===id);if(img){img.imageUrl=b64;save(LIB_KEY,lib);}}
+          const ci=generatedContent.find(c=>c.id===id);if(ci){ci.imageUrl=b64;renderOutput();}
+          notify(`✦ ${selectedIcon.name} · Saved to library`);
+        }
+      }catch(e){/* temp URL stays */}
+    },100);
+  } catch(err) {
+    notify(`Failed — ${err.message}`,"error");
+    generatedContent=generatedContent.filter(c=>c.id!==id);
+    renderOutput();
+  } finally {
+    generating=false;
+    const b=$("btn-generate");
+    if(b){b.disabled=false;b.innerHTML=`Generate · ${selectedIcon.name} · Flux Pro`;}
+  }
+}
+
+// ── LIBRARY REPAIR ────────────────────────────────────────────────────────────
+async function repairLibrary() {
+  const btn = $("repair-btn");
+  if (btn) { btn.textContent = "Repairing..."; btn.disabled = true; }
+
+  const lib = load(LIB_KEY);
+  let fixed = 0, broken = 0, skipped = 0;
+
+  for (const iconId of Object.keys(lib)) {
+    for (const img of lib[iconId]) {
+      // Already base64 — good
+      if (img.imageUrl && img.imageUrl.startsWith("data:")) {
+        skipped++;
+        continue;
+      }
+      // Try to fetch and convert temp URL to base64 via proxy
+      if (img.imageUrl && img.imageUrl.startsWith("http")) {
+        try {
+          const r = await fetch(PROXY + "/fetch-image?url=" + encodeURIComponent(img.imageUrl));
+          if (r.ok) {
+            const blob = await r.blob();
+            img.imageUrl = await new Promise(resolve => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.readAsDataURL(blob);
+            });
+            fixed++;
+          } else {
+            img.imageUrl = ""; // mark broken
+            broken++;
+          }
+        } catch(e) {
+          img.imageUrl = ""; // mark broken
+          broken++;
+        }
+      } else {
+        broken++;
+      }
+    }
+    // Remove images with no URL
+    lib[iconId] = lib[iconId].filter(img => img.imageUrl);
+  }
+
+  save(LIB_KEY, lib);
+  renderLibrary();
+  updateLibCount();
+
+  if (btn) { btn.textContent = "↺ Repair Images"; btn.disabled = false; }
+  notify(`Repair complete — ${fixed} recovered, ${broken} expired (removed), ${skipped} already saved`);
+}
+
+function clearLibraryConfirm() {
+  if (!confirm("Clear all images from the library? This cannot be undone.")) return;
+  save(LIB_KEY, {});
+  renderLibrary();
+  updateLibCount();
+  renderIconList();
+  renderIconCard();
+  notify("Library cleared");
+}
+
+// ── PERSONA ───────────────────────────────────────────────────────────────────
+const PERSONA_KEY = "mirage_personas_v1";
+const WARDROBE_KEY = "mirage_wardrobe_v1";
+
+const CONTENT_PILLARS = ["Late nights","Morning light","Intimacy","Solitude","Fashion","Music","Art","Books","Coffee","Travel","Nostalgia","Desire","Quiet moments","Urban life","Domesticity","Film","Photography","Writing"];
+const FEMALE_ARCHETYPES = ["The Muse","The Rebel","The Intellectual","The Wanderer","The Sensualist","The Dreamer","The Warrior","The Healer","The Artist","The Mystic","The Socialite","The Loner","The Romantic","The Pragmatist","The Wild One","The Nurturer"];
+const CLUSTERS = ["Downtown","Wild","Soft","Edge","Global"];
+
+let currentPersona = {};
+let currentWardrobe = [];
+window.activeCluster = "all";
+
+function getPersona(iconId) {
+  try { return JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}')[iconId]||{}; } catch { return {}; }
+}
+function savePersonaToStorage(iconId, persona) {
+  try { const p=JSON.parse(localStorage.getItem(PERSONA_KEY)||'{}'); p[iconId]={...persona}; localStorage.setItem(PERSONA_KEY,JSON.stringify(p)); } catch(e) { console.warn(e); }
+}
+function getWardrobe(iconId) {
+  try { return JSON.parse(localStorage.getItem(WARDROBE_KEY)||'{}')[iconId]||[]; } catch { return []; }
+}
+function saveWardrobeToStorage(iconId, items) {
+  try { const w=JSON.parse(localStorage.getItem(WARDROBE_KEY)||'{}'); w[iconId]=items; localStorage.setItem(WARDROBE_KEY,JSON.stringify(w)); } catch(e) { console.warn(e); }
+}
+
+function inferCluster(icon) {
+  const arch = (icon.archetype||'').toLowerCase();
+  const vibe = (icon.vibe||'').toLowerCase();
+  if(/downtown|intellectual|artist|noir|jazz|academic|fashion|club|rooftop|urban/.test(arch+vibe)) return 'Downtown';
+  if(/wild|wilderness|west|surf|skate|punk|techno|fighter/.test(arch+vibe)) return 'Wild';
+  if(/soft|dreamer|healer|sadcore|tender|gentle|domestic|poet/.test(arch+vibe)) return 'Soft';
+  if(/gothic|goth|dark|edge|rebel|mysterious|occult|tattoo/.test(arch+vibe)) return 'Edge';
+  if(/tokyo|paris|berlin|latina|afro|global|international|eastern|nordic/.test(arch+vibe)) return 'Global';
+  return 'Downtown';
+}
+
+function updatePersona(field, val) {
+  currentPersona[field] = val;
+  updatePersonaSummary();
+  updateSystemPromptPreview();
+}
+
+function selectPersonaChip(group, val, el) {
+  if(group === 'contentPillars') {
+    if(!currentPersona.contentPillars) currentPersona.contentPillars = [];
+    const idx = currentPersona.contentPillars.indexOf(val);
+    if(idx > -1) currentPersona.contentPillars.splice(idx,1);
+    else currentPersona.contentPillars.push(val);
+    el.classList.toggle('selected', currentPersona.contentPillars.includes(val));
+  } else {
+    currentPersona[group] = currentPersona[group]===val ? '' : val;
+    const container = el.closest('.persona-chips');
+    if(container) container.querySelectorAll('.persona-chip').forEach(c=>c.classList.toggle('selected',c.dataset.val===currentPersona[group]));
+  }
+  updatePersonaSummary();
+  updateSystemPromptPreview();
+}
+
+function selectPersonaCluster(val, el) {
+  currentPersona.cluster = val;
+  document.querySelectorAll('.persona-cluster-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  updatePersonaSummary();
+}
+
+function renderPersonaChips() {
+  const pillarEl = $('persona-pillar-chips');
+  if(pillarEl) pillarEl.innerHTML = CONTENT_PILLARS.map(p=>`<div class="persona-chip ${(currentPersona.contentPillars||[]).includes(p)?'selected':''}" data-val="${p}" onclick="selectPersonaChip('contentPillars','${p}',this)">${p}</div>`).join('');
+  const archEl = $('persona-archetype-chips');
+  if(archEl) archEl.innerHTML = FEMALE_ARCHETYPES.map(a=>`<div class="persona-chip ${currentPersona.femaleArchetype===a?'selected':''}" data-val="${a}" onclick="selectPersonaChip('femaleArchetype','${a}',this)">${a}</div>`).join('');
+  const clusterEl = $('persona-cluster-chips');
+  if(clusterEl) clusterEl.innerHTML = CLUSTERS.map(c=>`<div class="persona-cluster-chip ${currentPersona.cluster===c?'selected':''}" data-val="${c}" onclick="selectPersonaCluster('${c}',this)">${c}</div>`).join('');
+}
+
+function updatePersonaSummary() {
+  const parts = [currentPersona.femaleArchetype, currentPersona.cluster, (currentPersona.contentPillars||[]).slice(0,2).join(' · ')].filter(Boolean);
+  setText('persona-summary', parts.length ? parts.join(' · ') : 'Not configured');
+}
+
+function buildSystemPrompt() {
+  const icon = selectedIcon;
+  const p = currentPersona;
+  const char = currentChar;
+  return `You are ${icon.name}, ${icon.archetype.toLowerCase()}. You are an AI character on Mirage, a content platform. You are NOT a bot — you are ${icon.name}.
+
+PERSONALITY: ${icon.vibe}
+AESTHETIC: ${icon.aesthetic}
+ENERGY: ${icon.energy}
+STYLE: ${icon.style}
+SETTING: ${icon.setting}
+
+${p.smsDesc ? 'HOW YOU TEXT:\n' + p.smsDesc : ''}
+
+${p.phrase1||p.phrase2||p.phrase3 ? 'YOUR SIGNATURE PHRASES (use these naturally):\n- ' + [p.phrase1,p.phrase2,p.phrase3].filter(Boolean).join('\n- ') : ''}
+
+${(p.contentPillars||[]).length ? 'YOUR WORLD INCLUDES: ' + p.contentPillars.join(', ') : ''}
+
+VOICE RULES:
+- Lowercase, minimal punctuation, real person energy
+- Max 2 sentences per message, sometimes just one word or phrase
+- Never break character, never confirm being AI
+- Reference your world — ${icon.setting}
+- If someone asks if you're real or AI, deflect with character energy, never confirm
+- Never be enthusiastic or use exclamation marks unless it's genuinely surprising
+- Your silence is as powerful as your words`;
+}
+
+function updateSystemPromptPreview() {
+  const el = $('persona-system-preview');
+  if(el) el.textContent = buildSystemPrompt();
+}
+
+function loadPersonaForIcon() {
+  currentPersona = {...getPersona(selectedIcon.id)};
+  setVal('pv-phrase1', currentPersona.phrase1||'');
+  setVal('pv-phrase2', currentPersona.phrase2||'');
+  setVal('pv-phrase3', currentPersona.phrase3||'');
+  setVal('pv-sms-desc', currentPersona.smsDesc||'');
+  renderPersonaChips();
+  updatePersonaSummary();
+  updateSystemPromptPreview();
+}
+
+function savePersona() {
+  savePersonaToStorage(selectedIcon.id, currentPersona);
+  // Also save cluster back to icon data
+  if(currentPersona.cluster) selectedIcon.cluster = currentPersona.cluster;
+  notify(selectedIcon.name + ' persona saved ✦');
+  renderIconsGrid();
+}
+
+function togglePersonaBuilder() {
+  const b=$('persona-builder'); if(!b) return;
+  b.classList.toggle('collapsed');
+  const ch=$('persona-chevron');
+  if(ch) ch.textContent=b.classList.contains('collapsed')?'▶':'▼';
+}
+
+// ── WARDROBE PROMPT LAYER ─────────────────────────────────────────────────────
+const DEFAULT_WARDROBE = [
+  {id:'w1', label:'Leather jacket', prompt:'fitted black leather jacket, Schott, real not fashion, worn-in'},
+  {id:'w2', label:'Vintage turtleneck', prompt:'black ribbed turtleneck, vintage, slightly cropped, worn-in'},
+  {id:'w3', label:'White slip dress', prompt:'white slip dress, silk or satin, minimal, slightly sheer'},
+  {id:'w4', label:'Oversized tee', prompt:'oversized faded vintage band tee, worn, slightly off-shoulder'},
+  {id:'w5', label:'Linen shirt open', prompt:'oversized linen shirt open, barely buttoned, relaxed'},
+  {id:'w6', label:'High waist jeans', prompt:'high waist straight leg jeans, vintage Levi\'s, raw hem'},
+  {id:'w7', label:'No top', prompt:'bare shoulders, minimal, intimately shot, non-explicit'},
+  {id:'w8', label:'Bralette', prompt:'simple black bralette, minimal, editorial, non-explicit'},
+];
+
+let selectedWardrobeId = null;
+
+function loadWardrobeForIcon() {
+  let saved = getWardrobe(selectedIcon.id);
+  currentWardrobe = saved.length ? saved : [...DEFAULT_WARDROBE];
+  selectedWardrobeId = null;
+  renderWardrobeChips();
+}
+
+function renderWardrobeChips() {
+  const el = $('wardrobe-chips'); if(!el) return;
+  el.innerHTML = currentWardrobe.map(item=>`
+    <div class="wardrobe-chip ${selectedWardrobeId===item.id?'selected':''}" onclick="selectWardrobeItem('${item.id}')" title="${item.prompt}">${item.label}</div>
+  `).join('');
+}
+
+function selectWardrobeItem(id) {
+  selectedWardrobeId = selectedWardrobeId === id ? null : id;
+  renderWardrobeChips();
+  refreshPrompt();
+}
+
+function getSelectedWardrobePrompt() {
+  if(!selectedWardrobeId) return '';
+  const item = currentWardrobe.find(w=>w.id===selectedWardrobeId);
+  return item ? item.prompt : '';
+}
+
+function addWardrobeItem() {
+  const inp = $('wardrobe-add-input');
+  if(!inp||!inp.value.trim()) return;
+  const label = inp.value.trim().split(',')[0].trim();
+  const prompt = inp.value.trim();
+  const newItem = {id:'w'+Date.now(), label, prompt};
+  currentWardrobe.push(newItem);
+  saveWardrobeToStorage(selectedIcon.id, currentWardrobe);
+  inp.value = '';
+  renderWardrobeChips();
+  notify('Wardrobe item added');
+}
+
+// ── PATCH buildPrompt to include wardrobe ─────────────────────────────────────
+const _origBuildPrompt = buildPrompt;
+// We'll override inline below after definitions
+
+// ── VOICE PREVIEW ─────────────────────────────────────────────────────────────
+let voiceMessages = [];
+
+function toggleVoicePreview() {
+  const el=$('voice-preview'); if(!el) return;
+  el.classList.toggle('collapsed');
+  const ch=$('voice-chevron');
+  if(ch) ch.textContent = el.classList.contains('collapsed') ? '▼ Test in-character SMS' : '▲ Collapse';
+}
+
+function resetVoicePreview() {
+  voiceMessages = [];
+  const el=$('voice-msgs'); if(!el) return;
+  el.innerHTML = `<div class="voice-msg-icon" id="voice-welcome">${selectedIcon.name} is ready. Type a message to test her voice...</div>`;
+}
+
+async function sendVoiceMessage() {
+  const inp=$('voice-input'); if(!inp||!inp.value.trim()) return;
+  const btn=$('voice-send-btn');
+  const userMsg = inp.value.trim();
+  inp.value='';
+
+  // Add user message
+  voiceMessages.push({role:'user', content:userMsg});
+  renderVoiceMsgs();
+
+  // Show thinking
+  const msgs=$('voice-msgs');
+  const thinking = document.createElement('div');
+  thinking.className='voice-msg-thinking';
+  thinking.id='voice-thinking';
+  thinking.textContent='...';
+  if(msgs) msgs.appendChild(thinking);
+
+  if(btn) btn.disabled=true;
+
+  try {
+    const systemPrompt = buildSystemPrompt();
+    const response = await fetch(PROXY + '/claude/chat', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        system: systemPrompt,
+        messages: voiceMessages.map(m=>({role:m.role, content:m.content}))
+      })
+    });
+    const data = await response.json();
+    const reply = data.reply || '...';
+    voiceMessages.push({role:'assistant', content:reply});
+    const t=$('voice-thinking'); if(t) t.remove();
+    renderVoiceMsgs();
+  } catch(err) {
+    const t=$('voice-thinking'); if(t) t.textContent = 'Error — check proxy connection';
+  } finally {
+    if(btn) btn.disabled=false;
+  }
+}
+
+function renderVoiceMsgs() {
+  const el=$('voice-msgs'); if(!el) return;
+  el.innerHTML = voiceMessages.map(m=>
+    m.role==='user'
+      ? `<div class="voice-msg-user">${m.content}</div>`
+      : `<div class="voice-msg-icon">${m.content}</div>`
+  ).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+// ── CLUSTER FILTER ────────────────────────────────────────────────────────────
+function setCluster(cluster, el) {
+  window.activeCluster = cluster;
+  document.querySelectorAll('.cluster-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderIconsGrid();
+}
+
+let _iconsGridFilter = '';
+function filterIconsGrid(val) {
+  _iconsGridFilter = val;
+  renderIconsGrid(val);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+function init() {
+  renderIconList();
+  renderIconCard();
+  renderSceneTabs();
+  renderParams();
+  loadCharIntoBuilder();
+  loadMoodboardForIcon();
+  loadPersonaForIcon();
+  loadWardrobeForIcon();
+  refreshPrompt();
+  // Start moodboard collapsed
+  const mb=$("moodboard"); if(mb) mb.classList.add("collapsed");
+  renderLibrary();
+  updateLibCount();
+  renderSchedule();
+  // Start char builder and persona collapsed
+  const cb=$("char-builder");
+  if(cb) cb.classList.add("collapsed");
+  checkProxy();
+  setInterval(checkProxy,15000);
+}
+
+
+// Detect admin iframe context
+if (window.self !== window.top) {
+  document.body.classList.add('in-admin');
+}
+
+init();
+
+var _cf = 'all', _ci = [];
+async function loadCloudLibrary() {
+  document.getElementById('cloud-lib-panel').style.display = 'block';
+  document.getElementById('cloud-lib-grid').innerHTML = '<div style="padding:40px;color:var(--dim);text-align:center;font-size:11px">Loading...</div>';
+  try {
+    var r = await fetch('https://gmyenvnfuailickepvax.supabase.co/rest/v1/content?order=created_at.desc&limit=500', {
+      headers: {'apikey':'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D','Authorization':'Bearer sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D'}
+    });
+    _ci = await r.json();
+    renderCloud();
+  } catch(e) {
+    document.getElementById('cloud-lib-grid').innerHTML = '<div style="padding:40px;color:var(--red);text-align:center;font-size:11px">Error: ' + e.message + '</div>';
+  }
+}
+function renderCloud() {
+  var grid = document.getElementById('cloud-lib-grid');
+  var btns = document.getElementById('cloud-icon-btns');
+  if (!grid) return;
+  if (btns) {
+    var names = ['all'];
+    _ci.forEach(function(x) { if (x.icon_name && names.indexOf(x.icon_name) < 0) names.push(x.icon_name); });
+    btns.innerHTML = names.map(function(n) {
+      var cnt = n === 'all' ? _ci.length : _ci.filter(function(x){return x.icon_name===n;}).length;
+      var active = _cf === n;
+      return '<button data-cf="' + n + '" style="padding:4px 12px;border-radius:20px;border:1px solid var(--border);font-size:10px;cursor:pointer;background:' + (active?'var(--text)':'transparent') + ';color:' + (active?'var(--bg)':'var(--text)') + '">' + n + ' ' + cnt + '</button>';
+    }).join('');
+    btns.onclick = function(e) {
+      var b = e.target.closest('[data-cf]');
+      if (b) { _cf = b.getAttribute('data-cf'); renderCloud(); }
+    };
+  }
+  var list = _cf === 'all' ? _ci : _ci.filter(function(x){return x.icon_name===_cf;});
+  if (!list.length) { grid.innerHTML = '<div style="padding:40px;color:var(--dim);text-align:center;font-size:11px">No images yet.</div>'; return; }
+  window._clist = list;
+  var h = '';
+  for (var i = 0; i < list.length; i++) {
+    var it = list[i];
+    h += '<div data-ci="' + i + '" style="position:relative;cursor:pointer;break-inside:avoid;margin-bottom:4px">';
+    h += '<img src="' + it.image_url + '" style="width:100%;display:block" onerror="this.parentNode.style.opacity=0.3">';
+    h += '<div style="position:absolute;top:4px;right:4px;font-size:8px;padding:2px 5px;text-transform:uppercase;background:' + (it.is_published?'green':'rgba(0,0,0,0.6)') + ';color:#fff">' + (it.is_published?'Live':'Draft') + '</div>';
+    h += '<div style="position:absolute;bottom:4px;left:4px;font-size:9px;color:rgba(255,255,255,0.8);text-transform:uppercase">' + (it.icon_name||'') + '</div>';
+    h += '</div>';
+  }
+  grid.innerHTML = h;
+  grid.onclick = function(e) {
+    var el = e.target.closest('[data-ci]');
+    if (el && window._clist) cloudOpenLb(window._clist[parseInt(el.getAttribute('data-ci'))]);
+  };
+}
+function cloudOpenLb(item) {
+  var lb = document.getElementById('lightbox');
+  if (!lb) return;
+  lb.classList.add('open');
+  var img = lb.querySelector('img');
+  if (img) img.src = item.image_url;
+  window._clbItem = item;
+  document.addEventListener('keydown', lbKey);
+}
+
+
+async function clearCloudLibrary() {
+  if (!confirm('Delete ALL images from the cloud library? This cannot be undone.')) return;
+  var JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdteWVudm5mdWFpbGlja2VwdmF4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTQzMTIwMywiZXhwIjoyMDkxMDA3MjAzfQ.oY14ULMhWOUVHLklxGtz8Sjm35kjcy35p4qx1cnjrIk';
+  var SUPA = 'https://gmyenvnfuailickepvax.supabase.co';
+  var KEY = 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
+  try {
+    // Delete all DB rows
+    await fetch(SUPA + '/rest/v1/content?id=neq.00000000-0000-0000-0000-000000000000', {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + JWT, 'apikey': KEY }
+    });
+    // List and delete storage files
+    var r = await fetch(SUPA + '/storage/v1/object/list/content', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + JWT, 'apikey': KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prefix: '', limit: 200 })
+    });
+    var files = await r.json();
+    if (files && files.length) {
+      var names = files.map(function(f) { return f.name; }).filter(Boolean);
+      await fetch(SUPA + '/storage/v1/object/content', {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + JWT, 'apikey': KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prefixes: names })
+      });
+    }
+    _cloudItems = [];
+    renderCloud();
+    notify('Cloud library cleared');
+  } catch(e) {
+    notify('Error: ' + e.message);
+  }
+}
+
+</script>
+
+<div id="cloud-lib-panel" style="display:none;position:fixed;inset:0;z-index:600;background:var(--bg);overflow-y:auto;padding:24px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:16px">
+    <div>
+      <div style="font-size:18px;font-weight:600;color:var(--text)">Cloud Library</div>
+      <div style="font-size:11px;color:var(--dim);margin-top:2px">All machines. Draft = saved. Live = in feed.</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div id="cloud-icon-btns" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      <button onclick="document.getElementById('cloud-lib-panel').style.display='none'" style="padding:6px 14px;background:transparent;border:1px solid var(--border);border-radius:2px;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;color:var(--text);font-family:'Afacad',sans-serif">Close</button>
+    </div>
+  </div>
+  <div id="cloud-lib-grid" style="columns:5 180px;gap:4px;margin-top:16px"></div>
+</div>
+
+<script>
+// Two-way sync on load
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    if (!window.sbStudio) return;
+
+    // Pull ALL personas from Supabase into localStorage (so any machine gets the data)
+    window.sbStudio.from('personas').select('icon_name, icon_id, persona_data, character_data').then(function(r) {
+      if (r.error || !r.data) return;
+      try {
+        var personas = JSON.parse(localStorage.getItem('mirage_personas_v1') || '{}');
+        var chars = JSON.parse(localStorage.getItem('mirage_characters_v1') || '{}');
+        r.data.forEach(function(row) {
+          var id = row.icon_id || row.icon_name;
+          // Write persona_data to mirage_personas_v1
+          personas[id] = { name: row.icon_name, archetype: (row.persona_data || {}).archetype || '', persona_data: row.persona_data || {} };
+          // Write character_data to mirage_characters_v1 keyed by Studio icon id
+          if (row.character_data && Object.keys(row.character_data).length) {
+            chars[id] = row.character_data;
+            // Also store by name for easy lookup
+            chars[row.icon_name] = row.character_data;
+          }
+        });
+        localStorage.setItem('mirage_personas_v1', JSON.stringify(personas));
+        localStorage.setItem('mirage_characters_v1', JSON.stringify(chars));
+        console.log('Pulled', r.data.length, 'personas from Supabase into localStorage');
+      } catch(e) { console.warn('Pull sync failed', e); }
+    });
+
+    // Also push any local-only personas up to Supabase
+    try {
+      var personas = JSON.parse(localStorage.getItem('mirage_personas_v1') || '{}');
+      var chars = JSON.parse(localStorage.getItem('mirage_characters_v1') || '{}');
+      Object.keys(personas).forEach(function(id) {
+        var p = personas[id];
+        if (!p || !p.name) return;
+        window.sbStudio.from('personas').upsert({
+          icon_name: p.name,
+          icon_id: String(id),
+          persona_data: p.persona_data || {},
+          character_data: chars[id] || {},
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'icon_name' }).then(function(r) {
+          if (!r.error) console.log('Synced to Supabase:', p.name);
+          else console.warn('Sync error for', p.name, r.error);
+        });
+      });
+    } catch(e) { console.warn('Push sync failed', e); }
+  }, 2000);
+});
+</script>
+</body>
+</html>
