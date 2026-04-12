@@ -333,6 +333,35 @@
   .shot-chip { padding: 5px 10px; border-radius: 2px; font-size: 10px; cursor: pointer; border: 1px solid var(--border-md); background: transparent; color: var(--dim); transition: all 0.12s; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
   .shot-chip.active { background: var(--accent,#3a6b8a); color: #f8f6f2; border-color: var(--accent,#3a6b8a); }
   .shot-group-label { font-size: 9px; color: var(--dim); margin-bottom: 4px; margin-top: 8px; letter-spacing:.06em; text-transform:uppercase; }
+
+  /* Lightbox */
+  .lb-overlay { position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:9999; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .2s; }
+  .lb-overlay.open { opacity:1; pointer-events:all; }
+  .lb-img-wrap { position:relative; max-width:min(90vw,700px); max-height:90vh; }
+  .lb-img-wrap img { max-width:100%; max-height:85vh; object-fit:contain; display:block; border-radius:2px; filter:saturate(0.85) contrast(1.05); }
+  .lb-close { position:absolute; top:-32px; right:0; color:#fff; font-size:20px; cursor:pointer; opacity:.7; background:none; border:none; }
+  .lb-nav { position:absolute; top:50%; transform:translateY(-50%); background:rgba(255,255,255,.1); border:none; color:#fff; font-size:20px; cursor:pointer; padding:12px 16px; border-radius:2px; transition:background .15s; }
+  .lb-nav:hover { background:rgba(255,255,255,.2); }
+  .lb-prev { left:-56px; }
+  .lb-next { right:-56px; }
+  .lb-actions { display:flex; gap:8px; margin-top:12px; justify-content:center; flex-wrap:wrap; }
+  .lb-action-btn { padding:7px 16px; border-radius:2px; font-size:11px; cursor:pointer; border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.08); color:#fff; font-family:'DM Sans',sans-serif; transition:all .15s; letter-spacing:.05em; }
+  .lb-action-btn:hover { background:rgba(255,255,255,.18); }
+  .lb-action-btn.primary { background:var(--gold,#c9a96e); border-color:var(--gold,#c9a96e); color:#1a1714; }
+  .lb-action-btn.danger { border-color:rgba(220,80,80,.5); color:rgba(220,80,80,.9); }
+  .lb-meta { text-align:center; margin-top:8px; font-size:10px; color:rgba(255,255,255,.4); font-family:'DM Sans',sans-serif; max-width:500px; margin-left:auto; margin-right:auto; }
+  /* Library card overlay */
+  .lib-card-overlay { position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,.7) 0%, transparent 50%); opacity:0; transition:opacity .2s; display:flex; flex-direction:column; justify-content:flex-end; padding:8px; }
+  .lib-card:hover .lib-card-overlay { opacity:1; }
+  .lib-card-actions { display:flex; gap:4px; }
+  .lib-card-btn { padding:4px 8px; font-size:9px; border-radius:2px; cursor:pointer; border:1px solid rgba(255,255,255,.3); background:rgba(0,0,0,.4); color:#fff; font-family:'DM Sans',sans-serif; transition:all .15s; }
+  .lib-card-btn:hover { background:rgba(255,255,255,.2); }
+  .lib-card-btn.use-ref { background:var(--gold,#c9a96e); border-color:var(--gold,#c9a96e); color:#1a1714; }
+  .lib-card-fav { position:absolute; top:6px; right:6px; font-size:14px; cursor:pointer; opacity:0; transition:opacity .15s; background:none; border:none; }
+  .lib-card:hover .lib-card-fav { opacity:1; }
+  .lib-card-fav.active { opacity:1; }
+  .ref-indicator { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--gold,#c9a96e); color:#1a1714; padding:8px 20px; border-radius:2px; font-size:11px; font-family:'DM Sans',sans-serif; z-index:1000; opacity:0; transition:opacity .3s; pointer-events:none; }
+  .ref-indicator.show { opacity:1; }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1153,15 +1182,20 @@ async function checkProxy() {
 async function generateFlux(prompt) {
   if(!proxyOk) throw new Error("Proxy not running — start node server.js");
   // Use Kontext Pro (img-to-img) if we have a prior image, else flux-pro-1.1 (text-to-image)
-  const lib = JSON.parse(localStorage.getItem('mirage_library_v1')||'[]');
-  const iconImages = lib.filter(item => selectedIcon && item.iconId === selectedIcon.id);
-  const lastImage = iconImages.length ? iconImages[iconImages.length-1] : null;
-  const useKontext = !!lastImage?.base64;
-  const model = useKontext ? 'flux-kontext-pro' : 'flux-pro-1.1';
+  // Use manually set reference image first, else last generated image for Kontext
+  let refSrc = window.currentReferenceImage || null;
+  if (!refSrc) {
+    const lib = load(LIB_KEY);
+    const iconImgs = (lib[selectedIcon?.id] || []);
+    if (iconImgs.length) refSrc = iconImgs[iconImgs.length-1].url || iconImgs[iconImgs.length-1].base64;
+  }
+  const model = refSrc ? 'flux-kontext-pro' : 'flux-pro-1.1';
   const body = {prompt, model, width:768, height:1024};
-  if (useKontext && lastImage.base64) {
-    const b64 = lastImage.base64.includes(',') ? lastImage.base64.split(',')[1] : lastImage.base64;
-    body.input_image = b64;
+  if (refSrc) {
+    const b64src = refSrc.includes(',') ? refSrc.split(',')[1] : refSrc;
+    // If it's a URL, pass as image_url; if base64, pass as input_image
+    if (refSrc.startsWith('http')) body.image_url = refSrc;
+    else body.input_image = b64src;
   }
   const r=await fetch(PROXY+"/flux/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
   if(!r.ok){const e=await r.json();throw new Error(e.error||"Submit failed");}
@@ -2562,6 +2596,148 @@ function toggleShot(el, group, value) {
   else { s.add(value); el.classList.add('active'); }
   refreshPrompt();
 }
+
+// ── CLOUD LIBRARY ENHANCEMENTS ────────────────────────────────────────────────
+window.libFavs = new Set(JSON.parse(localStorage.getItem('mirage_lib_favs')||'[]'));
+window.currentReferenceImage = null;
+let lbImages = [], lbCurrentIdx = 0;
+
+function openLightbox(idx) {
+  const lib = load(LIB_KEY);
+  const images = [];
+  if (libIconId === 'all') {
+    ICONS_DATA.forEach(icon => (lib[icon.id]||[]).forEach(img => images.push({...img, icon})));
+    images.sort((a,b) => b.id - a.id);
+  } else {
+    const icon = ICONS_DATA.find(i => i.id === libIconId);
+    if (icon) (lib[libIconId]||[]).forEach(img => images.push({...img, icon}));
+  }
+  // Apply filter
+  lbImages = images.filter(img => {
+    if (libFilter === 'favs') return window.libFavs.has(img.id);
+    return true;
+  });
+  lbCurrentIdx = idx;
+  lbRender();
+  document.getElementById('lb-overlay').classList.add('open');
+  document.addEventListener('keydown', lbKeyHandler);
+}
+
+function lbRender() {
+  const img = lbImages[lbCurrentIdx];
+  if (!img) return;
+  document.getElementById('lb-img').src = img.url || img.base64;
+  const meta = [];
+  if (img.icon) meta.push(img.icon.name);
+  if (img.prompt) meta.push(img.prompt.slice(0, 120) + (img.prompt.length > 120 ? '...' : ''));
+  document.getElementById('lb-meta').textContent = meta.join(' · ');
+  const favBtn = document.querySelector('#lb-overlay .lb-action-btn:nth-child(3)');
+  if (favBtn) favBtn.textContent = window.libFavs.has(img.id) ? '♥ Unfavourite' : '♡ Favourite';
+}
+
+function lbClose(e) {
+  if (e && e.target !== document.getElementById('lb-overlay')) return;
+  closeLightbox();
+}
+
+function closeLightbox() {
+  document.getElementById('lb-overlay').classList.remove('open');
+  document.removeEventListener('keydown', lbKeyHandler);
+}
+
+function lbKeyHandler(e) {
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') lbNav(-1);
+  if (e.key === 'ArrowRight') lbNav(1);
+}
+
+function lbNav(dir) {
+  lbCurrentIdx = Math.max(0, Math.min(lbImages.length - 1, lbCurrentIdx + dir));
+  lbRender();
+}
+
+function lbUseAsRef() {
+  const img = lbImages[lbCurrentIdx];
+  if (!img) return;
+  setReferenceImage(img.url || img.base64, img.icon?.name || '');
+  closeLightbox();
+}
+
+function lbDownload() {
+  const img = lbImages[lbCurrentIdx];
+  if (!img) return;
+  downloadLibImg(img.url || img.base64, img.id);
+}
+
+function lbToggleFav() {
+  const img = lbImages[lbCurrentIdx];
+  if (!img) return;
+  toggleFav(img.id);
+  lbRender();
+}
+
+function lbDelete() {
+  const img = lbImages[lbCurrentIdx];
+  if (!img || !img.icon) return;
+  if (!confirm('Delete this image?')) return;
+  const lib = load(LIB_KEY);
+  lib[img.icon.id] = (lib[img.icon.id]||[]).filter(i => i.id !== img.id);
+  save(LIB_KEY, lib);
+  lbImages.splice(lbCurrentIdx, 1);
+  if (lbImages.length === 0) { closeLightbox(); renderLibrary(); return; }
+  lbCurrentIdx = Math.min(lbCurrentIdx, lbImages.length - 1);
+  lbRender();
+  renderLibrary();
+}
+
+function setReferenceImage(src, iconName) {
+  window.currentReferenceImage = src;
+  const ind = document.getElementById('ref-indicator');
+  if (ind) {
+    ind.textContent = '✦ Reference set' + (iconName ? ' — ' + iconName : '') + ' · next gen uses this';
+    ind.classList.add('show');
+    setTimeout(() => ind.classList.remove('show'), 3000);
+  }
+  notify('✦ Reference image set — generates with this as input');
+}
+
+function clearReferenceImage() {
+  window.currentReferenceImage = null;
+  notify('Reference cleared — back to text-to-image');
+}
+
+function downloadLibImg(src, id) {
+  const a = document.createElement('a');
+  a.href = src;
+  a.download = 'mirage-' + id + '.jpg';
+  a.click();
+}
+
+function toggleFav(id) {
+  if (window.libFavs.has(id)) window.libFavs.delete(id);
+  else window.libFavs.add(id);
+  localStorage.setItem('mirage_lib_favs', JSON.stringify([...window.libFavs]));
+  renderLibrary();
+}
 </script>
+
+<!-- Lightbox -->
+<div class="lb-overlay" id="lb-overlay" onclick="lbClose(event)">
+  <div class="lb-img-wrap" onclick="event.stopPropagation()">
+    <button class="lb-close" onclick="closeLightbox()">✕</button>
+    <button class="lb-nav lb-prev" onclick="lbNav(-1)">‹</button>
+    <button class="lb-nav lb-next" onclick="lbNav(1)">›</button>
+    <img id="lb-img" src="" alt="" />
+    <div class="lb-actions">
+      <button class="lb-action-btn primary" onclick="lbUseAsRef()">✦ Use as Reference</button>
+      <button class="lb-action-btn" onclick="lbDownload()">↓ Download</button>
+      <button class="lb-action-btn" onclick="lbToggleFav()">♡ Favourite</button>
+      <button class="lb-action-btn danger" onclick="lbDelete()">Delete</button>
+    </div>
+    <div class="lb-meta" id="lb-meta"></div>
+  </div>
+</div>
+<!-- Reference indicator -->
+<div class="ref-indicator" id="ref-indicator">✦ Reference image set — next generation uses this</div>
 </body>
 </html>
