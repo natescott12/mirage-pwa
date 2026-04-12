@@ -2796,12 +2796,7 @@ function downloadLibImg(src, id) {
   a.click();
 }
 
-function toggleFav(id) {
-  if (window.libFavs.has(id)) window.libFavs.delete(id);
-  else window.libFavs.add(id);
-  localStorage.setItem('mirage_lib_favs', JSON.stringify([...window.libFavs]));
-  renderLibrary();
-}
+function libToggleFav(id) { if(window.libFavs){if(window.libFavs.has(id))window.libFavs.delete(id);else window.libFavs.add(id);} if(typeof renderLibrary==="function")renderLibrary(); }
 </script>
 
 <!-- Lightbox -->
@@ -3082,6 +3077,80 @@ document.addEventListener("DOMContentLoaded",function(){MG.renderChips();MG.refr
 setTimeout(function(){MG.renderChips();MG.refresh();},500);
 setTimeout(function(){MG.renderChips();MG.refresh();},1500);
 
+})();
+</script><script>
+(function(){
+var MG=window.MG={
+  framing:new Set(),angle:new Set(),perspective:new Set(),
+  base:new Set(["35mm film natural light candid unposed organic"]),
+  tab:"tops",selected:new Set(),ref:null,lbImages:[],lbIdx:0,
+  WARDROBE:{
+    tops:[{id:"t1",label:"Bralette",prompt:"bralette top"},{id:"t2",label:"Bikini top",prompt:"bikini top"},{id:"t3",label:"Sports bra",prompt:"sports bra"},{id:"t4",label:"White tee",prompt:"white t-shirt relaxed fit"},{id:"t5",label:"Vintage tee",prompt:"vintage band t-shirt worn in"},{id:"t6",label:"Boyfriend shirt",prompt:"oversized boyfriend shirt half tucked"},{id:"t7",label:"Linen top",prompt:"linen top natural drape"},{id:"t8",label:"Striped button-up",prompt:"striped cotton button-up shirt"},{id:"t9",label:"Black tee",prompt:"fitted black t-shirt"},{id:"t10",label:"Tank top",prompt:"ribbed tank top"},{id:"t11",label:"Crop top",prompt:"cropped top"},{id:"t12",label:"Tube top",prompt:"tube top"}],
+    bottoms:[{id:"b1",label:"Jeans",prompt:"straight leg jeans"},{id:"b2",label:"Loose jeans",prompt:"loose fit jeans relaxed"},{id:"b3",label:"Baggy jeans",prompt:"baggy oversized jeans"},{id:"b4",label:"Black pants",prompt:"black tailored pants"},{id:"b5",label:"Vintage shorts",prompt:"vintage cut-off denim shorts"},{id:"b6",label:"Sweatpants",prompt:"sweatpants relaxed"},{id:"b7",label:"Biker shorts",prompt:"black biker shorts"},{id:"b8",label:"Cargo pants",prompt:"cargo pants utilitarian"},{id:"b9",label:"Baggy shorts",prompt:"baggy shorts"},{id:"b10",label:"Long skirt",prompt:"long flowing skirt"},{id:"b11",label:"Short skirt",prompt:"short skirt"},{id:"b12",label:"Denim skirt",prompt:"denim mini skirt"}],
+    accessories:[{id:"a1",label:"Silver earrings",prompt:"delicate silver earrings"},{id:"a2",label:"Silver hoops",prompt:"silver hoop earrings"},{id:"a3",label:"Gold hoops",prompt:"gold hoop earrings"},{id:"a4",label:"Rings",prompt:"stacked rings mixed metals"},{id:"a5",label:"Watch",prompt:"vintage watch on wrist"},{id:"a6",label:"Gold necklace",prompt:"thin gold necklace"},{id:"a7",label:"Silver chain",prompt:"silver chain necklace"},{id:"a8",label:"Small bag",prompt:"small shoulder bag"},{id:"a9",label:"Large tote",prompt:"oversized canvas tote bag"},{id:"a10",label:"Flip flops",prompt:"simple flip flops"},{id:"a11",label:"Sandals",prompt:"strappy sandals"},{id:"a12",label:"Loafers",prompt:"leather loafers"},{id:"a13",label:"Kitten heels",prompt:"kitten heel shoes"},{id:"a14",label:"Boots",prompt:"ankle boots"}],
+    look:[]
+  },
+  toggleShot:function(el,g,v){var s=MG[g];if(!s)return;if(s.has(v)){s.delete(v);el.classList.remove("active");}else{s.add(v);el.classList.add("active");}MG.refresh();},
+  addShotChip:function(g,inp,cid){var v=(inp.value||"").trim();if(!v)return;var c=document.getElementById(cid);if(!c)return;var chip=document.createElement("div");chip.className="shot-chip";chip.textContent=v;chip.onclick=function(){MG.toggleShot(this,g,v);};c.appendChild(chip);inp.value="";MG.toggleShot(chip,g,v);},
+  getItems:function(iconId,tab){try{var s=localStorage.getItem("mg_w_"+iconId+"_"+tab);if(s)return JSON.parse(s);}catch(e){}return JSON.parse(JSON.stringify(MG.WARDROBE[tab]||[]));},
+  saveItems:function(iconId,tab,items){try{localStorage.setItem("mg_w_"+iconId+"_"+tab,JSON.stringify(items));}catch(e){}},
+  switchTab:function(tab){MG.tab=tab;document.querySelectorAll(".wardrobe-tab-btn").forEach(function(b){b.classList.remove("active");});var btn=document.getElementById("wtab-"+tab);if(btn)btn.classList.add("active");MG.renderChips();},
+  renderChips:function(){
+    var el=document.getElementById("wardrobe-chips");if(!el)return;
+    var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;
+    var items=icon?MG.getItems(icon.id,MG.tab):(MG.WARDROBE[MG.tab]||[]);
+    el.innerHTML=items.map(function(item){
+      var sel=MG.selected.has(item.id);
+      var rm=item.custom?'<span onclick="event.stopPropagation();MG.removeItem(\'' +item.id+ '\')" style="opacity:.5;font-size:9px;cursor:pointer;margin-left:3px">x</span>':'';
+      return '<div class="wardrobe-chip '+(sel?"selected":"")+'" onclick="MG.selectItem(\''+ item.id +'\');" title="'+item.prompt+'">'+item.label+rm+'</div>';
+    }).join("");
+  },
+  selectItem:function(id){if(MG.selected.has(id))MG.selected.delete(id);else MG.selected.add(id);MG.renderChips();MG.refresh();},
+  removeItem:function(id){var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;if(!icon)return;var items=MG.getItems(icon.id,MG.tab).filter(function(i){return i.id!==id;});MG.saveItems(icon.id,MG.tab,items);MG.selected.delete(id);MG.renderChips();MG.refresh();},
+  addWardrobeItem:function(){var inp=document.getElementById("wardrobe-add-input");if(!inp||!inp.value.trim())return;var label=inp.value.trim().split(",")[0].trim();var newItem={id:"w"+Date.now(),label:label,prompt:inp.value.trim(),custom:true};var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;if(icon){var items=MG.getItems(icon.id,MG.tab);items.push(newItem);MG.saveItems(icon.id,MG.tab,items);}inp.value="";MG.renderChips();if(typeof notify==="function")notify("Added to "+MG.tab);},
+  getWardrobePrompt:function(){var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;if(!icon||!MG.selected.size)return"";var parts=[];["tops","bottoms","accessories","look"].forEach(function(tab){MG.getItems(icon.id,tab).forEach(function(i){if(MG.selected.has(i.id))parts.push(i.prompt);});});return parts.join(", ");},
+  build:function(){
+    var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;if(!icon)return"";
+    var base=MG.base.size?Array.from(MG.base).join(", "):"35mm film, natural light, candid, unposed, organic";
+    var identity=icon.name.toLowerCase()+", "+(icon.archetype||"").toLowerCase();
+    var charDesc=typeof buildCharDesc==="function"?buildCharDesc():"";
+    charDesc=charDesc.replace(/wearing[^,]*/gi,"").replace(/dressed in[^,]*/gi,"").replace(/,\s*,/g,",").replace(/^,\s*/,"").replace(/,\s*$/,"").trim();
+    var moodboard="";try{var mbEl=document.getElementById("mb-extracted");if(mbEl)moodboard=(mbEl.value||mbEl.textContent||"").replace(/^['"]+|['"]+$/g,"").trim();if(!moodboard&&typeof getMoodboardAesthetic==="function")moodboard=getMoodboardAesthetic();moodboard=moodboard.replace(/wearing[^,.]+/gi,"").replace(/dressed in[^,.]+/gi,"").trim();if(moodboard.length>150)moodboard=moodboard.slice(0,150).replace(/,\s*[^,]*$/,"").trim();}catch(e){}
+    var wardrobe=MG.getWardrobePrompt();
+    var style=icon.style||"",energy=icon.energy||"",aesthetic=icon.aesthetic||"";
+    var sceneDesc=typeof scene!=="undefined"&&scene?scene+" light":"";
+    var shots=Array.from(MG.framing).concat(Array.from(MG.angle)).concat(Array.from(MG.perspective)).join(", ");
+    var tech=[];if(typeof params!=="undefined"){if(params.grain)tech.push(params.grain);if(params.color)tech.push(params.color);if(params.light)tech.push(params.light);}
+    return[base,identity,charDesc,moodboard,wardrobe,style,energy,sceneDesc,shots,tech.join(", "),aesthetic].filter(function(s){return s&&s.trim();}).join(", ");
+  },
+  refresh:function(){var el=document.getElementById("prompt-preview");if(!el)return;if(typeof promptLocked!=="undefined"&&promptLocked)return;var p=MG.build();el.value=p;var cc=document.getElementById("prompt-char-count");if(cc)cc.textContent=p.length+" chars";},
+  lbClose:function(){var el=document.getElementById("lb-overlay");if(el)el.classList.remove("open");document.removeEventListener("keydown",MG._lbKey);},
+  _lbKey:function(e){if(e.key==="Escape")MG.lbClose();if(e.key==="ArrowLeft")MG.lbNav(-1);if(e.key==="ArrowRight")MG.lbNav(1);},
+  lbNav:function(dir){MG.lbIdx=Math.max(0,Math.min(MG.lbImages.length-1,MG.lbIdx+dir));if(typeof MG._lbRender==="function")MG._lbRender();},
+  setRef:function(src,name){MG.ref=src;var t=document.getElementById("ref-toast");if(t){t.textContent="Reference set"+(name?" - "+name:"");t.classList.add("show");setTimeout(function(){t.classList.remove("show");},3000);}if(typeof notify==="function")notify("Reference set"+(name?" - "+name:""));}
+};
+window.buildPrompt=function(){return MG.build();};
+window.refreshPrompt=function(){MG.refresh();};
+window.renderWardrobeChips=function(){MG.renderChips();};
+window.selectWardrobeItem=function(id){MG.selectItem(id);};
+window.addWardrobeItem=function(){MG.addWardrobeItem();};
+window.getSelectedWardrobePrompt=function(){return MG.getWardrobePrompt();};
+window.switchWardrobeTab=function(tab){MG.switchTab(tab);};
+window.toggleShot=function(el,g,v){MG.toggleShot(el,g,v);};
+window.addShotChip=function(g,inp,cid){MG.addShotChip(g,inp,cid);};
+window.getActivePrompt=function(){return MG.build();};
+window.lbClose=function(){MG.lbClose();};
+window.lbNav=function(dir){MG.lbNav(dir);};
+window.generateFlux=function(prompt){
+  var PX=typeof PROXY!=="undefined"?PROXY:"https://mirage-proxy-production.up.railway.app";
+  var body=MG.ref?Object.assign({prompt:prompt,model:"flux-kontext-pro",width:768,height:1024},MG.ref.startsWith("http")?{image_url:MG.ref}:{input_image:MG.ref.includes(",")?MG.ref.split(",")[1]:MG.ref}):{prompt:prompt,model:"flux-pro-1.1",width:768,height:1024};
+  return fetch(PX+"/flux/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.error||"Submit failed");});return r.json();}).then(function(d){return new Promise(function(resolve,reject){var a=0;var poll=setInterval(function(){a++;if(a>90){clearInterval(poll);reject(new Error("Flux timed out"));return;}fetch(PX+"/flux/result/"+d.id).then(function(r){return r.json();}).then(function(p){if(p.status==="Ready"){clearInterval(poll);resolve(p.result.sample);}else if(p.status==="Error"||p.status==="Failed"){clearInterval(poll);reject(new Error("Flux: "+p.status));}}).catch(function(e){clearInterval(poll);reject(e);});},3000);});});
+};
+var _osi=window.selectIcon;
+if(typeof window.selectIcon==="function"){window.selectIcon=function(){_osi&&_osi.apply(this,arguments);MG.selected.clear();setTimeout(function(){MG.renderChips();MG.refresh();},100);};}
+document.addEventListener("DOMContentLoaded",function(){MG.renderChips();MG.refresh();});
+setTimeout(function(){MG.renderChips();MG.refresh();},500);
+setTimeout(function(){MG.renderChips();MG.refresh();},1500);
 })();
 </script></body>
 </html>
