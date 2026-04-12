@@ -778,12 +778,6 @@
           <button class="wardrobe-tab-btn" onclick="switchWardrobeTab('accessories')" id="wtab-accessories">Accessories</button>
           <button class="wardrobe-tab-btn" onclick="switchWardrobeTab('look')" id="wtab-look">Full Look</button>
         </div>
-        <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
-          <button class="wardrobe-tab-btn active" onclick="switchWardrobeTab('tops')" id="wtab-tops">Tops</button>
-          <button class="wardrobe-tab-btn" onclick="switchWardrobeTab('bottoms')" id="wtab-bottoms">Bottoms</button>
-          <button class="wardrobe-tab-btn" onclick="switchWardrobeTab('accessories')" id="wtab-accessories">Accessories</button>
-          <button class="wardrobe-tab-btn" onclick="switchWardrobeTab('look')" id="wtab-look">Full Look</button>
-        </div>
         <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px" id="wardrobe-chips"></div>
         <div class="wardrobe-add-row">
           <input class="wardrobe-add-input" id="wardrobe-add-input" placeholder="Add wardrobe item e.g. fitted black leather jacket, Schott..." onkeydown="if(event.key==='Enter')addWardrobeItem()" />
@@ -1276,7 +1270,7 @@ async function checkProxy() {
 
 // ── FLUX ──────────────────────────────────────────────────────────────────────
 async function generateFlux(prompt) {
-  if(!proxyOk) throw new Error("Proxy not running — start node server.js");
+  // proxyOk check removed — proxy status is async, attempt generation directly
   // Use Kontext Pro (img-to-img) if we have a prior image, else flux-pro-1.1 (text-to-image)
   // Use manually set reference image first, else last generated image for Kontext
   let refSrc = window.currentReferenceImage || null;
