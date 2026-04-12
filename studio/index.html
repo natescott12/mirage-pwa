@@ -1332,7 +1332,7 @@ function buildPrompt() {
   if (window.selectedFraming && window.selectedFraming.size) shotParts.push(...window.selectedFraming);
   if (window.selectedAngle && window.selectedAngle.size) shotParts.push(...window.selectedAngle);
   if (window.selectedPerspective && window.selectedPerspective.size) shotParts.push(...window.selectedPerspective);
-  const shotDesc = shotParts.length ? shotParts.join(', ') : params.crop;
+  const shotDesc = shotParts.length ? shotParts.join(', ') : '';
   const baseStyle = window.selectedBaseStyles && window.selectedBaseStyles.size
     ? [...window.selectedBaseStyles].join(', ')
     : '35mm film, natural light, candid, unposed, organic';
