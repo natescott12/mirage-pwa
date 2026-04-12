@@ -1,5 +1,6 @@
-<!-- build:2026-04-12T08:44:34.005953 -->
-<!DOCTYPE html>
+  if(typeof MG!=='undefined') MG.refresh();
+}  if(typeof MG!=='undefined') MG.refresh();
+}<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -364,10 +365,10 @@
   .ref-indicator { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--gold,#c9a96e); color:#1a1714; padding:8px 20px; border-radius:2px; font-size:11px; font-family:'DM Sans',sans-serif; z-index:1000; opacity:0; transition:opacity .3s; pointer-events:none; }
   .ref-indicator.show { opacity:1; }
 
-  .wardrobe-tab-btn{padding:4px 10px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid var(--border-md);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif;transition:all .12s;}
+  .wardrobe-tab-btn{padding:4px 10px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid var(--border-md);background:transparent;color:var(--dim);font-family:"DM Sans",sans-serif;transition:all .12s;}
   .wardrobe-tab-btn.active{background:var(--gold);color:#f8f6f2;border-color:var(--gold);}
-  .shot-chip{padding:5px 10px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid var(--border-md);background:transparent;color:var(--dim);transition:all .12s;font-family:'DM Sans',sans-serif;white-space:nowrap;display:inline-block;}
-  .shot-chip.active{background:var(--accent,#3a6b8a);color:#f8f6f2;border-color:var(--accent,#3a6b8a);}
+  .shot-chip{padding:5px 10px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid var(--border-md);background:transparent;color:var(--dim);transition:all .12s;font-family:"DM Sans",sans-serif;white-space:nowrap;display:inline-block;}
+  .shot-chip.active{background:var(--accent,#4a7a5a);color:#f8f6f2;border-color:var(--accent,#4a7a5a);}
   .shot-group-label{font-size:8px;color:var(--muted);margin-bottom:3px;margin-top:8px;letter-spacing:.06em;text-transform:uppercase;}
   .lb-overlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
   .lb-overlay.open{opacity:1;pointer-events:all;}
@@ -377,19 +378,16 @@
   .lb-nav{position:absolute;top:36%;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:22px;cursor:pointer;padding:10px 15px;border-radius:2px;}
   .lb-prev{left:-52px;}.lb-next{right:-52px;}
   .lb-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;justify-content:center;}
-  .lb-btn{padding:6px 14px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:#fff;font-family:'DM Sans',sans-serif;transition:all .15s;}
+  .lb-btn{padding:6px 14px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:#fff;font-family:"DM Sans",sans-serif;}
   .lb-btn.primary{background:var(--gold,#c9a96e);border-color:var(--gold,#c9a96e);color:#1a1714;}
   .lb-btn.danger{border-color:rgba(220,70,70,.5);color:rgba(220,100,100,.95);}
-  .lb-meta{text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.35);font-family:'DM Sans',sans-serif;max-width:480px;line-height:1.5;}
-  .lb-counter{font-size:9px;color:rgba(255,255,255,.3);margin-top:6px;font-family:'DM Sans',sans-serif;}
+  .lb-meta{text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.35);font-family:"DM Sans",sans-serif;max-width:480px;line-height:1.5;}
+  .lb-counter{font-size:9px;color:rgba(255,255,255,.3);margin-top:6px;font-family:"DM Sans",sans-serif;}
   .lib-card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 55%);opacity:0;transition:opacity .18s;display:flex;flex-direction:column;justify-content:flex-end;padding:7px;}
   .lib-card:hover .lib-card-overlay{opacity:1;}
-  .lib-card-actions{display:flex;gap:4px;}
-  .lib-cbtn{padding:3px 8px;font-size:9px;border-radius:2px;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.45);color:#fff;font-family:'DM Sans',sans-serif;}
+  .lib-cbtn{padding:3px 8px;font-size:9px;border-radius:2px;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.45);color:#fff;font-family:"DM Sans",sans-serif;}
   .lib-cbtn.ref{background:var(--gold,#c9a96e);border-color:var(--gold,#c9a96e);color:#1a1714;}
-  .lib-fav-btn{position:absolute;top:5px;right:6px;font-size:13px;cursor:pointer;opacity:0;transition:opacity .15s;background:none;border:none;color:#fff;}
-  .lib-card:hover .lib-fav-btn,.lib-fav-btn.on{opacity:1;}
-  .ref-toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--gold,#c9a96e);color:#1a1714;padding:7px 18px;border-radius:2px;font-size:10px;font-family:'DM Sans',sans-serif;z-index:10000;opacity:0;transition:opacity .25s;pointer-events:none;}
+  .ref-toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--gold,#c9a96e);color:#1a1714;padding:7px 18px;border-radius:2px;font-size:10px;font-family:"DM Sans",sans-serif;z-index:10000;opacity:0;transition:opacity .25s;pointer-events:none;}
   .ref-toast.show{opacity:1;}
 </style>
 
@@ -531,10 +529,7 @@
           </button>
 
           <!-- Extracted description -->
-          <textarea class="mb-extracted" id="mb-extracted" 
-            placeholder="Extracted aesthetic will appear here — edit freely..."
-            oninput="saveMoodboardAesthetic(this.value); refreshPrompt();"
-            style="width:100%;resize:vertical;min-height:60px;font-style:normal;line-height:1.7;background:rgba(42,102,64,0.06);border:1px solid rgba(42,102,64,0.2);border-radius:2px;font-size:10px;color:var(--dim);padding:10px 12px;font-family:'DM Sans',sans-serif;box-sizing:border-box;display:none"></textarea>
+          <div class="mb-extracted" id="mb-extracted"></div>
 
         </div>
       </div>
@@ -719,57 +714,57 @@
       </div>
       <div style="margin-bottom:20px">
         
-        <div style="margin-top:14px;margin-bottom:4px;display:flex;align-items:center;gap:8px">
+        <div style="margin-top:14px;margin-bottom:6px;display:flex;align-items:center;gap:8px">
           <span style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)">Shot Setup</span>
-          <span style="font-size:9px;color:var(--gold)">✦ Multi-select</span>
+          <span style="font-size:9px;color:var(--gold)">+ Multi-select</span>
         </div>
         <div class="shot-group-label">Framing</div>
         <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:2px" id="shot-framing">
-          <div class="shot-chip" onclick="toggleShot(this,'framing','tight portrait crop')">Tight crop</div>
-          <div class="shot-chip" onclick="toggleShot(this,'framing','waist up shot')">Waist up</div>
-          <div class="shot-chip" onclick="toggleShot(this,'framing','three quarter length')">Three quarter</div>
-          <div class="shot-chip" onclick="toggleShot(this,'framing','full length shot head to toe')">Full length</div>
-          <div class="shot-chip" onclick="toggleShot(this,'framing','wide environmental portrait subject within surroundings context is part of the story')">Environmental</div>
-          <div class="shot-chip" onclick="toggleShot(this,'framing','full scene wide shot subject small in frame')">Full scene</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'framing','tight portrait crop')">Tight crop</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'framing','waist up shot')">Waist up</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'framing','three quarter length')">Three quarter</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'framing','full length head to toe')">Full length</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'framing','wide environmental portrait subject within surroundings')">Environmental</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'framing','full scene wide shot subject small in frame')">Full scene</div>
         </div>
-        <div style="display:flex;gap:5px;margin-top:3px;margin-bottom:4px">
-          <input class="wardrobe-add-input" id="shot-add-framing" placeholder="Add custom framing..." onkeydown="if(event.key==='Enter')addShotChip('framing',this,'shot-framing')" style="font-size:10px;padding:4px 8px"/>
-          <button class="wardrobe-add-btn" onclick="addShotChip('framing',document.getElementById('shot-add-framing'),'shot-framing')">+</button>
+        <div style="display:flex;gap:4px;margin-top:3px;margin-bottom:4px">
+          <input class="wardrobe-add-input" id="shot-add-framing" placeholder="Add custom framing..." onkeydown="if(event.key==='Enter')MG.addShotChip('framing',this,'shot-framing')" style="font-size:10px;padding:4px 8px"/>
+          <button class="wardrobe-add-btn" onclick="MG.addShotChip('framing',document.getElementById('shot-add-framing'),'shot-framing')">+</button>
         </div>
         <div class="shot-group-label">Camera Angle</div>
         <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:2px" id="shot-angle">
-          <div class="shot-chip" onclick="toggleShot(this,'angle','eye level neutral intimate')">Eye level</div>
-          <div class="shot-chip" onclick="toggleShot(this,'angle','low angle from below subject feels powerful')">Low angle</div>
-          <div class="shot-chip" onclick="toggleShot(this,'angle','high angle from above subject feels small vulnerable')">High angle</div>
-          <div class="shot-chip" onclick="toggleShot(this,'angle','birds eye overhead flattening subject into scene')">Bird's eye</div>
-          <div class="shot-chip" onclick="toggleShot(this,'angle','dutch angle tilted frame tension unease')">Dutch angle</div>
-          <div class="shot-chip" onclick="toggleShot(this,'angle','worms eye extreme low angle ground level')">Worm's eye</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'angle','eye level neutral intimate')">Eye level</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'angle','low angle from below subject powerful')">Low angle</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'angle','high angle from above subject vulnerable')">High angle</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'angle','birds eye overhead flattening')">Bird's eye</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'angle','dutch angle tilted frame tension')">Dutch angle</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'angle','worms eye extreme low ground level')">Worm's eye</div>
         </div>
-        <div style="display:flex;gap:5px;margin-top:3px;margin-bottom:4px">
-          <input class="wardrobe-add-input" id="shot-add-angle" placeholder="Add custom angle..." onkeydown="if(event.key==='Enter')addShotChip('angle',this,'shot-angle')" style="font-size:10px;padding:4px 8px"/>
-          <button class="wardrobe-add-btn" onclick="addShotChip('angle',document.getElementById('shot-add-angle'),'shot-angle')">+</button>
+        <div style="display:flex;gap:4px;margin-top:3px;margin-bottom:4px">
+          <input class="wardrobe-add-input" id="shot-add-angle" placeholder="Add custom angle..." onkeydown="if(event.key==='Enter')MG.addShotChip('angle',this,'shot-angle')" style="font-size:10px;padding:4px 8px"/>
+          <button class="wardrobe-add-btn" onclick="MG.addShotChip('angle',document.getElementById('shot-add-angle'),'shot-angle')">+</button>
         </div>
         <div class="shot-group-label">Perspective</div>
         <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:2px" id="shot-perspective">
-          <div class="shot-chip" onclick="toggleShot(this,'perspective','over the shoulder implied relationship off-frame')">Over shoulder</div>
-          <div class="shot-chip" onclick="toggleShot(this,'perspective','silhouette backlit form only no detail')">Silhouette</div>
-          <div class="shot-chip" onclick="toggleShot(this,'perspective','reflection through mirror or window')">Reflection</div>
-          <div class="shot-chip" onclick="toggleShot(this,'perspective','negative space subject small fraction of frame')">Negative space</div>
-          <div class="shot-chip" onclick="toggleShot(this,'perspective','shot through plants doorframe frosted glass obscured')">Obscured</div>
-          <div class="shot-chip" onclick="toggleShot(this,'perspective','from behind back of head anonymity and longing')">From behind</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'perspective','over the shoulder implied relationship')">Over shoulder</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'perspective','silhouette backlit form only')">Silhouette</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'perspective','reflection through mirror or window')">Reflection</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'perspective','negative space subject small in frame')">Negative space</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'perspective','shot through plants or doorframe obscured')">Obscured</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'perspective','from behind back of head anonymity')">From behind</div>
         </div>
-        <div style="display:flex;gap:5px;margin-top:3px;margin-bottom:4px">
-          <input class="wardrobe-add-input" id="shot-add-perspective" placeholder="Add custom perspective..." onkeydown="if(event.key==='Enter')addShotChip('perspective',this,'shot-perspective')" style="font-size:10px;padding:4px 8px"/>
-          <button class="wardrobe-add-btn" onclick="addShotChip('perspective',document.getElementById('shot-add-perspective'),'shot-perspective')">+</button>
+        <div style="display:flex;gap:4px;margin-top:3px;margin-bottom:4px">
+          <input class="wardrobe-add-input" id="shot-add-perspective" placeholder="Add custom perspective..." onkeydown="if(event.key==='Enter')MG.addShotChip('perspective',this,'shot-perspective')" style="font-size:10px;padding:4px 8px"/>
+          <button class="wardrobe-add-btn" onclick="MG.addShotChip('perspective',document.getElementById('shot-add-perspective'),'shot-perspective')">+</button>
         </div>
         <div class="shot-group-label">Base Style</div>
         <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px" id="shot-base">
-          <div class="shot-chip active" onclick="toggleShot(this,'base','35mm film natural light candid unposed organic')">Candid</div>
-          <div class="shot-chip" onclick="toggleShot(this,'base','editorial fashion photography American Apparel 2000s Corinne Day Juergen Teller')">Editorial</div>
-          <div class="shot-chip" onclick="toggleShot(this,'base','phone camera snapshot lo-fi casual grain')">Phone snap</div>
-          <div class="shot-chip" onclick="toggleShot(this,'base','cinematic still movie frame soft focus atmospheric')">Cinematic</div>
-          <div class="shot-chip" onclick="toggleShot(this,'base','documentary photography real life gritty authentic')">Documentary</div>
-          <div class="shot-chip" onclick="toggleShot(this,'base','intimate private moment personal')">Intimate</div>
+          <div class="shot-chip active" onclick="MG.toggleShot(this,'base','35mm film natural light candid unposed organic')">Candid</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'base','editorial fashion photography American Apparel 2000s Corinne Day')">Editorial</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'base','phone camera snapshot lo-fi casual grain')">Phone snap</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'base','cinematic still movie frame soft focus atmospheric')">Cinematic</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'base','documentary photography real life gritty authentic')">Documentary</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'base','intimate private moment personal bedroom')">Intimate</div>
         </div>
         <div class="section-label" style="display:flex;justify-content:space-between;align-items:center"><span>Wardrobe · Inject into Prompt</span><span style="font-size:9px;color:var(--gold)">✦ Prompt layer</span></div>
         <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
@@ -777,6 +772,12 @@
           <button class="wardrobe-tab-btn" onclick="switchWardrobeTab('bottoms')" id="wtab-bottoms">Bottoms</button>
           <button class="wardrobe-tab-btn" onclick="switchWardrobeTab('accessories')" id="wtab-accessories">Accessories</button>
           <button class="wardrobe-tab-btn" onclick="switchWardrobeTab('look')" id="wtab-look">Full Look</button>
+        </div>
+        <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+          <button class="wardrobe-tab-btn active" onclick="MG.switchTab('tops')" id="wtab-tops">Tops</button>
+          <button class="wardrobe-tab-btn" onclick="MG.switchTab('bottoms')" id="wtab-bottoms">Bottoms</button>
+          <button class="wardrobe-tab-btn" onclick="MG.switchTab('accessories')" id="wtab-accessories">Accessories</button>
+          <button class="wardrobe-tab-btn" onclick="MG.switchTab('look')" id="wtab-look">Full Look</button>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px" id="wardrobe-chips"></div>
         <div class="wardrobe-add-row">
@@ -912,45 +913,6 @@
 </div>
 
 <script>
-// ── MG INIT — must be first in script block 2 ────────────────────
-window.MG = {
-  framing: new Set(),
-  angle: new Set(),
-  perspective: new Set(),
-  baseStyles: new Set(["35mm film natural light candid unposed organic"]),
-  wardrobeTab: "tops",
-  wardrobeSelected: new Set(),
-  WARDROBE: {
-    tops:[
-      {id:"t1",label:"Bralette",prompt:"bralette top"},{id:"t2",label:"Bikini top",prompt:"bikini top"},
-      {id:"t3",label:"Sports bra",prompt:"sports bra"},{id:"t4",label:"White tee",prompt:"white t-shirt relaxed fit"},
-      {id:"t5",label:"Vintage tee",prompt:"vintage band t-shirt worn in"},{id:"t6",label:"Boyfriend shirt",prompt:"oversized boyfriend shirt half tucked"},
-      {id:"t7",label:"Linen top",prompt:"linen top natural drape"},{id:"t8",label:"Striped button-up",prompt:"striped cotton button-up shirt"},
-      {id:"t9",label:"Black tee",prompt:"fitted black t-shirt"},{id:"t10",label:"Tank top",prompt:"ribbed tank top"},
-      {id:"t11",label:"Crop top",prompt:"cropped top"},{id:"t12",label:"Tube top",prompt:"tube top"}
-    ],
-    bottoms:[
-      {id:"b1",label:"Jeans",prompt:"straight leg jeans"},{id:"b2",label:"Loose jeans",prompt:"loose fit jeans relaxed"},
-      {id:"b3",label:"Baggy jeans",prompt:"baggy oversized jeans"},{id:"b4",label:"Black pants",prompt:"black tailored pants"},
-      {id:"b5",label:"Vintage shorts",prompt:"vintage cut-off denim shorts"},{id:"b6",label:"Sweatpants",prompt:"sweatpants relaxed"},
-      {id:"b7",label:"Biker shorts",prompt:"black biker shorts"},{id:"b8",label:"Cargo pants",prompt:"cargo pants utilitarian"},
-      {id:"b9",label:"Baggy shorts",prompt:"baggy shorts"},{id:"b10",label:"Long skirt",prompt:"long flowing skirt"},
-      {id:"b11",label:"Short skirt",prompt:"short skirt"},{id:"b12",label:"Denim skirt",prompt:"denim mini skirt"}
-    ],
-    accessories:[
-      {id:"a1",label:"Silver earrings",prompt:"delicate silver earrings"},{id:"a2",label:"Silver hoops",prompt:"silver hoop earrings"},
-      {id:"a3",label:"Gold hoops",prompt:"gold hoop earrings"},{id:"a4",label:"Rings",prompt:"stacked rings mixed metals"},
-      {id:"a5",label:"Watch",prompt:"vintage watch on wrist"},{id:"a6",label:"Gold necklace",prompt:"thin gold necklace"},
-      {id:"a7",label:"Silver chain",prompt:"silver chain necklace"},{id:"a8",label:"Small bag",prompt:"small shoulder bag"},
-      {id:"a9",label:"Large tote",prompt:"oversized canvas tote bag"},{id:"a10",label:"Flip flops",prompt:"simple flip flops"},
-      {id:"a11",label:"Sandals",prompt:"strappy sandals"},{id:"a12",label:"Loafers",prompt:"leather loafers"},
-      {id:"a13",label:"Kitten heels",prompt:"kitten heel shoes"},{id:"a14",label:"Boots",prompt:"ankle boots"}
-    ],
-    look:[]
-  }
-};
-// ─────────────────────────────────────────────────────────────────
-
 // ── SAFE DOM HELPERS ──────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 const setText = (id, v) => { const e=$(id); if(e) e.textContent=v; };
@@ -1064,10 +1026,10 @@ const addToLib = (id, img) => {
 };
 const removeFromLib = (iconId, imgId) => { const l=load(LIB_KEY); if(l[iconId])l[iconId]=l[iconId].filter(i=>i.id!==imgId); save(LIB_KEY,l); };
 const toggleFav = (iconId, imgId) => { const l=load(LIB_KEY); if(l[iconId]){const i=l[iconId].find(x=>x.id===imgId);if(i)i.favourite=!i.favourite;} save(LIB_KEY,l); };
-function getTotalCount() { return Object.values(load(LIB_KEY)).reduce((s,a)=>s+a.length,0); }
-function getCount(id) { return getIconLib(id).length; }
-function getChar(id) { return (load(CHAR_KEY)[id]||{}); }
-function saveChar(id, char) { const c=load(CHAR_KEY); c[id]={...char}; save(CHAR_KEY,c); }
+const getTotalCount = () => Object.values(load(LIB_KEY)).reduce((s,a)=>s+a.length,0);
+const getCount = id => getIconLib(id).length;
+const getChar = id => (load(CHAR_KEY)[id]||{});
+const saveChar = (id, char) => { const c=load(CHAR_KEY); c[id]={...char}; save(CHAR_KEY,c); };
 
 
 // ── MOODBOARD ─────────────────────────────────────────────────────────────────
@@ -1247,7 +1209,7 @@ async function extractMoodboard() {
     mb[selectedIcon.id+"_extracted"] = desc;
     saveMoodboard(mb);
 
-    if(extracted) { extracted.value=desc; extracted.style.display='block'; }
+    if(extracted) { extracted.textContent='"'+desc+'"'; extracted.classList.add("visible"); }
     refreshPrompt();
     notify("✦ Moodboard aesthetic extracted");
 
@@ -1292,14 +1254,8 @@ const LOCAL_PROXY  = "http://localhost:3579";
 const PROXY = HOSTED_PROXY; // Switch to LOCAL_PROXY if running locally
 let proxyOk = false;
 async function checkProxy() {
-  for(let attempt=0; attempt<3; attempt++) {
-    try {
-      const r=await fetch(PROXY+"/health",{signal:AbortSignal.timeout(5000)});
-      proxyOk=(await r.json()).status==="ok";
-      if(proxyOk) break;
-    } catch { proxyOk=false; }
-    if(!proxyOk && attempt<2) await new Promise(r=>setTimeout(r,2000));
-  }
+  try { const r=await fetch(PROXY+"/health",{signal:AbortSignal.timeout(3000)}); proxyOk=(await r.json()).status==="ok"; }
+  catch { proxyOk=false; }
   const el=$("proxy-status"); if(!el) return;
   el.style.color = proxyOk?"var(--green)":"var(--gold)";
   el.innerHTML = proxyOk
@@ -1309,7 +1265,7 @@ async function checkProxy() {
 
 // ── FLUX ──────────────────────────────────────────────────────────────────────
 async function generateFlux(prompt) {
-  // proxyOk check removed — proxy status is async, attempt generation directly
+  if(!proxyOk) throw new Error("Proxy not running — start node server.js");
   // Use Kontext Pro (img-to-img) if we have a prior image, else flux-pro-1.1 (text-to-image)
   // Use manually set reference image first, else last generated image for Kontext
   let refSrc = window.currentReferenceImage || null;
@@ -1357,19 +1313,7 @@ function buildCharDesc() {
   if(c.hairStyle) parts.push(c.hairStyle);
   if(c.build) parts.push(c.build+" build");
   if(c.makeup&&c.makeup!=="bare-faced") parts.push(c.makeup+" makeup");
-  if(c.features) {
-    // Strip clothing/outfit language — wardrobe chips handle that
-    const cleanFeatures = c.features
-      .replace(/wearing[^,]*/gi, '')
-      .replace(/dressed in[^,]*/gi, '')
-      .replace(/outfit[^,]*/gi, '')
-      .replace(/fashion[^,]*/gi, '')
-      .replace(/,\s*,/g, ',')
-      .replace(/^,\s*/, '')
-      .replace(/,\s*$/, '')
-      .trim();
-    if (cleanFeatures) parts.push(cleanFeatures);
-  }
+  if(c.features) parts.push(c.features);
   if(c.tattoos) parts.push(c.tattoos);
   return parts.join(", ");
 }
@@ -1383,7 +1327,7 @@ function buildPrompt() {
   if (window.selectedFraming && window.selectedFraming.size) shotParts.push(...window.selectedFraming);
   if (window.selectedAngle && window.selectedAngle.size) shotParts.push(...window.selectedAngle);
   if (window.selectedPerspective && window.selectedPerspective.size) shotParts.push(...window.selectedPerspective);
-  const shotDesc = shotParts.length ? shotParts.join(', ') : '';
+  const shotDesc = shotParts.length ? shotParts.join(', ') : params.crop;
   const baseStyle = window.selectedBaseStyles && window.selectedBaseStyles.size
     ? [...window.selectedBaseStyles].join(', ')
     : '35mm film, natural light, candid, unposed, organic';
@@ -1503,7 +1447,9 @@ function refreshPrompt() {
 }
 
 function getActivePrompt() {
-  return mgBuildPrompt() || buildPrompt();
+  const el=$("prompt-preview");
+  const v = el ? el.value.trim() : "";
+  return v.length>10 ? v : buildPrompt();
 }
 
 function togglePromptLock() {
@@ -2320,7 +2266,15 @@ function loadWardrobeForIcon() {
   renderWardrobeChips();
 }
 
-
+function renderWardrobeChips() {
+  const el = $('wardrobe-chips'); if (!el) return;
+  const items = selectedIcon ? getWardrobeForTab(selectedIcon.id, currentWardrobeTab) : currentWardrobe;
+  el.innerHTML = items.map(item => `
+    <div class="wardrobe-chip ${selectedWardrobeIds.has(item.id) ? 'selected' : ''}" onclick="selectWardrobeItem('${item.id}')" title="${item.prompt}">
+      ${item.label}${item.custom ? `<span onclick="event.stopPropagation();removeWardrobeItem('${item.id}')" style="opacity:.5;font-size:9px;cursor:pointer;margin-left:3px">✕</span>` : ''}
+    </div>
+  `).join('');
+}
 
 function selectWardrobeItem(id) {
   if (selectedWardrobeIds.has(id)) selectedWardrobeIds.delete(id);
@@ -2565,258 +2519,6 @@ async function clearCloudLibrary() {
   }
 }
 
-
-// ── Wardrobe tab functions (must be in same script block as renderWardrobeChips) ──
-var _WDEF = {
-  tops:[{id:'t1',label:'Bralette',prompt:'bralette top'},{id:'t2',label:'Bikini top',prompt:'bikini top'},{id:'t3',label:'Sports bra',prompt:'sports bra'},{id:'t4',label:'White tee',prompt:'white t-shirt relaxed fit'},{id:'t5',label:'Vintage tee',prompt:'vintage band t-shirt worn in'},{id:'t6',label:'Boyfriend shirt',prompt:'oversized boyfriend shirt half tucked'},{id:'t7',label:'Linen top',prompt:'linen top natural drape'},{id:'t8',label:'Striped button-up',prompt:'striped cotton button-up shirt'},{id:'t9',label:'Black tee',prompt:'fitted black t-shirt'},{id:'t10',label:'Tank top',prompt:'ribbed tank top'},{id:'t11',label:'Crop top',prompt:'cropped top'},{id:'t12',label:'Tube top',prompt:'tube top'}],
-  bottoms:[{id:'b1',label:'Jeans',prompt:'straight leg jeans'},{id:'b2',label:'Loose jeans',prompt:'loose fit jeans relaxed'},{id:'b3',label:'Baggy jeans',prompt:'baggy oversized jeans'},{id:'b4',label:'Black pants',prompt:'black tailored pants'},{id:'b5',label:'Vintage shorts',prompt:'vintage cut-off denim shorts'},{id:'b6',label:'Sweatpants',prompt:'sweatpants relaxed'},{id:'b7',label:'Biker shorts',prompt:'black biker shorts'},{id:'b8',label:'Cargo pants',prompt:'cargo pants utilitarian'},{id:'b9',label:'Baggy shorts',prompt:'baggy shorts'},{id:'b10',label:'Long skirt',prompt:'long flowing skirt'},{id:'b11',label:'Short skirt',prompt:'short skirt'},{id:'b12',label:'Denim skirt',prompt:'denim mini skirt'}],
-  accessories:[{id:'a1',label:'Silver earrings',prompt:'delicate silver earrings'},{id:'a2',label:'Silver hoops',prompt:'silver hoop earrings'},{id:'a3',label:'Gold hoops',prompt:'gold hoop earrings'},{id:'a4',label:'Rings',prompt:'stacked rings mixed metals'},{id:'a5',label:'Watch',prompt:'vintage watch on wrist'},{id:'a6',label:'Gold necklace',prompt:'thin gold necklace'},{id:'a7',label:'Silver chain',prompt:'silver chain necklace'},{id:'a8',label:'Small bag',prompt:'small shoulder bag'},{id:'a9',label:'Large tote',prompt:'oversized canvas tote bag'},{id:'a10',label:'Flip flops',prompt:'simple flip flops'},{id:'a11',label:'Sandals',prompt:'strappy sandals'},{id:'a12',label:'Loafers',prompt:'leather loafers'},{id:'a13',label:'Kitten heels',prompt:'kitten heel shoes'},{id:'a14',label:'Boots',prompt:'ankle boots'}],
-  look:[]
-};
-function getWardrobeForTab(iconId, tab) {
-  try { var s = localStorage.getItem('mirage_wardrobe_v1_'+iconId+'_'+tab); if(s) return JSON.parse(s); } catch(e) {}
-  var defaults = window.MG && window.MG.WARDROBE ? window.MG.WARDROBE : {};
-  return JSON.parse(JSON.stringify(defaults[tab] || []));
-}
-function saveWardrobeTab(iconId, tab, items) {
-  try { localStorage.setItem('mirage_wardrobe_v1_'+iconId+'_'+tab, JSON.stringify(items)); } catch(e) {}
-}
-
-function toggleShot(el, group, value) {
-  var map={framing:window.selectedFraming,angle:window.selectedAngle,perspective:window.selectedPerspective,base:window.selectedBaseStyles};
-  var s=map[group]; if(!s){s=new Set(); map[group]=s; window[group]=s;}
-  if(s.has(value)){s.delete(value);el.classList.remove('active');}else{s.add(value);el.classList.add('active');}
-  refreshPrompt();
-}
-function addShotChip(group, inputEl, containerId) {
-  var val=(inputEl.value||'').trim(); if(!val) return;
-  var container=document.getElementById(containerId); if(!container) return;
-  var chip=document.createElement('div'); chip.className='shot-chip';
-  chip.textContent=val;
-  chip.onclick=function(){toggleShot(this,group,val);};
-  container.appendChild(chip);
-  inputEl.value=''; toggleShot(chip,group,val);
-}
-
-
-// ╔══════════════════════════════════════════════════════════════╗
-// MIRAGE CHIP ENGINE v2 — unified state on window.MG
-// ╚══════════════════════════════════════════════════════════════╝
-
-
-// Keep window.selected* aliases pointing to MG for legacy code
-window.selectedFraming = window.MG.framing;
-window.selectedAngle = window.MG.angle;
-window.selectedPerspective = window.MG.perspective;
-window.selectedBaseStyles = window.MG.baseStyles;
-window.selectedWardrobeIds = window.MG.wardrobeSelected;
-
-// ── SHOT CHIPS ──────────────────────────────────────────────────────
-function toggleShot(el, group, value) {
-  var key = group === "base" ? "baseStyles" : group;
-  var s = window.MG[key];
-  if (!s) { s = new Set(); window.MG[key] = s; }
-  if (s.has(value)) { s.delete(value); el.classList.remove("active"); }
-  else { s.add(value); el.classList.add("active"); }
-  mgRefreshPrompt();
-}
-
-function addShotChip(group, inputEl, containerId) {
-  var val = (inputEl.value || "").trim();
-  if (!val) return;
-  var container = document.getElementById(containerId);
-  if (!container) return;
-  var chip = document.createElement("div");
-  chip.className = "shot-chip";
-  chip.textContent = val;
-  chip.onclick = function() { toggleShot(this, group, val); };
-  container.appendChild(chip);
-  inputEl.value = "";
-  toggleShot(chip, group, val);
-}
-
-// ── WARDROBE CHIPS ──────────────────────────────────────────────────
-
-
-function saveWardrobeTab(iconId, tab, items) {
-  try { localStorage.setItem("mirage_wardrobe_v1_"+iconId+"_"+tab, JSON.stringify(items)); } catch(e) {}
-}
-
-function switchWardrobeTab(tab) {
-  window.MG.wardrobeTab = tab;
-  document.querySelectorAll(".wardrobe-tab-btn").forEach(function(b){b.classList.remove("active");});
-  var btn = document.getElementById("wtab-"+tab);
-  if (btn) btn.classList.add("active");
-  mgRenderWardrobeChips();
-}
-
-function mgRenderWardrobeChips() {
-  var el = document.getElementById("wardrobe-chips");
-  if (!el) return;
-  var iconId = (typeof selectedIcon !== "undefined" && selectedIcon) ? selectedIcon.id : null;
-  var tab = window.MG.wardrobeTab;
-  var items = iconId ? getWardrobeForTab(iconId, tab) : (window.MG.WARDROBE[tab] || []);
-  el.innerHTML = items.map(function(item) {
-    var sel = window.MG.wardrobeSelected.has(item.id);
-    var rm = item.custom ? "<span onclick=\"event.stopPropagation();mgRemoveWardrobe(\'"+item.id+"\');\" style=\"opacity:.5;font-size:9px;cursor:pointer;margin-left:3px\">&#10005;</span>" : "";
-    return "<div class=\"wardrobe-chip "+(sel?"selected":"")+"\" onclick=\"mgSelectWardrobe(\'"+item.id+"\');\" title=\""+item.prompt+"\">"+item.label+rm+"</div>";
-  }).join("");
-}
-
-function mgSelectWardrobe(id) {
-  if (window.MG.wardrobeSelected.has(id)) window.MG.wardrobeSelected.delete(id);
-  else window.MG.wardrobeSelected.add(id);
-  mgRenderWardrobeChips();
-  mgRefreshPrompt();
-}
-
-function mgRemoveWardrobe(id) {
-  if (typeof selectedIcon === "undefined" || !selectedIcon) return;
-  var tab = window.MG.wardrobeTab;
-  var items = getWardrobeForTab(selectedIcon.id, tab).filter(function(i){return i.id!==id;});
-  saveWardrobeTab(selectedIcon.id, tab, items);
-  window.MG.wardrobeSelected.delete(id);
-  mgRenderWardrobeChips();
-  mgRefreshPrompt();
-}
-
-function addWardrobeItem() {
-  var inp = document.getElementById("wardrobe-add-input");
-  if (!inp || !inp.value.trim()) return;
-  var label = inp.value.trim().split(",")[0].trim();
-  var newItem = {id:"w"+Date.now(), label:label, prompt:inp.value.trim(), custom:true};
-  if (typeof selectedIcon !== "undefined" && selectedIcon) {
-    var tab = window.MG.wardrobeTab;
-    var items = getWardrobeForTab(selectedIcon.id, tab);
-    items.push(newItem);
-    saveWardrobeTab(selectedIcon.id, tab, items);
-  }
-  inp.value = "";
-  mgRenderWardrobeChips();
-  if (typeof notify === "function") notify("Item added to "+window.MG.wardrobeTab);
-}
-
-// ── PROMPT BUILDER ──────────────────────────────────────────────────
-// Merges Persona Builder identity + Studio creative direction
-function mgBuildPrompt() {
-  if (typeof selectedIcon === "undefined" || !selectedIcon) return "";
-
-  // Base photographic style (Base Style chips)
-  var baseStyle = window.MG.baseStyles.size
-    ? Array.from(window.MG.baseStyles).join(", ")
-    : "35mm film, natural light, candid, unposed, organic";
-
-  // Icon identity from Persona Builder
-  var iconIdentity = selectedIcon.name.toLowerCase() + ", " + (selectedIcon.archetype||"").toLowerCase();
-
-  // Physical character description (character builder chips)
-  var charDesc = typeof buildCharDesc === "function" ? buildCharDesc() : "";
-
-  // Moodboard aesthetic (extracted from reference images)
-  // Strip outfit/clothing descriptions — wardrobe chips handle that
-  var mbAesthetic = "";
-  try {
-    var mbEl = document.getElementById("mb-extracted");
-    if (mbEl) mbAesthetic = (mbEl.value || mbEl.textContent || "").trim().replace(/^"|"$/g,"");
-    if (!mbAesthetic && typeof getMoodboardAesthetic === "function") mbAesthetic = getMoodboardAesthetic();
-    // Clean clothing references from moodboard
-    mbAesthetic = mbAesthetic
-      .replace(/wearing[^,.]+/gi, '')
-      .replace(/dressed in[^,.]+/gi, '')
-      .replace(/white ribbed[^,.]+/gi, '')
-      .replace(/high-cut[^,.]+/gi, '')
-      .replace(/crop top[^,.]+/gi, '')
-      .replace(/,\s*,/g, ',').replace(/^,\s*/, '').replace(/,\s*$/, '').trim();
-    // Keep moodboard concise — first 200 chars only
-    if (mbAesthetic.length > 200) mbAesthetic = mbAesthetic.slice(0, 200).replace(/,\s*[^,]*$/, '').trim();
-  } catch(e) {}
-
-  // Wardrobe selection
-  var wardrobeParts = [];
-  var iconId = selectedIcon.id;
-  ["tops","bottoms","accessories","look"].forEach(function(tab) {
-    var items = getWardrobeForTab(iconId, tab);
-    items.forEach(function(i) { if(window.MG.wardrobeSelected.has(i.id)) wardrobeParts.push(i.prompt); });
-  });
-  var wardrobeDesc = wardrobeParts.join(", ");
-
-  // Icon persona voice (from Persona Builder)
-  var iconStyle = selectedIcon.style || "";
-  var iconEnergy = selectedIcon.energy || "";
-  var iconAesthetic = selectedIcon.aesthetic || "";
-
-  // Scene
-  var sceneDesc = (typeof scene !== "undefined" && scene) ? scene + " light" : "";
-
-  // Shot setup (framing + angle + perspective)
-  var shotParts = Array.from(window.MG.framing)
-    .concat(Array.from(window.MG.angle))
-    .concat(Array.from(window.MG.perspective));
-  var shotDesc = shotParts.join(", ");
-
-  // Tech params
-  var techParts = [];
-  if (typeof params !== "undefined") {
-    if (params.grain) techParts.push(params.grain);
-    if (params.color) techParts.push(params.color);
-    if (params.light) techParts.push(params.light);
-  }
-
-  var parts = [baseStyle, iconIdentity, charDesc, mbAesthetic, wardrobeDesc,
-    iconStyle, iconEnergy, sceneDesc, shotDesc, techParts.join(", "), iconAesthetic]
-    .filter(function(s){return s && s.trim();});
-
-  return parts.join(", ");
-}
-
-function mgRefreshPrompt() {
-  var el = document.getElementById("prompt-preview");
-  if (!el) return;
-  if (typeof promptLocked !== "undefined" && promptLocked) return;
-  var p = mgBuildPrompt();
-  el.value = p;
-  var cc = document.getElementById("prompt-char-count");
-  if (cc) cc.textContent = p.length + " chars";
-}
-
-// Override legacy functions to use MG engine
-function buildPrompt() { return mgBuildPrompt(); }
-function refreshPrompt() { mgRefreshPrompt(); }
-function getSelectedWardrobePrompt() {
-  var parts = [];
-  if (typeof selectedIcon === "undefined" || !selectedIcon) return "";
-  ["tops","bottoms","accessories","look"].forEach(function(tab) {
-    getWardrobeForTab(selectedIcon.id, tab).forEach(function(i){
-      if(window.MG.wardrobeSelected.has(i.id)) parts.push(i.prompt);
-    });
-  });
-  return parts.join(", ");
-}
-function renderWardrobeChips() { mgRenderWardrobeChips(); }
-function selectWardrobeItem(id) { mgSelectWardrobe(id); }
-
-// ── LIGHTBOX ────────────────────────────────────────────────────────
-function lbClose() {
-  var el = document.getElementById("lb-overlay");
-  if (el) el.classList.remove("open");
-  document.removeEventListener("keydown", _lbKey);
-}
-function _lbKey(e) {
-  if (e.key==="Escape") lbClose();
-  if (e.key==="ArrowLeft") lbNav(-1);
-  if (e.key==="ArrowRight") lbNav(1);
-}
-function lbOpen(idx) {
-  if (typeof _lbGetImages === "function") {
-    _lbImages = _lbGetImages();
-  }
-  _lbIdx = idx;
-  if (typeof _lbRender === "function") _lbRender();
-  var el = document.getElementById("lb-overlay");
-  if (el) el.classList.add("open");
-  document.addEventListener("keydown", _lbKey);
-}
-
 </script>
 
 <div id="cloud-lib-panel" style="display:none;position:fixed;inset:0;z-index:600;background:var(--bg);overflow-y:auto;padding:24px">
@@ -2933,16 +2635,29 @@ const WARDROBE_DEFAULTS = {
   look: []
 };
 
-let currentWardrobeTab = 'tops'; var _activeWardrobeTab = 'tops';
+let currentWardrobeTab = 'tops';
 let selectedWardrobeIds = new Set();
 
-
+function getWardrobeForTab(iconId, tab) {
+  try {
+    const s = localStorage.getItem(WARDROBE_KEY + '_' + iconId + '_' + tab);
+    if (s) return JSON.parse(s);
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(WARDROBE_DEFAULTS[tab] || []));
+}
 
 function saveWardrobeTab(iconId, tab, items) {
   try { localStorage.setItem(WARDROBE_KEY + '_' + iconId + '_' + tab, JSON.stringify(items)); } catch(e) {}
 }
 
-
+function switchWardrobeTab(tab) {
+  currentWardrobeTab = tab;
+  document.querySelectorAll('.wardrobe-tab-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('wtab-' + tab);
+  if (btn) btn.classList.add('active');
+  if (selectedIcon) currentWardrobe = getWardrobeForTab(selectedIcon.id, tab);
+  renderWardrobeChips();
+}
 
 function removeWardrobeItem(id) {
   const items = selectedIcon ? getWardrobeForTab(selectedIcon.id, currentWardrobeTab).filter(i => i.id !== id) : [];
@@ -2970,7 +2685,7 @@ function toggleShot(el, group, value) {
 // ── CLOUD LIBRARY ENHANCEMENTS ────────────────────────────────────────────────
 window.libFavs = new Set(JSON.parse(localStorage.getItem('mirage_lib_favs')||'[]'));
 window.currentReferenceImage = null;
-var _lbImages2 = [], _lbCurrentIdx2 = 0;
+let lbImages = [], lbCurrentIdx = 0;
 
 function openLightbox(idx) {
   const lib = load(LIB_KEY);
@@ -3083,133 +2798,12 @@ function downloadLibImg(src, id) {
   a.click();
 }
 
-function libToggleFav(id) {
+function toggleFav(id) {
   if (window.libFavs.has(id)) window.libFavs.delete(id);
   else window.libFavs.add(id);
   localStorage.setItem('mirage_lib_favs', JSON.stringify([...window.libFavs]));
   renderLibrary();
 }
-
-// ═══════════════════════════════════════════════════════════════════
-// SHOT SETUP
-// ═══════════════════════════════════════════════════════════════════
-var _sf = new Set(); var _sa = new Set(); var _sp = new Set();
-var _sb = new Set(['35mm film natural light candid unposed organic']);
-window.selectedFraming = _sf; window.selectedAngle = _sa;
-window.selectedPerspective = _sp; window.selectedBaseStyles = _sb;
-
-function toggleShot(el, group, value) {
-  var map = {framing:_sf, angle:_sa, perspective:_sp, base:_sb};
-  var s = map[group]; if (!s) return;
-  if (s.has(value)) { s.delete(value); el.classList.remove('active'); }
-  else { s.add(value); el.classList.add('active'); }
-  refreshPrompt();
-}
-
-function addShotChip(group, inputEl, containerId) {
-  var val = (inputEl.value||'').trim(); if (!val) return;
-  var container = document.getElementById(containerId); if (!container) return;
-  var chip = document.createElement('div');
-  chip.className = 'shot-chip';
-  chip.textContent = val;
-  chip.setAttribute('onclick', "toggleShot(this,'"+group+"','"+val.replace(/'/g,"\'")+"')");
-  container.appendChild(chip);
-  inputEl.value = '';
-  toggleShot(chip, group, val);
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// WARDROBE TABS + MULTI-SELECT
-// ═══════════════════════════════════════════════════════════════════
-var WDEF = {
-  tops:[
-    {id:'t1',label:'Bralette',prompt:'bralette top'},{id:'t2',label:'Bikini top',prompt:'bikini top'},
-    {id:'t3',label:'Sports bra',prompt:'sports bra'},{id:'t4',label:'White tee',prompt:'white t-shirt relaxed fit'},
-    {id:'t5',label:'Vintage tee',prompt:'vintage band t-shirt worn in'},{id:'t6',label:'Boyfriend shirt',prompt:'oversized boyfriend shirt half tucked'},
-    {id:'t7',label:'Linen top',prompt:'linen top natural drape'},{id:'t8',label:'Striped button-up',prompt:'striped cotton button-up shirt'},
-    {id:'t9',label:'Black tee',prompt:'fitted black t-shirt'},{id:'t10',label:'Tank top',prompt:'ribbed tank top'},
-    {id:'t11',label:'Crop top',prompt:'cropped top'},{id:'t12',label:'Tube top',prompt:'tube top'},
-  ],
-  bottoms:[
-    {id:'b1',label:'Jeans',prompt:'straight leg jeans'},{id:'b2',label:'Loose jeans',prompt:'loose fit jeans relaxed'},
-    {id:'b3',label:'Baggy jeans',prompt:'baggy oversized jeans'},{id:'b4',label:'Black pants',prompt:'black tailored pants'},
-    {id:'b5',label:'Vintage shorts',prompt:'vintage cut-off denim shorts'},{id:'b6',label:'Sweatpants',prompt:'sweatpants relaxed'},
-    {id:'b7',label:'Biker shorts',prompt:'black biker shorts'},{id:'b8',label:'Cargo pants',prompt:'cargo pants utilitarian'},
-    {id:'b9',label:'Baggy shorts',prompt:'baggy shorts'},{id:'b10',label:'Long skirt',prompt:'long flowing skirt'},
-    {id:'b11',label:'Short skirt',prompt:'short skirt'},{id:'b12',label:'Denim skirt',prompt:'denim mini skirt'},
-  ],
-  accessories:[
-    {id:'a1',label:'Silver earrings',prompt:'delicate silver earrings'},{id:'a2',label:'Silver hoops',prompt:'silver hoop earrings'},
-    {id:'a3',label:'Gold hoops',prompt:'gold hoop earrings'},{id:'a4',label:'Rings',prompt:'stacked rings mixed metals'},
-    {id:'a5',label:'Watch',prompt:'vintage watch on wrist'},{id:'a6',label:'Gold necklace',prompt:'thin gold necklace'},
-    {id:'a7',label:'Silver chain',prompt:'silver chain necklace'},{id:'a8',label:'Small bag',prompt:'small shoulder bag'},
-    {id:'a9',label:'Large tote',prompt:'oversized canvas tote bag'},{id:'a10',label:'Flip flops',prompt:'simple flip flops'},
-    {id:'a11',label:'Sandals',prompt:'strappy sandals'},{id:'a12',label:'Loafers',prompt:'leather loafers'},
-    {id:'a13',label:'Kitten heels',prompt:'kitten heel shoes'},{id:'a14',label:'Boots',prompt:'ankle boots'},
-  ],
-  look:[]
-};
-var _activeWardrobeTab = 'tops';
-
-
-
-function saveWardrobeTab(iconId, tab, items) {
-  try { localStorage.setItem('mirage_wardrobe_v1_'+iconId+'_'+tab, JSON.stringify(items)); } catch(e) {}
-}
-
-function removeWardrobeItem(id) {
-  var items = selectedIcon ? getWardrobeForTab(selectedIcon.id, _activeWardrobeTab).filter(function(i){return i.id!==id;}) : [];
-  if(selectedIcon) saveWardrobeTab(selectedIcon.id, _activeWardrobeTab, items);
-  selectedWardrobeIds.delete(id); currentWardrobe = items;
-  renderWardrobeChips(); refreshPrompt();
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// LIGHTBOX + LIBRARY
-// ═══════════════════════════════════════════════════════════════════
-window.libFavs = new Set(JSON.parse(localStorage.getItem('mirage_lib_favs')||'[]'));
-window.currentRef = null;
-var _lbImages = [], _lbIdx = 0;
-
-function _lbGetImages() {
-  var lib = load(LIB_KEY); var images = [];
-  if(libIconId==='all'){ICONS_DATA.forEach(function(icon){(lib[icon.id]||[]).forEach(function(img){images.push(Object.assign({},img,{icon:icon}));});});images.sort(function(a,b){return b.id-a.id;});}
-  else{var icon=ICONS_DATA.find(function(i){return i.id===libIconId;});if(icon)(lib[libIconId]||[]).forEach(function(img){images.push(Object.assign({},img,{icon:icon}));});}
-  return images;
-}
-function lbOpen(idx) {
-  _lbImages = _lbGetImages(); _lbIdx = idx; _lbRender();
-  document.getElementById('lb-overlay').classList.add('open');
-  document.addEventListener('keydown', _lbKey);
-}
-function _lbRender() {
-  var img = _lbImages[_lbIdx]; if(!img) return;
-  document.getElementById('lb-img').src = img.imageUrl||img.base64||'';
-  document.getElementById('lb-counter').textContent = (_lbIdx+1)+' / '+_lbImages.length;
-  var meta=[]; if(img.icon) meta.push(img.icon.name.toLowerCase()); if(img.prompt) meta.push(img.prompt.slice(0,120)+(img.prompt.length>120?'…':''));
-  document.getElementById('lb-meta').textContent = meta.join(' · ');
-}
-function lbClose(){document.getElementById('lb-overlay').classList.remove('open');document.removeEventListener('keydown',_lbKey);}
-function _lbKey(e){if(e.key==='Escape')lbClose();if(e.key==='ArrowLeft')lbNav(-1);if(e.key==='ArrowRight')lbNav(1);}
-function lbNav(dir){_lbIdx=Math.max(0,Math.min(_lbImages.length-1,_lbIdx+dir));_lbRender();}
-function lbUseRef(){var img=_lbImages[_lbIdx];if(img)setRef(img.imageUrl||img.base64||'',img.icon?img.icon.name:'');lbClose();}
-function lbDownload(){var img=_lbImages[_lbIdx];if(img)libDl(img.imageUrl||img.base64||'',img.id);}
-function lbDelete(){
-  var img=_lbImages[_lbIdx]; if(!img||!img.icon) return;
-  if(!confirm('Delete this image?')) return;
-  var lib=load(LIB_KEY); lib[img.icon.id]=(lib[img.icon.id]||[]).filter(function(i){return i.id!==img.id;});
-  save(LIB_KEY,lib); _lbImages.splice(_lbIdx,1);
-  if(!_lbImages.length){lbClose();renderLibrary();return;}
-  _lbIdx=Math.min(_lbIdx,_lbImages.length-1); _lbRender(); renderLibrary();
-}
-function setRef(src, name) {
-  window.currentRef = src;
-  var t=document.getElementById('ref-toast');
-  if(t){t.textContent='\u2726 Reference set'+(name?' — '+name:'')+' · next gen uses this';t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
-  notify('\u2726 Reference image set');
-}
-function libDl(src,id){var a=document.createElement('a');a.href=src;a.download='mirage-'+id+'.jpg';a.click();}
-function libToggleFav(id){if(window.libFavs.has(id))window.libFavs.delete(id);else window.libFavs.add(id);localStorage.setItem('mirage_lib_favs',JSON.stringify([...window.libFavs]));renderLibrary();}
 </script>
 
 <!-- Lightbox -->
@@ -3231,21 +2825,265 @@ function libToggleFav(id){if(window.libFavs.has(id))window.libFavs.delete(id);el
 <!-- Reference indicator -->
 <div class="ref-indicator" id="ref-indicator">✦ Reference image set — next generation uses this</div>
 
-<div class="lb-overlay" id="lb-overlay" onclick="if(event.target===this)lbClose()">
+<div class="lb-overlay" id="lb-overlay" onclick="if(event.target===this)MG.lbClose()">
   <div class="lb-wrap" onclick="event.stopPropagation()">
-    <button class="lb-close" onclick="lbClose()">✕</button>
-    <button class="lb-nav lb-prev" onclick="lbNav(-1)">&#8249;</button>
-    <button class="lb-nav lb-next" onclick="lbNav(1)">&#8250;</button>
+    <button class="lb-close" onclick="MG.lbClose()">&#x2715;</button>
+    <button class="lb-nav lb-prev" onclick="MG.lbNav(-1)">&#8249;</button>
+    <button class="lb-nav lb-next" onclick="MG.lbNav(1)">&#8250;</button>
     <img id="lb-img" src="" alt="" />
     <div class="lb-counter" id="lb-counter"></div>
     <div class="lb-actions">
-      <button class="lb-btn primary" onclick="lbUseRef()">&#10022; Use as Reference</button>
-      <button class="lb-btn" onclick="lbDownload()">&#8595; Save</button>
-      <button class="lb-btn danger" onclick="lbDelete()">&#10005; Delete</button>
+      <button class="lb-btn primary" onclick="MG.lbUseRef()">Use as Reference</button>
+      <button class="lb-btn" onclick="MG.lbDownload()">Save</button>
+      <button class="lb-btn danger" onclick="MG.lbDelete()">Delete</button>
     </div>
     <div class="lb-meta" id="lb-meta"></div>
   </div>
 </div>
 <div class="ref-toast" id="ref-toast"></div>
-</body>
+<script>
+(function(){
+var MG=window.MG={
+  framing:new Set(),angle:new Set(),perspective:new Set(),
+  base:new Set(["35mm film natural light candid unposed organic"]),
+  tab:"tops",selected:new Set(),ref:null,lbImages:[],lbIdx:0,
+  WARDROBE:{
+    tops:[
+      {id:"t1",label:"Bralette",prompt:"bralette top"},{id:"t2",label:"Bikini top",prompt:"bikini top"},
+      {id:"t3",label:"Sports bra",prompt:"sports bra"},{id:"t4",label:"White tee",prompt:"white t-shirt relaxed fit"},
+      {id:"t5",label:"Vintage tee",prompt:"vintage band t-shirt worn in"},{id:"t6",label:"Boyfriend shirt",prompt:"oversized boyfriend shirt half tucked"},
+      {id:"t7",label:"Linen top",prompt:"linen top natural drape"},{id:"t8",label:"Striped button-up",prompt:"striped cotton button-up shirt"},
+      {id:"t9",label:"Black tee",prompt:"fitted black t-shirt"},{id:"t10",label:"Tank top",prompt:"ribbed tank top"},
+      {id:"t11",label:"Crop top",prompt:"cropped top"},{id:"t12",label:"Tube top",prompt:"tube top"}
+    ],
+    bottoms:[
+      {id:"b1",label:"Jeans",prompt:"straight leg jeans"},{id:"b2",label:"Loose jeans",prompt:"loose fit jeans relaxed"},
+      {id:"b3",label:"Baggy jeans",prompt:"baggy oversized jeans"},{id:"b4",label:"Black pants",prompt:"black tailored pants"},
+      {id:"b5",label:"Vintage shorts",prompt:"vintage cut-off denim shorts"},{id:"b6",label:"Sweatpants",prompt:"sweatpants relaxed"},
+      {id:"b7",label:"Biker shorts",prompt:"black biker shorts"},{id:"b8",label:"Cargo pants",prompt:"cargo pants utilitarian"},
+      {id:"b9",label:"Baggy shorts",prompt:"baggy shorts"},{id:"b10",label:"Long skirt",prompt:"long flowing skirt"},
+      {id:"b11",label:"Short skirt",prompt:"short skirt"},{id:"b12",label:"Denim skirt",prompt:"denim mini skirt"}
+    ],
+    accessories:[
+      {id:"a1",label:"Silver earrings",prompt:"delicate silver earrings"},{id:"a2",label:"Silver hoops",prompt:"silver hoop earrings"},
+      {id:"a3",label:"Gold hoops",prompt:"gold hoop earrings"},{id:"a4",label:"Rings",prompt:"stacked rings mixed metals"},
+      {id:"a5",label:"Watch",prompt:"vintage watch on wrist"},{id:"a6",label:"Gold necklace",prompt:"thin gold necklace"},
+      {id:"a7",label:"Silver chain",prompt:"silver chain necklace"},{id:"a8",label:"Small bag",prompt:"small shoulder bag"},
+      {id:"a9",label:"Large tote",prompt:"oversized canvas tote bag"},{id:"a10",label:"Flip flops",prompt:"simple flip flops"},
+      {id:"a11",label:"Sandals",prompt:"strappy sandals"},{id:"a12",label:"Loafers",prompt:"leather loafers"},
+      {id:"a13",label:"Kitten heels",prompt:"kitten heel shoes"},{id:"a14",label:"Boots",prompt:"ankle boots"}
+    ],
+    look:[]
+  },
+  toggleShot:function(el,group,value){
+    var s=MG[group];if(!s)return;
+    if(s.has(value)){s.delete(value);el.classList.remove("active");}
+    else{s.add(value);el.classList.add("active");}
+    MG.refresh();
+  },
+  addShotChip:function(group,inputEl,containerId){
+    var val=(inputEl.value||"").trim();if(!val)return;
+    var c=document.getElementById(containerId);if(!c)return;
+    var chip=document.createElement("div");
+    chip.className="shot-chip";chip.textContent=val;
+    chip.onclick=function(){MG.toggleShot(this,group,val);};
+    c.appendChild(chip);inputEl.value="";MG.toggleShot(chip,group,val);
+  },
+  getItems:function(iconId,tab){
+    try{var s=localStorage.getItem("mg_w_"+iconId+"_"+tab);if(s)return JSON.parse(s);}catch(e){}
+    return JSON.parse(JSON.stringify(MG.WARDROBE[tab]||[]));
+  },
+  saveItems:function(iconId,tab,items){
+    try{localStorage.setItem("mg_w_"+iconId+"_"+tab,JSON.stringify(items));}catch(e){}
+  },
+  switchTab:function(tab){
+    MG.tab=tab;
+    document.querySelectorAll(".wardrobe-tab-btn").forEach(function(b){b.classList.remove("active");});
+    var btn=document.getElementById("wtab-"+tab);if(btn)btn.classList.add("active");
+    MG.renderChips();
+  },
+  renderChips:function(){
+    var el=document.getElementById("wardrobe-chips");if(!el)return;
+    var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;
+    var items=icon?MG.getItems(icon.id,MG.tab):(MG.WARDROBE[MG.tab]||[]);
+    el.innerHTML=items.map(function(item){
+      var sel=MG.selected.has(item.id);
+      var rm=item.custom?"<span onclick="event.stopPropagation();MG.removeItem('"+item.id+"')" style="opacity:.5;font-size:9px;cursor:pointer;margin-left:3px">x</span>":"";
+      return "<div class="wardrobe-chip "+(sel?"selected":"")+"" onclick="MG.selectItem('"+item.id+"')" title=""+item.prompt+"">"+item.label+rm+"</div>";
+    }).join("");
+  },
+  selectItem:function(id){
+    if(MG.selected.has(id))MG.selected.delete(id);else MG.selected.add(id);
+    MG.renderChips();MG.refresh();
+  },
+  removeItem:function(id){
+    var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;if(!icon)return;
+    var items=MG.getItems(icon.id,MG.tab).filter(function(i){return i.id!==id;});
+    MG.saveItems(icon.id,MG.tab,items);MG.selected.delete(id);
+    MG.renderChips();MG.refresh();
+  },
+  addWardrobeItem:function(){
+    var inp=document.getElementById("wardrobe-add-input");
+    if(!inp||!inp.value.trim())return;
+    var label=inp.value.trim().split(",")[0].trim();
+    var newItem={id:"w"+Date.now(),label:label,prompt:inp.value.trim(),custom:true};
+    var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;
+    if(icon){var items=MG.getItems(icon.id,MG.tab);items.push(newItem);MG.saveItems(icon.id,MG.tab,items);}
+    inp.value="";MG.renderChips();
+    if(typeof notify==="function")notify("Added to "+MG.tab);
+  },
+  getWardrobePrompt:function(){
+    var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;
+    if(!icon||!MG.selected.size)return"";
+    var parts=[];
+    ["tops","bottoms","accessories","look"].forEach(function(tab){
+      MG.getItems(icon.id,tab).forEach(function(i){if(MG.selected.has(i.id))parts.push(i.prompt);});
+    });
+    return parts.join(", ");
+  },
+  build:function(){
+    var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;
+    if(!icon)return"";
+    var base=MG.base.size?Array.from(MG.base).join(", "):"35mm film, natural light, candid, unposed, organic";
+    var identity=icon.name.toLowerCase()+", "+(icon.archetype||"").toLowerCase();
+    var charDesc=typeof buildCharDesc==="function"?buildCharDesc():"";
+    charDesc=charDesc.replace(/wearing[^,]*/gi,"").replace(/dressed in[^,]*/gi,"").replace(/,\s*,/g,",").replace(/^,\s*/,"").replace(/,\s*$/,"").trim();
+    var moodboard="";
+    try{
+      var mbEl=document.getElementById("mb-extracted");
+      if(mbEl)moodboard=(mbEl.value||mbEl.textContent||"").replace(/^['"]+|['"]+$/g,"").trim();
+      if(!moodboard&&typeof getMoodboardAesthetic==="function")moodboard=getMoodboardAesthetic();
+      moodboard=moodboard.replace(/wearing[^,.]+/gi,"").replace(/dressed in[^,.]+/gi,"").trim();
+      if(moodboard.length>150)moodboard=moodboard.slice(0,150).replace(/,\s*[^,]*$/,"").trim();
+    }catch(e){}
+    var wardrobe=MG.getWardrobePrompt();
+    var style=icon.style||"",energy=icon.energy||"",aesthetic=icon.aesthetic||"";
+    var sceneDesc=typeof scene!=="undefined"&&scene?scene+" light":"";
+    var shots=Array.from(MG.framing).concat(Array.from(MG.angle)).concat(Array.from(MG.perspective)).join(", ");
+    var tech=[];
+    if(typeof params!=="undefined"){if(params.grain)tech.push(params.grain);if(params.color)tech.push(params.color);if(params.light)tech.push(params.light);}
+    return[base,identity,charDesc,moodboard,wardrobe,style,energy,sceneDesc,shots,tech.join(", "),aesthetic]
+      .filter(function(s){return s&&s.trim();}).join(", ");
+  },
+  refresh:function(){
+    var el=document.getElementById("prompt-preview");if(!el)return;
+    if(typeof promptLocked!=="undefined"&&promptLocked)return;
+    var p=MG.build();el.value=p;
+    var cc=document.getElementById("prompt-char-count");if(cc)cc.textContent=p.length+" chars";
+  },
+  lbOpen:function(idx){
+    var lib=typeof load==="function"?load(typeof LIB_KEY!=="undefined"?LIB_KEY:"mirage_library_v2"):{};
+    var images=[];
+    if(typeof ICONS_DATA!=="undefined"&&typeof libIconId!=="undefined"){
+      if(libIconId==="all"){
+        ICONS_DATA.forEach(function(icon){(lib[icon.id]||[]).forEach(function(img){images.push(Object.assign({},img,{icon:icon}));});});
+        images.sort(function(a,b){return b.id-a.id;});
+      }else{
+        var ic=ICONS_DATA.find(function(i){return i.id===libIconId;});
+        if(ic)(lib[libIconId]||[]).forEach(function(img){images.push(Object.assign({},img,{icon:ic}));});
+      }
+    }
+    MG.lbImages=images;MG.lbIdx=idx;MG._lbRender();
+    var el=document.getElementById("lb-overlay");if(el)el.classList.add("open");
+    document.addEventListener("keydown",MG._lbKey);
+  },
+  _lbRender:function(){
+    var img=MG.lbImages[MG.lbIdx];if(!img)return;
+    var ie=document.getElementById("lb-img");if(ie)ie.src=img.imageUrl||img.url||img.base64||"";
+    var co=document.getElementById("lb-counter");if(co)co.textContent=(MG.lbIdx+1)+" / "+MG.lbImages.length;
+    var me=document.getElementById("lb-meta");
+    if(me){var p=[];if(img.icon)p.push(img.icon.name.toLowerCase());if(img.fluxPrompt)p.push(img.fluxPrompt.slice(0,100));me.textContent=p.join(" · ");}
+  },
+  _lbKey:function(e){
+    if(e.key==="Escape")MG.lbClose();
+    if(e.key==="ArrowLeft")MG.lbNav(-1);
+    if(e.key==="ArrowRight")MG.lbNav(1);
+  },
+  lbClose:function(){
+    var el=document.getElementById("lb-overlay");if(el)el.classList.remove("open");
+    document.removeEventListener("keydown",MG._lbKey);
+  },
+  lbNav:function(dir){MG.lbIdx=Math.max(0,Math.min(MG.lbImages.length-1,MG.lbIdx+dir));MG._lbRender();},
+  lbUseRef:function(){
+    var img=MG.lbImages[MG.lbIdx];
+    if(img)MG.setRef(img.imageUrl||img.url||img.base64||"",img.icon?img.icon.name:"");
+    MG.lbClose();
+  },
+  lbDownload:function(){
+    var img=MG.lbImages[MG.lbIdx];if(!img)return;
+    var a=document.createElement("a");a.href=img.imageUrl||img.url||img.base64||"";a.download="mirage-"+img.id+".jpg";a.click();
+  },
+  lbDelete:function(){
+    var img=MG.lbImages[MG.lbIdx];if(!img||!img.icon)return;
+    if(!confirm("Delete this image?"))return;
+    var lib=typeof load==="function"?load(typeof LIB_KEY!=="undefined"?LIB_KEY:"mirage_library_v2"):{};
+    lib[img.icon.id]=(lib[img.icon.id]||[]).filter(function(i){return i.id!==img.id;});
+    if(typeof save==="function")save(typeof LIB_KEY!=="undefined"?LIB_KEY:"mirage_library_v2",lib);
+    MG.lbImages.splice(MG.lbIdx,1);
+    if(!MG.lbImages.length){MG.lbClose();if(typeof renderLibrary==="function")renderLibrary();return;}
+    MG.lbIdx=Math.min(MG.lbIdx,MG.lbImages.length-1);MG._lbRender();
+    if(typeof renderLibrary==="function")renderLibrary();
+  },
+  setRef:function(src,name){
+    MG.ref=src;
+    var t=document.getElementById("ref-toast");
+    if(t){t.textContent="Reference set"+(name?" - "+name:"")+" - next gen uses this";t.classList.add("show");setTimeout(function(){t.classList.remove("show");},3000);}
+    if(typeof notify==="function")notify("Reference set"+(name?" - "+name:""));
+  }
+};
+
+window.buildPrompt=function(){return MG.build();};
+window.refreshPrompt=function(){MG.refresh();};
+window.renderWardrobeChips=function(){MG.renderChips();};
+window.selectWardrobeItem=function(id){MG.selectItem(id);};
+window.addWardrobeItem=function(){MG.addWardrobeItem();};
+window.getSelectedWardrobePrompt=function(){return MG.getWardrobePrompt();};
+window.switchWardrobeTab=function(tab){MG.switchTab(tab);};
+window.toggleShot=function(el,g,v){MG.toggleShot(el,g,v);};
+window.addShotChip=function(g,inp,cid){MG.addShotChip(g,inp,cid);};
+window.getActivePrompt=function(){return MG.build();};
+window.lbOpen=function(idx){MG.lbOpen(idx);};
+window.lbClose=function(){MG.lbClose();};
+window.lbNav=function(dir){MG.lbNav(dir);};
+window.lbUseRef=function(){MG.lbUseRef();};
+window.lbDownload=function(){MG.lbDownload();};
+window.lbDelete=function(){MG.lbDelete();};
+
+window.generateFlux=function(prompt){
+  var PX=typeof PROXY!=="undefined"?PROXY:"https://mirage-proxy-production.up.railway.app";
+  var body=MG.ref
+    ?Object.assign({prompt:prompt,model:"flux-kontext-pro",width:768,height:1024},MG.ref.startsWith("http")?{image_url:MG.ref}:{input_image:MG.ref.includes(",")?MG.ref.split(",")[1]:MG.ref})
+    :{prompt:prompt,model:"flux-pro-1.1",width:768,height:1024};
+  return fetch(PX+"/flux/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
+    .then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.error||"Submit failed");});return r.json();})
+    .then(function(d){
+      return new Promise(function(resolve,reject){
+        var attempts=0;
+        var poll=setInterval(function(){
+          attempts++;
+          if(attempts>90){clearInterval(poll);reject(new Error("Flux timed out"));return;}
+          fetch(PX+"/flux/result/"+d.id).then(function(r){return r.json();}).then(function(p){
+            if(p.status==="Ready"){clearInterval(poll);resolve(p.result.sample);}
+            else if(p.status==="Error"||p.status==="Failed"){clearInterval(poll);reject(new Error("Flux: "+p.status));}
+          }).catch(function(e){clearInterval(poll);reject(e);});
+        },3000);
+      });
+    });
+};
+
+var _osi=window.selectIcon;
+if(typeof window.selectIcon==="function"){
+  window.selectIcon=function(){
+    _osi&&_osi.apply(this,arguments);
+    MG.selected.clear();
+    setTimeout(function(){MG.renderChips();MG.refresh();},100);
+  };
+}
+
+document.addEventListener("DOMContentLoaded",function(){MG.renderChips();MG.refresh();});
+setTimeout(function(){MG.renderChips();MG.refresh();},500);
+setTimeout(function(){MG.renderChips();MG.refresh();},1500);
+
+})();
+</script></body>
 </html>
