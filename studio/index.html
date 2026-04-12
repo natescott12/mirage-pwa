@@ -327,6 +327,12 @@
   /* Hide header when embedded in admin */
   body.in-admin #header { display: none !important; }
   body.in-admin #app { height: 100vh !important; }
+
+  .wardrobe-tab-btn { padding: 4px 10px; border-radius: 2px; font-size: 10px; cursor: pointer; border: 1px solid var(--border-md); background: transparent; color: var(--dim); font-family: 'DM Sans', sans-serif; transition: all 0.12s; }
+  .wardrobe-tab-btn.active { background: var(--gold); color: #f8f6f2; border-color: var(--gold); }
+  .shot-chip { padding: 5px 10px; border-radius: 2px; font-size: 10px; cursor: pointer; border: 1px solid var(--border-md); background: transparent; color: var(--dim); transition: all 0.12s; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
+  .shot-chip.active { background: var(--accent,#3a6b8a); color: #f8f6f2; border-color: var(--accent,#3a6b8a); }
+  .shot-group-label { font-size: 9px; color: var(--dim); margin-bottom: 4px; margin-top: 8px; letter-spacing:.06em; text-transform:uppercase; }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -652,6 +658,12 @@
       </div>
       <div style="margin-bottom:20px">
         <div class="section-label" style="display:flex;justify-content:space-between;align-items:center"><span>Wardrobe · Inject into Prompt</span><span style="font-size:9px;color:var(--gold)">✦ Prompt layer</span></div>
+        <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+          <button class="wardrobe-tab-btn active" onclick="switchWardrobeTab('tops')" id="wtab-tops">Tops</button>
+          <button class="wardrobe-tab-btn" onclick="switchWardrobeTab('bottoms')" id="wtab-bottoms">Bottoms</button>
+          <button class="wardrobe-tab-btn" onclick="switchWardrobeTab('accessories')" id="wtab-accessories">Accessories</button>
+          <button class="wardrobe-tab-btn" onclick="switchWardrobeTab('look')" id="wtab-look">Full Look</button>
+        </div>
         <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px" id="wardrobe-chips"></div>
         <div class="wardrobe-add-row">
           <input class="wardrobe-add-input" id="wardrobe-add-input" placeholder="Add wardrobe item e.g. fitted black leather jacket, Schott..." onkeydown="if(event.key==='Enter')addWardrobeItem()" />
@@ -1190,21 +1202,30 @@ function buildCharDesc() {
 function buildPrompt() {
   const charDesc = buildCharDesc();
   const mbAesthetic = getMoodboardAesthetic();
-  const sceneDesc = scene ? scene + " light" : "";
-  const wardrobeDesc = getSelectedWardrobePrompt ? getSelectedWardrobePrompt() : "";
+  const sceneDesc = scene ? scene + ' light' : '';
+  const wardrobeDesc = getSelectedWardrobePrompt ? getSelectedWardrobePrompt() : '';
+  const shotParts = [];
+  if (window.selectedFraming && window.selectedFraming.size) shotParts.push(...window.selectedFraming);
+  if (window.selectedAngle && window.selectedAngle.size) shotParts.push(...window.selectedAngle);
+  if (window.selectedPerspective && window.selectedPerspective.size) shotParts.push(...window.selectedPerspective);
+  const shotDesc = shotParts.length ? shotParts.join(', ') : params.crop;
+  const baseStyle = window.selectedBaseStyles && window.selectedBaseStyles.size
+    ? [...window.selectedBaseStyles].join(', ')
+    : '35mm film, natural light, candid, unposed, organic';
   const parts = [
-    "editorial fashion photography, American Apparel 2000s aesthetic, 35mm film, natural light only, intimate and raw, no studio, Corinne Day style, Juergen Teller",
-    selectedIcon.name.toLowerCase()+", "+selectedIcon.archetype.toLowerCase(),
+    baseStyle,
+    selectedIcon.name.toLowerCase() + ', ' + selectedIcon.archetype.toLowerCase(),
     charDesc,
     mbAesthetic,
     wardrobeDesc,
     selectedIcon.style,
     selectedIcon.energy,
     sceneDesc,
-    params.grain+", "+params.color+", "+params.crop+", "+params.light,
+    shotDesc,
+    params.grain + ', ' + params.color + ', ' + params.light,
     selectedIcon.aesthetic,
-  ].filter(s=>s&&s.trim());
-  return parts.join(", ");
+  ].filter(s => s && s.trim());
+  return parts.join(', ');
 }
 
 async function uploadMoodboardImageToCloud(icon, item) {
@@ -2127,35 +2148,45 @@ function loadWardrobeForIcon() {
 }
 
 function renderWardrobeChips() {
-  const el = $('wardrobe-chips'); if(!el) return;
-  el.innerHTML = currentWardrobe.map(item=>`
-    <div class="wardrobe-chip ${selectedWardrobeId===item.id?'selected':''}" onclick="selectWardrobeItem('${item.id}')" title="${item.prompt}">${item.label}</div>
+  const el = $('wardrobe-chips'); if (!el) return;
+  const items = selectedIcon ? getWardrobeForTab(selectedIcon.id, currentWardrobeTab) : currentWardrobe;
+  el.innerHTML = items.map(item => `
+    <div class="wardrobe-chip ${selectedWardrobeIds.has(item.id) ? 'selected' : ''}" onclick="selectWardrobeItem('${item.id}')" title="${item.prompt}">
+      ${item.label}${item.custom ? `<span onclick="event.stopPropagation();removeWardrobeItem('${item.id}')" style="opacity:.5;font-size:9px;cursor:pointer;margin-left:3px">✕</span>` : ''}
+    </div>
   `).join('');
 }
 
 function selectWardrobeItem(id) {
-  selectedWardrobeId = selectedWardrobeId === id ? null : id;
+  if (selectedWardrobeIds.has(id)) selectedWardrobeIds.delete(id);
+  else selectedWardrobeIds.add(id);
   renderWardrobeChips();
   refreshPrompt();
 }
 
 function getSelectedWardrobePrompt() {
-  if(!selectedWardrobeId) return '';
-  const item = currentWardrobe.find(w=>w.id===selectedWardrobeId);
-  return item ? item.prompt : '';
+  if (!selectedWardrobeIds.size) return '';
+  const parts = [];
+  ['tops','bottoms','accessories','look'].forEach(tab => {
+    const items = selectedIcon ? getWardrobeForTab(selectedIcon.id, tab) : [];
+    items.forEach(i => { if (selectedWardrobeIds.has(i.id)) parts.push(i.prompt); });
+  });
+  return parts.join(', ');
 }
 
 function addWardrobeItem() {
   const inp = $('wardrobe-add-input');
-  if(!inp||!inp.value.trim()) return;
+  if (!inp || !inp.value.trim()) return;
   const label = inp.value.trim().split(',')[0].trim();
   const prompt = inp.value.trim();
-  const newItem = {id:'w'+Date.now(), label, prompt};
-  currentWardrobe.push(newItem);
-  saveWardrobeToStorage(selectedIcon.id, currentWardrobe);
+  const newItem = {id: 'w' + Date.now(), label, prompt, custom: true};
+  const items = selectedIcon ? getWardrobeForTab(selectedIcon.id, currentWardrobeTab) : [];
+  items.push(newItem);
+  if (selectedIcon) saveWardrobeTab(selectedIcon.id, currentWardrobeTab, items);
+  currentWardrobe = items;
   inp.value = '';
   renderWardrobeChips();
-  notify('Wardrobe item added');
+  notify('Item added to ' + currentWardrobeTab);
 }
 
 // ── PATCH buildPrompt to include wardrobe ─────────────────────────────────────
@@ -2435,6 +2466,102 @@ window.addEventListener('load', function() {
     } catch(e) { console.warn('Push sync failed', e); }
   }, 2000);
 });
+
+// ── WARDROBE OVERHAUL ────────────────────────────────────────────────────────
+const WARDROBE_DEFAULTS = {
+  tops: [
+    {id:'t1',label:'Bralette',prompt:'bralette top'},
+    {id:'t2',label:'Bikini top',prompt:'bikini top'},
+    {id:'t3',label:'Sports bra',prompt:'sports bra'},
+    {id:'t4',label:'White tee',prompt:'white t-shirt relaxed fit'},
+    {id:'t5',label:'Vintage tee',prompt:'vintage band t-shirt worn in'},
+    {id:'t6',label:"Boyfriend shirt",prompt:'oversized boyfriend shirt half tucked'},
+    {id:'t7',label:'Linen top',prompt:'linen top natural drape'},
+    {id:'t8',label:'Striped button-up',prompt:'striped cotton button-up shirt'},
+    {id:'t9',label:'Black tee',prompt:'fitted black t-shirt'},
+    {id:'t10',label:'Tank top',prompt:'ribbed tank top'},
+    {id:'t11',label:'Crop top',prompt:'cropped top'},
+    {id:'t12',label:'Tube top',prompt:'tube top'},
+  ],
+  bottoms: [
+    {id:'b1',label:'Jeans',prompt:'straight leg jeans'},
+    {id:'b2',label:'Loose jeans',prompt:'loose fit jeans relaxed'},
+    {id:'b3',label:'Baggy jeans',prompt:'baggy oversized jeans'},
+    {id:'b4',label:'Black pants',prompt:'black tailored pants'},
+    {id:'b5',label:'Vintage shorts',prompt:'vintage cut-off denim shorts'},
+    {id:'b6',label:'Sweatpants',prompt:'sweatpants relaxed'},
+    {id:'b7',label:'Biker shorts',prompt:'black biker shorts'},
+    {id:'b8',label:'Cargo pants',prompt:'cargo pants utilitarian'},
+    {id:'b9',label:'Baggy shorts',prompt:'baggy shorts'},
+    {id:'b10',label:'Long skirt',prompt:'long flowing skirt'},
+    {id:'b11',label:'Short skirt',prompt:'short skirt'},
+    {id:'b12',label:'Denim skirt',prompt:'denim mini skirt'},
+  ],
+  accessories: [
+    {id:'a1',label:'Silver earrings',prompt:'delicate silver earrings'},
+    {id:'a2',label:'Silver hoops',prompt:'silver hoop earrings'},
+    {id:'a3',label:'Gold hoops',prompt:'gold hoop earrings'},
+    {id:'a4',label:'Rings',prompt:'stacked rings mixed metals'},
+    {id:'a5',label:'Watch',prompt:'vintage watch on wrist'},
+    {id:'a6',label:'Gold necklace',prompt:'thin gold necklace'},
+    {id:'a7',label:'Silver chain',prompt:'silver chain necklace'},
+    {id:'a8',label:'Small bag',prompt:'small shoulder bag'},
+    {id:'a9',label:'Large tote',prompt:'oversized canvas tote bag'},
+    {id:'a10',label:'Flip flops',prompt:'simple flip flops'},
+    {id:'a11',label:'Sandals',prompt:'strappy sandals'},
+    {id:'a12',label:'Loafers',prompt:'leather loafers'},
+    {id:'a13',label:'Kitten heels',prompt:'kitten heel shoes'},
+    {id:'a14',label:'Boots',prompt:'ankle boots'},
+  ],
+  look: []
+};
+
+let currentWardrobeTab = 'tops';
+let selectedWardrobeIds = new Set();
+
+function getWardrobeForTab(iconId, tab) {
+  try {
+    const s = localStorage.getItem(WARDROBE_KEY + '_' + iconId + '_' + tab);
+    if (s) return JSON.parse(s);
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(WARDROBE_DEFAULTS[tab] || []));
+}
+
+function saveWardrobeTab(iconId, tab, items) {
+  try { localStorage.setItem(WARDROBE_KEY + '_' + iconId + '_' + tab, JSON.stringify(items)); } catch(e) {}
+}
+
+function switchWardrobeTab(tab) {
+  currentWardrobeTab = tab;
+  document.querySelectorAll('.wardrobe-tab-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('wtab-' + tab);
+  if (btn) btn.classList.add('active');
+  if (selectedIcon) currentWardrobe = getWardrobeForTab(selectedIcon.id, tab);
+  renderWardrobeChips();
+}
+
+function removeWardrobeItem(id) {
+  const items = selectedIcon ? getWardrobeForTab(selectedIcon.id, currentWardrobeTab).filter(i => i.id !== id) : [];
+  if (selectedIcon) saveWardrobeTab(selectedIcon.id, currentWardrobeTab, items);
+  selectedWardrobeIds.delete(id);
+  currentWardrobe = items;
+  renderWardrobeChips();
+  refreshPrompt();
+}
+
+// ── SHOT SETUP ───────────────────────────────────────────────────────────────
+window.selectedFraming = new Set();
+window.selectedAngle = new Set();
+window.selectedPerspective = new Set();
+window.selectedBaseStyles = new Set(['35mm film natural light candid unposed organic']);
+
+function toggleShot(el, group, value) {
+  const map = {framing: window.selectedFraming, angle: window.selectedAngle, perspective: window.selectedPerspective, base: window.selectedBaseStyles};
+  const s = map[group]; if (!s) return;
+  if (s.has(value)) { s.delete(value); el.classList.remove('active'); }
+  else { s.add(value); el.classList.add('active'); }
+  refreshPrompt();
+}
 </script>
 </body>
 </html>
