@@ -2713,11 +2713,22 @@ function mgBuildPrompt() {
   var charDesc = typeof buildCharDesc === "function" ? buildCharDesc() : "";
 
   // Moodboard aesthetic (extracted from reference images)
+  // Strip outfit/clothing descriptions — wardrobe chips handle that
   var mbAesthetic = "";
   try {
     var mbEl = document.getElementById("mb-extracted");
     if (mbEl) mbAesthetic = (mbEl.value || mbEl.textContent || "").trim().replace(/^"|"$/g,"");
     if (!mbAesthetic && typeof getMoodboardAesthetic === "function") mbAesthetic = getMoodboardAesthetic();
+    // Clean clothing references from moodboard
+    mbAesthetic = mbAesthetic
+      .replace(/wearing[^,.]+/gi, '')
+      .replace(/dressed in[^,.]+/gi, '')
+      .replace(/white ribbed[^,.]+/gi, '')
+      .replace(/high-cut[^,.]+/gi, '')
+      .replace(/crop top[^,.]+/gi, '')
+      .replace(/,\s*,/g, ',').replace(/^,\s*/, '').replace(/,\s*$/, '').trim();
+    // Keep moodboard concise — first 200 chars only
+    if (mbAesthetic.length > 200) mbAesthetic = mbAesthetic.slice(0, 200).replace(/,\s*[^,]*$/, '').trim();
   } catch(e) {}
 
   // Wardrobe selection
