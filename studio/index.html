@@ -729,6 +729,13 @@
           <div class="shot-chip" onclick="toggleShot(this,'framing','wide environmental portrait, subject within surroundings, context is part of the story')">Environmental</div>
           <div class="shot-chip" onclick="toggleShot(this,'framing','full scene wide shot, subject small in frame')">Full scene</div>
         </div>
+        <div style="display:flex;gap:5px;margin-top:4px;margin-bottom:2px">
+          <input style="flex:1;padding:4px 8px;background:var(--bg);border:1px solid var(--border-md);border-radius:2px;font-size:10px;color:var(--text);font-family:'DM Sans',sans-serif" 
+            placeholder="Add custom..." id="shot-input-framing" 
+            onkeydown="if(event.key==='Enter')addShotChip('framing',this)" />
+          <button style="padding:4px 10px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid var(--border-md);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif" 
+            onclick="addShotChip('framing',document.getElementById('shot-input-framing'))">+</button>
+        </div>
         <div style="font-size:8px;color:var(--muted);margin-bottom:3px;letter-spacing:.06em;text-transform:uppercase">Camera Angle</div>
         <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">
           <div class="shot-chip" onclick="toggleShot(this,'angle','eye level neutral intimate')">Eye level</div>
@@ -746,6 +753,13 @@
           <div class="shot-chip" onclick="toggleShot(this,'perspective','negative space subject small fraction of frame')">Negative space</div>
           <div class="shot-chip" onclick="toggleShot(this,'perspective','shot through plants doorframe frosted glass obscured')">Obscured</div>
           <div class="shot-chip" onclick="toggleShot(this,'perspective','from behind back of head anonymity and longing')">From behind</div>
+        </div>
+        <div style="display:flex;gap:5px;margin-top:4px;margin-bottom:2px">
+          <input style="flex:1;padding:4px 8px;background:var(--bg);border:1px solid var(--border-md);border-radius:2px;font-size:10px;color:var(--text);font-family:'DM Sans',sans-serif" 
+            placeholder="Add custom..." id="shot-input-perspective" 
+            onkeydown="if(event.key==='Enter')addShotChip('perspective',this)" />
+          <button style="padding:4px 10px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid var(--border-md);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif" 
+            onclick="addShotChip('perspective',document.getElementById('shot-input-perspective'))">+</button>
         </div>
         <div style="font-size:8px;color:var(--muted);margin-bottom:3px;letter-spacing:.06em;text-transform:uppercase">Base Style</div>
         <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">
@@ -2666,7 +2680,42 @@ window.selectedAngle = new Set();
 window.selectedPerspective = new Set();
 window.selectedBaseStyles = new Set(['35mm film natural light candid unposed organic']);
 
+
+function addShotChip(group, inputEl) {
+  const val = inputEl.value ? inputEl.value.trim() : '';
+  if (!val) return;
+  // Add chip to the DOM
+  const containers = {'framing': 'framing-chips', 'angle': 'angle-chips', 'perspective': 'perspective-chips'};
+  // Find the chip container for this group
+  const allChipDivs = document.querySelectorAll('.shot-chip');
+  // Create new chip
+  const chip = document.createElement('div');
+  chip.className = 'shot-chip';
+  chip.textContent = val;
+  chip.onclick = function() { toggleShot(this, group, val); };
+  // Find the right container
+  if (allChipDivs.length) {
+    // Find last chip in this group's section then insert after its parent
+    let targetContainer = null;
+    allChipDivs.forEach(c => {
+      if (c.getAttribute('onclick') && c.getAttribute('onclick').includes("'" + group + "'")) {
+        targetContainer = c.parentElement;
+      }
+    });
+    if (targetContainer) {
+      targetContainer.appendChild(chip);
+      inputEl.value = '';
+      // Auto-select the new chip
+      toggleShot(chip, group, val);
+    }
+  }
+}
 function toggleShot(el, group, value) {
+  // Ensure sets exist
+  if (!window.selectedFraming) window.selectedFraming = new Set();
+  if (!window.selectedAngle) window.selectedAngle = new Set();
+  if (!window.selectedPerspective) window.selectedPerspective = new Set();
+  if (!window.selectedBaseStyles) window.selectedBaseStyles = new Set();
   const map = {framing: window.selectedFraming, angle: window.selectedAngle, perspective: window.selectedPerspective, base: window.selectedBaseStyles};
   const s = map[group]; if (!s) return;
   if (s.has(value)) { s.delete(value); el.classList.remove('active'); }
