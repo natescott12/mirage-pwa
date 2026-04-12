@@ -745,6 +745,13 @@
           <div class="shot-chip" onclick="toggleShot(this,'angle','dutch angle tilted frame tension')">Dutch angle</div>
           <div class="shot-chip" onclick="toggleShot(this,'angle','worms eye extreme low ground level')">Worm's eye</div>
         </div>
+        <div style="display:flex;gap:5px;margin-top:4px;margin-bottom:2px">
+          <input style="flex:1;padding:4px 8px;background:var(--bg);border:1px solid var(--border-md);border-radius:2px;font-size:10px;color:var(--text);font-family:'DM Sans',sans-serif" 
+            placeholder="Add custom angle..." id="shot-input-angle" 
+            onkeydown="if(event.key==='Enter')addShotChip('angle',this)" />
+          <button style="padding:4px 10px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid var(--border-md);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif" 
+            onclick="addShotChip('angle',document.getElementById('shot-input-angle'))">+</button>
+        </div>
         <div style="font-size:8px;color:var(--muted);margin-bottom:3px;letter-spacing:.06em;text-transform:uppercase">Perspective</div>
         <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">
           <div class="shot-chip" onclick="toggleShot(this,'perspective','over the shoulder implied relationship off-frame')">Over shoulder</div>
