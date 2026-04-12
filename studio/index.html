@@ -717,9 +717,9 @@
           <div class="shot-chip" onclick="MG.toggleShot(this,'framing','tight portrait crop')">Tight crop</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'framing','waist up shot')">Waist up</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'framing','three quarter length')">Three quarter</div>
-          <div class="shot-chip" onclick="MG.toggleShot(this,'framing','full length head to toe')">Full length</div>
-          <div class="shot-chip" onclick="MG.toggleShot(this,'framing','wide environmental portrait subject within surroundings')">Environmental</div>
-          <div class="shot-chip" onclick="MG.toggleShot(this,'framing','full scene wide shot subject small in frame')">Full scene</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'framing','full length shot, head to toe, entire body visible, not cropped')">Full length</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'framing','wide environmental portrait, subject within surroundings, context is part of the story, not a close-up')">Environmental</div>
+          <div class="shot-chip" onclick="MG.toggleShot(this,'framing','full scene wide shot, subject occupies bottom third of frame, environment dominant, architectural context visible, person small in frame')">Full scene</div>
         </div>
         <div style="display:flex;gap:4px;margin-top:3px;margin-bottom:4px">
           <input class="wardrobe-add-input" id="shot-add-framing" placeholder="Add custom framing..." onkeydown="if(event.key==='Enter')MG.addShotChip('framing',this,'shot-framing')" style="font-size:10px;padding:4px 8px"/>
@@ -3004,7 +3004,7 @@ window.generateFlux=function(prompt){
   var PX=typeof PROXY!=='undefined'?PROXY:'https://mirage-proxy-production.up.railway.app';
   var body=MG.ref
     ?Object.assign({prompt:prompt,model:'flux-kontext-pro',width:768,height:1024},MG.ref.startsWith('http')?{image_url:MG.ref}:{input_image:MG.ref.includes(',')?MG.ref.split(',')[1]:MG.ref})
-    :{prompt:prompt,model:'flux-dev',width:768,height:1024};
+    :{prompt:prompt,model:'flux-pro-1.1',width:768,height:1024};
   return fetch(PX+'/flux/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.error||'Submit failed');});return r.json();})
     .then(function(d){
