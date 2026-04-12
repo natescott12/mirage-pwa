@@ -2562,8 +2562,9 @@ var _WDEF = {
   look:[]
 };
 function getWardrobeForTab(iconId, tab) {
-  try { var s=localStorage.getItem('mirage_wardrobe_v1_'+iconId+'_'+tab); if(s) return JSON.parse(s); } catch(e) {}
-  return JSON.parse(JSON.stringify(_WDEF[tab]||[]));
+  try { var s = localStorage.getItem('mirage_wardrobe_v1_'+iconId+'_'+tab); if(s) return JSON.parse(s); } catch(e) {}
+  var defaults = window.MG && window.MG.WARDROBE ? window.MG.WARDROBE : {};
+  return JSON.parse(JSON.stringify(defaults[tab] || []));
 }
 function saveWardrobeTab(iconId, tab, items) {
   try { localStorage.setItem('mirage_wardrobe_v1_'+iconId+'_'+tab, JSON.stringify(items)); } catch(e) {}
