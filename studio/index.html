@@ -1357,7 +1357,19 @@ function buildCharDesc() {
   if(c.hairStyle) parts.push(c.hairStyle);
   if(c.build) parts.push(c.build+" build");
   if(c.makeup&&c.makeup!=="bare-faced") parts.push(c.makeup+" makeup");
-  if(c.features) parts.push(c.features);
+  if(c.features) {
+    // Strip clothing/outfit language — wardrobe chips handle that
+    const cleanFeatures = c.features
+      .replace(/wearing[^,]*/gi, '')
+      .replace(/dressed in[^,]*/gi, '')
+      .replace(/outfit[^,]*/gi, '')
+      .replace(/fashion[^,]*/gi, '')
+      .replace(/,\s*,/g, ',')
+      .replace(/^,\s*/, '')
+      .replace(/,\s*$/, '')
+      .trim();
+    if (cleanFeatures) parts.push(cleanFeatures);
+  }
   if(c.tattoos) parts.push(c.tattoos);
   return parts.join(", ");
 }
