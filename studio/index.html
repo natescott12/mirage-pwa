@@ -714,6 +714,48 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="params-grid"></div>
       </div>
       <div style="margin-bottom:20px">
+        
+        <!-- Shot Setup -->
+        <div style="margin-top:14px;margin-bottom:4px;display:flex;align-items:center;gap:8px">
+          <span style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)">Shot Setup</span>
+          <span style="font-size:9px;color:var(--gold)">✦ Multi-select</span>
+        </div>
+        <div style="font-size:8px;color:var(--muted);margin-bottom:3px;letter-spacing:.06em;text-transform:uppercase">Framing</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">
+          <div class="shot-chip" onclick="toggleShot(this,'framing','tight portrait crop')">Tight crop</div>
+          <div class="shot-chip" onclick="toggleShot(this,'framing','waist up shot')">Waist up</div>
+          <div class="shot-chip" onclick="toggleShot(this,'framing','three quarter length')">Three quarter</div>
+          <div class="shot-chip" onclick="toggleShot(this,'framing','full length shot head to toe')">Full length</div>
+          <div class="shot-chip" onclick="toggleShot(this,'framing','wide environmental portrait, subject within surroundings, context is part of the story')">Environmental</div>
+          <div class="shot-chip" onclick="toggleShot(this,'framing','full scene wide shot, subject small in frame')">Full scene</div>
+        </div>
+        <div style="font-size:8px;color:var(--muted);margin-bottom:3px;letter-spacing:.06em;text-transform:uppercase">Camera Angle</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">
+          <div class="shot-chip" onclick="toggleShot(this,'angle','eye level neutral intimate')">Eye level</div>
+          <div class="shot-chip" onclick="toggleShot(this,'angle','low angle from below subject feels powerful')">Low angle</div>
+          <div class="shot-chip" onclick="toggleShot(this,'angle','high angle from above subject feels small vulnerable')">High angle</div>
+          <div class="shot-chip" onclick="toggleShot(this,'angle','birds eye overhead flattening')">Bird's eye</div>
+          <div class="shot-chip" onclick="toggleShot(this,'angle','dutch angle tilted frame tension')">Dutch angle</div>
+          <div class="shot-chip" onclick="toggleShot(this,'angle','worms eye extreme low ground level')">Worm's eye</div>
+        </div>
+        <div style="font-size:8px;color:var(--muted);margin-bottom:3px;letter-spacing:.06em;text-transform:uppercase">Perspective</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">
+          <div class="shot-chip" onclick="toggleShot(this,'perspective','over the shoulder implied relationship off-frame')">Over shoulder</div>
+          <div class="shot-chip" onclick="toggleShot(this,'perspective','silhouette backlit form only no detail')">Silhouette</div>
+          <div class="shot-chip" onclick="toggleShot(this,'perspective','reflection through mirror or window')">Reflection</div>
+          <div class="shot-chip" onclick="toggleShot(this,'perspective','negative space subject small fraction of frame')">Negative space</div>
+          <div class="shot-chip" onclick="toggleShot(this,'perspective','shot through plants doorframe frosted glass obscured')">Obscured</div>
+          <div class="shot-chip" onclick="toggleShot(this,'perspective','from behind back of head anonymity and longing')">From behind</div>
+        </div>
+        <div style="font-size:8px;color:var(--muted);margin-bottom:3px;letter-spacing:.06em;text-transform:uppercase">Base Style</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">
+          <div class="shot-chip active" id="shot-candid" onclick="toggleShot(this,'base','35mm film natural light candid unposed organic')">Candid</div>
+          <div class="shot-chip" onclick="toggleShot(this,'base','editorial fashion photography American Apparel 2000s Corinne Day Juergen Teller')">Editorial</div>
+          <div class="shot-chip" onclick="toggleShot(this,'base','phone camera snapshot lo-fi casual grain')">Phone snap</div>
+          <div class="shot-chip" onclick="toggleShot(this,'base','cinematic still movie frame soft focus atmospheric')">Cinematic</div>
+          <div class="shot-chip" onclick="toggleShot(this,'base','documentary photography real life gritty authentic')">Documentary</div>
+          <div class="shot-chip" onclick="toggleShot(this,'base','intimate private moment personal')">Intimate</div>
+        </div>
         <div class="section-label" style="display:flex;justify-content:space-between;align-items:center"><span>Wardrobe · Inject into Prompt</span><span style="font-size:9px;color:var(--gold)">✦ Prompt layer</span></div>
         <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
           <button class="wardrobe-tab-btn active" onclick="switchWardrobeTab('tops')" id="wtab-tops">Tops</button>
@@ -1638,7 +1680,14 @@ function renderLibrary() {
   grid.innerHTML=images.map((img,idx)=>`
     <div class="lib-card ${libSelected.has(img.id)?"selected":""}" id="lc-${img.id}">
       ${img.imageUrl
-        ? `<img src="${img.imageUrl}" alt="${img.icon.name}" onclick="openLb(${idx})" loading="lazy" style="width:100%;aspect-ratio:3/4;object-fit:cover;object-position:center top;filter:saturate(0.78) contrast(1.06);display:block;transition:transform 0.3s" />`
+        ? `<img src="${img.imageUrl}" alt="${img.icon.name}" onclick="lbOpen(${idx})" loading="lazy" style="width:100%;aspect-ratio:3/4;object-fit:cover;object-position:center top;filter:saturate(0.78) contrast(1.06);display:block;transition:transform 0.3s;cursor:zoom-in" />
+           <div class="lib-card-overlay">
+             <div class="lib-card-actions">
+               <div class="lib-cbtn ref" onclick="event.stopPropagation();setRef('${img.imageUrl}','${img.icon?.name||''}')">✦ Ref</div>
+               <div class="lib-cbtn" onclick="event.stopPropagation();libDl('${img.imageUrl}',${img.id})">↓</div>
+             </div>
+           </div>
+           <button class="lib-fav-btn ${window.libFavs&&window.libFavs.has(img.id)?'on':''}" onclick="event.stopPropagation();libToggleFav(${img.id})">${window.libFavs&&window.libFavs.has(img.id)?'♥':'♡'}</button>`
         : `<div style="width:100%;aspect-ratio:3/4;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px"><div style="font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">Expired</div><div style="font-size:9px;color:var(--muted)">Run ↺ Repair</div></div>`
       }
       <div class="grain-overlay"></div>
