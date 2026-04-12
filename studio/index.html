@@ -531,7 +531,10 @@
           </button>
 
           <!-- Extracted description -->
-          <div class="mb-extracted" id="mb-extracted"></div>
+          <textarea class="mb-extracted" id="mb-extracted" 
+            placeholder="Extracted aesthetic will appear here — edit freely..."
+            oninput="saveMoodboardAesthetic(this.value); refreshPrompt();"
+            style="width:100%;resize:vertical;min-height:60px;font-style:normal;line-height:1.7;background:rgba(42,102,64,0.06);border:1px solid rgba(42,102,64,0.2);border-radius:2px;font-size:10px;color:var(--dim);padding:10px 12px;font-family:'DM Sans',sans-serif;box-sizing:border-box;display:none"></textarea>
 
         </div>
       </div>
@@ -1211,7 +1214,7 @@ async function extractMoodboard() {
     mb[selectedIcon.id+"_extracted"] = desc;
     saveMoodboard(mb);
 
-    if(extracted) { extracted.textContent='"'+desc+'"'; extracted.classList.add("visible"); }
+    if(extracted) { extracted.value=desc; extracted.style.display='block'; }
     refreshPrompt();
     notify("✦ Moodboard aesthetic extracted");
 
