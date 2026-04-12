@@ -363,9 +363,9 @@
   .ref-indicator { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--gold,#c9a96e); color:#1a1714; padding:8px 20px; border-radius:2px; font-size:11px; font-family:'DM Sans',sans-serif; z-index:1000; opacity:0; transition:opacity .3s; pointer-events:none; }
   .ref-indicator.show { opacity:1; }
 
-  .wardrobe-tab-btn{padding:4px 10px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid var(--border-md);background:transparent;color:var(--dim);font-family:"DM Sans",sans-serif;transition:all .12s;}
+  .wardrobe-tab-btn{padding:4px 10px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid var(--border-md);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif;transition:all .12s;}
   .wardrobe-tab-btn.active{background:var(--gold);color:#f8f6f2;border-color:var(--gold);}
-  .shot-chip{padding:5px 10px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid var(--border-md);background:transparent;color:var(--dim);transition:all .12s;font-family:"DM Sans",sans-serif;white-space:nowrap;display:inline-block;}
+  .shot-chip{padding:5px 10px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid var(--border-md);background:transparent;color:var(--dim);transition:all .12s;font-family:'DM Sans',sans-serif;white-space:nowrap;display:inline-block;}
   .shot-chip.active{background:var(--accent,#4a7a5a);color:#f8f6f2;border-color:var(--accent,#4a7a5a);}
   .shot-group-label{font-size:8px;color:var(--muted);margin-bottom:3px;margin-top:8px;letter-spacing:.06em;text-transform:uppercase;}
   .lb-overlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
@@ -376,16 +376,12 @@
   .lb-nav{position:absolute;top:36%;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:22px;cursor:pointer;padding:10px 15px;border-radius:2px;}
   .lb-prev{left:-52px;}.lb-next{right:-52px;}
   .lb-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;justify-content:center;}
-  .lb-btn{padding:6px 14px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:#fff;font-family:"DM Sans",sans-serif;}
+  .lb-btn{padding:6px 14px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:#fff;font-family:'DM Sans',sans-serif;}
   .lb-btn.primary{background:var(--gold,#c9a96e);border-color:var(--gold,#c9a96e);color:#1a1714;}
   .lb-btn.danger{border-color:rgba(220,70,70,.5);color:rgba(220,100,100,.95);}
-  .lb-meta{text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.35);font-family:"DM Sans",sans-serif;max-width:480px;line-height:1.5;}
-  .lb-counter{font-size:9px;color:rgba(255,255,255,.3);margin-top:6px;font-family:"DM Sans",sans-serif;}
-  .lib-card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 55%);opacity:0;transition:opacity .18s;display:flex;flex-direction:column;justify-content:flex-end;padding:7px;}
-  .lib-card:hover .lib-card-overlay{opacity:1;}
-  .lib-cbtn{padding:3px 8px;font-size:9px;border-radius:2px;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.45);color:#fff;font-family:"DM Sans",sans-serif;}
-  .lib-cbtn.ref{background:var(--gold,#c9a96e);border-color:var(--gold,#c9a96e);color:#1a1714;}
-  .ref-toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--gold,#c9a96e);color:#1a1714;padding:7px 18px;border-radius:2px;font-size:10px;font-family:"DM Sans",sans-serif;z-index:10000;opacity:0;transition:opacity .25s;pointer-events:none;}
+  .lb-meta{text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.35);font-family:'DM Sans',sans-serif;max-width:480px;line-height:1.5;}
+  .lb-counter{font-size:9px;color:rgba(255,255,255,.3);margin-top:6px;font-family:'DM Sans',sans-serif;}
+  .ref-toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--gold,#c9a96e);color:#1a1714;padding:7px 18px;border-radius:2px;font-size:10px;font-family:'DM Sans',sans-serif;z-index:10000;opacity:0;transition:opacity .25s;pointer-events:none;}
   .ref-toast.show{opacity:1;}
 </style>
 
@@ -991,7 +987,7 @@ let scene = "morning", scenePrompt = SCENES.morning[0];
 let params = {grain:PARAMS.grain[0],color:PARAMS.color[0],light:PARAMS.light[0]};
 let generating = false, generatedContent = [], queue = [];
 let libIconId = "all", libFilter = "all", libSelected = new Set();
-// lbImages now in MG.lbImages
+let lbImages = [], lbIdx = 0;
 let promptLocked = false;
 let currentChar = {};
 
@@ -2683,7 +2679,7 @@ function toggleShot(el, group, value) {
 // ── CLOUD LIBRARY ENHANCEMENTS ────────────────────────────────────────────────
 window.libFavs = new Set(JSON.parse(localStorage.getItem('mirage_lib_favs')||'[]'));
 window.currentReferenceImage = null;
-// lbImages now in MG.lbImages
+let lbImages = [], lbCurrentIdx = 0;
 
 function openLightbox(idx) {
   const lib = load(LIB_KEY);
@@ -2796,7 +2792,12 @@ function downloadLibImg(src, id) {
   a.click();
 }
 
-function libToggleFav(id) { if(window.libFavs){if(window.libFavs.has(id))window.libFavs.delete(id);else window.libFavs.add(id);} if(typeof renderLibrary==="function")renderLibrary(); }
+function toggleFav(id) {
+  if (window.libFavs.has(id)) window.libFavs.delete(id);
+  else window.libFavs.add(id);
+  localStorage.setItem('mirage_lib_favs', JSON.stringify([...window.libFavs]));
+  renderLibrary();
+}
 </script>
 
 <!-- Lightbox -->
@@ -2838,137 +2839,138 @@ function libToggleFav(id) { if(window.libFavs){if(window.libFavs.has(id))window.
 (function(){
 var MG=window.MG={
   framing:new Set(),angle:new Set(),perspective:new Set(),
-  base:new Set(["35mm film natural light candid unposed organic"]),
-  tab:"tops",selected:new Set(),ref:null,lbImages:[],lbIdx:0,
+  base:new Set(['35mm film natural light candid unposed organic']),
+  tab:'tops',selected:new Set(),ref:null,lbImages:[],lbIdx:0,
   WARDROBE:{
     tops:[
-      {id:"t1",label:"Bralette",prompt:"bralette top"},{id:"t2",label:"Bikini top",prompt:"bikini top"},
-      {id:"t3",label:"Sports bra",prompt:"sports bra"},{id:"t4",label:"White tee",prompt:"white t-shirt relaxed fit"},
-      {id:"t5",label:"Vintage tee",prompt:"vintage band t-shirt worn in"},{id:"t6",label:"Boyfriend shirt",prompt:"oversized boyfriend shirt half tucked"},
-      {id:"t7",label:"Linen top",prompt:"linen top natural drape"},{id:"t8",label:"Striped button-up",prompt:"striped cotton button-up shirt"},
-      {id:"t9",label:"Black tee",prompt:"fitted black t-shirt"},{id:"t10",label:"Tank top",prompt:"ribbed tank top"},
-      {id:"t11",label:"Crop top",prompt:"cropped top"},{id:"t12",label:"Tube top",prompt:"tube top"}
+      {id:'t1',label:'Bralette',prompt:'bralette top'},{id:'t2',label:'Bikini top',prompt:'bikini top'},
+      {id:'t3',label:'Sports bra',prompt:'sports bra'},{id:'t4',label:'White tee',prompt:'white t-shirt relaxed fit'},
+      {id:'t5',label:'Vintage tee',prompt:'vintage band t-shirt worn in'},{id:'t6',label:'Boyfriend shirt',prompt:'oversized boyfriend shirt half tucked'},
+      {id:'t7',label:'Linen top',prompt:'linen top natural drape'},{id:'t8',label:'Striped button-up',prompt:'striped cotton button-up shirt'},
+      {id:'t9',label:'Black tee',prompt:'fitted black t-shirt'},{id:'t10',label:'Tank top',prompt:'ribbed tank top'},
+      {id:'t11',label:'Crop top',prompt:'cropped top'},{id:'t12',label:'Tube top',prompt:'tube top'}
     ],
     bottoms:[
-      {id:"b1",label:"Jeans",prompt:"straight leg jeans"},{id:"b2",label:"Loose jeans",prompt:"loose fit jeans relaxed"},
-      {id:"b3",label:"Baggy jeans",prompt:"baggy oversized jeans"},{id:"b4",label:"Black pants",prompt:"black tailored pants"},
-      {id:"b5",label:"Vintage shorts",prompt:"vintage cut-off denim shorts"},{id:"b6",label:"Sweatpants",prompt:"sweatpants relaxed"},
-      {id:"b7",label:"Biker shorts",prompt:"black biker shorts"},{id:"b8",label:"Cargo pants",prompt:"cargo pants utilitarian"},
-      {id:"b9",label:"Baggy shorts",prompt:"baggy shorts"},{id:"b10",label:"Long skirt",prompt:"long flowing skirt"},
-      {id:"b11",label:"Short skirt",prompt:"short skirt"},{id:"b12",label:"Denim skirt",prompt:"denim mini skirt"}
+      {id:'b1',label:'Jeans',prompt:'straight leg jeans'},{id:'b2',label:'Loose jeans',prompt:'loose fit jeans relaxed'},
+      {id:'b3',label:'Baggy jeans',prompt:'baggy oversized jeans'},{id:'b4',label:'Black pants',prompt:'black tailored pants'},
+      {id:'b5',label:'Vintage shorts',prompt:'vintage cut-off denim shorts'},{id:'b6',label:'Sweatpants',prompt:'sweatpants relaxed'},
+      {id:'b7',label:'Biker shorts',prompt:'black biker shorts'},{id:'b8',label:'Cargo pants',prompt:'cargo pants utilitarian'},
+      {id:'b9',label:'Baggy shorts',prompt:'baggy shorts'},{id:'b10',label:'Long skirt',prompt:'long flowing skirt'},
+      {id:'b11',label:'Short skirt',prompt:'short skirt'},{id:'b12',label:'Denim skirt',prompt:'denim mini skirt'}
     ],
     accessories:[
-      {id:"a1",label:"Silver earrings",prompt:"delicate silver earrings"},{id:"a2",label:"Silver hoops",prompt:"silver hoop earrings"},
-      {id:"a3",label:"Gold hoops",prompt:"gold hoop earrings"},{id:"a4",label:"Rings",prompt:"stacked rings mixed metals"},
-      {id:"a5",label:"Watch",prompt:"vintage watch on wrist"},{id:"a6",label:"Gold necklace",prompt:"thin gold necklace"},
-      {id:"a7",label:"Silver chain",prompt:"silver chain necklace"},{id:"a8",label:"Small bag",prompt:"small shoulder bag"},
-      {id:"a9",label:"Large tote",prompt:"oversized canvas tote bag"},{id:"a10",label:"Flip flops",prompt:"simple flip flops"},
-      {id:"a11",label:"Sandals",prompt:"strappy sandals"},{id:"a12",label:"Loafers",prompt:"leather loafers"},
-      {id:"a13",label:"Kitten heels",prompt:"kitten heel shoes"},{id:"a14",label:"Boots",prompt:"ankle boots"}
+      {id:'a1',label:'Silver earrings',prompt:'delicate silver earrings'},{id:'a2',label:'Silver hoops',prompt:'silver hoop earrings'},
+      {id:'a3',label:'Gold hoops',prompt:'gold hoop earrings'},{id:'a4',label:'Rings',prompt:'stacked rings mixed metals'},
+      {id:'a5',label:'Watch',prompt:'vintage watch on wrist'},{id:'a6',label:'Gold necklace',prompt:'thin gold necklace'},
+      {id:'a7',label:'Silver chain',prompt:'silver chain necklace'},{id:'a8',label:'Small bag',prompt:'small shoulder bag'},
+      {id:'a9',label:'Large tote',prompt:'oversized canvas tote bag'},{id:'a10',label:'Flip flops',prompt:'simple flip flops'},
+      {id:'a11',label:'Sandals',prompt:'strappy sandals'},{id:'a12',label:'Loafers',prompt:'leather loafers'},
+      {id:'a13',label:'Kitten heels',prompt:'kitten heel shoes'},{id:'a14',label:'Boots',prompt:'ankle boots'}
     ],
     look:[]
   },
-  toggleShot:function(el,group,value){
-    var s=MG[group];if(!s)return;
-    if(s.has(value)){s.delete(value);el.classList.remove("active");}
-    else{s.add(value);el.classList.add("active");}
+  toggleShot:function(el,g,v){
+    var s=MG[g];if(!s)return;
+    if(s.has(v)){s.delete(v);el.classList.remove('active');}
+    else{s.add(v);el.classList.add('active');}
     MG.refresh();
   },
-  addShotChip:function(group,inputEl,containerId){
-    var val=(inputEl.value||"").trim();if(!val)return;
-    var c=document.getElementById(containerId);if(!c)return;
-    var chip=document.createElement("div");
-    chip.className="shot-chip";chip.textContent=val;
-    chip.onclick=function(){MG.toggleShot(this,group,val);};
-    c.appendChild(chip);inputEl.value="";MG.toggleShot(chip,group,val);
+  addShotChip:function(g,inp,cid){
+    var v=(inp.value||'').trim();if(!v)return;
+    var c=document.getElementById(cid);if(!c)return;
+    var chip=document.createElement('div');
+    chip.className='shot-chip';chip.textContent=v;
+    chip.onclick=function(){MG.toggleShot(this,g,v);};
+    c.appendChild(chip);inp.value='';MG.toggleShot(chip,g,v);
   },
   getItems:function(iconId,tab){
-    try{var s=localStorage.getItem("mg_w_"+iconId+"_"+tab);if(s)return JSON.parse(s);}catch(e){}
+    try{var s=localStorage.getItem('mg_w_'+iconId+'_'+tab);if(s)return JSON.parse(s);}catch(e){}
     return JSON.parse(JSON.stringify(MG.WARDROBE[tab]||[]));
   },
   saveItems:function(iconId,tab,items){
-    try{localStorage.setItem("mg_w_"+iconId+"_"+tab,JSON.stringify(items));}catch(e){}
+    try{localStorage.setItem('mg_w_'+iconId+'_'+tab,JSON.stringify(items));}catch(e){}
   },
   switchTab:function(tab){
     MG.tab=tab;
-    document.querySelectorAll(".wardrobe-tab-btn").forEach(function(b){b.classList.remove("active");});
-    var btn=document.getElementById("wtab-"+tab);if(btn)btn.classList.add("active");
+    document.querySelectorAll('.wardrobe-tab-btn').forEach(function(b){b.classList.remove('active');});
+    var btn=document.getElementById('wtab-'+tab);if(btn)btn.classList.add('active');
     MG.renderChips();
   },
-    renderChips:function(){
-    var el=document.getElementById("wardrobe-chips");if(!el)return;
-    var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;
+  renderChips:function(){
+    var el=document.getElementById('wardrobe-chips');if(!el)return;
+    var icon=typeof selectedIcon!=='undefined'?selectedIcon:null;
     var items=icon?MG.getItems(icon.id,MG.tab):(MG.WARDROBE[MG.tab]||[]);
     el.innerHTML=items.map(function(item){
       var sel=MG.selected.has(item.id);
-      var rm=item.custom?'<span onclick="event.stopPropagation();MG.removeItem(\'' + item.id + '\')" style="opacity:.5;font-size:9px;cursor:pointer;margin-left:3px">x</span>':'';
-      return '<div class="wardrobe-chip ' + (sel?'selected':'') + '" onclick="MG.selectItem(\'' + item.id + '\')" title="' + item.prompt + '">' + item.label + rm + '</div>';
+      var rm=item.custom?'<span onclick="event.stopPropagation();MG.removeItem(\'' +item.id+'\');" style="opacity:.5;font-size:9px;cursor:pointer;margin-left:3px">x</span>':'';
+      return '<div class="wardrobe-chip '+(sel?'selected':'')+'" onclick="MG.selectItem(\''+ item.id +'\');" title="'+item.prompt+'">'+item.label+rm+'</div>';
     }).join('');
   },
   selectItem:function(id){
-    if(MG.selected.has(id))MG.selected.delete(id);else MG.selected.add(id);
+    if(MG.selected.has(id))MG.selected.delete(id);
+    else MG.selected.add(id);
     MG.renderChips();MG.refresh();
   },
   removeItem:function(id){
-    var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;if(!icon)return;
+    var icon=typeof selectedIcon!=='undefined'?selectedIcon:null;if(!icon)return;
     var items=MG.getItems(icon.id,MG.tab).filter(function(i){return i.id!==id;});
     MG.saveItems(icon.id,MG.tab,items);MG.selected.delete(id);
     MG.renderChips();MG.refresh();
   },
   addWardrobeItem:function(){
-    var inp=document.getElementById("wardrobe-add-input");
+    var inp=document.getElementById('wardrobe-add-input');
     if(!inp||!inp.value.trim())return;
-    var label=inp.value.trim().split(",")[0].trim();
-    var newItem={id:"w"+Date.now(),label:label,prompt:inp.value.trim(),custom:true};
-    var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;
+    var label=inp.value.trim().split(',')[0].trim();
+    var newItem={id:'w'+Date.now(),label:label,prompt:inp.value.trim(),custom:true};
+    var icon=typeof selectedIcon!=='undefined'?selectedIcon:null;
     if(icon){var items=MG.getItems(icon.id,MG.tab);items.push(newItem);MG.saveItems(icon.id,MG.tab,items);}
-    inp.value="";MG.renderChips();
-    if(typeof notify==="function")notify("Added to "+MG.tab);
+    inp.value='';MG.renderChips();
+    if(typeof notify==='function')notify('Added to '+MG.tab);
   },
   getWardrobePrompt:function(){
-    var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;
-    if(!icon||!MG.selected.size)return"";
+    var icon=typeof selectedIcon!=='undefined'?selectedIcon:null;
+    if(!icon||!MG.selected.size)return'';
     var parts=[];
-    ["tops","bottoms","accessories","look"].forEach(function(tab){
+    ['tops','bottoms','accessories','look'].forEach(function(tab){
       MG.getItems(icon.id,tab).forEach(function(i){if(MG.selected.has(i.id))parts.push(i.prompt);});
     });
-    return parts.join(", ");
+    return parts.join(', ');
   },
   build:function(){
-    var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;
-    if(!icon)return"";
-    var base=MG.base.size?Array.from(MG.base).join(", "):"35mm film, natural light, candid, unposed, organic";
-    var identity=icon.name.toLowerCase()+", "+(icon.archetype||"").toLowerCase();
-    var charDesc=typeof buildCharDesc==="function"?buildCharDesc():"";
-    charDesc=charDesc.replace(/wearing[^,]*/gi,"").replace(/dressed in[^,]*/gi,"").replace(/,\s*,/g,",").replace(/^,\s*/,"").replace(/,\s*$/,"").trim();
-    var moodboard="";
+    var icon=typeof selectedIcon!=='undefined'?selectedIcon:null;
+    if(!icon)return'';
+    var base=MG.base.size?Array.from(MG.base).join(', '):'35mm film, natural light, candid, unposed, organic';
+    var identity=icon.name.toLowerCase()+', '+(icon.archetype||'').toLowerCase();
+    var charDesc=typeof buildCharDesc==='function'?buildCharDesc():'';
+    charDesc=charDesc.replace(/wearing[^,]*/gi,'').replace(/dressed in[^,]*/gi,'').replace(/,\s*,/g,',').replace(/^,\s*/,'').replace(/,\s*$/,'').trim();
+    var moodboard='';
     try{
-      var mbEl=document.getElementById("mb-extracted");
-      if(mbEl)moodboard=(mbEl.value||mbEl.textContent||"").replace(/^['"]+|['"]+$/g,"").trim();
-      if(!moodboard&&typeof getMoodboardAesthetic==="function")moodboard=getMoodboardAesthetic();
-      moodboard=moodboard.replace(/wearing[^,.]+/gi,"").replace(/dressed in[^,.]+/gi,"").trim();
-      if(moodboard.length>150)moodboard=moodboard.slice(0,150).replace(/,\s*[^,]*$/,"").trim();
+      var mbEl=document.getElementById('mb-extracted');
+      if(mbEl)moodboard=(mbEl.value||mbEl.textContent||'').replace(/^['"]+|['"]+$/g,'').trim();
+      if(!moodboard&&typeof getMoodboardAesthetic==='function')moodboard=getMoodboardAesthetic();
+      moodboard=moodboard.replace(/wearing[^,.]+/gi,'').replace(/dressed in[^,.]+/gi,'').trim();
+      if(moodboard.length>150)moodboard=moodboard.slice(0,150).replace(/,\s*[^,]*$/,'').trim();
     }catch(e){}
     var wardrobe=MG.getWardrobePrompt();
-    var style=icon.style||"",energy=icon.energy||"",aesthetic=icon.aesthetic||"";
-    var sceneDesc=typeof scene!=="undefined"&&scene?scene+" light":"";
-    var shots=Array.from(MG.framing).concat(Array.from(MG.angle)).concat(Array.from(MG.perspective)).join(", ");
+    var style=icon.style||'',energy=icon.energy||'',aesthetic=icon.aesthetic||'';
+    var sceneDesc=typeof scene!=='undefined'&&scene?scene+' light':'';
+    var shots=Array.from(MG.framing).concat(Array.from(MG.angle)).concat(Array.from(MG.perspective)).join(', ');
     var tech=[];
-    if(typeof params!=="undefined"){if(params.grain)tech.push(params.grain);if(params.color)tech.push(params.color);if(params.light)tech.push(params.light);}
-    return[base,identity,charDesc,moodboard,wardrobe,style,energy,sceneDesc,shots,tech.join(", "),aesthetic]
-      .filter(function(s){return s&&s.trim();}).join(", ");
+    if(typeof params!=='undefined'){if(params.grain)tech.push(params.grain);if(params.color)tech.push(params.color);if(params.light)tech.push(params.light);}
+    return[base,identity,charDesc,moodboard,wardrobe,style,energy,sceneDesc,shots,tech.join(', '),aesthetic]
+      .filter(function(s){return s&&s.trim();}).join(', ');
   },
   refresh:function(){
-    var el=document.getElementById("prompt-preview");if(!el)return;
-    if(typeof promptLocked!=="undefined"&&promptLocked)return;
+    var el=document.getElementById('prompt-preview');if(!el)return;
+    if(typeof promptLocked!=='undefined'&&promptLocked)return;
     var p=MG.build();el.value=p;
-    var cc=document.getElementById("prompt-char-count");if(cc)cc.textContent=p.length+" chars";
+    var cc=document.getElementById('prompt-char-count');if(cc)cc.textContent=p.length+' chars';
   },
   lbOpen:function(idx){
-    var lib=typeof load==="function"?load(typeof LIB_KEY!=="undefined"?LIB_KEY:"mirage_library_v2"):{};
+    var lib=typeof load==='function'?load(typeof LIB_KEY!=='undefined'?LIB_KEY:'mirage_library_v2'):{};
     var images=[];
-    if(typeof ICONS_DATA!=="undefined"&&typeof libIconId!=="undefined"){
-      if(libIconId==="all"){
+    if(typeof ICONS_DATA!=='undefined'&&typeof libIconId!=='undefined'){
+      if(libIconId==='all'){
         ICONS_DATA.forEach(function(icon){(lib[icon.id]||[]).forEach(function(img){images.push(Object.assign({},img,{icon:icon}));});});
         images.sort(function(a,b){return b.id-a.id;});
       }else{
@@ -2977,54 +2979,48 @@ var MG=window.MG={
       }
     }
     MG.lbImages=images;MG.lbIdx=idx;MG._lbRender();
-    var el=document.getElementById("lb-overlay");if(el)el.classList.add("open");
-    document.addEventListener("keydown",MG._lbKey);
+    var el=document.getElementById('lb-overlay');if(el)el.classList.add('open');
+    document.addEventListener('keydown',MG._lbKey);
   },
   _lbRender:function(){
     var img=MG.lbImages[MG.lbIdx];if(!img)return;
-    var ie=document.getElementById("lb-img");if(ie)ie.src=img.imageUrl||img.url||img.base64||"";
-    var co=document.getElementById("lb-counter");if(co)co.textContent=(MG.lbIdx+1)+" / "+MG.lbImages.length;
-    var me=document.getElementById("lb-meta");
-    if(me){var p=[];if(img.icon)p.push(img.icon.name.toLowerCase());if(img.fluxPrompt)p.push(img.fluxPrompt.slice(0,100));me.textContent=p.join(" · ");}
+    var ie=document.getElementById('lb-img');if(ie)ie.src=img.imageUrl||img.url||img.base64||'';
+    var co=document.getElementById('lb-counter');if(co)co.textContent=(MG.lbIdx+1)+' / '+MG.lbImages.length;
+    var me=document.getElementById('lb-meta');
+    if(me){var p=[];if(img.icon)p.push(img.icon.name.toLowerCase());if(img.fluxPrompt)p.push(img.fluxPrompt.slice(0,100));me.textContent=p.join(' · ');}
   },
   _lbKey:function(e){
-    if(e.key==="Escape")MG.lbClose();
-    if(e.key==="ArrowLeft")MG.lbNav(-1);
-    if(e.key==="ArrowRight")MG.lbNav(1);
+    if(e.key==='Escape')MG.lbClose();
+    if(e.key==='ArrowLeft')MG.lbNav(-1);
+    if(e.key==='ArrowRight')MG.lbNav(1);
   },
   lbClose:function(){
-    var el=document.getElementById("lb-overlay");if(el)el.classList.remove("open");
-    document.removeEventListener("keydown",MG._lbKey);
+    var el=document.getElementById('lb-overlay');if(el)el.classList.remove('open');
+    document.removeEventListener('keydown',MG._lbKey);
   },
   lbNav:function(dir){MG.lbIdx=Math.max(0,Math.min(MG.lbImages.length-1,MG.lbIdx+dir));MG._lbRender();},
-  lbUseRef:function(){
-    var img=MG.lbImages[MG.lbIdx];
-    if(img)MG.setRef(img.imageUrl||img.url||img.base64||"",img.icon?img.icon.name:"");
-    MG.lbClose();
-  },
-  lbDownload:function(){
-    var img=MG.lbImages[MG.lbIdx];if(!img)return;
-    var a=document.createElement("a");a.href=img.imageUrl||img.url||img.base64||"";a.download="mirage-"+img.id+".jpg";a.click();
-  },
+  lbUseRef:function(){var img=MG.lbImages[MG.lbIdx];if(img)MG.setRef(img.imageUrl||img.url||img.base64||'',img.icon?img.icon.name:'');MG.lbClose();},
+  lbDownload:function(){var img=MG.lbImages[MG.lbIdx];if(!img)return;var a=document.createElement('a');a.href=img.imageUrl||img.url||img.base64||'';a.download='mirage-'+img.id+'.jpg';a.click();},
   lbDelete:function(){
     var img=MG.lbImages[MG.lbIdx];if(!img||!img.icon)return;
-    if(!confirm("Delete this image?"))return;
-    var lib=typeof load==="function"?load(typeof LIB_KEY!=="undefined"?LIB_KEY:"mirage_library_v2"):{};
+    if(!confirm('Delete this image?'))return;
+    var lib=typeof load==='function'?load(typeof LIB_KEY!=='undefined'?LIB_KEY:'mirage_library_v2'):{};
     lib[img.icon.id]=(lib[img.icon.id]||[]).filter(function(i){return i.id!==img.id;});
-    if(typeof save==="function")save(typeof LIB_KEY!=="undefined"?LIB_KEY:"mirage_library_v2",lib);
+    if(typeof save==='function')save(typeof LIB_KEY!=='undefined'?LIB_KEY:'mirage_library_v2',lib);
     MG.lbImages.splice(MG.lbIdx,1);
-    if(!MG.lbImages.length){MG.lbClose();if(typeof renderLibrary==="function")renderLibrary();return;}
+    if(!MG.lbImages.length){MG.lbClose();if(typeof renderLibrary==='function')renderLibrary();return;}
     MG.lbIdx=Math.min(MG.lbIdx,MG.lbImages.length-1);MG._lbRender();
-    if(typeof renderLibrary==="function")renderLibrary();
+    if(typeof renderLibrary==='function')renderLibrary();
   },
   setRef:function(src,name){
     MG.ref=src;
-    var t=document.getElementById("ref-toast");
-    if(t){t.textContent="Reference set"+(name?" - "+name:"")+" - next gen uses this";t.classList.add("show");setTimeout(function(){t.classList.remove("show");},3000);}
-    if(typeof notify==="function")notify("Reference set"+(name?" - "+name:""));
+    var t=document.getElementById('ref-toast');
+    if(t){t.textContent='Reference set'+(name?' - '+name:'');t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
+    if(typeof notify==='function')notify('Reference set'+(name?' - '+name:''));
   }
 };
 
+// Override legacy functions — MG is now the single source of truth
 window.buildPrompt=function(){return MG.build();};
 window.refreshPrompt=function(){MG.refresh();};
 window.renderWardrobeChips=function(){MG.renderChips();};
@@ -3042,30 +3038,49 @@ window.lbUseRef=function(){MG.lbUseRef();};
 window.lbDownload=function(){MG.lbDownload();};
 window.lbDelete=function(){MG.lbDelete();};
 
+// Hook selectChip (character chips) to MG.refresh
+var _origSelectChip=window.selectChip;
+if(typeof window.selectChip==='function'){
+  window.selectChip=function(el,param,value){
+    _origSelectChip&&_origSelectChip.apply(this,arguments);
+    MG.refresh();
+  };
+}
+
+// Hook updateIconField to MG.refresh
+var _origUIF=window.updateIconField;
+if(typeof window.updateIconField==='function'){
+  window.updateIconField=function(){
+    _origUIF&&_origUIF.apply(this,arguments);
+    MG.refresh();
+  };
+}
+
+// Clean generateFlux — only use ref if explicitly set
 window.generateFlux=function(prompt){
-  var PX=typeof PROXY!=="undefined"?PROXY:"https://mirage-proxy-production.up.railway.app";
+  var PX=typeof PROXY!=='undefined'?PROXY:'https://mirage-proxy-production.up.railway.app';
   var body=MG.ref
-    ?Object.assign({prompt:prompt,model:"flux-kontext-pro",width:768,height:1024},MG.ref.startsWith("http")?{image_url:MG.ref}:{input_image:MG.ref.includes(",")?MG.ref.split(",")[1]:MG.ref})
-    :{prompt:prompt,model:"flux-pro-1.1",width:768,height:1024};
-  return fetch(PX+"/flux/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
-    .then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.error||"Submit failed");});return r.json();})
+    ?Object.assign({prompt:prompt,model:'flux-kontext-pro',width:768,height:1024},MG.ref.startsWith('http')?{image_url:MG.ref}:{input_image:MG.ref.includes(',')?MG.ref.split(',')[1]:MG.ref})
+    :{prompt:prompt,model:'flux-pro-1.1',width:768,height:1024};
+  return fetch(PX+'/flux/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.error||'Submit failed');});return r.json();})
     .then(function(d){
       return new Promise(function(resolve,reject){
-        var attempts=0;
+        var a=0;
         var poll=setInterval(function(){
-          attempts++;
-          if(attempts>90){clearInterval(poll);reject(new Error("Flux timed out"));return;}
-          fetch(PX+"/flux/result/"+d.id).then(function(r){return r.json();}).then(function(p){
-            if(p.status==="Ready"){clearInterval(poll);resolve(p.result.sample);}
-            else if(p.status==="Error"||p.status==="Failed"){clearInterval(poll);reject(new Error("Flux: "+p.status));}
+          a++;if(a>90){clearInterval(poll);reject(new Error('Flux timed out'));return;}
+          fetch(PX+'/flux/result/'+d.id).then(function(r){return r.json();}).then(function(p){
+            if(p.status==='Ready'){clearInterval(poll);resolve(p.result.sample);}
+            else if(p.status==='Error'||p.status==='Failed'){clearInterval(poll);reject(new Error('Flux: '+p.status));}
           }).catch(function(e){clearInterval(poll);reject(e);});
         },3000);
       });
     });
 };
 
+// Hook selectIcon to reset wardrobe and refresh
 var _osi=window.selectIcon;
-if(typeof window.selectIcon==="function"){
+if(typeof window.selectIcon==='function'){
   window.selectIcon=function(){
     _osi&&_osi.apply(this,arguments);
     MG.selected.clear();
@@ -3073,84 +3088,11 @@ if(typeof window.selectIcon==="function"){
   };
 }
 
-document.addEventListener("DOMContentLoaded",function(){MG.renderChips();MG.refresh();});
+// Render on load
+document.addEventListener('DOMContentLoaded',function(){MG.renderChips();MG.refresh();});
 setTimeout(function(){MG.renderChips();MG.refresh();},500);
 setTimeout(function(){MG.renderChips();MG.refresh();},1500);
 
-})();
-</script><script>
-(function(){
-var MG=window.MG={
-  framing:new Set(),angle:new Set(),perspective:new Set(),
-  base:new Set(["35mm film natural light candid unposed organic"]),
-  tab:"tops",selected:new Set(),ref:null,lbImages:[],lbIdx:0,
-  WARDROBE:{
-    tops:[{id:"t1",label:"Bralette",prompt:"bralette top"},{id:"t2",label:"Bikini top",prompt:"bikini top"},{id:"t3",label:"Sports bra",prompt:"sports bra"},{id:"t4",label:"White tee",prompt:"white t-shirt relaxed fit"},{id:"t5",label:"Vintage tee",prompt:"vintage band t-shirt worn in"},{id:"t6",label:"Boyfriend shirt",prompt:"oversized boyfriend shirt half tucked"},{id:"t7",label:"Linen top",prompt:"linen top natural drape"},{id:"t8",label:"Striped button-up",prompt:"striped cotton button-up shirt"},{id:"t9",label:"Black tee",prompt:"fitted black t-shirt"},{id:"t10",label:"Tank top",prompt:"ribbed tank top"},{id:"t11",label:"Crop top",prompt:"cropped top"},{id:"t12",label:"Tube top",prompt:"tube top"}],
-    bottoms:[{id:"b1",label:"Jeans",prompt:"straight leg jeans"},{id:"b2",label:"Loose jeans",prompt:"loose fit jeans relaxed"},{id:"b3",label:"Baggy jeans",prompt:"baggy oversized jeans"},{id:"b4",label:"Black pants",prompt:"black tailored pants"},{id:"b5",label:"Vintage shorts",prompt:"vintage cut-off denim shorts"},{id:"b6",label:"Sweatpants",prompt:"sweatpants relaxed"},{id:"b7",label:"Biker shorts",prompt:"black biker shorts"},{id:"b8",label:"Cargo pants",prompt:"cargo pants utilitarian"},{id:"b9",label:"Baggy shorts",prompt:"baggy shorts"},{id:"b10",label:"Long skirt",prompt:"long flowing skirt"},{id:"b11",label:"Short skirt",prompt:"short skirt"},{id:"b12",label:"Denim skirt",prompt:"denim mini skirt"}],
-    accessories:[{id:"a1",label:"Silver earrings",prompt:"delicate silver earrings"},{id:"a2",label:"Silver hoops",prompt:"silver hoop earrings"},{id:"a3",label:"Gold hoops",prompt:"gold hoop earrings"},{id:"a4",label:"Rings",prompt:"stacked rings mixed metals"},{id:"a5",label:"Watch",prompt:"vintage watch on wrist"},{id:"a6",label:"Gold necklace",prompt:"thin gold necklace"},{id:"a7",label:"Silver chain",prompt:"silver chain necklace"},{id:"a8",label:"Small bag",prompt:"small shoulder bag"},{id:"a9",label:"Large tote",prompt:"oversized canvas tote bag"},{id:"a10",label:"Flip flops",prompt:"simple flip flops"},{id:"a11",label:"Sandals",prompt:"strappy sandals"},{id:"a12",label:"Loafers",prompt:"leather loafers"},{id:"a13",label:"Kitten heels",prompt:"kitten heel shoes"},{id:"a14",label:"Boots",prompt:"ankle boots"}],
-    look:[]
-  },
-  toggleShot:function(el,g,v){var s=MG[g];if(!s)return;if(s.has(v)){s.delete(v);el.classList.remove("active");}else{s.add(v);el.classList.add("active");}MG.refresh();},
-  addShotChip:function(g,inp,cid){var v=(inp.value||"").trim();if(!v)return;var c=document.getElementById(cid);if(!c)return;var chip=document.createElement("div");chip.className="shot-chip";chip.textContent=v;chip.onclick=function(){MG.toggleShot(this,g,v);};c.appendChild(chip);inp.value="";MG.toggleShot(chip,g,v);},
-  getItems:function(iconId,tab){try{var s=localStorage.getItem("mg_w_"+iconId+"_"+tab);if(s)return JSON.parse(s);}catch(e){}return JSON.parse(JSON.stringify(MG.WARDROBE[tab]||[]));},
-  saveItems:function(iconId,tab,items){try{localStorage.setItem("mg_w_"+iconId+"_"+tab,JSON.stringify(items));}catch(e){}},
-  switchTab:function(tab){MG.tab=tab;document.querySelectorAll(".wardrobe-tab-btn").forEach(function(b){b.classList.remove("active");});var btn=document.getElementById("wtab-"+tab);if(btn)btn.classList.add("active");MG.renderChips();},
-  renderChips:function(){
-    var el=document.getElementById("wardrobe-chips");if(!el)return;
-    var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;
-    var items=icon?MG.getItems(icon.id,MG.tab):(MG.WARDROBE[MG.tab]||[]);
-    el.innerHTML=items.map(function(item){
-      var sel=MG.selected.has(item.id);
-      var rm=item.custom?'<span onclick="event.stopPropagation();MG.removeItem(\'' +item.id+ '\')" style="opacity:.5;font-size:9px;cursor:pointer;margin-left:3px">x</span>':'';
-      return '<div class="wardrobe-chip '+(sel?"selected":"")+'" onclick="MG.selectItem(\''+ item.id +'\');" title="'+item.prompt+'">'+item.label+rm+'</div>';
-    }).join("");
-  },
-  selectItem:function(id){if(MG.selected.has(id))MG.selected.delete(id);else MG.selected.add(id);MG.renderChips();MG.refresh();},
-  removeItem:function(id){var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;if(!icon)return;var items=MG.getItems(icon.id,MG.tab).filter(function(i){return i.id!==id;});MG.saveItems(icon.id,MG.tab,items);MG.selected.delete(id);MG.renderChips();MG.refresh();},
-  addWardrobeItem:function(){var inp=document.getElementById("wardrobe-add-input");if(!inp||!inp.value.trim())return;var label=inp.value.trim().split(",")[0].trim();var newItem={id:"w"+Date.now(),label:label,prompt:inp.value.trim(),custom:true};var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;if(icon){var items=MG.getItems(icon.id,MG.tab);items.push(newItem);MG.saveItems(icon.id,MG.tab,items);}inp.value="";MG.renderChips();if(typeof notify==="function")notify("Added to "+MG.tab);},
-  getWardrobePrompt:function(){var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;if(!icon||!MG.selected.size)return"";var parts=[];["tops","bottoms","accessories","look"].forEach(function(tab){MG.getItems(icon.id,tab).forEach(function(i){if(MG.selected.has(i.id))parts.push(i.prompt);});});return parts.join(", ");},
-  build:function(){
-    var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;if(!icon)return"";
-    var base=MG.base.size?Array.from(MG.base).join(", "):"35mm film, natural light, candid, unposed, organic";
-    var identity=icon.name.toLowerCase()+", "+(icon.archetype||"").toLowerCase();
-    var charDesc=typeof buildCharDesc==="function"?buildCharDesc():"";
-    charDesc=charDesc.replace(/wearing[^,]*/gi,"").replace(/dressed in[^,]*/gi,"").replace(/,\s*,/g,",").replace(/^,\s*/,"").replace(/,\s*$/,"").trim();
-    var moodboard="";try{var mbEl=document.getElementById("mb-extracted");if(mbEl)moodboard=(mbEl.value||mbEl.textContent||"").replace(/^['"]+|['"]+$/g,"").trim();if(!moodboard&&typeof getMoodboardAesthetic==="function")moodboard=getMoodboardAesthetic();moodboard=moodboard.replace(/wearing[^,.]+/gi,"").replace(/dressed in[^,.]+/gi,"").trim();if(moodboard.length>150)moodboard=moodboard.slice(0,150).replace(/,\s*[^,]*$/,"").trim();}catch(e){}
-    var wardrobe=MG.getWardrobePrompt();
-    var style=icon.style||"",energy=icon.energy||"",aesthetic=icon.aesthetic||"";
-    var sceneDesc=typeof scene!=="undefined"&&scene?scene+" light":"";
-    var shots=Array.from(MG.framing).concat(Array.from(MG.angle)).concat(Array.from(MG.perspective)).join(", ");
-    var tech=[];if(typeof params!=="undefined"){if(params.grain)tech.push(params.grain);if(params.color)tech.push(params.color);if(params.light)tech.push(params.light);}
-    return[base,identity,charDesc,moodboard,wardrobe,style,energy,sceneDesc,shots,tech.join(", "),aesthetic].filter(function(s){return s&&s.trim();}).join(", ");
-  },
-  refresh:function(){var el=document.getElementById("prompt-preview");if(!el)return;if(typeof promptLocked!=="undefined"&&promptLocked)return;var p=MG.build();el.value=p;var cc=document.getElementById("prompt-char-count");if(cc)cc.textContent=p.length+" chars";},
-  lbClose:function(){var el=document.getElementById("lb-overlay");if(el)el.classList.remove("open");document.removeEventListener("keydown",MG._lbKey);},
-  _lbKey:function(e){if(e.key==="Escape")MG.lbClose();if(e.key==="ArrowLeft")MG.lbNav(-1);if(e.key==="ArrowRight")MG.lbNav(1);},
-  lbNav:function(dir){MG.lbIdx=Math.max(0,Math.min(MG.lbImages.length-1,MG.lbIdx+dir));if(typeof MG._lbRender==="function")MG._lbRender();},
-  setRef:function(src,name){MG.ref=src;var t=document.getElementById("ref-toast");if(t){t.textContent="Reference set"+(name?" - "+name:"");t.classList.add("show");setTimeout(function(){t.classList.remove("show");},3000);}if(typeof notify==="function")notify("Reference set"+(name?" - "+name:""));}
-};
-window.buildPrompt=function(){return MG.build();};
-window.refreshPrompt=function(){MG.refresh();};
-window.renderWardrobeChips=function(){MG.renderChips();};
-window.selectWardrobeItem=function(id){MG.selectItem(id);};
-window.addWardrobeItem=function(){MG.addWardrobeItem();};
-window.getSelectedWardrobePrompt=function(){return MG.getWardrobePrompt();};
-window.switchWardrobeTab=function(tab){MG.switchTab(tab);};
-window.toggleShot=function(el,g,v){MG.toggleShot(el,g,v);};
-window.addShotChip=function(g,inp,cid){MG.addShotChip(g,inp,cid);};
-window.getActivePrompt=function(){return MG.build();};
-window.lbClose=function(){MG.lbClose();};
-window.lbNav=function(dir){MG.lbNav(dir);};
-window.generateFlux=function(prompt){
-  var PX=typeof PROXY!=="undefined"?PROXY:"https://mirage-proxy-production.up.railway.app";
-  var body=MG.ref?Object.assign({prompt:prompt,model:"flux-kontext-pro",width:768,height:1024},MG.ref.startsWith("http")?{image_url:MG.ref}:{input_image:MG.ref.includes(",")?MG.ref.split(",")[1]:MG.ref}):{prompt:prompt,model:"flux-pro-1.1",width:768,height:1024};
-  return fetch(PX+"/flux/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.error||"Submit failed");});return r.json();}).then(function(d){return new Promise(function(resolve,reject){var a=0;var poll=setInterval(function(){a++;if(a>90){clearInterval(poll);reject(new Error("Flux timed out"));return;}fetch(PX+"/flux/result/"+d.id).then(function(r){return r.json();}).then(function(p){if(p.status==="Ready"){clearInterval(poll);resolve(p.result.sample);}else if(p.status==="Error"||p.status==="Failed"){clearInterval(poll);reject(new Error("Flux: "+p.status));}}).catch(function(e){clearInterval(poll);reject(e);});},3000);});});
-};
-var _osi=window.selectIcon;
-if(typeof window.selectIcon==="function"){window.selectIcon=function(){_osi&&_osi.apply(this,arguments);MG.selected.clear();setTimeout(function(){MG.renderChips();MG.refresh();},100);};}
-document.addEventListener("DOMContentLoaded",function(){MG.renderChips();MG.refresh();});
-setTimeout(function(){MG.renderChips();MG.refresh();},500);
-setTimeout(function(){MG.renderChips();MG.refresh();},1500);
 })();
 </script></body>
 </html>
