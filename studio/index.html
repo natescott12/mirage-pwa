@@ -2562,6 +2562,253 @@ function addShotChip(group, inputEl, containerId) {
   container.appendChild(chip);
   inputEl.value=''; toggleShot(chip,group,val);
 }
+
+
+// ╔══════════════════════════════════════════════════════════════╗
+// MIRAGE CHIP ENGINE v2 — unified state on window.MG
+// ╚══════════════════════════════════════════════════════════════╝
+window.MG = window.MG || {
+  framing: new Set(),
+  angle: new Set(),
+  perspective: new Set(),
+  baseStyles: new Set(["35mm film natural light candid unposed organic"]),
+  wardrobeTab: "tops",
+  wardrobeSelected: new Set(),
+  WARDROBE: {
+    tops:[
+      {id:"t1",label:"Bralette",prompt:"bralette top"},{id:"t2",label:"Bikini top",prompt:"bikini top"},
+      {id:"t3",label:"Sports bra",prompt:"sports bra"},{id:"t4",label:"White tee",prompt:"white t-shirt relaxed fit"},
+      {id:"t5",label:"Vintage tee",prompt:"vintage band t-shirt worn in"},{id:"t6",label:"Boyfriend shirt",prompt:"oversized boyfriend shirt half tucked"},
+      {id:"t7",label:"Linen top",prompt:"linen top natural drape"},{id:"t8",label:"Striped button-up",prompt:"striped cotton button-up shirt"},
+      {id:"t9",label:"Black tee",prompt:"fitted black t-shirt"},{id:"t10",label:"Tank top",prompt:"ribbed tank top"},
+      {id:"t11",label:"Crop top",prompt:"cropped top"},{id:"t12",label:"Tube top",prompt:"tube top"}
+    ],
+    bottoms:[
+      {id:"b1",label:"Jeans",prompt:"straight leg jeans"},{id:"b2",label:"Loose jeans",prompt:"loose fit jeans relaxed"},
+      {id:"b3",label:"Baggy jeans",prompt:"baggy oversized jeans"},{id:"b4",label:"Black pants",prompt:"black tailored pants"},
+      {id:"b5",label:"Vintage shorts",prompt:"vintage cut-off denim shorts"},{id:"b6",label:"Sweatpants",prompt:"sweatpants relaxed"},
+      {id:"b7",label:"Biker shorts",prompt:"black biker shorts"},{id:"b8",label:"Cargo pants",prompt:"cargo pants utilitarian"},
+      {id:"b9",label:"Baggy shorts",prompt:"baggy shorts"},{id:"b10",label:"Long skirt",prompt:"long flowing skirt"},
+      {id:"b11",label:"Short skirt",prompt:"short skirt"},{id:"b12",label:"Denim skirt",prompt:"denim mini skirt"}
+    ],
+    accessories:[
+      {id:"a1",label:"Silver earrings",prompt:"delicate silver earrings"},{id:"a2",label:"Silver hoops",prompt:"silver hoop earrings"},
+      {id:"a3",label:"Gold hoops",prompt:"gold hoop earrings"},{id:"a4",label:"Rings",prompt:"stacked rings mixed metals"},
+      {id:"a5",label:"Watch",prompt:"vintage watch on wrist"},{id:"a6",label:"Gold necklace",prompt:"thin gold necklace"},
+      {id:"a7",label:"Silver chain",prompt:"silver chain necklace"},{id:"a8",label:"Small bag",prompt:"small shoulder bag"},
+      {id:"a9",label:"Large tote",prompt:"oversized canvas tote bag"},{id:"a10",label:"Flip flops",prompt:"simple flip flops"},
+      {id:"a11",label:"Sandals",prompt:"strappy sandals"},{id:"a12",label:"Loafers",prompt:"leather loafers"},
+      {id:"a13",label:"Kitten heels",prompt:"kitten heel shoes"},{id:"a14",label:"Boots",prompt:"ankle boots"}
+    ],
+    look:[]
+  }
+};
+
+// Keep window.selected* aliases pointing to MG for legacy code
+window.selectedFraming = window.MG.framing;
+window.selectedAngle = window.MG.angle;
+window.selectedPerspective = window.MG.perspective;
+window.selectedBaseStyles = window.MG.baseStyles;
+window.selectedWardrobeIds = window.MG.wardrobeSelected;
+
+// ── SHOT CHIPS ──────────────────────────────────────────────────────
+function toggleShot(el, group, value) {
+  var key = group === "base" ? "baseStyles" : group;
+  var s = window.MG[key];
+  if (!s) { s = new Set(); window.MG[key] = s; }
+  if (s.has(value)) { s.delete(value); el.classList.remove("active"); }
+  else { s.add(value); el.classList.add("active"); }
+  mgRefreshPrompt();
+}
+
+function addShotChip(group, inputEl, containerId) {
+  var val = (inputEl.value || "").trim();
+  if (!val) return;
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  var chip = document.createElement("div");
+  chip.className = "shot-chip";
+  chip.textContent = val;
+  chip.onclick = function() { toggleShot(this, group, val); };
+  container.appendChild(chip);
+  inputEl.value = "";
+  toggleShot(chip, group, val);
+}
+
+// ── WARDROBE CHIPS ──────────────────────────────────────────────────
+function getWardrobeForTab(iconId, tab) {
+  try { var s = localStorage.getItem("mirage_wardrobe_v1_"+iconId+"_"+tab); if(s) return JSON.parse(s); } catch(e) {}
+  return JSON.parse(JSON.stringify(window.MG.WARDROBE[tab] || []));
+}
+
+function saveWardrobeTab(iconId, tab, items) {
+  try { localStorage.setItem("mirage_wardrobe_v1_"+iconId+"_"+tab, JSON.stringify(items)); } catch(e) {}
+}
+
+function switchWardrobeTab(tab) {
+  window.MG.wardrobeTab = tab;
+  document.querySelectorAll(".wardrobe-tab-btn").forEach(function(b){b.classList.remove("active");});
+  var btn = document.getElementById("wtab-"+tab);
+  if (btn) btn.classList.add("active");
+  mgRenderWardrobeChips();
+}
+
+function mgRenderWardrobeChips() {
+  var el = document.getElementById("wardrobe-chips");
+  if (!el) return;
+  var iconId = (typeof selectedIcon !== "undefined" && selectedIcon) ? selectedIcon.id : null;
+  var tab = window.MG.wardrobeTab;
+  var items = iconId ? getWardrobeForTab(iconId, tab) : (window.MG.WARDROBE[tab] || []);
+  el.innerHTML = items.map(function(item) {
+    var sel = window.MG.wardrobeSelected.has(item.id);
+    var rm = item.custom ? "<span onclick=\"event.stopPropagation();mgRemoveWardrobe(\'"+item.id+"\');\" style=\"opacity:.5;font-size:9px;cursor:pointer;margin-left:3px\">&#10005;</span>" : "";
+    return "<div class=\"wardrobe-chip "+(sel?"selected":"")+"\" onclick=\"mgSelectWardrobe(\'"+item.id+"\');\" title=\""+item.prompt+"\">"+item.label+rm+"</div>";
+  }).join("");
+}
+
+function mgSelectWardrobe(id) {
+  if (window.MG.wardrobeSelected.has(id)) window.MG.wardrobeSelected.delete(id);
+  else window.MG.wardrobeSelected.add(id);
+  mgRenderWardrobeChips();
+  mgRefreshPrompt();
+}
+
+function mgRemoveWardrobe(id) {
+  if (typeof selectedIcon === "undefined" || !selectedIcon) return;
+  var tab = window.MG.wardrobeTab;
+  var items = getWardrobeForTab(selectedIcon.id, tab).filter(function(i){return i.id!==id;});
+  saveWardrobeTab(selectedIcon.id, tab, items);
+  window.MG.wardrobeSelected.delete(id);
+  mgRenderWardrobeChips();
+  mgRefreshPrompt();
+}
+
+function addWardrobeItem() {
+  var inp = document.getElementById("wardrobe-add-input");
+  if (!inp || !inp.value.trim()) return;
+  var label = inp.value.trim().split(",")[0].trim();
+  var newItem = {id:"w"+Date.now(), label:label, prompt:inp.value.trim(), custom:true};
+  if (typeof selectedIcon !== "undefined" && selectedIcon) {
+    var tab = window.MG.wardrobeTab;
+    var items = getWardrobeForTab(selectedIcon.id, tab);
+    items.push(newItem);
+    saveWardrobeTab(selectedIcon.id, tab, items);
+  }
+  inp.value = "";
+  mgRenderWardrobeChips();
+  if (typeof notify === "function") notify("Item added to "+window.MG.wardrobeTab);
+}
+
+// ── PROMPT BUILDER ──────────────────────────────────────────────────
+// Merges Persona Builder identity + Studio creative direction
+function mgBuildPrompt() {
+  if (typeof selectedIcon === "undefined" || !selectedIcon) return "";
+
+  // Base photographic style (Base Style chips)
+  var baseStyle = window.MG.baseStyles.size
+    ? Array.from(window.MG.baseStyles).join(", ")
+    : "35mm film, natural light, candid, unposed, organic";
+
+  // Icon identity from Persona Builder
+  var iconIdentity = selectedIcon.name.toLowerCase() + ", " + (selectedIcon.archetype||"").toLowerCase();
+
+  // Physical character description (character builder chips)
+  var charDesc = typeof buildCharDesc === "function" ? buildCharDesc() : "";
+
+  // Moodboard aesthetic (extracted from reference images)
+  var mbAesthetic = "";
+  try {
+    var mbEl = document.getElementById("mb-extracted");
+    if (mbEl) mbAesthetic = (mbEl.value || mbEl.textContent || "").trim().replace(/^"|"$/g,"");
+    if (!mbAesthetic && typeof getMoodboardAesthetic === "function") mbAesthetic = getMoodboardAesthetic();
+  } catch(e) {}
+
+  // Wardrobe selection
+  var wardrobeParts = [];
+  var iconId = selectedIcon.id;
+  ["tops","bottoms","accessories","look"].forEach(function(tab) {
+    var items = getWardrobeForTab(iconId, tab);
+    items.forEach(function(i) { if(window.MG.wardrobeSelected.has(i.id)) wardrobeParts.push(i.prompt); });
+  });
+  var wardrobeDesc = wardrobeParts.join(", ");
+
+  // Icon persona voice (from Persona Builder)
+  var iconStyle = selectedIcon.style || "";
+  var iconEnergy = selectedIcon.energy || "";
+  var iconAesthetic = selectedIcon.aesthetic || "";
+
+  // Scene
+  var sceneDesc = (typeof scene !== "undefined" && scene) ? scene + " light" : "";
+
+  // Shot setup (framing + angle + perspective)
+  var shotParts = Array.from(window.MG.framing)
+    .concat(Array.from(window.MG.angle))
+    .concat(Array.from(window.MG.perspective));
+  var shotDesc = shotParts.join(", ");
+
+  // Tech params
+  var techParts = [];
+  if (typeof params !== "undefined") {
+    if (params.grain) techParts.push(params.grain);
+    if (params.color) techParts.push(params.color);
+    if (params.light) techParts.push(params.light);
+  }
+
+  var parts = [baseStyle, iconIdentity, charDesc, mbAesthetic, wardrobeDesc,
+    iconStyle, iconEnergy, sceneDesc, shotDesc, techParts.join(", "), iconAesthetic]
+    .filter(function(s){return s && s.trim();});
+
+  return parts.join(", ");
+}
+
+function mgRefreshPrompt() {
+  var el = document.getElementById("prompt-preview");
+  if (!el) return;
+  if (typeof promptLocked !== "undefined" && promptLocked) return;
+  var p = mgBuildPrompt();
+  el.value = p;
+  var cc = document.getElementById("prompt-char-count");
+  if (cc) cc.textContent = p.length + " chars";
+}
+
+// Override legacy functions to use MG engine
+function buildPrompt() { return mgBuildPrompt(); }
+function refreshPrompt() { mgRefreshPrompt(); }
+function getSelectedWardrobePrompt() {
+  var parts = [];
+  if (typeof selectedIcon === "undefined" || !selectedIcon) return "";
+  ["tops","bottoms","accessories","look"].forEach(function(tab) {
+    getWardrobeForTab(selectedIcon.id, tab).forEach(function(i){
+      if(window.MG.wardrobeSelected.has(i.id)) parts.push(i.prompt);
+    });
+  });
+  return parts.join(", ");
+}
+function renderWardrobeChips() { mgRenderWardrobeChips(); }
+function selectWardrobeItem(id) { mgSelectWardrobe(id); }
+
+// ── LIGHTBOX ────────────────────────────────────────────────────────
+function lbClose() {
+  var el = document.getElementById("lb-overlay");
+  if (el) el.classList.remove("open");
+  document.removeEventListener("keydown", _lbKey);
+}
+function _lbKey(e) {
+  if (e.key==="Escape") lbClose();
+  if (e.key==="ArrowLeft") lbNav(-1);
+  if (e.key==="ArrowRight") lbNav(1);
+}
+function lbOpen(idx) {
+  if (typeof _lbGetImages === "function") {
+    _lbImages = _lbGetImages();
+  }
+  _lbIdx = idx;
+  if (typeof _lbRender === "function") _lbRender();
+  var el = document.getElementById("lb-overlay");
+  if (el) el.classList.add("open");
+  document.addEventListener("keydown", _lbKey);
+}
+
 </script>
 
 <div id="cloud-lib-panel" style="display:none;position:fixed;inset:0;z-index:600;background:var(--bg);overflow-y:auto;padding:24px">
