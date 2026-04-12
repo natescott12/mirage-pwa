@@ -363,18 +363,20 @@
   .ref-indicator { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--gold,#c9a96e); color:#1a1714; padding:8px 20px; border-radius:2px; font-size:11px; font-family:'DM Sans',sans-serif; z-index:1000; opacity:0; transition:opacity .3s; pointer-events:none; }
   .ref-indicator.show { opacity:1; }
 
+  .wardrobe-tab-btn{padding:4px 10px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid var(--border-md);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif;transition:all .12s;}
+  .wardrobe-tab-btn.active{background:var(--gold);color:#f8f6f2;border-color:var(--gold);}
+  .shot-chip{padding:5px 10px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid var(--border-md);background:transparent;color:var(--dim);transition:all .12s;font-family:'DM Sans',sans-serif;white-space:nowrap;display:inline-block;}
+  .shot-chip.active{background:var(--accent,#3a6b8a);color:#f8f6f2;border-color:var(--accent,#3a6b8a);}
+  .shot-group-label{font-size:8px;color:var(--muted);margin-bottom:3px;margin-top:8px;letter-spacing:.06em;text-transform:uppercase;}
   .lb-overlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
   .lb-overlay.open{opacity:1;pointer-events:all;}
   .lb-wrap{position:relative;max-width:min(88vw,680px);max-height:92vh;display:flex;flex-direction:column;align-items:center;}
-  .lb-wrap img{max-width:100%;max-height:72vh;object-fit:contain;border-radius:2px;filter:saturate(0.85) contrast(1.05);}
+  .lb-wrap img{max-width:100%;max-height:72vh;object-fit:contain;border-radius:2px;}
   .lb-close{position:absolute;top:-36px;right:0;color:#fff;font-size:18px;cursor:pointer;opacity:.6;background:none;border:none;padding:4px 8px;}
-  .lb-close:hover{opacity:1;}
-  .lb-nav{position:absolute;top:36%;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:22px;cursor:pointer;padding:10px 15px;border-radius:2px;transition:background .15s;}
-  .lb-nav:hover{background:rgba(255,255,255,.22);}
+  .lb-nav{position:absolute;top:36%;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:22px;cursor:pointer;padding:10px 15px;border-radius:2px;}
   .lb-prev{left:-52px;}.lb-next{right:-52px;}
   .lb-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;justify-content:center;}
-  .lb-btn{padding:6px 14px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:#fff;font-family:'DM Sans',sans-serif;transition:all .15s;letter-spacing:.05em;}
-  .lb-btn:hover{background:rgba(255,255,255,.16);}
+  .lb-btn{padding:6px 14px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:#fff;font-family:'DM Sans',sans-serif;transition:all .15s;}
   .lb-btn.primary{background:var(--gold,#c9a96e);border-color:var(--gold,#c9a96e);color:#1a1714;}
   .lb-btn.danger{border-color:rgba(220,70,70,.5);color:rgba(220,100,100,.95);}
   .lb-meta{text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.35);font-family:'DM Sans',sans-serif;max-width:480px;line-height:1.5;}
@@ -382,147 +384,16 @@
   .lib-card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 55%);opacity:0;transition:opacity .18s;display:flex;flex-direction:column;justify-content:flex-end;padding:7px;}
   .lib-card:hover .lib-card-overlay{opacity:1;}
   .lib-card-actions{display:flex;gap:4px;}
-  .lib-cbtn{padding:3px 8px;font-size:9px;border-radius:2px;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.45);color:#fff;font-family:'DM Sans',sans-serif;transition:all .15s;}
-  .lib-cbtn:hover{background:rgba(255,255,255,.18);}
+  .lib-cbtn{padding:3px 8px;font-size:9px;border-radius:2px;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.45);color:#fff;font-family:'DM Sans',sans-serif;}
   .lib-cbtn.ref{background:var(--gold,#c9a96e);border-color:var(--gold,#c9a96e);color:#1a1714;}
-  .lib-fav-btn{position:absolute;top:5px;right:6px;font-size:13px;cursor:pointer;opacity:0;transition:opacity .15s;background:none;border:none;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);}
+  .lib-fav-btn{position:absolute;top:5px;right:6px;font-size:13px;cursor:pointer;opacity:0;transition:opacity .15s;background:none;border:none;color:#fff;}
   .lib-card:hover .lib-fav-btn,.lib-fav-btn.on{opacity:1;}
-  .ref-toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--gold,#c9a96e);color:#1a1714;padding:7px 18px;border-radius:2px;font-size:10px;font-family:'DM Sans',sans-serif;z-index:10000;opacity:0;transition:opacity .25s;pointer-events:none;letter-spacing:.05em;}
+  .ref-toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--gold,#c9a96e);color:#1a1714;padding:7px 18px;border-radius:2px;font-size:10px;font-family:'DM Sans',sans-serif;z-index:10000;opacity:0;transition:opacity .25s;pointer-events:none;}
   .ref-toast.show{opacity:1;}
-  .ref-active-badge{display:inline-block;background:var(--gold,#c9a96e);color:#1a1714;font-size:9px;padding:2px 7px;border-radius:2px;margin-left:8px;letter-spacing:.05em;vertical-align:middle;}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-
-// ── SHOT SETUP — hoisted early so inline onclick handlers work ────────────────
-if (typeof window.selectedFraming === 'undefined') window.selectedFraming = new Set();
-if (typeof window.selectedAngle === 'undefined') window.selectedAngle = new Set();
-if (typeof window.selectedPerspective === 'undefined') window.selectedPerspective = new Set();
-if (typeof window.selectedBaseStyles === 'undefined') window.selectedBaseStyles = new Set(['35mm film natural light candid unposed organic']);
-
-function toggleShot(el, group, value) {
-  if (!window.selectedFraming) window.selectedFraming = new Set();
-  if (!window.selectedAngle) window.selectedAngle = new Set();
-  if (!window.selectedPerspective) window.selectedPerspective = new Set();
-  if (!window.selectedBaseStyles) window.selectedBaseStyles = new Set();
-  const map = {framing: window.selectedFraming, angle: window.selectedAngle, perspective: window.selectedPerspective, base: window.selectedBaseStyles};
-  const s = map[group]; if (!s) return;
-  if (s.has(value)) { s.delete(value); el.classList.remove('active'); }
-  else { s.add(value); el.classList.add('active'); }
-  if (typeof refreshPrompt === 'function') refreshPrompt();
-}
-
-function addShotChip(group, inputEl) {
-  const val = typeof inputEl === 'string' ? inputEl : (inputEl.value||'').trim();
-  if (!val) return;
-  const chip = document.createElement('div');
-  chip.className = 'shot-chip';
-  chip.textContent = val;
-  chip.onclick = function() { toggleShot(this, group, val); };
-  // Find container by scanning shot chips
-  document.querySelectorAll('.shot-chip').forEach(c => {
-    const oc = c.getAttribute('onclick')||'';
-    if (oc.includes("'" + group + "'")) {
-      c.parentElement._shotGroup = group;
-    }
-  });
-  const containers = document.querySelectorAll('[style*="flex-wrap"]');
-  let found = false;
-  containers.forEach(el => {
-    if (el._shotGroup === group && !found) {
-      el.appendChild(chip);
-      found = true;
-    }
-  });
-  if (!found) {
-    // fallback: find by sibling label
-    document.querySelectorAll('.shot-chip').forEach(c => {
-      if ((c.getAttribute('onclick')||'').includes("'" + group + "'")) {
-        c.parentElement.appendChild(chip);
-        found = true;
-      }
-    });
-  }
-  if (typeof inputEl === 'object') inputEl.value = '';
-  toggleShot(chip, group, val);
-}
-
-// ── WARDROBE TABS — hoisted early ─────────────────────────────────────────────
-const WARDROBE_DEFAULTS_EARLY = {
-  tops: [
-    {id:'t1',label:'Bralette',prompt:'bralette top'},
-    {id:'t2',label:'Bikini top',prompt:'bikini top'},
-    {id:'t3',label:'Sports bra',prompt:'sports bra'},
-    {id:'t4',label:'White tee',prompt:'white t-shirt relaxed fit'},
-    {id:'t5',label:'Vintage tee',prompt:'vintage band t-shirt worn in'},
-    {id:'t6',label:"Boyfriend shirt",prompt:'oversized boyfriend shirt half tucked'},
-    {id:'t7',label:'Linen top',prompt:'linen top natural drape'},
-    {id:'t8',label:'Striped button-up',prompt:'striped cotton button-up shirt'},
-    {id:'t9',label:'Black tee',prompt:'fitted black t-shirt'},
-    {id:'t10',label:'Tank top',prompt:'ribbed tank top'},
-    {id:'t11',label:'Crop top',prompt:'cropped top'},
-    {id:'t12',label:'Tube top',prompt:'tube top'},
-  ],
-  bottoms: [
-    {id:'b1',label:'Jeans',prompt:'straight leg jeans'},
-    {id:'b2',label:'Loose jeans',prompt:'loose fit jeans relaxed'},
-    {id:'b3',label:'Baggy jeans',prompt:'baggy oversized jeans'},
-    {id:'b4',label:'Black pants',prompt:'black tailored pants'},
-    {id:'b5',label:'Vintage shorts',prompt:'vintage cut-off denim shorts'},
-    {id:'b6',label:'Sweatpants',prompt:'sweatpants relaxed'},
-    {id:'b7',label:'Biker shorts',prompt:'black biker shorts'},
-    {id:'b8',label:'Cargo pants',prompt:'cargo pants utilitarian'},
-    {id:'b9',label:'Baggy shorts',prompt:'baggy shorts'},
-    {id:'b10',label:'Long skirt',prompt:'long flowing skirt'},
-    {id:'b11',label:'Short skirt',prompt:'short skirt'},
-    {id:'b12',label:'Denim skirt',prompt:'denim mini skirt'},
-  ],
-  accessories: [
-    {id:'a1',label:'Silver earrings',prompt:'delicate silver earrings'},
-    {id:'a2',label:'Silver hoops',prompt:'silver hoop earrings'},
-    {id:'a3',label:'Gold hoops',prompt:'gold hoop earrings'},
-    {id:'a4',label:'Rings',prompt:'stacked rings mixed metals'},
-    {id:'a5',label:'Watch',prompt:'vintage watch on wrist'},
-    {id:'a6',label:'Gold necklace',prompt:'thin gold necklace'},
-    {id:'a7',label:'Silver chain',prompt:'silver chain necklace'},
-    {id:'a8',label:'Small bag',prompt:'small shoulder bag'},
-    {id:'a9',label:'Large tote',prompt:'oversized canvas tote bag'},
-    {id:'a10',label:'Flip flops',prompt:'simple flip flops'},
-    {id:'a11',label:'Sandals',prompt:'strappy sandals'},
-    {id:'a12',label:'Loafers',prompt:'leather loafers'},
-    {id:'a13',label:'Kitten heels',prompt:'kitten heel shoes'},
-    {id:'a14',label:'Boots',prompt:'ankle boots'},
-  ],
-  look: []
-};
-
-function getWardrobeForTab(iconId, tab) {
-  const WARDROBE_KEY_EARLY = 'mirage_wardrobe_v1';
-  try {
-    const s = localStorage.getItem(WARDROBE_KEY_EARLY + '_' + iconId + '_' + tab);
-    if (s) return JSON.parse(s);
-  } catch(e) {}
-  return JSON.parse(JSON.stringify(WARDROBE_DEFAULTS_EARLY[tab] || []));
-}
-
-function saveWardrobeTab(iconId, tab, items) {
-  const WARDROBE_KEY_EARLY = 'mirage_wardrobe_v1';
-  try { localStorage.setItem(WARDROBE_KEY_EARLY + '_' + iconId + '_' + tab, JSON.stringify(items)); } catch(e) {}
-}
-
-function switchWardrobeTab(tab) {
-  if (typeof currentWardrobeTab !== 'undefined') window._currentWardrobeTab = tab;
-  window._activeWardrobeTab = tab;
-  document.querySelectorAll('.wardrobe-tab-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById('wtab-' + tab);
-  if (btn) btn.classList.add('active');
-  if (typeof selectedIcon !== 'undefined' && selectedIcon) {
-    if (typeof currentWardrobe !== 'undefined') currentWardrobe = getWardrobeForTab(selectedIcon.id, tab);
-  }
-  if (typeof renderWardrobeChips === 'function') renderWardrobeChips();
-}
-
 (function() {
   try {
     window.sbStudio = supabase.createClient(
@@ -844,45 +715,38 @@ function switchWardrobeTab(tab) {
       </div>
       <div style="margin-bottom:20px">
         
-        <!-- Shot Setup -->
         <div style="margin-top:14px;margin-bottom:4px;display:flex;align-items:center;gap:8px">
           <span style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)">Shot Setup</span>
           <span style="font-size:9px;color:var(--gold)">✦ Multi-select</span>
         </div>
-        <div style="font-size:8px;color:var(--muted);margin-bottom:3px;letter-spacing:.06em;text-transform:uppercase">Framing</div>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">
+        <div class="shot-group-label">Framing</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:2px" id="shot-framing">
           <div class="shot-chip" onclick="toggleShot(this,'framing','tight portrait crop')">Tight crop</div>
           <div class="shot-chip" onclick="toggleShot(this,'framing','waist up shot')">Waist up</div>
           <div class="shot-chip" onclick="toggleShot(this,'framing','three quarter length')">Three quarter</div>
           <div class="shot-chip" onclick="toggleShot(this,'framing','full length shot head to toe')">Full length</div>
-          <div class="shot-chip" onclick="toggleShot(this,'framing','wide environmental portrait, subject within surroundings, context is part of the story')">Environmental</div>
-          <div class="shot-chip" onclick="toggleShot(this,'framing','full scene wide shot, subject small in frame')">Full scene</div>
+          <div class="shot-chip" onclick="toggleShot(this,'framing','wide environmental portrait subject within surroundings context is part of the story')">Environmental</div>
+          <div class="shot-chip" onclick="toggleShot(this,'framing','full scene wide shot subject small in frame')">Full scene</div>
         </div>
-        <div style="display:flex;gap:5px;margin-top:4px;margin-bottom:2px">
-          <input style="flex:1;padding:4px 8px;background:var(--bg);border:1px solid var(--border-md);border-radius:2px;font-size:10px;color:var(--text);font-family:'DM Sans',sans-serif" 
-            placeholder="Add custom..." id="shot-input-framing" 
-            onkeydown="if(event.key==='Enter')addShotChip('framing',this)" />
-          <button style="padding:4px 10px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid var(--border-md);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif" 
-            onclick="addShotChip('framing',document.getElementById('shot-input-framing'))">+</button>
+        <div style="display:flex;gap:5px;margin-top:3px;margin-bottom:4px">
+          <input class="wardrobe-add-input" id="shot-add-framing" placeholder="Add custom framing..." onkeydown="if(event.key==='Enter')addShotChip('framing',this,'shot-framing')" style="font-size:10px;padding:4px 8px"/>
+          <button class="wardrobe-add-btn" onclick="addShotChip('framing',document.getElementById('shot-add-framing'),'shot-framing')">+</button>
         </div>
-        <div style="font-size:8px;color:var(--muted);margin-bottom:3px;letter-spacing:.06em;text-transform:uppercase">Camera Angle</div>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">
+        <div class="shot-group-label">Camera Angle</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:2px" id="shot-angle">
           <div class="shot-chip" onclick="toggleShot(this,'angle','eye level neutral intimate')">Eye level</div>
           <div class="shot-chip" onclick="toggleShot(this,'angle','low angle from below subject feels powerful')">Low angle</div>
           <div class="shot-chip" onclick="toggleShot(this,'angle','high angle from above subject feels small vulnerable')">High angle</div>
-          <div class="shot-chip" onclick="toggleShot(this,'angle','birds eye overhead flattening')">Bird's eye</div>
-          <div class="shot-chip" onclick="toggleShot(this,'angle','dutch angle tilted frame tension')">Dutch angle</div>
-          <div class="shot-chip" onclick="toggleShot(this,'angle','worms eye extreme low ground level')">Worm's eye</div>
+          <div class="shot-chip" onclick="toggleShot(this,'angle','birds eye overhead flattening subject into scene')">Bird's eye</div>
+          <div class="shot-chip" onclick="toggleShot(this,'angle','dutch angle tilted frame tension unease')">Dutch angle</div>
+          <div class="shot-chip" onclick="toggleShot(this,'angle','worms eye extreme low angle ground level')">Worm's eye</div>
         </div>
-        <div style="display:flex;gap:5px;margin-top:4px;margin-bottom:2px">
-          <input style="flex:1;padding:4px 8px;background:var(--bg);border:1px solid var(--border-md);border-radius:2px;font-size:10px;color:var(--text);font-family:'DM Sans',sans-serif" 
-            placeholder="Add custom angle..." id="shot-input-angle" 
-            onkeydown="if(event.key==='Enter')addShotChip('angle',this)" />
-          <button style="padding:4px 10px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid var(--border-md);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif" 
-            onclick="addShotChip('angle',document.getElementById('shot-input-angle'))">+</button>
+        <div style="display:flex;gap:5px;margin-top:3px;margin-bottom:4px">
+          <input class="wardrobe-add-input" id="shot-add-angle" placeholder="Add custom angle..." onkeydown="if(event.key==='Enter')addShotChip('angle',this,'shot-angle')" style="font-size:10px;padding:4px 8px"/>
+          <button class="wardrobe-add-btn" onclick="addShotChip('angle',document.getElementById('shot-add-angle'),'shot-angle')">+</button>
         </div>
-        <div style="font-size:8px;color:var(--muted);margin-bottom:3px;letter-spacing:.06em;text-transform:uppercase">Perspective</div>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">
+        <div class="shot-group-label">Perspective</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:2px" id="shot-perspective">
           <div class="shot-chip" onclick="toggleShot(this,'perspective','over the shoulder implied relationship off-frame')">Over shoulder</div>
           <div class="shot-chip" onclick="toggleShot(this,'perspective','silhouette backlit form only no detail')">Silhouette</div>
           <div class="shot-chip" onclick="toggleShot(this,'perspective','reflection through mirror or window')">Reflection</div>
@@ -890,16 +754,13 @@ function switchWardrobeTab(tab) {
           <div class="shot-chip" onclick="toggleShot(this,'perspective','shot through plants doorframe frosted glass obscured')">Obscured</div>
           <div class="shot-chip" onclick="toggleShot(this,'perspective','from behind back of head anonymity and longing')">From behind</div>
         </div>
-        <div style="display:flex;gap:5px;margin-top:4px;margin-bottom:2px">
-          <input style="flex:1;padding:4px 8px;background:var(--bg);border:1px solid var(--border-md);border-radius:2px;font-size:10px;color:var(--text);font-family:'DM Sans',sans-serif" 
-            placeholder="Add custom..." id="shot-input-perspective" 
-            onkeydown="if(event.key==='Enter')addShotChip('perspective',this)" />
-          <button style="padding:4px 10px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid var(--border-md);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif" 
-            onclick="addShotChip('perspective',document.getElementById('shot-input-perspective'))">+</button>
+        <div style="display:flex;gap:5px;margin-top:3px;margin-bottom:4px">
+          <input class="wardrobe-add-input" id="shot-add-perspective" placeholder="Add custom perspective..." onkeydown="if(event.key==='Enter')addShotChip('perspective',this,'shot-perspective')" style="font-size:10px;padding:4px 8px"/>
+          <button class="wardrobe-add-btn" onclick="addShotChip('perspective',document.getElementById('shot-add-perspective'),'shot-perspective')">+</button>
         </div>
-        <div style="font-size:8px;color:var(--muted);margin-bottom:3px;letter-spacing:.06em;text-transform:uppercase">Base Style</div>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">
-          <div class="shot-chip active" id="shot-candid" onclick="toggleShot(this,'base','35mm film natural light candid unposed organic')">Candid</div>
+        <div class="shot-group-label">Base Style</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px" id="shot-base">
+          <div class="shot-chip active" onclick="toggleShot(this,'base','35mm film natural light candid unposed organic')">Candid</div>
           <div class="shot-chip" onclick="toggleShot(this,'base','editorial fashion photography American Apparel 2000s Corinne Day Juergen Teller')">Editorial</div>
           <div class="shot-chip" onclick="toggleShot(this,'base','phone camera snapshot lo-fi casual grain')">Phone snap</div>
           <div class="shot-chip" onclick="toggleShot(this,'base','cinematic still movie frame soft focus atmospheric')">Cinematic</div>
@@ -907,6 +768,12 @@ function switchWardrobeTab(tab) {
           <div class="shot-chip" onclick="toggleShot(this,'base','intimate private moment personal')">Intimate</div>
         </div>
         <div class="section-label" style="display:flex;justify-content:space-between;align-items:center"><span>Wardrobe · Inject into Prompt</span><span style="font-size:9px;color:var(--gold)">✦ Prompt layer</span></div>
+        <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+          <button class="wardrobe-tab-btn active" onclick="switchWardrobeTab('tops')" id="wtab-tops">Tops</button>
+          <button class="wardrobe-tab-btn" onclick="switchWardrobeTab('bottoms')" id="wtab-bottoms">Bottoms</button>
+          <button class="wardrobe-tab-btn" onclick="switchWardrobeTab('accessories')" id="wtab-accessories">Accessories</button>
+          <button class="wardrobe-tab-btn" onclick="switchWardrobeTab('look')" id="wtab-look">Full Look</button>
+        </div>
         <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
           <button class="wardrobe-tab-btn active" onclick="switchWardrobeTab('tops')" id="wtab-tops">Tops</button>
           <button class="wardrobe-tab-btn" onclick="switchWardrobeTab('bottoms')" id="wtab-bottoms">Bottoms</button>
@@ -1402,18 +1269,20 @@ async function checkProxy() {
 async function generateFlux(prompt) {
   if(!proxyOk) throw new Error("Proxy not running — start node server.js");
   // Use Kontext Pro (img-to-img) if we have a prior image, else flux-pro-1.1 (text-to-image)
-  // Reference: manual pick > last generated
-  let _refSrc = window.currentRef || null;
-  if (!_refSrc) {
-    const _lib = load(LIB_KEY);
-    const _iconImgs = (_lib[selectedIcon?.id]||[]);
-    if (_iconImgs.length) _refSrc = _iconImgs[_iconImgs.length-1].url || _iconImgs[_iconImgs.length-1].base64;
+  // Use manually set reference image first, else last generated image for Kontext
+  let refSrc = window.currentReferenceImage || null;
+  if (!refSrc) {
+    const lib = load(LIB_KEY);
+    const iconImgs = (lib[selectedIcon?.id] || []);
+    if (iconImgs.length) refSrc = iconImgs[iconImgs.length-1].url || iconImgs[iconImgs.length-1].base64;
   }
-  const model = _refSrc ? 'flux-kontext-pro' : 'flux-pro-1.1';
+  const model = refSrc ? 'flux-kontext-pro' : 'flux-pro-1.1';
   const body = {prompt, model, width:768, height:1024};
-  if (_refSrc) {
-    if (_refSrc.startsWith('http')) body.image_url = _refSrc;
-    else { const _b = _refSrc.includes(',') ? _refSrc.split(',')[1] : _refSrc; body.input_image = _b; }
+  if (refSrc) {
+    const b64src = refSrc.includes(',') ? refSrc.split(',')[1] : refSrc;
+    // If it's a URL, pass as image_url; if base64, pass as input_image
+    if (refSrc.startsWith('http')) body.image_url = refSrc;
+    else body.input_image = b64src;
   }
   const r=await fetch(PROXY+"/flux/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
   if(!r.ok){const e=await r.json();throw new Error(e.error||"Submit failed");}
@@ -1830,14 +1699,7 @@ function renderLibrary() {
   grid.innerHTML=images.map((img,idx)=>`
     <div class="lib-card ${libSelected.has(img.id)?"selected":""}" id="lc-${img.id}">
       ${img.imageUrl
-        ? `<img src="${img.imageUrl}" alt="${img.icon.name}" onclick="lbOpen(${idx})" loading="lazy" style="width:100%;aspect-ratio:3/4;object-fit:cover;object-position:center top;filter:saturate(0.78) contrast(1.06);display:block;transition:transform 0.3s;cursor:zoom-in" />
-           <div class="lib-card-overlay">
-             <div class="lib-card-actions">
-               <div class="lib-cbtn ref" onclick="event.stopPropagation();setRef('${img.imageUrl}','${img.icon?.name||''}')">✦ Ref</div>
-               <div class="lib-cbtn" onclick="event.stopPropagation();libDl('${img.imageUrl}',${img.id})">↓</div>
-             </div>
-           </div>
-           <button class="lib-fav-btn ${window.libFavs&&window.libFavs.has(img.id)?'on':''}" onclick="event.stopPropagation();libToggleFav(${img.id})">${window.libFavs&&window.libFavs.has(img.id)?'♥':'♡'}</button>`
+        ? `<img src="${img.imageUrl}" alt="${img.icon.name}" onclick="openLb(${idx})" loading="lazy" style="width:100%;aspect-ratio:3/4;object-fit:cover;object-position:center top;filter:saturate(0.78) contrast(1.06);display:block;transition:transform 0.3s" />`
         : `<div style="width:100%;aspect-ratio:3/4;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px"><div style="font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">Expired</div><div style="font-size:9px;color:var(--muted)">Run ↺ Repair</div></div>`
       }
       <div class="grain-overlay"></div>
@@ -2398,7 +2260,6 @@ const DEFAULT_WARDROBE = [
 ];
 
 let selectedWardrobeId = null;
-let selectedWardrobeIds = new Set();
 
 function loadWardrobeForIcon() {
   let saved = getWardrobe(selectedIcon.id);
@@ -2815,42 +2676,7 @@ window.selectedAngle = new Set();
 window.selectedPerspective = new Set();
 window.selectedBaseStyles = new Set(['35mm film natural light candid unposed organic']);
 
-
-function addShotChip(group, inputEl) {
-  const val = inputEl.value ? inputEl.value.trim() : '';
-  if (!val) return;
-  // Add chip to the DOM
-  const containers = {'framing': 'framing-chips', 'angle': 'angle-chips', 'perspective': 'perspective-chips'};
-  // Find the chip container for this group
-  const allChipDivs = document.querySelectorAll('.shot-chip');
-  // Create new chip
-  const chip = document.createElement('div');
-  chip.className = 'shot-chip';
-  chip.textContent = val;
-  chip.onclick = function() { toggleShot(this, group, val); };
-  // Find the right container
-  if (allChipDivs.length) {
-    // Find last chip in this group's section then insert after its parent
-    let targetContainer = null;
-    allChipDivs.forEach(c => {
-      if (c.getAttribute('onclick') && c.getAttribute('onclick').includes("'" + group + "'")) {
-        targetContainer = c.parentElement;
-      }
-    });
-    if (targetContainer) {
-      targetContainer.appendChild(chip);
-      inputEl.value = '';
-      // Auto-select the new chip
-      toggleShot(chip, group, val);
-    }
-  }
-}
 function toggleShot(el, group, value) {
-  // Ensure sets exist
-  if (!window.selectedFraming) window.selectedFraming = new Set();
-  if (!window.selectedAngle) window.selectedAngle = new Set();
-  if (!window.selectedPerspective) window.selectedPerspective = new Set();
-  if (!window.selectedBaseStyles) window.selectedBaseStyles = new Set();
   const map = {framing: window.selectedFraming, angle: window.selectedAngle, perspective: window.selectedPerspective, base: window.selectedBaseStyles};
   const s = map[group]; if (!s) return;
   if (s.has(value)) { s.delete(value); el.classList.remove('active'); }
@@ -2981,112 +2807,135 @@ function toggleFav(id) {
   renderLibrary();
 }
 
-// ── LIBRARY ENHANCEMENTS ─────────────────────────────────────────────────────
-window.libFavs = new Set(JSON.parse(localStorage.getItem('mirage_lib_favs')||'[]'));
-window.currentRef = null;
-let _lbImages = [], _lbIdx = 0;
+// ═══════════════════════════════════════════════════════════════════
+// SHOT SETUP
+// ═══════════════════════════════════════════════════════════════════
+var _sf = new Set(); var _sa = new Set(); var _sp = new Set();
+var _sb = new Set(['35mm film natural light candid unposed organic']);
+window.selectedFraming = _sf; window.selectedAngle = _sa;
+window.selectedPerspective = _sp; window.selectedBaseStyles = _sb;
 
-function _lbGetImages() {
-  const lib = load(LIB_KEY);
-  let images = [];
-  if (libIconId === 'all') {
-    ICONS_DATA.forEach(icon => (lib[icon.id]||[]).forEach(img => images.push({...img, icon})));
-    images.sort((a,b) => b.id - a.id);
-  } else {
-    const icon = ICONS_DATA.find(i => i.id === libIconId);
-    if (icon) images = (lib[libIconId]||[]).map(img => ({...img, icon}));
-  }
-  if (libFilter === 'favs') images = images.filter(img => window.libFavs.has(img.id));
-  if (libFilter === 'saved') images = images.filter(img => libSelected.has(img.id));
-  return images;
+function toggleShot(el, group, value) {
+  var map = {framing:_sf, angle:_sa, perspective:_sp, base:_sb};
+  var s = map[group]; if (!s) return;
+  if (s.has(value)) { s.delete(value); el.classList.remove('active'); }
+  else { s.add(value); el.classList.add('active'); }
+  refreshPrompt();
 }
 
+function addShotChip(group, inputEl, containerId) {
+  var val = (inputEl.value||'').trim(); if (!val) return;
+  var container = document.getElementById(containerId); if (!container) return;
+  var chip = document.createElement('div');
+  chip.className = 'shot-chip';
+  chip.textContent = val;
+  chip.setAttribute('onclick', "toggleShot(this,'"+group+"','"+val.replace(/'/g,"\'")+"')");
+  container.appendChild(chip);
+  inputEl.value = '';
+  toggleShot(chip, group, val);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// WARDROBE TABS + MULTI-SELECT
+// ═══════════════════════════════════════════════════════════════════
+var WDEF = {
+  tops:[
+    {id:'t1',label:'Bralette',prompt:'bralette top'},{id:'t2',label:'Bikini top',prompt:'bikini top'},
+    {id:'t3',label:'Sports bra',prompt:'sports bra'},{id:'t4',label:'White tee',prompt:'white t-shirt relaxed fit'},
+    {id:'t5',label:'Vintage tee',prompt:'vintage band t-shirt worn in'},{id:'t6',label:'Boyfriend shirt',prompt:'oversized boyfriend shirt half tucked'},
+    {id:'t7',label:'Linen top',prompt:'linen top natural drape'},{id:'t8',label:'Striped button-up',prompt:'striped cotton button-up shirt'},
+    {id:'t9',label:'Black tee',prompt:'fitted black t-shirt'},{id:'t10',label:'Tank top',prompt:'ribbed tank top'},
+    {id:'t11',label:'Crop top',prompt:'cropped top'},{id:'t12',label:'Tube top',prompt:'tube top'},
+  ],
+  bottoms:[
+    {id:'b1',label:'Jeans',prompt:'straight leg jeans'},{id:'b2',label:'Loose jeans',prompt:'loose fit jeans relaxed'},
+    {id:'b3',label:'Baggy jeans',prompt:'baggy oversized jeans'},{id:'b4',label:'Black pants',prompt:'black tailored pants'},
+    {id:'b5',label:'Vintage shorts',prompt:'vintage cut-off denim shorts'},{id:'b6',label:'Sweatpants',prompt:'sweatpants relaxed'},
+    {id:'b7',label:'Biker shorts',prompt:'black biker shorts'},{id:'b8',label:'Cargo pants',prompt:'cargo pants utilitarian'},
+    {id:'b9',label:'Baggy shorts',prompt:'baggy shorts'},{id:'b10',label:'Long skirt',prompt:'long flowing skirt'},
+    {id:'b11',label:'Short skirt',prompt:'short skirt'},{id:'b12',label:'Denim skirt',prompt:'denim mini skirt'},
+  ],
+  accessories:[
+    {id:'a1',label:'Silver earrings',prompt:'delicate silver earrings'},{id:'a2',label:'Silver hoops',prompt:'silver hoop earrings'},
+    {id:'a3',label:'Gold hoops',prompt:'gold hoop earrings'},{id:'a4',label:'Rings',prompt:'stacked rings mixed metals'},
+    {id:'a5',label:'Watch',prompt:'vintage watch on wrist'},{id:'a6',label:'Gold necklace',prompt:'thin gold necklace'},
+    {id:'a7',label:'Silver chain',prompt:'silver chain necklace'},{id:'a8',label:'Small bag',prompt:'small shoulder bag'},
+    {id:'a9',label:'Large tote',prompt:'oversized canvas tote bag'},{id:'a10',label:'Flip flops',prompt:'simple flip flops'},
+    {id:'a11',label:'Sandals',prompt:'strappy sandals'},{id:'a12',label:'Loafers',prompt:'leather loafers'},
+    {id:'a13',label:'Kitten heels',prompt:'kitten heel shoes'},{id:'a14',label:'Boots',prompt:'ankle boots'},
+  ],
+  look:[]
+};
+var _activeWardrobeTab = 'tops';
+var _selectedWardrobeIds = new Set();
+
+function getWardrobeForTab(iconId, tab) {
+  try { var s = localStorage.getItem('mirage_wardrobe_v1_'+iconId+'_'+tab); if(s) return JSON.parse(s); } catch(e) {}
+  return JSON.parse(JSON.stringify(WDEF[tab]||[]));
+}
+function saveWardrobeTab(iconId, tab, items) {
+  try { localStorage.setItem('mirage_wardrobe_v1_'+iconId+'_'+tab, JSON.stringify(items)); } catch(e) {}
+}
+function switchWardrobeTab(tab) {
+  _activeWardrobeTab = tab;
+  document.querySelectorAll('.wardrobe-tab-btn').forEach(function(b){b.classList.remove('active');});
+  var btn = document.getElementById('wtab-'+tab); if(btn) btn.classList.add('active');
+  if(typeof selectedIcon!=='undefined'&&selectedIcon) currentWardrobe = getWardrobeForTab(selectedIcon.id, tab);
+  renderWardrobeChips();
+}
+function removeWardrobeItem(id) {
+  var items = selectedIcon ? getWardrobeForTab(selectedIcon.id, _activeWardrobeTab).filter(function(i){return i.id!==id;}) : [];
+  if(selectedIcon) saveWardrobeTab(selectedIcon.id, _activeWardrobeTab, items);
+  _selectedWardrobeIds.delete(id); currentWardrobe = items;
+  renderWardrobeChips(); refreshPrompt();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// LIGHTBOX + LIBRARY
+// ═══════════════════════════════════════════════════════════════════
+window.libFavs = new Set(JSON.parse(localStorage.getItem('mirage_lib_favs')||'[]'));
+window.currentRef = null;
+var _lbImages = [], _lbIdx = 0;
+
+function _lbGetImages() {
+  var lib = load(LIB_KEY); var images = [];
+  if(libIconId==='all'){ICONS_DATA.forEach(function(icon){(lib[icon.id]||[]).forEach(function(img){images.push(Object.assign({},img,{icon:icon}));});});images.sort(function(a,b){return b.id-a.id;});}
+  else{var icon=ICONS_DATA.find(function(i){return i.id===libIconId;});if(icon)(lib[libIconId]||[]).forEach(function(img){images.push(Object.assign({},img,{icon:icon}));});}
+  return images;
+}
 function lbOpen(idx) {
-  _lbImages = _lbGetImages();
-  _lbIdx = idx;
-  _lbRender();
+  _lbImages = _lbGetImages(); _lbIdx = idx; _lbRender();
   document.getElementById('lb-overlay').classList.add('open');
   document.addEventListener('keydown', _lbKey);
 }
-
 function _lbRender() {
-  const img = _lbImages[_lbIdx];
-  if (!img) return;
-  document.getElementById('lb-img').src = img.url || img.base64;
-  document.getElementById('lb-counter').textContent = (_lbIdx+1) + ' / ' + _lbImages.length;
-  const meta = [];
-  if (img.icon) meta.push(img.icon.name.toLowerCase());
-  if (img.prompt) meta.push(img.prompt.slice(0,140) + (img.prompt.length>140?'…':''));
+  var img = _lbImages[_lbIdx]; if(!img) return;
+  document.getElementById('lb-img').src = img.imageUrl||img.base64||'';
+  document.getElementById('lb-counter').textContent = (_lbIdx+1)+' / '+_lbImages.length;
+  var meta=[]; if(img.icon) meta.push(img.icon.name.toLowerCase()); if(img.prompt) meta.push(img.prompt.slice(0,120)+(img.prompt.length>120?'…':''));
   document.getElementById('lb-meta').textContent = meta.join(' · ');
-  const favBtn = document.getElementById('lb-fav-btn');
-  if (favBtn) favBtn.textContent = window.libFavs.has(img.id) ? '♥ Unfav' : '♡ Fav';
 }
-
-function lbBgClick(e) { if(e.target===document.getElementById('lb-overlay')) lbClose(); }
-function lbClose() {
-  document.getElementById('lb-overlay').classList.remove('open');
-  document.removeEventListener('keydown', _lbKey);
+function lbClose(){document.getElementById('lb-overlay').classList.remove('open');document.removeEventListener('keydown',_lbKey);}
+function _lbKey(e){if(e.key==='Escape')lbClose();if(e.key==='ArrowLeft')lbNav(-1);if(e.key==='ArrowRight')lbNav(1);}
+function lbNav(dir){_lbIdx=Math.max(0,Math.min(_lbImages.length-1,_lbIdx+dir));_lbRender();}
+function lbUseRef(){var img=_lbImages[_lbIdx];if(img)setRef(img.imageUrl||img.base64||'',img.icon?img.icon.name:'');lbClose();}
+function lbDownload(){var img=_lbImages[_lbIdx];if(img)libDl(img.imageUrl||img.base64||'',img.id);}
+function lbDelete(){
+  var img=_lbImages[_lbIdx]; if(!img||!img.icon) return;
+  if(!confirm('Delete this image?')) return;
+  var lib=load(LIB_KEY); lib[img.icon.id]=(lib[img.icon.id]||[]).filter(function(i){return i.id!==img.id;});
+  save(LIB_KEY,lib); _lbImages.splice(_lbIdx,1);
+  if(!_lbImages.length){lbClose();renderLibrary();return;}
+  _lbIdx=Math.min(_lbIdx,_lbImages.length-1); _lbRender(); renderLibrary();
 }
-function _lbKey(e) {
-  if(e.key==='Escape') lbClose();
-  if(e.key==='ArrowLeft') lbNav(-1);
-  if(e.key==='ArrowRight') lbNav(1);
-}
-function lbNav(dir) {
-  _lbIdx = Math.max(0, Math.min(_lbImages.length-1, _lbIdx+dir));
-  _lbRender();
-}
-function lbUseRef() {
-  const img = _lbImages[_lbIdx];
-  if (!img) return;
-  setRef(img.url||img.base64, img.icon?.name||'');
-  lbClose();
-}
-function lbDownload() {
-  const img = _lbImages[_lbIdx];
-  if (img) libDl(img.url||img.base64, img.id);
-}
-function lbFav() {
-  const img = _lbImages[_lbIdx];
-  if (img) { libToggleFav(img.id); _lbRender(); }
-}
-function lbDelete() {
-  const img = _lbImages[_lbIdx];
-  if (!img || !img.icon) return;
-  if (!confirm('Delete this image from library?')) return;
-  const lib = load(LIB_KEY);
-  lib[img.icon.id] = (lib[img.icon.id]||[]).filter(i => i.id !== img.id);
-  save(LIB_KEY, lib);
-  _lbImages.splice(_lbIdx, 1);
-  if (!_lbImages.length) { lbClose(); renderLibrary(); return; }
-  _lbIdx = Math.min(_lbIdx, _lbImages.length-1);
-  _lbRender();
-  renderLibrary();
-}
-
-function setRef(src, iconName) {
+function setRef(src, name) {
   window.currentRef = src;
-  const t = document.getElementById('ref-toast');
-  if (t) { t.textContent='✦ Reference set' + (iconName?' — '+iconName:'') + ' · next gen uses this'; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
-  notify('✦ Reference image set');
+  var t=document.getElementById('ref-toast');
+  if(t){t.textContent='\u2726 Reference set'+(name?' — '+name:'')+' · next gen uses this';t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
+  notify('\u2726 Reference image set');
 }
-
-function clearRef() {
-  window.currentRef = null;
-  notify('Reference cleared — text-to-image mode');
-}
-
-function libDl(src, id) {
-  const a = document.createElement('a');
-  a.href = src; a.download = 'mirage-'+id+'.jpg'; a.click();
-}
-
-function libToggleFav(id) {
-  if (window.libFavs.has(id)) window.libFavs.delete(id);
-  else window.libFavs.add(id);
-  localStorage.setItem('mirage_lib_favs', JSON.stringify([...window.libFavs]));
-  renderLibrary();
-}
+function libDl(src,id){var a=document.createElement('a');a.href=src;a.download='mirage-'+id+'.jpg';a.click();}
+function libToggleFav(id){if(window.libFavs.has(id))window.libFavs.delete(id);else window.libFavs.add(id);localStorage.setItem('mirage_lib_favs',JSON.stringify([...window.libFavs]));renderLibrary();}
 </script>
 
 <!-- Lightbox -->
@@ -3108,19 +2957,17 @@ function libToggleFav(id) {
 <!-- Reference indicator -->
 <div class="ref-indicator" id="ref-indicator">✦ Reference image set — next generation uses this</div>
 
-<!-- Lightbox -->
-<div class="lb-overlay" id="lb-overlay" onclick="lbBgClick(event)">
+<div class="lb-overlay" id="lb-overlay" onclick="if(event.target===this)lbClose()">
   <div class="lb-wrap" onclick="event.stopPropagation()">
     <button class="lb-close" onclick="lbClose()">✕</button>
-    <button class="lb-nav lb-prev" onclick="lbNav(-1)">‹</button>
-    <button class="lb-nav lb-next" onclick="lbNav(1)">›</button>
+    <button class="lb-nav lb-prev" onclick="lbNav(-1)">&#8249;</button>
+    <button class="lb-nav lb-next" onclick="lbNav(1)">&#8250;</button>
     <img id="lb-img" src="" alt="" />
     <div class="lb-counter" id="lb-counter"></div>
     <div class="lb-actions">
-      <button class="lb-btn primary" onclick="lbUseRef()">✦ Use as Reference</button>
-      <button class="lb-btn" onclick="lbDownload()">↓ Save</button>
-      <button class="lb-btn" id="lb-fav-btn" onclick="lbFav()">♡ Fav</button>
-      <button class="lb-btn danger" onclick="lbDelete()">✕ Delete</button>
+      <button class="lb-btn primary" onclick="lbUseRef()">&#10022; Use as Reference</button>
+      <button class="lb-btn" onclick="lbDownload()">&#8595; Save</button>
+      <button class="lb-btn danger" onclick="lbDelete()">&#10005; Delete</button>
     </div>
     <div class="lb-meta" id="lb-meta"></div>
   </div>
