@@ -2271,7 +2271,8 @@ function loadWardrobeForIcon() {
 
 function renderWardrobeChips() {
   const el = $('wardrobe-chips'); if (!el) return;
-  const items = selectedIcon ? getWardrobeForTab(selectedIcon.id, currentWardrobeTab) : currentWardrobe;
+  const _tab = (typeof currentWardrobeTab !== 'undefined') ? currentWardrobeTab : (typeof _activeWardrobeTab !== 'undefined' ? _activeWardrobeTab : 'tops');
+  const items = selectedIcon ? getWardrobeForTab(selectedIcon.id, _tab) : currentWardrobe;
   el.innerHTML = items.map(item => `
     <div class="wardrobe-chip ${selectedWardrobeIds.has(item.id) ? 'selected' : ''}" onclick="selectWardrobeItem('${item.id}')" title="${item.prompt}">
       ${item.label}${item.custom ? `<span onclick="event.stopPropagation();removeWardrobeItem('${item.id}')" style="opacity:.5;font-size:9px;cursor:pointer;margin-left:3px">✕</span>` : ''}
