@@ -362,6 +362,34 @@
   .lib-card-fav.active { opacity:1; }
   .ref-indicator { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--gold,#c9a96e); color:#1a1714; padding:8px 20px; border-radius:2px; font-size:11px; font-family:'DM Sans',sans-serif; z-index:1000; opacity:0; transition:opacity .3s; pointer-events:none; }
   .ref-indicator.show { opacity:1; }
+
+  .lb-overlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+  .lb-overlay.open{opacity:1;pointer-events:all;}
+  .lb-wrap{position:relative;max-width:min(88vw,680px);max-height:92vh;display:flex;flex-direction:column;align-items:center;}
+  .lb-wrap img{max-width:100%;max-height:72vh;object-fit:contain;border-radius:2px;filter:saturate(0.85) contrast(1.05);}
+  .lb-close{position:absolute;top:-36px;right:0;color:#fff;font-size:18px;cursor:pointer;opacity:.6;background:none;border:none;padding:4px 8px;}
+  .lb-close:hover{opacity:1;}
+  .lb-nav{position:absolute;top:36%;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:22px;cursor:pointer;padding:10px 15px;border-radius:2px;transition:background .15s;}
+  .lb-nav:hover{background:rgba(255,255,255,.22);}
+  .lb-prev{left:-52px;}.lb-next{right:-52px;}
+  .lb-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;justify-content:center;}
+  .lb-btn{padding:6px 14px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:#fff;font-family:'DM Sans',sans-serif;transition:all .15s;letter-spacing:.05em;}
+  .lb-btn:hover{background:rgba(255,255,255,.16);}
+  .lb-btn.primary{background:var(--gold,#c9a96e);border-color:var(--gold,#c9a96e);color:#1a1714;}
+  .lb-btn.danger{border-color:rgba(220,70,70,.5);color:rgba(220,100,100,.95);}
+  .lb-meta{text-align:center;margin-top:8px;font-size:9px;color:rgba(255,255,255,.35);font-family:'DM Sans',sans-serif;max-width:480px;line-height:1.5;}
+  .lb-counter{font-size:9px;color:rgba(255,255,255,.3);margin-top:6px;font-family:'DM Sans',sans-serif;}
+  .lib-card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 55%);opacity:0;transition:opacity .18s;display:flex;flex-direction:column;justify-content:flex-end;padding:7px;}
+  .lib-card:hover .lib-card-overlay{opacity:1;}
+  .lib-card-actions{display:flex;gap:4px;}
+  .lib-cbtn{padding:3px 8px;font-size:9px;border-radius:2px;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.45);color:#fff;font-family:'DM Sans',sans-serif;transition:all .15s;}
+  .lib-cbtn:hover{background:rgba(255,255,255,.18);}
+  .lib-cbtn.ref{background:var(--gold,#c9a96e);border-color:var(--gold,#c9a96e);color:#1a1714;}
+  .lib-fav-btn{position:absolute;top:5px;right:6px;font-size:13px;cursor:pointer;opacity:0;transition:opacity .15s;background:none;border:none;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);}
+  .lib-card:hover .lib-fav-btn,.lib-fav-btn.on{opacity:1;}
+  .ref-toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--gold,#c9a96e);color:#1a1714;padding:7px 18px;border-radius:2px;font-size:10px;font-family:'DM Sans',sans-serif;z-index:10000;opacity:0;transition:opacity .25s;pointer-events:none;letter-spacing:.05em;}
+  .ref-toast.show{opacity:1;}
+  .ref-active-badge{display:inline-block;background:var(--gold,#c9a96e);color:#1a1714;font-size:9px;padding:2px 7px;border-radius:2px;margin-left:8px;letter-spacing:.05em;vertical-align:middle;}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1182,20 +1210,18 @@ async function checkProxy() {
 async function generateFlux(prompt) {
   if(!proxyOk) throw new Error("Proxy not running — start node server.js");
   // Use Kontext Pro (img-to-img) if we have a prior image, else flux-pro-1.1 (text-to-image)
-  // Use manually set reference image first, else last generated image for Kontext
-  let refSrc = window.currentReferenceImage || null;
-  if (!refSrc) {
-    const lib = load(LIB_KEY);
-    const iconImgs = (lib[selectedIcon?.id] || []);
-    if (iconImgs.length) refSrc = iconImgs[iconImgs.length-1].url || iconImgs[iconImgs.length-1].base64;
+  // Reference: manual pick > last generated
+  let _refSrc = window.currentRef || null;
+  if (!_refSrc) {
+    const _lib = load(LIB_KEY);
+    const _iconImgs = (_lib[selectedIcon?.id]||[]);
+    if (_iconImgs.length) _refSrc = _iconImgs[_iconImgs.length-1].url || _iconImgs[_iconImgs.length-1].base64;
   }
-  const model = refSrc ? 'flux-kontext-pro' : 'flux-pro-1.1';
+  const model = _refSrc ? 'flux-kontext-pro' : 'flux-pro-1.1';
   const body = {prompt, model, width:768, height:1024};
-  if (refSrc) {
-    const b64src = refSrc.includes(',') ? refSrc.split(',')[1] : refSrc;
-    // If it's a URL, pass as image_url; if base64, pass as input_image
-    if (refSrc.startsWith('http')) body.image_url = refSrc;
-    else body.input_image = b64src;
+  if (_refSrc) {
+    if (_refSrc.startsWith('http')) body.image_url = _refSrc;
+    else { const _b = _refSrc.includes(',') ? _refSrc.split(',')[1] : _refSrc; body.input_image = _b; }
   }
   const r=await fetch(PROXY+"/flux/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
   if(!r.ok){const e=await r.json();throw new Error(e.error||"Submit failed");}
@@ -2719,6 +2745,113 @@ function toggleFav(id) {
   localStorage.setItem('mirage_lib_favs', JSON.stringify([...window.libFavs]));
   renderLibrary();
 }
+
+// ── LIBRARY ENHANCEMENTS ─────────────────────────────────────────────────────
+window.libFavs = new Set(JSON.parse(localStorage.getItem('mirage_lib_favs')||'[]'));
+window.currentRef = null;
+let _lbImages = [], _lbIdx = 0;
+
+function _lbGetImages() {
+  const lib = load(LIB_KEY);
+  let images = [];
+  if (libIconId === 'all') {
+    ICONS_DATA.forEach(icon => (lib[icon.id]||[]).forEach(img => images.push({...img, icon})));
+    images.sort((a,b) => b.id - a.id);
+  } else {
+    const icon = ICONS_DATA.find(i => i.id === libIconId);
+    if (icon) images = (lib[libIconId]||[]).map(img => ({...img, icon}));
+  }
+  if (libFilter === 'favs') images = images.filter(img => window.libFavs.has(img.id));
+  if (libFilter === 'saved') images = images.filter(img => libSelected.has(img.id));
+  return images;
+}
+
+function lbOpen(idx) {
+  _lbImages = _lbGetImages();
+  _lbIdx = idx;
+  _lbRender();
+  document.getElementById('lb-overlay').classList.add('open');
+  document.addEventListener('keydown', _lbKey);
+}
+
+function _lbRender() {
+  const img = _lbImages[_lbIdx];
+  if (!img) return;
+  document.getElementById('lb-img').src = img.url || img.base64;
+  document.getElementById('lb-counter').textContent = (_lbIdx+1) + ' / ' + _lbImages.length;
+  const meta = [];
+  if (img.icon) meta.push(img.icon.name.toLowerCase());
+  if (img.prompt) meta.push(img.prompt.slice(0,140) + (img.prompt.length>140?'…':''));
+  document.getElementById('lb-meta').textContent = meta.join(' · ');
+  const favBtn = document.getElementById('lb-fav-btn');
+  if (favBtn) favBtn.textContent = window.libFavs.has(img.id) ? '♥ Unfav' : '♡ Fav';
+}
+
+function lbBgClick(e) { if(e.target===document.getElementById('lb-overlay')) lbClose(); }
+function lbClose() {
+  document.getElementById('lb-overlay').classList.remove('open');
+  document.removeEventListener('keydown', _lbKey);
+}
+function _lbKey(e) {
+  if(e.key==='Escape') lbClose();
+  if(e.key==='ArrowLeft') lbNav(-1);
+  if(e.key==='ArrowRight') lbNav(1);
+}
+function lbNav(dir) {
+  _lbIdx = Math.max(0, Math.min(_lbImages.length-1, _lbIdx+dir));
+  _lbRender();
+}
+function lbUseRef() {
+  const img = _lbImages[_lbIdx];
+  if (!img) return;
+  setRef(img.url||img.base64, img.icon?.name||'');
+  lbClose();
+}
+function lbDownload() {
+  const img = _lbImages[_lbIdx];
+  if (img) libDl(img.url||img.base64, img.id);
+}
+function lbFav() {
+  const img = _lbImages[_lbIdx];
+  if (img) { libToggleFav(img.id); _lbRender(); }
+}
+function lbDelete() {
+  const img = _lbImages[_lbIdx];
+  if (!img || !img.icon) return;
+  if (!confirm('Delete this image from library?')) return;
+  const lib = load(LIB_KEY);
+  lib[img.icon.id] = (lib[img.icon.id]||[]).filter(i => i.id !== img.id);
+  save(LIB_KEY, lib);
+  _lbImages.splice(_lbIdx, 1);
+  if (!_lbImages.length) { lbClose(); renderLibrary(); return; }
+  _lbIdx = Math.min(_lbIdx, _lbImages.length-1);
+  _lbRender();
+  renderLibrary();
+}
+
+function setRef(src, iconName) {
+  window.currentRef = src;
+  const t = document.getElementById('ref-toast');
+  if (t) { t.textContent='✦ Reference set' + (iconName?' — '+iconName:'') + ' · next gen uses this'; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
+  notify('✦ Reference image set');
+}
+
+function clearRef() {
+  window.currentRef = null;
+  notify('Reference cleared — text-to-image mode');
+}
+
+function libDl(src, id) {
+  const a = document.createElement('a');
+  a.href = src; a.download = 'mirage-'+id+'.jpg'; a.click();
+}
+
+function libToggleFav(id) {
+  if (window.libFavs.has(id)) window.libFavs.delete(id);
+  else window.libFavs.add(id);
+  localStorage.setItem('mirage_lib_favs', JSON.stringify([...window.libFavs]));
+  renderLibrary();
+}
 </script>
 
 <!-- Lightbox -->
@@ -2739,5 +2872,24 @@ function toggleFav(id) {
 </div>
 <!-- Reference indicator -->
 <div class="ref-indicator" id="ref-indicator">✦ Reference image set — next generation uses this</div>
+
+<!-- Lightbox -->
+<div class="lb-overlay" id="lb-overlay" onclick="lbBgClick(event)">
+  <div class="lb-wrap" onclick="event.stopPropagation()">
+    <button class="lb-close" onclick="lbClose()">✕</button>
+    <button class="lb-nav lb-prev" onclick="lbNav(-1)">‹</button>
+    <button class="lb-nav lb-next" onclick="lbNav(1)">›</button>
+    <img id="lb-img" src="" alt="" />
+    <div class="lb-counter" id="lb-counter"></div>
+    <div class="lb-actions">
+      <button class="lb-btn primary" onclick="lbUseRef()">✦ Use as Reference</button>
+      <button class="lb-btn" onclick="lbDownload()">↓ Save</button>
+      <button class="lb-btn" id="lb-fav-btn" onclick="lbFav()">♡ Fav</button>
+      <button class="lb-btn danger" onclick="lbDelete()">✕ Delete</button>
+    </div>
+    <div class="lb-meta" id="lb-meta"></div>
+  </div>
+</div>
+<div class="ref-toast" id="ref-toast"></div>
 </body>
 </html>
