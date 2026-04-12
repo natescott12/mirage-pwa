@@ -394,6 +394,135 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+
+// ── SHOT SETUP — hoisted early so inline onclick handlers work ────────────────
+if (typeof window.selectedFraming === 'undefined') window.selectedFraming = new Set();
+if (typeof window.selectedAngle === 'undefined') window.selectedAngle = new Set();
+if (typeof window.selectedPerspective === 'undefined') window.selectedPerspective = new Set();
+if (typeof window.selectedBaseStyles === 'undefined') window.selectedBaseStyles = new Set(['35mm film natural light candid unposed organic']);
+
+function toggleShot(el, group, value) {
+  if (!window.selectedFraming) window.selectedFraming = new Set();
+  if (!window.selectedAngle) window.selectedAngle = new Set();
+  if (!window.selectedPerspective) window.selectedPerspective = new Set();
+  if (!window.selectedBaseStyles) window.selectedBaseStyles = new Set();
+  const map = {framing: window.selectedFraming, angle: window.selectedAngle, perspective: window.selectedPerspective, base: window.selectedBaseStyles};
+  const s = map[group]; if (!s) return;
+  if (s.has(value)) { s.delete(value); el.classList.remove('active'); }
+  else { s.add(value); el.classList.add('active'); }
+  if (typeof refreshPrompt === 'function') refreshPrompt();
+}
+
+function addShotChip(group, inputEl) {
+  const val = typeof inputEl === 'string' ? inputEl : (inputEl.value||'').trim();
+  if (!val) return;
+  const chip = document.createElement('div');
+  chip.className = 'shot-chip';
+  chip.textContent = val;
+  chip.onclick = function() { toggleShot(this, group, val); };
+  // Find container by scanning shot chips
+  document.querySelectorAll('.shot-chip').forEach(c => {
+    const oc = c.getAttribute('onclick')||'';
+    if (oc.includes("'" + group + "'")) {
+      c.parentElement._shotGroup = group;
+    }
+  });
+  const containers = document.querySelectorAll('[style*="flex-wrap"]');
+  let found = false;
+  containers.forEach(el => {
+    if (el._shotGroup === group && !found) {
+      el.appendChild(chip);
+      found = true;
+    }
+  });
+  if (!found) {
+    // fallback: find by sibling label
+    document.querySelectorAll('.shot-chip').forEach(c => {
+      if ((c.getAttribute('onclick')||'').includes("'" + group + "'")) {
+        c.parentElement.appendChild(chip);
+        found = true;
+      }
+    });
+  }
+  if (typeof inputEl === 'object') inputEl.value = '';
+  toggleShot(chip, group, val);
+}
+
+// ── WARDROBE TABS — hoisted early ─────────────────────────────────────────────
+const WARDROBE_DEFAULTS_EARLY = {
+  tops: [
+    {id:'t1',label:'Bralette',prompt:'bralette top'},
+    {id:'t2',label:'Bikini top',prompt:'bikini top'},
+    {id:'t3',label:'Sports bra',prompt:'sports bra'},
+    {id:'t4',label:'White tee',prompt:'white t-shirt relaxed fit'},
+    {id:'t5',label:'Vintage tee',prompt:'vintage band t-shirt worn in'},
+    {id:'t6',label:"Boyfriend shirt",prompt:'oversized boyfriend shirt half tucked'},
+    {id:'t7',label:'Linen top',prompt:'linen top natural drape'},
+    {id:'t8',label:'Striped button-up',prompt:'striped cotton button-up shirt'},
+    {id:'t9',label:'Black tee',prompt:'fitted black t-shirt'},
+    {id:'t10',label:'Tank top',prompt:'ribbed tank top'},
+    {id:'t11',label:'Crop top',prompt:'cropped top'},
+    {id:'t12',label:'Tube top',prompt:'tube top'},
+  ],
+  bottoms: [
+    {id:'b1',label:'Jeans',prompt:'straight leg jeans'},
+    {id:'b2',label:'Loose jeans',prompt:'loose fit jeans relaxed'},
+    {id:'b3',label:'Baggy jeans',prompt:'baggy oversized jeans'},
+    {id:'b4',label:'Black pants',prompt:'black tailored pants'},
+    {id:'b5',label:'Vintage shorts',prompt:'vintage cut-off denim shorts'},
+    {id:'b6',label:'Sweatpants',prompt:'sweatpants relaxed'},
+    {id:'b7',label:'Biker shorts',prompt:'black biker shorts'},
+    {id:'b8',label:'Cargo pants',prompt:'cargo pants utilitarian'},
+    {id:'b9',label:'Baggy shorts',prompt:'baggy shorts'},
+    {id:'b10',label:'Long skirt',prompt:'long flowing skirt'},
+    {id:'b11',label:'Short skirt',prompt:'short skirt'},
+    {id:'b12',label:'Denim skirt',prompt:'denim mini skirt'},
+  ],
+  accessories: [
+    {id:'a1',label:'Silver earrings',prompt:'delicate silver earrings'},
+    {id:'a2',label:'Silver hoops',prompt:'silver hoop earrings'},
+    {id:'a3',label:'Gold hoops',prompt:'gold hoop earrings'},
+    {id:'a4',label:'Rings',prompt:'stacked rings mixed metals'},
+    {id:'a5',label:'Watch',prompt:'vintage watch on wrist'},
+    {id:'a6',label:'Gold necklace',prompt:'thin gold necklace'},
+    {id:'a7',label:'Silver chain',prompt:'silver chain necklace'},
+    {id:'a8',label:'Small bag',prompt:'small shoulder bag'},
+    {id:'a9',label:'Large tote',prompt:'oversized canvas tote bag'},
+    {id:'a10',label:'Flip flops',prompt:'simple flip flops'},
+    {id:'a11',label:'Sandals',prompt:'strappy sandals'},
+    {id:'a12',label:'Loafers',prompt:'leather loafers'},
+    {id:'a13',label:'Kitten heels',prompt:'kitten heel shoes'},
+    {id:'a14',label:'Boots',prompt:'ankle boots'},
+  ],
+  look: []
+};
+
+function getWardrobeForTab(iconId, tab) {
+  const WARDROBE_KEY_EARLY = 'mirage_wardrobe_v1';
+  try {
+    const s = localStorage.getItem(WARDROBE_KEY_EARLY + '_' + iconId + '_' + tab);
+    if (s) return JSON.parse(s);
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(WARDROBE_DEFAULTS_EARLY[tab] || []));
+}
+
+function saveWardrobeTab(iconId, tab, items) {
+  const WARDROBE_KEY_EARLY = 'mirage_wardrobe_v1';
+  try { localStorage.setItem(WARDROBE_KEY_EARLY + '_' + iconId + '_' + tab, JSON.stringify(items)); } catch(e) {}
+}
+
+function switchWardrobeTab(tab) {
+  if (typeof currentWardrobeTab !== 'undefined') window._currentWardrobeTab = tab;
+  window._activeWardrobeTab = tab;
+  document.querySelectorAll('.wardrobe-tab-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('wtab-' + tab);
+  if (btn) btn.classList.add('active');
+  if (typeof selectedIcon !== 'undefined' && selectedIcon) {
+    if (typeof currentWardrobe !== 'undefined') currentWardrobe = getWardrobeForTab(selectedIcon.id, tab);
+  }
+  if (typeof renderWardrobeChips === 'function') renderWardrobeChips();
+}
+
 (function() {
   try {
     window.sbStudio = supabase.createClient(
@@ -2270,7 +2399,6 @@ const DEFAULT_WARDROBE = [
 
 let selectedWardrobeId = null;
 let selectedWardrobeIds = new Set();
-let currentWardrobeTab = "tops";
 
 function loadWardrobeForIcon() {
   let saved = getWardrobe(selectedIcon.id);
