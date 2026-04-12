@@ -2637,7 +2637,7 @@ const WARDROBE_DEFAULTS = {
   look: []
 };
 
-let currentWardrobeTab = 'tops';
+let currentWardrobeTab = 'tops'; var _activeWardrobeTab = 'tops';
 let selectedWardrobeIds = new Set();
 
 function getWardrobeForTab(iconId, tab) {
@@ -2687,7 +2687,7 @@ function toggleShot(el, group, value) {
 // ── CLOUD LIBRARY ENHANCEMENTS ────────────────────────────────────────────────
 window.libFavs = new Set(JSON.parse(localStorage.getItem('mirage_lib_favs')||'[]'));
 window.currentReferenceImage = null;
-let lbImages = [], lbCurrentIdx = 0;
+var _lbImages2 = [], _lbCurrentIdx2 = 0;
 
 function openLightbox(idx) {
   const lib = load(LIB_KEY);
@@ -2867,7 +2867,7 @@ var WDEF = {
   look:[]
 };
 var _activeWardrobeTab = 'tops';
-var _selectedWardrobeIds = new Set();
+
 
 function getWardrobeForTab(iconId, tab) {
   try { var s = localStorage.getItem('mirage_wardrobe_v1_'+iconId+'_'+tab); if(s) return JSON.parse(s); } catch(e) {}
@@ -2877,7 +2877,7 @@ function saveWardrobeTab(iconId, tab, items) {
   try { localStorage.setItem('mirage_wardrobe_v1_'+iconId+'_'+tab, JSON.stringify(items)); } catch(e) {}
 }
 function switchWardrobeTab(tab) {
-  _activeWardrobeTab = tab;
+  _activeWardrobeTab = tab; currentWardrobeTab = tab;
   document.querySelectorAll('.wardrobe-tab-btn').forEach(function(b){b.classList.remove('active');});
   var btn = document.getElementById('wtab-'+tab); if(btn) btn.classList.add('active');
   if(typeof selectedIcon!=='undefined'&&selectedIcon) currentWardrobe = getWardrobeForTab(selectedIcon.id, tab);
@@ -2886,7 +2886,7 @@ function switchWardrobeTab(tab) {
 function removeWardrobeItem(id) {
   var items = selectedIcon ? getWardrobeForTab(selectedIcon.id, _activeWardrobeTab).filter(function(i){return i.id!==id;}) : [];
   if(selectedIcon) saveWardrobeTab(selectedIcon.id, _activeWardrobeTab, items);
-  _selectedWardrobeIds.delete(id); currentWardrobe = items;
+  selectedWardrobeIds.delete(id); currentWardrobe = items;
   renderWardrobeChips(); refreshPrompt();
 }
 
