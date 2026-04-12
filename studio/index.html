@@ -994,7 +994,7 @@ let scene = "morning", scenePrompt = SCENES.morning[0];
 let params = {grain:PARAMS.grain[0],color:PARAMS.color[0],light:PARAMS.light[0]};
 let generating = false, generatedContent = [], queue = [];
 let libIconId = "all", libFilter = "all", libSelected = new Set();
-let lbImages = [], lbIdx = 0;
+// lbImages now in MG.lbImages
 let promptLocked = false;
 let currentChar = {};
 
@@ -2686,7 +2686,7 @@ function toggleShot(el, group, value) {
 // ── CLOUD LIBRARY ENHANCEMENTS ────────────────────────────────────────────────
 window.libFavs = new Set(JSON.parse(localStorage.getItem('mirage_lib_favs')||'[]'));
 window.currentReferenceImage = null;
-let lbImages = [], lbCurrentIdx = 0;
+// lbImages now in MG.lbImages
 
 function openLightbox(idx) {
   const lib = load(LIB_KEY);
@@ -2903,15 +2903,15 @@ var MG=window.MG={
     var btn=document.getElementById("wtab-"+tab);if(btn)btn.classList.add("active");
     MG.renderChips();
   },
-  renderChips:function(){
+    renderChips:function(){
     var el=document.getElementById("wardrobe-chips");if(!el)return;
     var icon=typeof selectedIcon!=="undefined"?selectedIcon:null;
     var items=icon?MG.getItems(icon.id,MG.tab):(MG.WARDROBE[MG.tab]||[]);
     el.innerHTML=items.map(function(item){
       var sel=MG.selected.has(item.id);
-      var rm=item.custom?"<span onclick="event.stopPropagation();MG.removeItem('"+item.id+"')" style="opacity:.5;font-size:9px;cursor:pointer;margin-left:3px">x</span>":"";
-      return "<div class="wardrobe-chip "+(sel?"selected":"")+"" onclick="MG.selectItem('"+item.id+"')" title=""+item.prompt+"">"+item.label+rm+"</div>";
-    }).join("");
+      var rm=item.custom?'<span onclick="event.stopPropagation();MG.removeItem(\'' + item.id + '\')" style="opacity:.5;font-size:9px;cursor:pointer;margin-left:3px">x</span>':'';
+      return '<div class="wardrobe-chip ' + (sel?'selected':'') + '" onclick="MG.selectItem(\'' + item.id + '\')" title="' + item.prompt + '">' + item.label + rm + '</div>';
+    }).join('');
   },
   selectItem:function(id){
     if(MG.selected.has(id))MG.selected.delete(id);else MG.selected.add(id);
