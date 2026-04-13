@@ -890,7 +890,15 @@
         <button onclick="loadCloudLibrary()" style="padding:7px 14px;background:transparent;border:1px solid rgba(100,180,100,0.4);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--green);font-family:'Afacad',sans-serif;margin-right:6px">Cloud Library</button><button onclick="clearLibraryConfirm()" style="padding:7px 14px;background:transparent;border:1px solid rgba(176,48,37,0.3);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--red);font-family:'DM Sans',sans-serif;transition:all 0.15s">Clear Library</button>
       </div>
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px" id="lib-icon-btns"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px" id="cloud-icon-btns"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <button onclick="cloudToggleSelectMode()" id="cloud-select-btn" style="padding:5px 12px;border-radius:2px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase">Select Mode</button>
+      <span id="cloud-sel-info" style="font-size:9px;color:var(--gold);display:none">0 selected</span>
+      <button onclick="cloudSelAll()" id="cloud-sel-all-btn" style="padding:5px 12px;border-radius:2px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif;display:none">Select All</button>
+      <button onclick="cloudSelNone()" id="cloud-sel-none-btn" style="padding:5px 12px;border-radius:2px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif;display:none">Clear</button>
+      <button onclick="cloudDeleteSelected()" id="cloud-del-btn" style="padding:5px 12px;border-radius:2px;font-size:9px;cursor:pointer;border:1px solid rgba(220,70,70,.4);background:transparent;color:rgba(220,100,100,.9);font-family:'DM Sans',sans-serif;display:none">Delete Selected</button>
+      <button onclick="cloudTrainLora()" id="cloud-train-btn" style="padding:5px 14px;border-radius:2px;font-size:9px;cursor:pointer;border:none;background:var(--gold);color:#1a1714;font-family:'DM Sans',sans-serif;display:none;letter-spacing:.06em">✦ Train LoRA</button>
+    </div>
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
       <div class="lib-filter active" onclick="setFilter('all',this)">All</div>
       <div class="lib-filter" onclick="setFilter('free',this)">Free</div>
@@ -2451,8 +2459,10 @@ function renderCloud() {
   var h = '';
   for (var i = 0; i < list.length; i++) {
     var it = list[i];
-    h += '<div data-ci="' + i + '" style="position:relative;cursor:pointer;break-inside:avoid;margin-bottom:4px">';
+    h += '<div data-ci="' + i + '" style="position:relative;cursor:pointer;break-inside:avoid;margin-bottom:4px" onclick="cloudCardClick(this,' + i + ')">';
     h += '<img src="' + it.image_url + '" style="width:100%;display:block" onerror="this.parentNode.style.opacity=0.3">';
+    h += '<div class="cloud-sel-overlay" style="position:absolute;inset:0;background:rgba(201,169,110,.25);border:2px solid var(--gold);display:none;align-items:center;justify-content:center"><span style="color:#fff;font-size:18px;font-weight:bold;text-shadow:0 1px 3px rgba(0,0,0,.5)">✓</span></div>';
+    h += '<div class="cloud-del-btn" onclick="event.stopPropagation();cloudDeleteOne(' + i + ')" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:2px;font-size:9px;cursor:pointer;padding:2px 6px;display:none">✕</div>';
     h += '<div style="position:absolute;top:4px;right:4px;font-size:8px;padding:2px 5px;text-transform:uppercase;background:' + (it.is_published?'green':'rgba(0,0,0,0.6)') + ';color:#fff">' + (it.is_published?'Live':'Draft') + '</div>';
     h += '<div style="position:absolute;bottom:4px;left:4px;font-size:9px;color:rgba(255,255,255,0.8);text-transform:uppercase">' + (it.icon_name||'') + '</div>';
     h += '</div>';
@@ -3416,6 +3426,138 @@ window.selectIcon = function() {
 // Also try loading on init with delay
 setTimeout(function(){ if(typeof selectedIcon!=='undefined'&&selectedIcon) loadCloudLibrary(); }, 2000);
 })();
+</script>
+
+<script>
+// ── CLOUD LIBRARY SELECT / DELETE / LORA ──────────────────────────────────
+var _cloudSelectMode = false;
+var _cloudSelected = new Set();
+var PX_CLOUD = 'https://mirage-proxy-production.up.railway.app';
+var SB_CLOUD = 'https://gmyenvnfuailickepvax.supabase.co';
+var SK_CLOUD = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdteWVudm5mdWFpbGlja2VwdmF4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTQzMTIwMywiZXhwIjoyMDkxMDA3MjAzfQ.oY14ULMhWOUVHLklxGtz8Sjm35kjcy35p4qx1cnjrIk';
+
+function cloudToggleSelectMode() {
+  _cloudSelectMode = !_cloudSelectMode;
+  _cloudSelected.clear();
+  var btn = document.getElementById('cloud-select-btn');
+  var allBtn = document.getElementById('cloud-sel-all-btn');
+  var noneBtn = document.getElementById('cloud-sel-none-btn');
+  var delBtn = document.getElementById('cloud-del-btn');
+  var trainBtn = document.getElementById('cloud-train-btn');
+  var info = document.getElementById('cloud-sel-info');
+  if (btn) { btn.style.background = _cloudSelectMode ? 'var(--gold)' : 'transparent'; btn.style.color = _cloudSelectMode ? '#1a1714' : 'var(--dim)'; }
+  var d = _cloudSelectMode ? 'inline-block' : 'none';
+  if (allBtn) allBtn.style.display = d;
+  if (noneBtn) noneBtn.style.display = d;
+  if (info) info.style.display = 'none';
+  if (delBtn) delBtn.style.display = 'none';
+  if (trainBtn) trainBtn.style.display = 'none';
+  // Show/hide delete buttons on cards
+  document.querySelectorAll('.cloud-del-btn').forEach(function(b) { b.style.display = _cloudSelectMode ? 'block' : 'none'; });
+  document.querySelectorAll('.cloud-sel-overlay').forEach(function(o) { o.style.display = 'none'; });
+}
+
+function cloudCardClick(el, idx) {
+  if (!_cloudSelectMode) {
+    // Normal mode — open lightbox
+    if (typeof cloudOpenLb === 'function') cloudOpenLb(idx);
+    return;
+  }
+  // Select mode — toggle selection
+  if (_cloudSelected.has(idx)) {
+    _cloudSelected.delete(idx);
+    var overlay = el.querySelector('.cloud-sel-overlay');
+    if (overlay) overlay.style.display = 'none';
+    el.style.outline = 'none';
+  } else {
+    _cloudSelected.add(idx);
+    var overlay = el.querySelector('.cloud-sel-overlay');
+    if (overlay) overlay.style.display = 'flex';
+    el.style.outline = '2px solid var(--gold)';
+  }
+  _updateCloudSelUI();
+}
+
+function _updateCloudSelUI() {
+  var n = _cloudSelected.size;
+  var info = document.getElementById('cloud-sel-info');
+  var delBtn = document.getElementById('cloud-del-btn');
+  var trainBtn = document.getElementById('cloud-train-btn');
+  if (info) { info.textContent = n + ' selected'; info.style.display = n > 0 ? 'inline' : 'none'; }
+  if (delBtn) delBtn.style.display = n > 0 ? 'inline-block' : 'none';
+  if (trainBtn) trainBtn.style.display = n >= 5 ? 'inline-block' : 'none';
+}
+
+function cloudSelAll() {
+  if (!window._clist) return;
+  _cloudSelected.clear();
+  window._clist.forEach(function(_, i) { _cloudSelected.add(i); });
+  document.querySelectorAll('.cloud-sel-overlay').forEach(function(o) { o.style.display = 'flex'; });
+  document.querySelectorAll('[data-ci]').forEach(function(el) { el.style.outline = '2px solid var(--gold)'; });
+  _updateCloudSelUI();
+}
+
+function cloudSelNone() {
+  _cloudSelected.clear();
+  document.querySelectorAll('.cloud-sel-overlay').forEach(function(o) { o.style.display = 'none'; });
+  document.querySelectorAll('[data-ci]').forEach(function(el) { el.style.outline = 'none'; });
+  _updateCloudSelUI();
+}
+
+function cloudDeleteOne(idx) {
+  if (!window._clist || !window._clist[idx]) return;
+  var img = window._clist[idx];
+  if (!confirm('Delete this image from cloud?')) return;
+  var name = img.file_name || img.image_url.split('/').pop();
+  fetch(SB_CLOUD + '/storage/v1/object/content', {
+    method: 'DELETE',
+    headers: {'Authorization': 'Bearer ' + SK_CLOUD, 'apikey': SK_CLOUD, 'Content-Type': 'application/json'},
+    body: JSON.stringify({prefixes: [name]})
+  }).then(function() {
+    if (typeof notify === 'function') notify('Deleted');
+    if (typeof renderCloud === 'function') renderCloud();
+  }).catch(function(e) { if (typeof notify === 'function') notify('Delete failed: ' + e.message); });
+}
+
+function cloudDeleteSelected() {
+  if (!_cloudSelected.size) return;
+  if (!confirm('Delete ' + _cloudSelected.size + ' selected images from cloud? Cannot be undone.')) return;
+  var names = Array.from(_cloudSelected).map(function(i) {
+    var img = window._clist[i];
+    return img ? (img.file_name || img.image_url.split('/').pop()) : null;
+  }).filter(Boolean);
+  fetch(SB_CLOUD + '/storage/v1/object/content', {
+    method: 'DELETE',
+    headers: {'Authorization': 'Bearer ' + SK_CLOUD, 'apikey': SK_CLOUD, 'Content-Type': 'application/json'},
+    body: JSON.stringify({prefixes: names})
+  }).then(function() {
+    if (typeof notify === 'function') notify('Deleted ' + names.length + ' images');
+    _cloudSelected.clear();
+    cloudToggleSelectMode(); // exit select mode
+    if (typeof renderCloud === 'function') renderCloud();
+  }).catch(function(e) { if (typeof notify === 'function') notify('Delete failed: ' + e.message); });
+}
+
+function cloudTrainLora() {
+  if (_cloudSelected.size < 5) { if (typeof notify === 'function') notify('Select at least 5 images'); return; }
+  var urls = Array.from(_cloudSelected).map(function(i) { return window._clist[i].image_url; }).filter(Boolean);
+  var iconName = (typeof selectedIcon !== 'undefined' && selectedIcon) ? selectedIcon.name : 'unknown';
+  if (!confirm('Train LoRA for ' + iconName + ' with ' + urls.length + ' selected images? This takes 20-30 min and costs ~$2.')) return;
+  if (typeof notify === 'function') notify('Starting LoRA training for ' + iconName + '...');
+  fetch(PX_CLOUD + '/finetune/create', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({iconName: iconName, imageUrls: urls, mode: 'character', steps: 300})
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.error) throw new Error(data.error);
+    if (typeof selectedIcon !== 'undefined' && selectedIcon) {
+      localStorage.setItem('lora_' + selectedIcon.id, JSON.stringify({finetune_id: data.finetune_id, status: 'Training', started: Date.now()}));
+    }
+    if (typeof notify === 'function') notify('✦ Training started — ' + data.finetune_id.slice(0,12) + '...');
+  })
+  .catch(function(e) { if (typeof notify === 'function') notify('Training failed: ' + e.message); });
+}
 </script>
 </body>
 </html>
