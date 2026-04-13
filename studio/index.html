@@ -3301,7 +3301,7 @@ var _imgs=[];var _sel=new Set();
 window.loadCloudLibrary=function(){
   if(!selectedIcon)return;
   var panel=document.getElementById('cloud-lib-panel');
-  var grid=document.getElementById('cloud-grid');
+  var grid=document.getElementById('cloud-lib-grid');
   if(!panel||!grid)return;
   panel.style.display='block';
   grid.innerHTML='<div style="grid-column:1/-1;font-size:9px;color:var(--muted);padding:8px">Loading...</div>';
@@ -3407,7 +3407,14 @@ if(typeof window.selectIcon==='function'){
     setTimeout(loadCloudLibrary,300);
   };
 }
-setTimeout(loadCloudLibrary,1500);
+// Hook loadCloudLibrary into the existing selectIcon function
+var _cl_origSI = window.selectIcon;
+window.selectIcon = function() {
+  _cl_origSI && _cl_origSI.apply(this, arguments);
+  setTimeout(loadCloudLibrary, 400);
+};
+// Also try loading on init with delay
+setTimeout(function(){ if(typeof selectedIcon!=='undefined'&&selectedIcon) loadCloudLibrary(); }, 2000);
 })();
 </script>
 </body>
