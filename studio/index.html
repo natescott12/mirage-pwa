@@ -2816,22 +2816,7 @@ function libToggleFav(id) {
 }
 </script>
 
-<!-- Lightbox -->
-<div class="lb-overlay" id="lb-overlay" onclick="if(event.target===this)MG.lbClose()">
-  <div class="lb-img-wrap" onclick="event.stopPropagation()">
-    <button class="lb-close" onclick="closeLightbox()">✕</button>
-    <button class="lb-nav lb-prev" onclick="lbNav(-1)">‹</button>
-    <button class="lb-nav lb-next" onclick="lbNav(1)">›</button>
-    <img id="lb-img" src="" alt="" />
-    <div class="lb-actions">
-      <button class="lb-action-btn primary" onclick="lbUseAsRef()">✦ Use as Reference</button>
-      <button class="lb-action-btn" onclick="lbDownload()">↓ Download</button>
-      <button class="lb-action-btn" onclick="lbToggleFav()">♡ Favourite</button>
-      <button class="lb-action-btn danger" onclick="lbDelete()">Delete</button>
-    </div>
-    <div class="lb-meta" id="lb-meta"></div>
-  </div>
-</div>
+<!-- lb-overlay: using MG version below -->
 <!-- Reference indicator -->
 <div class="ref-indicator" id="ref-indicator">✦ Reference image set — next generation uses this</div>
 
