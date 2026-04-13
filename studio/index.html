@@ -3496,6 +3496,7 @@ function _updateCloudSelUI() {
   var trainBtn = document.getElementById('cloud-train-btn');
   if (info) { info.textContent = n + ' selected'; info.style.display = n > 0 ? 'inline' : 'none'; }
   if (delBtn) delBtn.style.display = n > 0 ? 'inline-block' : 'none';
+  var queueBtn = document.getElementById('cloud-queue-btn');
   if (queueBtn) queueBtn.style.display = n > 0 ? 'inline-block' : 'none';
   if (trainBtn) trainBtn.style.display = n >= 5 ? 'inline-block' : 'none';
 }
