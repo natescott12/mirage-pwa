@@ -443,7 +443,7 @@
         <button class="lb-btn primary" id="lb-queue-btn" onclick="lbAddToQueue()">Add to Queue</button>
         <button class="lb-btn secondary" onclick="lbFav()">★ Favourite</button>
         <a class="lb-btn secondary" id="lb-dl" href="" download="" target="_blank">↓ Download</a>
-        <button class="lb-btn danger" onclick="lbDelete()">Delete Image</button>
+        <button class="lb-btn danger" onclick="cloudLbDelete()">Delete Image</button>
       </div>
     </div>
   </div>
@@ -2477,19 +2477,40 @@ function cloudCloseLb() {
 function _cloudLbKey(e) {
   if (e.key === 'Escape') cloudCloseLb();
 }
+function cloudLbDelete() {
+  var item = window._clbItem;
+  if (!item) return;
+  if (!confirm('Delete this image from cloud?')) return;
+  var name = (item.image_url || item.url || '').split('/').pop();
+  var SB_DEL = 'https://gmyenvnfuailickepvax.supabase.co';
+  var SK_DEL = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdteWVudm5mdWFpbGlja2VwdmF4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTQzMTIwMywiZXhwIjoyMDkxMDA3MjAzfQ.oY14ULMhWOUVHLklxGtz8Sjm35kjcy35p4qx1cnjrIk';
+  fetch(SB_DEL + '/storage/v1/object/content', {
+    method: 'DELETE',
+    headers: {'Authorization': 'Bearer ' + SK_DEL, 'apikey': SK_DEL, 'Content-Type': 'application/json'},
+    body: JSON.stringify({prefixes: [name]})
+  }).then(function() {
+    if (typeof notify === 'function') notify('Deleted ' + name);
+    cloudCloseLb();
+    if (typeof loadCloudLibrary === 'function') loadCloudLibrary();
+  }).catch(function(e) {
+    if (typeof notify === 'function') notify('Delete failed: ' + e.message);
+  });
+}
 function cloudOpenLb(item) {
   var lb = document.getElementById('lightbox');
   if (!lb) return;
-  // Set image — target #lb-img specifically
   var img = document.getElementById('lb-img') || lb.querySelector('img');
   if (img) img.src = item.image_url || item.url || '';
-  // Show filename as caption if available
+  // Set filename in caption
   var name = (item.image_url || item.url || '').split('/').pop();
   var capEl = document.getElementById('lb-caption');
   if (capEl) capEl.textContent = name;
+  // Set download link
+  var dlEl = document.getElementById('lb-dl');
+  if (dlEl) { dlEl.href = item.image_url || item.url || ''; dlEl.download = name; dlEl.setAttribute('target','_blank'); }
   window._clbItem = item;
+  lb.style.zIndex = '10000';
   lb.classList.add('open');
-  // Click-outside to close
   lb.onclick = function(e) { if (e.target === lb) cloudCloseLb(); };
   document.addEventListener('keydown', _cloudLbKey);
 }
