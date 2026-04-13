@@ -3324,21 +3324,19 @@ window.loadCloudLibrary=function(){
   })
   .then(function(r){return r.json();})
   .then(function(files){
-    _imgs=files.filter(function(f){
-      var n=(f.name||'').toLowerCase();
-      return n.startsWith(name+'_')||(name==='sloan'&&n.startsWith('sloane_'));
-    }).map(function(f){return{name:f.name,url:SB+'/storage/v1/object/public/content/'+f.name};});
-    if(!_imgs.length){grid.innerHTML='<div style="grid-column:1/-1;font-size:9px;color:var(--muted);padding:8px">No cloud images for '+selectedIcon.name+'</div>';return;}
-    grid.innerHTML=_imgs.map(function(img,i){
-      return '<div class="cloud-img-card" id="ci'+i+'" onclick="cloudToggle('+i+')">'+
-        '<img src="'+img.url+'" loading="lazy" onerror=\"this.parentElement.style.display=\x27none\x27\"/>'+
-        '<div class="cloud-check">&#10003;</div>'+
-        '<div class="cloud-hover">'+
-          '<button onclick="event.stopPropagation();cloudLightbox('+i+')" style="padding:3px;font-size:8px;border-radius:2px;cursor:pointer;border:none;background:rgba(255,255,255,.2);color:#fff;font-family:"DM Sans",sans-serif">View</button>'+
-          '<button onclick="event.stopPropagation();cloudDelOne('+i+')" style="padding:3px;font-size:8px;border-radius:2px;cursor:pointer;border:none;background:rgba(220,70,70,.6);color:#fff;font-family:"DM Sans",sans-serif">Delete</button>'+
-        '</div>'+
-      '</div>';
-    }).join('');
+    // Populate _ci with ALL files for renderCloud filter tabs
+    window._ci=files.filter(function(f){return f.name&&f.name.indexOf('_')>0;}).map(function(f){
+      var prefix=(f.name.split('_')[0]||'').toLowerCase();
+      if(prefix==='sloane')prefix='sloan';
+      return{icon_name:prefix,image_url:SB+'/storage/v1/object/public/content/'+f.name};
+    });
+    // Set active filter to current icon
+    window._cf=name==='sloane'?'sloan':name;
+    // Keep _imgs filtered for select/delete/train operations
+    _imgs=window._ci.filter(function(x){return x.icon_name===window._cf;}).map(function(x){return{name:x.image_url.split('/').pop(),url:x.image_url};});
+    // Let renderCloud handle tabs + grid display
+    if(typeof renderCloud==='function'){renderCloud();}
+    else{grid.innerHTML='<div style="padding:20px;color:var(--muted);text-align:center;font-size:11px">renderCloud not found</div>';}
   })
   .catch(function(e){grid.innerHTML='<div style="grid-column:1/-1;font-size:9px;color:rgba(220,70,70,.8);padding:8px">'+e.message+'</div>';});
 };
