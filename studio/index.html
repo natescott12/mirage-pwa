@@ -383,6 +383,14 @@
   .lb-counter{font-size:9px;color:rgba(255,255,255,.3);margin-top:6px;font-family:'DM Sans',sans-serif;}
   .ref-toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--gold,#c9a96e);color:#1a1714;padding:7px 18px;border-radius:2px;font-size:10px;font-family:'DM Sans',sans-serif;z-index:10000;opacity:0;transition:opacity .25s;pointer-events:none;}
   .ref-toast.show{opacity:1;}
+
+  .cloud-img-card{position:relative;aspect-ratio:3/4;cursor:pointer;border-radius:2px;overflow:hidden;border:2px solid transparent;transition:border-color .12s;}
+  .cloud-img-card.selected{border-color:var(--gold);}
+  .cloud-img-card img{width:100%;height:100%;object-fit:cover;display:block;}
+  .cloud-check{position:absolute;top:4px;right:4px;width:16px;height:16px;background:var(--gold);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:9px;color:#1a1714;font-weight:bold;}
+  .cloud-img-card.selected .cloud-check{display:flex;}
+  .cloud-hover{position:absolute;inset:0;background:linear-gradient(transparent 50%,rgba(0,0,0,.75));opacity:0;transition:opacity .15s;display:flex;flex-direction:column;justify-content:flex-end;padding:4px;gap:2px;}
+  .cloud-img-card:hover .cloud-hover{opacity:1;}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -3283,5 +3291,124 @@ setTimeout(showLoraPanel, 1000);
 
 
 })();
-</script></body>
+</script><script>
+(function(){
+var SB='https://gmyenvnfuailickepvax.supabase.co';
+var SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdteWVudm5mdWFpbGlja2VwdmF4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTQzMTIwMywiZXhwIjoyMDkxMDA3MjAzfQ.oY14ULMhWOUVHLklxGtz8Sjm35kjcy35p4qx1cnjrIk';
+var PX='https://mirage-proxy-production.up.railway.app';
+var _imgs=[];var _sel=new Set();
+
+window.loadCloudLibrary=function(){
+  if(!selectedIcon)return;
+  var panel=document.getElementById('cloud-lib-panel');
+  var grid=document.getElementById('cloud-grid');
+  if(!panel||!grid)return;
+  panel.style.display='block';
+  grid.innerHTML='<div style="grid-column:1/-1;font-size:9px;color:var(--muted);padding:8px">Loading...</div>';
+  _sel.clear();_updateCount();
+  var name=selectedIcon.name.toLowerCase();
+  fetch(SB+'/storage/v1/object/list/content',{
+    method:'POST',
+    headers:{'Authorization':'Bearer '+SK,'apikey':SK,'Content-Type':'application/json'},
+    body:JSON.stringify({prefix:'',limit:500})
+  })
+  .then(function(r){return r.json();})
+  .then(function(files){
+    _imgs=files.filter(function(f){
+      var n=(f.name||'').toLowerCase();
+      return n.startsWith(name+'_')||(name==='sloan'&&n.startsWith('sloane_'));
+    }).map(function(f){return{name:f.name,url:SB+'/storage/v1/object/public/content/'+f.name};});
+    if(!_imgs.length){grid.innerHTML='<div style="grid-column:1/-1;font-size:9px;color:var(--muted);padding:8px">No cloud images for '+selectedIcon.name+'</div>';return;}
+    grid.innerHTML=_imgs.map(function(img,i){
+      return '<div class="cloud-img-card" id="ci'+i+'" onclick="cloudToggle('+i+')">'+
+        '<img src="'+img.url+'" loading="lazy" onerror="this.parentElement.style.display='none'"/>'+
+        '<div class="cloud-check">&#10003;</div>'+
+        '<div class="cloud-hover">'+
+          '<button onclick="event.stopPropagation();cloudLightbox('+i+')" style="padding:3px;font-size:8px;border-radius:2px;cursor:pointer;border:none;background:rgba(255,255,255,.2);color:#fff;font-family:'DM Sans',sans-serif">View</button>'+
+          '<button onclick="event.stopPropagation();cloudDelOne('+i+')" style="padding:3px;font-size:8px;border-radius:2px;cursor:pointer;border:none;background:rgba(220,70,70,.6);color:#fff;font-family:'DM Sans',sans-serif">Delete</button>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  })
+  .catch(function(e){grid.innerHTML='<div style="grid-column:1/-1;font-size:9px;color:rgba(220,70,70,.8);padding:8px">'+e.message+'</div>';});
+};
+
+window.cloudToggle=function(i){
+  if(_sel.has(i))_sel.delete(i);else _sel.add(i);
+  var c=document.getElementById('ci'+i);if(c)c.classList.toggle('selected',_sel.has(i));
+  _updateCount();
+};
+window.cloudSelAll=function(){_imgs.forEach(function(_,i){_sel.add(i);var c=document.getElementById('ci'+i);if(c)c.classList.add('selected');});_updateCount();};
+window.cloudSelNone=function(){_sel.clear();document.querySelectorAll('.cloud-img-card').forEach(function(c){c.classList.remove('selected');});_updateCount();};
+
+function _updateCount(){
+  var n=_sel.size;
+  var b=document.getElementById('cloud-sel-count');var t=document.getElementById('cloud-train-btn');
+  if(b){b.textContent=n+' selected';b.style.display=n>0?'inline':'none';}
+  if(t)t.style.display=n>=5?'block':'none';
+}
+
+window.cloudDelOne=function(i){
+  if(!confirm('Delete this image from cloud?'))return;
+  fetch(SB+'/storage/v1/object/content',{method:'DELETE',headers:{'Authorization':'Bearer '+SK,'apikey':SK,'Content-Type':'application/json'},body:JSON.stringify({prefixes:[_imgs[i].name]})})
+  .then(function(){if(typeof notify==='function')notify('Deleted');loadCloudLibrary();});
+};
+
+window.cloudDelSelected=function(){
+  if(!_sel.size)return;
+  if(!confirm('Delete '+_sel.size+' images?'))return;
+  var names=Array.from(_sel).map(function(i){return _imgs[i].name;});
+  fetch(SB+'/storage/v1/object/content',{method:'DELETE',headers:{'Authorization':'Bearer '+SK,'apikey':SK,'Content-Type':'application/json'},body:JSON.stringify({prefixes:names})})
+  .then(function(){if(typeof notify==='function')notify('Deleted '+names.length);loadCloudLibrary();});
+};
+
+window.cloudLightbox=function(i){
+  if(typeof MG==='undefined')return;
+  MG.lbImages=_imgs.map(function(img){return{id:img.name,imageUrl:img.url,icon:selectedIcon,fluxPrompt:img.name};});
+  MG.lbIdx=i;MG._lbRender();
+  var el=document.getElementById('lb-overlay');if(el)el.classList.add('open');
+  document.addEventListener('keydown',MG._lbKey);
+};
+
+window.cloudTrainSelected=function(){
+  if(_sel.size<5){if(typeof notify==='function')notify('Select at least 5 images');return;}
+  var urls=Array.from(_sel).map(function(i){return _imgs[i].url;});
+  var mode=(document.getElementById('lora-mode')||{}).value||'character';
+  if(typeof notify==='function')notify('Starting LoRA training with '+urls.length+' images...');
+  fetch(PX+'/finetune/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({iconName:selectedIcon.name,imageUrls:urls,mode:mode,steps:300})})
+  .then(function(r){return r.json();})
+  .then(function(data){
+    if(data.error)throw new Error(data.error);
+    localStorage.setItem('lora_'+selectedIcon.id,JSON.stringify({finetune_id:data.finetune_id,status:'Training'}));
+    if(typeof notify==='function')notify('Training started: '+data.finetune_id.slice(0,12)+'...');
+  })
+  .catch(function(e){if(typeof notify==='function')notify('Failed: '+e.message);});
+};
+
+window.checkLora=function(){
+  if(!selectedIcon)return;
+  var d=JSON.parse(localStorage.getItem('lora_'+selectedIcon.id)||'{}');
+  if(!d.finetune_id)return;
+  fetch(PX+'/finetune/status/'+d.finetune_id).then(function(r){return r.json();}).then(function(data){
+    var s=data.status||'';
+    if(typeof notify==='function')notify('LoRA status: '+s);
+    if(s==='Ready'||s==='Completed'){
+      localStorage.setItem('lora_'+selectedIcon.id,JSON.stringify({finetune_id:d.finetune_id,status:'Ready'}));
+      if(typeof MG!=='undefined')MG.finetuneId=d.finetune_id;
+      if(typeof notify==='function')notify('LoRA ready!');
+    }
+  });
+};
+
+var _origSI=window.selectIcon;
+if(typeof window.selectIcon==='function'){
+  window.selectIcon=function(){
+    _origSI&&_origSI.apply(this,arguments);
+    setTimeout(loadCloudLibrary,300);
+  };
+}
+setTimeout(loadCloudLibrary,1500);
+})();
+</script>
+</body>
 </html>
