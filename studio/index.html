@@ -416,7 +416,7 @@
 
 <!-- LIGHTBOX -->
 <div id="lightbox">
-  <button class="lb-close" onclick="closeLightbox()">✕</button>
+  <button class="lb-close" onclick="cloudCloseLb()">✕</button>
   <div class="lb-inner">
     <div class="lb-img-side">
       <button class="lb-nav prev" onclick="lbNav(-1)">‹</button>
@@ -2469,14 +2469,29 @@ function renderCloud() {
   }
   grid.innerHTML = h;
 }
+function cloudCloseLb() {
+  var lb = document.getElementById('lightbox');
+  if (lb) lb.classList.remove('open');
+  document.removeEventListener('keydown', _cloudLbKey);
+}
+function _cloudLbKey(e) {
+  if (e.key === 'Escape') cloudCloseLb();
+}
 function cloudOpenLb(item) {
   var lb = document.getElementById('lightbox');
   if (!lb) return;
-  lb.classList.add('open');
-  var img = lb.querySelector('img');
-  if (img) img.src = item.image_url;
+  // Set image — target #lb-img specifically
+  var img = document.getElementById('lb-img') || lb.querySelector('img');
+  if (img) img.src = item.image_url || item.url || '';
+  // Show filename as caption if available
+  var name = (item.image_url || item.url || '').split('/').pop();
+  var capEl = document.getElementById('lb-caption');
+  if (capEl) capEl.textContent = name;
   window._clbItem = item;
-  document.addEventListener('keydown', lbKey);
+  lb.classList.add('open');
+  // Click-outside to close
+  lb.onclick = function(e) { if (e.target === lb) cloudCloseLb(); };
+  document.addEventListener('keydown', _cloudLbKey);
 }
 
 
