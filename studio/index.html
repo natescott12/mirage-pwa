@@ -1790,7 +1790,7 @@ function openLbFromOutput(id) {
   lbImages=[{...item}]; lbIdx=0; renderLb(); $("lightbox").classList.add("open"); document.addEventListener("keydown",lbKey);
 }
 function closeLightbox() { $("lightbox").classList.remove("open"); document.removeEventListener("keydown",lbKey); }
-function lbKey(e) { if(e.key==="ArrowLeft")lbNav(-1); if(e.key==="ArrowRight")lbNav(1); if(e.key==="Escape")closeLightbox(); }
+function lbKey(e) { if(e.key==="ArrowLeft")lbNav(-1); if(e.key==="ArrowRight")lbNav(1); if(e.key==="Escape"){ if(typeof cloudCloseLb==="function") cloudCloseLb(); } }
 function lbNav(d) { lbIdx=(lbIdx+d+lbImages.length)%lbImages.length; renderLb(); }
 function renderLb() {
   const img=lbImages[lbIdx]; if(!img) return;
@@ -2462,7 +2462,7 @@ function renderCloud() {
     h += '<div data-ci="' + i + '" style="position:relative;cursor:pointer;break-inside:avoid;margin-bottom:4px" onclick="cloudCardClick(this,' + i + ')">';
     h += '<img src="' + it.image_url + '" style="width:100%;display:block" onerror="this.parentNode.style.opacity=0.3">';
     h += '<div class="cloud-sel-overlay" style="position:absolute;inset:0;background:rgba(201,169,110,.25);border:2px solid var(--gold);display:none;align-items:center;justify-content:center"><span style="color:#fff;font-size:18px;font-weight:bold;text-shadow:0 1px 3px rgba(0,0,0,.5)">✓</span></div>';
-    h += '<div class="cloud-del-btn" onclick="event.stopPropagation();cloudDeleteOne(' + i + ')" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:2px;font-size:9px;cursor:pointer;padding:2px 6px;display:none">✕</div>';
+    h += '<div class="cloud-del-btn" onclick="event.stopPropagation();cloudDeleteOne(' + i + ')" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:2px;font-size:9px;cursor:pointer;padding:2px 6px;display:'+(window._cloudSelectMode?'block':'none')+'">' + (window._cloudSelectMode ? '✕' : '') + '</div>';
     h += '<div style="position:absolute;top:4px;right:4px;font-size:8px;padding:2px 5px;text-transform:uppercase;background:' + (it.is_published?'green':'rgba(0,0,0,0.6)') + ';color:#fff">' + (it.is_published?'Live':'Draft') + '</div>';
     h += '<div style="position:absolute;bottom:4px;left:4px;font-size:9px;color:rgba(255,255,255,0.8);text-transform:uppercase">' + (it.icon_name||'') + '</div>';
     h += '</div>';
