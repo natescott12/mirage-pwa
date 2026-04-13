@@ -2468,10 +2468,6 @@ function renderCloud() {
     h += '</div>';
   }
   grid.innerHTML = h;
-  grid.onclick = function(e) {
-    var el = e.target.closest('[data-ci]');
-    if (el && window._clist) cloudOpenLb(window._clist[parseInt(el.getAttribute('data-ci'))]);
-  };
 }
 function cloudOpenLb(item) {
   var lb = document.getElementById('lightbox');
