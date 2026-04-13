@@ -891,15 +891,7 @@
       </div>
     </div>
     
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-      <button onclick="cloudToggleSelectMode()" id="cloud-select-btn" style="padding:5px 12px;border-radius:2px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase">Select Mode</button>
-      <span id="cloud-sel-info" style="font-size:9px;color:var(--gold);display:none">0 selected</span>
-      <button onclick="cloudSelAll()" id="cloud-sel-all-btn" style="padding:5px 12px;border-radius:2px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif;display:none">Select All</button>
-      <button onclick="cloudSelNone()" id="cloud-sel-none-btn" style="padding:5px 12px;border-radius:2px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif;display:none">Clear</button>
-      <button onclick="cloudDeleteSelected()" id="cloud-del-btn" style="padding:5px 12px;border-radius:2px;font-size:9px;cursor:pointer;border:1px solid rgba(220,70,70,.4);background:transparent;color:rgba(220,100,100,.9);font-family:'DM Sans',sans-serif;display:none">Delete Selected</button>
-      <button onclick="cloudQueueSelected()" id="cloud-queue-btn" style="padding:5px 12px;border-radius:2px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif;display:none">Queue Selected</button>
-      <button onclick="cloudTrainLora()" id="cloud-train-btn" style="padding:5px 14px;border-radius:2px;font-size:9px;cursor:pointer;border:none;background:var(--gold);color:#1a1714;font-family:'DM Sans',sans-serif;display:none;letter-spacing:.06em">✦ Train LoRA</button>
-    </div>
+
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
       <div class="lib-filter active" onclick="setFilter('all',this)">All</div>
       <div class="lib-filter" onclick="setFilter('free',this)">Free</div>
@@ -2564,7 +2556,16 @@ async function clearCloudLibrary() {
       <button onclick="document.getElementById('cloud-lib-panel').style.display='none'" style="padding:6px 14px;background:transparent;border:1px solid var(--border);border-radius:2px;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;color:var(--text);font-family:'Afacad',sans-serif">Close</button>
     </div>
   </div>
-  <div id="cloud-lib-grid" style="columns:5 180px;gap:4px;margin-top:16px"></div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--border)">
+    <button onclick="cloudToggleSelectMode()" id="cloud-select-btn" style="padding:5px 12px;border-radius:2px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase">Select Mode</button>
+    <span id="cloud-sel-info" style="font-size:9px;color:var(--gold);display:none">0 selected</span>
+    <button onclick="cloudSelAll()" id="cloud-sel-all-btn" style="padding:5px 12px;border-radius:2px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif;display:none">Select All</button>
+    <button onclick="cloudSelNone()" id="cloud-sel-none-btn" style="padding:5px 12px;border-radius:2px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif;display:none">Clear</button>
+    <button onclick="cloudDeleteSelected()" id="cloud-del-btn" style="padding:5px 12px;border-radius:2px;font-size:9px;cursor:pointer;border:1px solid rgba(220,70,70,.4);background:transparent;color:rgba(220,100,100,.9);font-family:'DM Sans',sans-serif;display:none">Delete Selected</button>
+    <button onclick="cloudQueueSelected()" id="cloud-queue-btn" style="padding:5px 12px;border-radius:2px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif;display:none">Queue Selected</button>
+    <button onclick="cloudTrainLora()" id="cloud-train-btn" style="padding:5px 14px;border-radius:2px;font-size:9px;cursor:pointer;border:none;background:var(--gold);color:#1a1714;font-family:'DM Sans',sans-serif;display:none;letter-spacing:.06em">✦ Train LoRA</button>
+  </div>
+  <div id="cloud-lib-grid" style="columns:5 180px;gap:4px;margin-top:8px"></div>
 </div>
 
 <script>
