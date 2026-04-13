@@ -897,6 +897,7 @@
       <button onclick="cloudSelAll()" id="cloud-sel-all-btn" style="padding:5px 12px;border-radius:2px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif;display:none">Select All</button>
       <button onclick="cloudSelNone()" id="cloud-sel-none-btn" style="padding:5px 12px;border-radius:2px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif;display:none">Clear</button>
       <button onclick="cloudDeleteSelected()" id="cloud-del-btn" style="padding:5px 12px;border-radius:2px;font-size:9px;cursor:pointer;border:1px solid rgba(220,70,70,.4);background:transparent;color:rgba(220,100,100,.9);font-family:'DM Sans',sans-serif;display:none">Delete Selected</button>
+      <button onclick="cloudQueueSelected()" id="cloud-queue-btn" style="padding:5px 12px;border-radius:2px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif;display:none">Queue Selected</button>
       <button onclick="cloudTrainLora()" id="cloud-train-btn" style="padding:5px 14px;border-radius:2px;font-size:9px;cursor:pointer;border:none;background:var(--gold);color:#1a1714;font-family:'DM Sans',sans-serif;display:none;letter-spacing:.06em">✦ Train LoRA</button>
     </div>
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
@@ -3452,6 +3453,7 @@ function cloudToggleSelectMode() {
   var allBtn = document.getElementById('cloud-sel-all-btn');
   var noneBtn = document.getElementById('cloud-sel-none-btn');
   var delBtn = document.getElementById('cloud-del-btn');
+  var queueBtn = document.getElementById('cloud-queue-btn');
   var trainBtn = document.getElementById('cloud-train-btn');
   var info = document.getElementById('cloud-sel-info');
   if (btn) { btn.style.background = _cloudSelectMode ? 'var(--gold)' : 'transparent'; btn.style.color = _cloudSelectMode ? '#1a1714' : 'var(--dim)'; }
@@ -3494,6 +3496,7 @@ function _updateCloudSelUI() {
   var trainBtn = document.getElementById('cloud-train-btn');
   if (info) { info.textContent = n + ' selected'; info.style.display = n > 0 ? 'inline' : 'none'; }
   if (delBtn) delBtn.style.display = n > 0 ? 'inline-block' : 'none';
+  if (queueBtn) queueBtn.style.display = n > 0 ? 'inline-block' : 'none';
   if (trainBtn) trainBtn.style.display = n >= 5 ? 'inline-block' : 'none';
 }
 
@@ -3547,6 +3550,32 @@ function cloudDeleteSelected() {
   }).catch(function(e) { if (typeof notify === 'function') notify('Delete failed: ' + e.message); });
 }
 
+function cloudQueueSelected() {
+  if (!_cloudSelected.size) return;
+  var added = 0;
+  Array.from(_cloudSelected).forEach(function(i) {
+    var item = window._clist ? window._clist[i] : null;
+    if (!item) return;
+    var filename = (item.image_url || '').split('/').pop();
+    var id = filename.replace(/\.[^.]+$/, ''); // strip extension as id
+    // Skip if already queued
+    if (window.queue && window.queue.find(function(q){ return q.id === id; })) return;
+    var queueItem = {
+      id: id,
+      imageUrl: item.image_url,
+      image_url: item.image_url,
+      icon: window.selectedIcon || null,
+      filename: filename,
+      status: 'queued',
+      source: 'cloud'
+    };
+    if (window.queue) { window.queue.push(queueItem); added++; }
+  });
+  if (typeof updateQueueCount === 'function') updateQueueCount();
+  if (typeof notify === 'function') notify('Added ' + added + ' image' + (added !== 1 ? 's' : '') + ' to queue');
+  // Exit select mode
+  cloudToggleSelectMode();
+}
 function cloudTrainLora() {
   if (_cloudSelected.size < 5) { if (typeof notify === 'function') notify('Select at least 5 images'); return; }
   var urls = Array.from(_cloudSelected).map(function(i) { return window._clist[i].image_url; }).filter(Boolean);
