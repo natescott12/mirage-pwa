@@ -890,7 +890,7 @@
         <button onclick="loadCloudLibrary()" style="padding:7px 14px;background:transparent;border:1px solid rgba(100,180,100,0.4);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--green);font-family:'Afacad',sans-serif;margin-right:6px">Cloud Library</button><button onclick="clearLibraryConfirm()" style="padding:7px 14px;background:transparent;border:1px solid rgba(176,48,37,0.3);border-radius:2px;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;color:var(--red);font-family:'DM Sans',sans-serif;transition:all 0.15s">Clear Library</button>
       </div>
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px" id="cloud-icon-btns"></div>
+    
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
       <button onclick="cloudToggleSelectMode()" id="cloud-select-btn" style="padding:5px 12px;border-radius:2px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--dim);font-family:'DM Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase">Select Mode</button>
       <span id="cloud-sel-info" style="font-size:9px;color:var(--gold);display:none">0 selected</span>
@@ -3417,12 +3417,6 @@ if(typeof window.selectIcon==='function'){
     setTimeout(loadCloudLibrary,300);
   };
 }
-// Hook loadCloudLibrary into the existing selectIcon function
-var _cl_origSI = window.selectIcon;
-window.selectIcon = function() {
-  _cl_origSI && _cl_origSI.apply(this, arguments);
-  setTimeout(loadCloudLibrary, 400);
-};
 // Also try loading on init with delay
 setTimeout(function(){ if(typeof selectedIcon!=='undefined'&&selectedIcon) loadCloudLibrary(); }, 2000);
 })();
