@@ -2684,7 +2684,7 @@ function toggleShot(el, group, value) {
 // ── CLOUD LIBRARY ENHANCEMENTS ────────────────────────────────────────────────
 window.libFavs = new Set(JSON.parse(localStorage.getItem('mirage_lib_favs')||'[]'));
 window.currentReferenceImage = null;
-let lbImages = [], lbCurrentIdx = 0;
+var lbCurrentIdx = 0;
 
 function openLightbox(idx) {
   const lib = load(LIB_KEY);
@@ -3331,7 +3331,7 @@ window.loadCloudLibrary=function(){
     if(!_imgs.length){grid.innerHTML='<div style="grid-column:1/-1;font-size:9px;color:var(--muted);padding:8px">No cloud images for '+selectedIcon.name+'</div>';return;}
     grid.innerHTML=_imgs.map(function(img,i){
       return '<div class="cloud-img-card" id="ci'+i+'" onclick="cloudToggle('+i+')">'+
-        '<img src="'+img.url+'" loading="lazy" onerror="this.parentElement.style.display='none'"/>'+
+        '<img src="'+img.url+'" loading="lazy" onerror=\"this.parentElement.style.display=\x27none\x27\"/>'+
         '<div class="cloud-check">&#10003;</div>'+
         '<div class="cloud-hover">'+
           '<button onclick="event.stopPropagation();cloudLightbox('+i+')" style="padding:3px;font-size:8px;border-radius:2px;cursor:pointer;border:none;background:rgba(255,255,255,.2);color:#fff;font-family:'DM Sans',sans-serif">View</button>'+
