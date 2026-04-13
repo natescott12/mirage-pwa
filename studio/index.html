@@ -3448,7 +3448,7 @@ function cloudToggleSelectMode() {
 function cloudCardClick(el, idx) {
   if (!_cloudSelectMode) {
     // Normal mode — open lightbox
-    if (typeof cloudOpenLb === 'function') cloudOpenLb(idx);
+    if (typeof cloudOpenLb === 'function') cloudOpenLb(window._clist ? window._clist[idx] : {image_url:''});
     return;
   }
   // Select mode — toggle selection
