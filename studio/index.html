@@ -3171,19 +3171,40 @@ function startLoraTraining() {
   var count = parseInt(countEl ? countEl.value : 10);
   var mode = modeEl ? modeEl.value : 'character';
 
-  // Get best library images for this icon
-  var lib = typeof load === 'function' ? load(typeof LIB_KEY !== 'undefined' ? LIB_KEY : 'mirage_library_v2') : {};
-  var images = (lib[selectedIcon.id] || []).slice(-count); // use most recent N images
+  // Get images — priority: selected cloud > all cloud > local library
+  var imageUrls = [];
+  var iconNameLower = selectedIcon.name.toLowerCase();
 
-  if (images.length < 5) {
-    if (typeof notify === 'function') notify('Need at least 5 library images to train. Generate more first.');
-    return;
+  // 1. Use selected cloud images if any are selected
+  if (window._cloudSelected && window._cloudSelected.size >= 5 && window._clist) {
+    imageUrls = Array.from(window._cloudSelected)
+      .map(function(i) { return window._clist[i] ? window._clist[i].image_url : null; })
+      .filter(Boolean).slice(0, count);
+    if (typeof notify === 'function') notify('Using ' + imageUrls.length + ' selected cloud images...');
   }
 
-  // Get image URLs (use imageUrl if available, otherwise base64)
-  var imageUrls = images.map(function(img) {
-    return img.imageUrl || img.url || img.base64 || null;
-  }).filter(Boolean);
+  // 2. All cloud images for this icon
+  if (imageUrls.length < 5 && window._ci && window._ci.length > 0) {
+    var ciFiltered = window._ci.filter(function(x) {
+      return x.icon_name === iconNameLower || (iconNameLower === 'sloan' && x.icon_name === 'sloane');
+    });
+    if (ciFiltered.length >= 5) {
+      imageUrls = ciFiltered.map(function(x) { return x.image_url; }).slice(0, count);
+      if (typeof notify === 'function') notify('Using ' + imageUrls.length + ' cloud library images...');
+    }
+  }
+
+  // 3. Fallback to local library
+  if (imageUrls.length < 5) {
+    var lib = typeof load === 'function' ? load(typeof LIB_KEY !== 'undefined' ? LIB_KEY : 'mirage_library_v2') : {};
+    var localImgs = (lib[selectedIcon.id] || []).slice(-count);
+    imageUrls = localImgs.map(function(img) { return img.imageUrl || img.url || null; }).filter(Boolean);
+  }
+
+  if (imageUrls.length < 5) {
+    if (typeof notify === 'function') notify('Need at least 5 images. Open Cloud Library and select images first.');
+    return;
+  }
 
   if (typeof notify === 'function') notify('Starting LoRA training with ' + imageUrls.length + ' images...');
   setLoraState('training');
