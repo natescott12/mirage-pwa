@@ -3858,19 +3858,6 @@ function cloudTrainLora() {
     var prompt=parts.join(', ');
     var pe=document.getElementById('conv-prompt');
     if(pe)pe.value=prompt;
-  };var iconName=(si.name||'sloan').toLowerCase();
-    var sys='You are an art director for Mirage, an editorial AI photo platform in the style of Corinne Day and Juergen Teller. '+
-      'Convert the brief into a precise Flux image generation prompt for '+si.name+'. '+
-      'Always start with: "35mm film natural light candid unposed organic, '+iconName+', ". '+
-      'Include: clothing, setting, lighting, mood, composition. Under 100 words. No quotes. No preamble. Just the prompt.';
-    fetch(PX+'/claude/chat',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({system:sys,messages:[{role:'user',content:'Character context:\n'+getPersonaCtx()+'\n\nBrief: '+brief+'\n\nBuild the prompt.'}]})
-    }).then(function(r){return r.json();}).then(function(data){
-      if(data.error)throw new Error(data.error);
-      var p=data.reply||'';if(pe)pe.value=p;if(pw)pw.style.display='block';if(gw)gw.style.display='block';
-      if(st)st.textContent='Ready';setTimeout(function(){if(st)st.textContent='';},2500);
-    }).catch(function(e){if(st)st.textContent='Error: '+e.message;});
-  };
   window.convGenerate=function(){
     var pe=document.getElementById('conv-prompt');var prompt=pe?pe.value.trim():'';
     if(!prompt){if(typeof notify==='function')notify('Build a prompt first');return;}
