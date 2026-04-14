@@ -3016,7 +3016,6 @@ var MG=window.MG={
       .filter(function(s){return s&&s.trim();}).join(', ');
   },
   refresh:function(){
-  refresh:function(){
     var el=document.getElementById('prompt-preview');if(!el)return;
     if(typeof promptLocked!=='undefined'&&promptLocked)return;
     var p=MG.build();el.value=p;
