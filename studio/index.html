@@ -3308,7 +3308,7 @@ window.generateFlux = function(prompt) {
       if (d.status === 'Ready') finetuneId = d.finetune_id;
     }
   }
-  if (finetuneId) {
+  if (false && finetuneId) { // LoRA generation via Replicate — coming soon
     // Use LoRA generation
     if (typeof notify === 'function') notify('✦ Generating with LoRA model...');
     return fetch(PX + '/flux/generate-with-lora', {
