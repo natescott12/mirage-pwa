@@ -3648,13 +3648,9 @@ function cloudTrainLora() {
 
     <div id="conv-generate-wrap" style="display:none">
       <div style="display:flex;gap:8px;margin-bottom:8px">
-        <button onclick="convGenerate()" id="conv-gen-btn" style="flex:1;padding:14px;background:var(--text);color:var(--bg);border:none;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px">✦ Generate · <span id="conv-gen-name">Sloan</span></button>
+        <button onclick="convSendToStudio()" id="conv-send-btn" style="flex:1;padding:14px;background:var(--text);color:var(--bg);border:none;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px">→ Send to Studio</button>
         <button onclick="convSaveBrief()" style="padding:14px 18px;background:var(--bg2);border:1px solid var(--border-md);font-size:11px;color:var(--muted);cursor:pointer;border-radius:2px;letter-spacing:.06em" title="Save brief for this icon">Save Brief</button>
       </div>
-    </div>
-    <div id="conv-image-preview" style="margin-top:16px;display:none">
-      <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px">Generated</div>
-      <img id="conv-preview-img" style="width:100%;border-radius:2px;display:block" />
     </div>
     <div id="conv-output" style="margin-top:24px"></div>
   </div>
@@ -3665,8 +3661,8 @@ function cloudTrainLora() {
   var BK="conv_brief_v2";
   function convSync(){
     var si=window.selectedIcon;if(!si)return;
-    var a=document.getElementById('conv-icon-avatar'),n=document.getElementById('conv-icon-name'),ar=document.getElementById('conv-icon-arch'),gn=document.getElementById('conv-gen-name');
-    if(a)a.textContent=(si.name||'S')[0];if(n)n.textContent=si.name||'';if(ar)ar.textContent=si.archetype||'';if(gn)gn.textContent=si.name||'Sloan';
+    var a=document.getElementById('conv-icon-avatar'),n=document.getElementById('conv-icon-name'),ar=document.getElementById('conv-icon-arch');
+    if(a)a.textContent=(si.name||'S')[0];if(n)n.textContent=si.name||'';if(ar)ar.textContent=si.archetype||'';
     convLoadBrief(si.id);
   }
   function convLoadBrief(id){
@@ -3725,22 +3721,16 @@ function cloudTrainLora() {
       MG.refresh();
     }
   };
-  window.convGenerate=function(){
-    var pe=document.getElementById('conv-prompt'),prompt=pe?pe.value.trim():'';
-    if(!prompt){if(typeof notify==='function')notify('Build a prompt first');return;}
-    var btn=document.getElementById('conv-gen-btn'),pv=document.getElementById('conv-image-preview'),pi=document.getElementById('conv-preview-img');
-    if(btn){btn.textContent='Generating...';btn.disabled=true;}if(pv)pv.style.display='none';
-    function poll(id,n){
-      if(n>60)return;
-      fetch(PX+'/flux/result/'+id).then(function(r){return r.json();}).then(function(d){
-        if(d.status==='Ready'&&d.result&&d.result.sample){if(pi)pi.src=d.result.sample;if(pv)pv.style.display='block';if(btn){btn.textContent='Generate';btn.disabled=false;}}
-        else if(d.status==='Content Moderated'||d.status==='Error'||d.status==='Failed'){if(btn){btn.textContent='Generate';btn.disabled=false;}if(typeof notify==='function')notify('Failed: '+d.status);}
-        else{setTimeout(function(){poll(id,n+1);},3000);}
-      }).catch(function(){setTimeout(function(){poll(id,n+1);},5000);});
+  window.convSendToStudio=function(){
+    var g=function(id){return(document.getElementById(id)||{}).value||'';};
+    if(window.MG){
+      MG.briefScene=g('cs-scene');
+      MG.briefWardrobe=g('cs-wardrobe');
+      MG.briefShot=g('cs-shot');
+      MG.briefLight=g('cs-light');
+      MG.refresh();
     }
-    fetch(PX+'/flux/generate-with-lora',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,width:768,height:1024})})
-    .then(function(r){return r.json();}).then(function(d){if(d.error)throw new Error(d.error);poll(d.id,0);})
-    .catch(function(e){if(btn){btn.textContent='Generate';btn.disabled=false;}if(typeof notify==='function')notify('Error: '+e.message);});
+    if(typeof switchTab==='function')switchTab('generate');
   };
   setTimeout(convSync,800);
 })();
