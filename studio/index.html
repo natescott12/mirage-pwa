@@ -3763,25 +3763,22 @@ function cloudTrainLora() {
 <script>
 (function(){
   var PX='https://mirage-proxy-production.up.railway.app';
+
   function convSync(){
     var si=window.selectedIcon;if(!si)return;
-    var a=document.getElementById('conv-icon-avatar');var n=document.getElementById('conv-icon-name');var ar=document.getElementById('conv-icon-arch');
-    if(a)a.textContent=(si.name||'S').charAt(0);if(n)n.textContent=si.name||'';if(ar)ar.textContent=si.archetype||'';
+    var a=document.getElementById('conv-icon-avatar');
+    var n=document.getElementById('conv-icon-name');
+    var ar=document.getElementById('conv-icon-arch');
+    var gn=document.getElementById('conv-gen-name');
+    if(a)a.textContent=(si.name||'S').charAt(0);
+    if(n)n.textContent=si.name||'';
+    if(ar)ar.textContent=si.archetype||'';
+    if(gn)gn.textContent=si.name||'Sloan';
   }
+
   var _oSI=window.selectIcon;
   window.selectIcon=function(){if(_oSI)_oSI.apply(this,arguments);setTimeout(convSync,300);};
-  function getPersonaCtx(){
-    var si=window.selectedIcon||{};var p=window.currentPersona||{};var c=window.currentChar||{};
-    var parts=['Icon: '+(si.name||''),'Archetype: '+(si.archetype||'')];
-    if(p.voice)parts.push('Voice: '+p.voice);
-    if(p.aesthetic)parts.push('Aesthetic: '+p.aesthetic);
-    if(p.knowledge_domain)parts.push('Domain: '+p.knowledge_domain);
-    if(c.hairColor)parts.push('Hair: '+c.hairColor+(c.hairLength?', '+c.hairLength:''));
-    if(c.eyeColor)parts.push('Eyes: '+c.eyeColor);
-    if(c.skinTone)parts.push('Skin: '+c.skinTone);
-    if(c.build)parts.push('Build: '+c.build);
-    return parts.join('\n');
-  }
+
   window.convBuildPrompt=function(){
     var brief=(document.getElementById('conv-brief')||{}).value||'';
     if(!brief.trim()){if(typeof notify==='function')notify('Write a brief first');return;}
@@ -3789,46 +3786,37 @@ function cloudTrainLora() {
     var cs=document.getElementById('conv-sections');
     var gw=document.getElementById('conv-generate-wrap');
     if(st)st.textContent='Building...';
-    if(cs)cs.style.display='none';if(gw)gw.style.display='none';
-    var si=window.selectedIcon||{};var iconName=(si.name||'sloan').toLowerCase();
+    if(cs)cs.style.display='none';
+    if(gw)gw.style.display='none';
 
-    // Auto-fill character and style from persona/char builder
+    var si=window.selectedIcon||{};
+
+    // Auto-fill character from char builder
     var charDesc=typeof buildCharDesc==='function'?buildCharDesc():(si.name||'woman');
-    var styleDesc=(si.style||'minimal, understated')+', '+(si.aesthetic||'');
+    var styleDesc=((si.style||'minimal, understated')+', '+(si.aesthetic||'')).replace(/,\s*$/,'').trim();
 
     var csChar=document.getElementById('cs-character');
     var csStyle=document.getElementById('cs-style');
-    var csGenName=document.getElementById('conv-gen-name');
     if(csChar)csChar.value=charDesc;
-    if(csStyle)csStyle.value=styleDesc.replace(/,\s*$/,'').trim();
-    if(csGenName)csGenName.textContent=si.name||'Sloan';
+    if(csStyle)csStyle.value=styleDesc;
+    convSync();
 
-    var sys='You are an art director for Mirage, an editorial AI platform. '+
-      'Parse the creative brief and extract ONLY these 3 fields. '+
-      'Return ONLY valid JSON, no markdown, no explanation:\n'+
-      '{\n'+
-      '  "scene": "location, time of day, atmosphere in 10 words max",\n'+
-      '  "wardrobe": "specific clothing items only, comma separated, 10 words max",\n'+
-      '  "shot": "framing and camera direction in 8 words max, real camera language only"\n'+
-      '}\n'+
-      'Light will be extracted separately. Keep each field tight and visual.';
+    var sys='You are an art director. Parse this creative brief and return ONLY valid JSON with exactly these 3 keys:\n'+
+      '{"scene":"location and atmosphere, max 10 words","wardrobe":"specific clothing items only, max 10 words","shot":"camera framing and angle in real camera language, max 8 words"}\n'+
+      'No markdown. No explanation. Just the JSON object.';
 
     fetch(PX+'/claude/chat',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({system:sys,messages:[{role:'user',content:'Brief: '+brief}]})
+      body:JSON.stringify({system:sys,messages:[{role:'user',content:brief}]})
     }).then(function(r){return r.json();}).then(function(data){
       if(data.error)throw new Error(data.error);
-      var raw=data.reply||'{}';
+      var raw=(data.reply||'{}').replace(/```json|```/g,'').trim();
       var parsed={};
-      try{
-        raw=raw.replace(/```json|```/g,'').trim();
-        parsed=JSON.parse(raw);
-      }catch(e){parsed={scene:'',wardrobe:'',shot:''};}
+      try{parsed=JSON.parse(raw);}catch(e){parsed={scene:'',wardrobe:'',shot:''};}
 
-      // Light — extract from brief with a second pass using simple regex
-      var lightMatch=brief.match(/(?:light(?:ing)?|sun|golden|overcast|hazy|dusk|dawn|afternoon|morning|evening|neon|shadow|glow)[^.\n,]{0,40}/i);
-      var light=lightMatch?lightMatch[0].trim():'natural light';
+      // Extract light from brief
+      var lm=brief.match(/(?:light|sun|golden|overcast|hazy|dusk|dawn|afternoon|morning|evening|neon)[^.\n,]{0,40}/i);
+      var light=lm?lm[0].trim():'natural light';
 
-      // Fill sections
       var csScene=document.getElementById('cs-scene');
       var csWardrobe=document.getElementById('cs-wardrobe');
       var csShot=document.getElementById('cs-shot');
@@ -3836,57 +3824,59 @@ function cloudTrainLora() {
       if(csScene)csScene.value=parsed.scene||'';
       if(csWardrobe)csWardrobe.value=parsed.wardrobe||'';
       if(csShot)csShot.value=parsed.shot||'';
-      if(csLight)csLight.value=light||'';
+      if(csLight)csLight.value=light;
 
-      // Show sections and assemble prompt
-      if(cs)cs.style.display='block';if(gw)gw.style.display='block';
-      convRebuildPrompt();
-      if(st)st.textContent='Ready';setTimeout(function(){if(st)st.textContent='';},2500);
-    }).catch(function(e){if(st)st.textContent='Error: '+e.message;});
+      if(cs)cs.style.display='block';
+      if(gw)gw.style.display='block';
+      window.convRebuildPrompt();
+      if(st)st.textContent='Ready';
+      setTimeout(function(){if(st)st.textContent='';},2500);
+    }).catch(function(e){
+      if(st)st.textContent='Error: '+e.message;
+    });
   };
+
   window.convRebuildPrompt=function(){
     var si=window.selectedIcon||{};
-    var iconName=(si.name||'sloan').toLowerCase();
     var base='35mm film natural light candid unposed organic';
+    var icon=(si.name||'sloan').toLowerCase();
     var char=(document.getElementById('cs-character')||{}).value||'';
     var scene=(document.getElementById('cs-scene')||{}).value||'';
     var wardrobe=(document.getElementById('cs-wardrobe')||{}).value||'';
     var shot=(document.getElementById('cs-shot')||{}).value||'';
     var light=(document.getElementById('cs-light')||{}).value||'';
     var style=(document.getElementById('cs-style')||{}).value||'';
-    var parts=[base,iconName,char,wardrobe,scene,shot,light,style].filter(function(s){return s&&s.trim();});
-    var prompt=parts.join(', ');
+    var parts=[base,icon,char,wardrobe,scene,shot,light,style].filter(function(s){return s&&s.trim();});
     var pe=document.getElementById('conv-prompt');
-    if(pe)pe.value=prompt;
+    if(pe)pe.value=parts.join(', ');
+  };
+
   window.convGenerate=function(){
-    var pe=document.getElementById('conv-prompt');var prompt=pe?pe.value.trim():'';
+    var pe=document.getElementById('conv-prompt');
+    var prompt=pe?pe.value.trim():'';
     if(!prompt){if(typeof notify==='function')notify('Build a prompt first');return;}
-    var btn=document.getElementById('conv-gen-btn');var out=document.getElementById('conv-output');
+    var btn=document.getElementById('conv-gen-btn');
     if(btn){btn.textContent='Generating...';btn.disabled=true;}
-    if(out)out.innerHTML='<div style="padding:20px;text-align:center;font-size:11px;color:var(--muted)">Generating...</div>';
     if(typeof generateFlux==='function'){
-      var pp=document.getElementById('prompt-preview');var old=pp?pp.value:'';
-      if(pp)pp.value=prompt;
       generateFlux(prompt);
-      if(pp)setTimeout(function(){if(pp)pp.value=old;},500);
       setTimeout(function(){
         if(btn){btn.textContent='Generate';btn.disabled=false;}
-        if(out)out.innerHTML='<div style="font-size:10px;color:var(--gold);padding:10px">✦ Generating — check the Generate tab for output</div>';
+        if(typeof notify==='function')notify('✦ Generating — check Output panel');
       },1500);
     } else {
-      fetch(PX+'/flux/generate',{method:'POST',headers:{'Content-Type':'application/json'},
+      fetch(PX+'/flux/generate-with-lora',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({prompt:prompt,width:768,height:1024})
       }).then(function(r){return r.json();}).then(function(data){
         if(data.error)throw new Error(data.error);
         if(btn){btn.textContent='Generate';btn.disabled=false;}
-        if(out)out.innerHTML='<div style="font-size:10px;color:var(--gold);padding:10px">✦ Job started</div>';
-        if(typeof notify==='function')notify('Generation started');
+        if(typeof notify==='function')notify('✦ Job started');
       }).catch(function(e){
         if(btn){btn.textContent='Generate';btn.disabled=false;}
-        if(out)out.innerHTML='<div style="font-size:10px;color:var(--red);padding:10px">Error: '+e.message+'</div>';
+        if(typeof notify==='function')notify('Error: '+e.message);
       });
     }
   };
+
   setTimeout(convSync,800);
 })();
 </script>
