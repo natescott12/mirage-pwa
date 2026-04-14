@@ -3722,14 +3722,80 @@ function cloudTrainLora() {
     }
   };
   window.convSendToStudio=function(){
-    var g=function(id){return(document.getElementById(id)||{}).value||'';};
-    if(window.MG){
-      MG.briefScene=g('cs-scene');
-      MG.briefWardrobe=g('cs-wardrobe');
-      MG.briefShot=g('cs-shot');
-      MG.briefLight=g('cs-light');
-      MG.refresh();
+    var g=function(id){return((document.getElementById(id)||{}).value||'').trim();};
+    var sceneText=g('cs-scene');
+    var wardrobeText=g('cs-wardrobe');
+    var shotText=g('cs-shot');
+    var lightText=g('cs-light');
+    if(!window.MG){if(typeof switchTab==='function')switchTab('generate');return;}
+
+    function matches(text,target){
+      if(!target||!text)return false;
+      target=target.toLowerCase().trim();
+      if(text.indexOf(target)>-1)return true;
+      var words=target.split(/[\s\-]+/).filter(function(w){return w.length>2;});
+      return words.length>0&&words.every(function(w){return text.indexOf(w)>-1;});
     }
+    function matchesEither(text,label,prompt){
+      return matches(text,label)||matches(text,prompt);
+    }
+
+    var wTextLC=wardrobeText.toLowerCase();
+    var matchedWardrobe=false;
+    if(wTextLC){
+      var icon=window.selectedIcon||null;
+      ['tops','bottoms','accessories','look'].forEach(function(tab){
+        var items=icon?MG.getItems(icon.id,tab):(MG.WARDROBE[tab]||[]);
+        items.forEach(function(item){
+          if(matchesEither(wTextLC,item.label||'',item.prompt||'')){
+            MG.selected.add(item.id);matchedWardrobe=true;
+          }
+        });
+      });
+      if(!matchedWardrobe){
+        var winp=document.getElementById('wardrobe-add-input');
+        if(winp)winp.value=wardrobeText;
+      }
+    }
+
+    var sTextLC=shotText.toLowerCase();
+    if(sTextLC){
+      ['framing','angle','perspective'].forEach(function(group){
+        var container=document.getElementById('shot-'+group);
+        if(!container)return;
+        Array.prototype.forEach.call(container.querySelectorAll('.shot-chip'),function(chip){
+          var oc=chip.getAttribute('onclick')||'';
+          var m=oc.match(/'(framing|angle|perspective)','([^']+)'/);
+          if(!m)return;
+          var label=(chip.textContent||'').trim();
+          var prompt=m[2];
+          if(matchesEither(sTextLC,label,prompt)){
+            MG[group].add(prompt);
+            chip.classList.add('active');
+          }
+        });
+      });
+    }
+
+    var lTextLC=lightText.toLowerCase();
+    if(lTextLC&&typeof PARAMS!=='undefined'&&typeof params!=='undefined'&&PARAMS.light){
+      var best=null,bestScore=0;
+      PARAMS.light.forEach(function(opt){
+        var optWords=opt.toLowerCase().split(/\s+/).filter(function(w){return w.length>2;});
+        var hits=optWords.filter(function(w){return lTextLC.indexOf(w)>-1;}).length;
+        if(hits>bestScore){bestScore=hits;best=opt;}
+      });
+      if(best)params.light=best;
+    }
+
+    MG.briefScene=sceneText;
+    MG.briefWardrobe='';
+    MG.briefShot='';
+    MG.briefLight='';
+
+    MG.renderChips();
+    MG.refresh();
+
     if(typeof switchTab==='function')switchTab('generate');
   };
   setTimeout(convSync,800);
