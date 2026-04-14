@@ -3023,7 +3023,14 @@ var MG=window.MG={
       }
     }catch(e){}
 
-    return[base,identity,physDesc,wardrobe,shots,light,grain,moodboard]
+    // Style + aesthetic from persona — visual only, no energy/vibe text
+    var style=icon.style||'';
+    var aesthetic=icon.aesthetic||'';
+    // Keep style short — first clause only
+    if(style.indexOf(',')>-1)style=style.split(',').slice(0,2).join(',').trim();
+    if(aesthetic.indexOf(',')>-1)aesthetic=aesthetic.split(',').slice(0,2).join(',').trim();
+
+    return[base,identity,physDesc,wardrobe,shots,light,grain,style,aesthetic,moodboard]
       .filter(function(s){return s&&s.trim();}).join(', ');
   },
   refresh:function(){
