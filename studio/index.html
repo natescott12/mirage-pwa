@@ -832,12 +832,32 @@
           <div class="prompt-live-dot" id="prompt-live-dot"></div>
           <span class="prompt-live-label" id="prompt-live-label">Live</span>
         </div>
-        <textarea
-          id="prompt-preview"
-          class="prompt-textarea"
-          placeholder="Fill in the character builder and select a scene to generate your prompt..."
-          oninput="onPromptEdit()"
-        ></textarea>
+        <div id="prompt-sections" style="background:rgba(26,23,20,0.03);border:1px solid var(--border);border-radius:2px;padding:10px 12px;margin-bottom:10px;display:flex;flex-direction:column;gap:6px;font-family:'Afacad',sans-serif">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;width:74px;flex-shrink:0">Character</div>
+            <input id="ps-character" type="text" readonly placeholder="—" style="flex:1;background:transparent;border:none;outline:none;font-size:11px;color:var(--dim);font-family:'Afacad',sans-serif;opacity:.65" />
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;width:74px;flex-shrink:0">Scene</div>
+            <input id="ps-scene" type="text" placeholder="—" oninput="MG.briefScene=this.value;MG.updateCharCount();" onchange="MG.refresh()" style="flex:1;background:transparent;border:none;outline:none;font-size:11px;color:var(--text);font-family:'Afacad',sans-serif" />
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;width:74px;flex-shrink:0">Wardrobe</div>
+            <input id="ps-wardrobe" type="text" placeholder="—" oninput="MG.briefWardrobe=this.value;MG.updateCharCount();" onchange="MG.refresh()" style="flex:1;background:transparent;border:none;outline:none;font-size:11px;color:var(--text);font-family:'Afacad',sans-serif" />
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;width:74px;flex-shrink:0">Shot</div>
+            <input id="ps-shot" type="text" placeholder="—" oninput="MG.briefShot=this.value;MG.updateCharCount();" onchange="MG.refresh()" style="flex:1;background:transparent;border:none;outline:none;font-size:11px;color:var(--text);font-family:'Afacad',sans-serif" />
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;width:74px;flex-shrink:0">Light</div>
+            <input id="ps-light" type="text" placeholder="—" oninput="MG.briefLight=this.value;MG.updateCharCount();" onchange="MG.refresh()" style="flex:1;background:transparent;border:none;outline:none;font-size:11px;color:var(--text);font-family:'Afacad',sans-serif" />
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;width:74px;flex-shrink:0">Style</div>
+            <input id="ps-style" type="text" readonly placeholder="—" style="flex:1;background:transparent;border:none;outline:none;font-size:11px;color:var(--dim);font-family:'Afacad',sans-serif;opacity:.65" />
+          </div>
+        </div>
         <div class="prompt-controls">
           <button class="prompt-ctrl-btn" onclick="rewritePrompt()" title="Regenerate prompt from current settings">↺ Rewrite</button>
           <button class="prompt-ctrl-btn" id="lock-btn" onclick="togglePromptLock()" title="Lock prompt to prevent auto-updates">🔓 Auto</button>
@@ -1451,38 +1471,33 @@ async function loadMoodboardFromCloud(icon) {
 }
 function refreshPrompt() { if(typeof MG !== "undefined") MG.refresh(); }
 
-function getActivePrompt() {
-  const el=$("prompt-preview");
-  const v = el ? el.value.trim() : "";
-  return v.length>10 ? v : buildPrompt();
-}
+function getActivePrompt() { return buildPrompt(); }
 
 function togglePromptLock() {
   promptLocked = !promptLocked;
   const btn=$("lock-btn");
   const dot=$("prompt-live-dot");
   const lbl=$("prompt-live-label");
-  const ta=$("prompt-preview");
   if(btn) { btn.textContent=promptLocked?"🔒 Locked":"🔓 Auto"; btn.classList.toggle("active",promptLocked); }
   if(dot) dot.style.background=promptLocked?"var(--gold)":"var(--green)";
   if(lbl) { lbl.textContent=promptLocked?"Locked":"Live"; lbl.style.color=promptLocked?"var(--gold)":"var(--green)"; }
-  if(ta) ta.classList.toggle("locked",promptLocked);
   if(!promptLocked) refreshPrompt();
 }
 
-function rewritePrompt() { promptLocked=false; togglePromptLock(); togglePromptLock(); refreshPrompt(); }
-
-function onPromptEdit() {
-  const el=$("prompt-preview");
-  if(!el) return;
-  const cc=$("prompt-char-count");
-  if(cc) cc.textContent=el.value.length+" chars";
-  // Don't auto-lock — user can edit freely. Use Lock button to freeze.
+function rewritePrompt() {
+  // Clear all manual brief overrides so chips/persona drive the sections again
+  if(typeof MG !== "undefined") {
+    MG.briefScene = ""; MG.briefWardrobe = ""; MG.briefShot = ""; MG.briefLight = "";
+  }
+  promptLocked = false;
+  const btn=$("lock-btn"); if(btn) { btn.textContent="🔓 Auto"; btn.classList.remove("active"); }
+  const dot=$("prompt-live-dot"); if(dot) dot.style.background="var(--green)";
+  const lbl=$("prompt-live-label"); if(lbl) { lbl.textContent="Live"; lbl.style.color="var(--green)"; }
+  refreshPrompt();
 }
 
 function copyFullPrompt() {
-  const el=$("prompt-preview");
-  if(el) navigator.clipboard.writeText(el.value);
+  navigator.clipboard.writeText(buildPrompt());
   notify("Prompt copied");
 }
 
@@ -2960,16 +2975,12 @@ var MG=window.MG={
     });
     return parts.join(', ');
   },
-  build:function(){
+  parts:function(){
     var icon=typeof selectedIcon!=='undefined'?selectedIcon:null;
-    if(!icon)return'';
+    if(!icon)return{character:'',scene:'',wardrobe:'',shot:'',light:'',style:''};
 
-    // 1. BASE STYLE — fixed, short
-    var base=MG.base.size?Array.from(MG.base).join(', '):'35mm film natural light candid unposed organic';
-
-    // 2. TRIGGER WORD + SLIM PHYS DESC (max 5 visual descriptors, <12 words)
-    var identity=icon.name.toLowerCase();
-    var physDesc='woman';
+    // CHARACTER — slim phys desc (max 5 visual anchors, <12 words)
+    var character='woman';
     if(typeof currentChar!=='undefined'&&currentChar){
       var cc=currentChar,pp=[];
       if(cc.skinTonePrompt)pp.push(cc.skinTonePrompt);
@@ -2982,74 +2993,83 @@ var MG=window.MG={
       if(hairBits.length>1)pp.push(hairBits.join(' '));
       var feat=cc.features||(cc.freckles&&cc.freckles!=='none'?cc.freckles+' freckles':'')||cc.tattoos||'';
       if(feat)pp.push(feat);
-      if(pp.length)physDesc=pp.slice(0,5).join(', ');
+      if(pp.length)character=pp.slice(0,5).join(', ');
     }
 
-    // 3. WARDROBE — brief override or selected chips
-    var wardrobe=MG.briefWardrobe||MG.getWardrobePrompt();
-
-    // 3b. SCENE — from brief (no chip slot in Generate tab)
+    // SCENE — brief only, no chip equivalent
     var scene=MG.briefScene||'';
 
-    // 4. SHOT — brief override, else priority: framing > angle > perspective
-    var shots='';
+    // WARDROBE — brief override or selected chips
+    var wardrobe=MG.briefWardrobe||MG.getWardrobePrompt()||'';
+
+    // SHOT — brief override, else priority: framing > angle > perspective
+    var shot='';
     if(MG.briefShot){
-      shots=MG.briefShot;
+      shot=MG.briefShot;
     }else{
       var shotParts=[];
-      if(MG.framing.size){
-        var framingArr=Array.from(MG.framing);
-        shotParts.push(framingArr[framingArr.length-1]);
-      }
-      if(MG.angle.size){
-        var angleArr=Array.from(MG.angle);
-        shotParts.push(angleArr[angleArr.length-1]);
-      }
-      if(MG.perspective.size&&shotParts.length<2){
-        var perspArr=Array.from(MG.perspective);
-        shotParts.push(perspArr[perspArr.length-1]);
-      }
-      shots=shotParts.join(', ');
+      if(MG.framing.size){var arr1=Array.from(MG.framing);shotParts.push(arr1[arr1.length-1]);}
+      if(MG.angle.size){var arr2=Array.from(MG.angle);shotParts.push(arr2[arr2.length-1]);}
+      if(MG.perspective.size&&shotParts.length<2){var arr3=Array.from(MG.perspective);shotParts.push(arr3[arr3.length-1]);}
+      shot=shotParts.join(', ');
     }
 
-    // 5. LIGHT — brief override, else tech params
+    // LIGHT — brief override, else tech params
     var light=MG.briefLight||'';
     if(!light&&typeof params!=='undefined'&&params.light)light=params.light;
 
-    // 6. FILM GRAIN — one descriptor
+    // STYLE — persona style + aesthetic (first clauses only)
+    var styleStr=icon.style||'';
+    var aesthetic=icon.aesthetic||'';
+    if(styleStr.indexOf(',')>-1)styleStr=styleStr.split(',').slice(0,2).join(',').trim();
+    if(aesthetic.indexOf(',')>-1)aesthetic=aesthetic.split(',').slice(0,2).join(',').trim();
+    var style=[styleStr,aesthetic].filter(function(s){return s&&s.trim();}).join(', ');
+
+    return{character:character,scene:scene,wardrobe:wardrobe,shot:shot,light:light,style:style};
+  },
+  build:function(){
+    var icon=typeof selectedIcon!=='undefined'?selectedIcon:null;
+    if(!icon)return'';
+
+    var base=MG.base.size?Array.from(MG.base).join(', '):'35mm film natural light candid unposed organic';
+    var identity=icon.name.toLowerCase();
+    var p=MG.parts();
+
+    // FILM GRAIN — extra, not surfaced as a section
     var grain='';
     if(typeof params!=='undefined'&&params.grain)grain=params.grain;
 
-    // 7. MOODBOARD — style flavour only, max 20 words at end
+    // MOODBOARD — extra, style flavour only (max 12 words), not surfaced as a section
     var moodboard='';
     try{
       var mbEl=document.getElementById('mb-extracted');
       if(mbEl)moodboard=(mbEl.value||mbEl.textContent||'').replace(/^['"]+|['"]+$/g,'').trim();
       if(!moodboard&&typeof getMoodboardAesthetic==='function')moodboard=getMoodboardAesthetic();
-      // Strip wardrobe language from moodboard
       moodboard=moodboard.replace(/wearing[^,.]+/gi,'').replace(/dressed in[^,.]+/gi,'').trim();
-      // Keep it short — style flavour only
       if(moodboard){
         var words=moodboard.split(/[,\s]+/).filter(Boolean);
         moodboard=words.slice(0,12).join(' ');
       }
     }catch(e){}
 
-    // Style + aesthetic from persona — visual only, no energy/vibe text
-    var style=icon.style||'';
-    var aesthetic=icon.aesthetic||'';
-    // Keep style short — first clause only
-    if(style.indexOf(',')>-1)style=style.split(',').slice(0,2).join(',').trim();
-    if(aesthetic.indexOf(',')>-1)aesthetic=aesthetic.split(',').slice(0,2).join(',').trim();
-
-    return[base,identity,physDesc,wardrobe,scene,shots,light,grain,style,aesthetic,moodboard]
+    return[base,identity,p.character,p.wardrobe,p.scene,p.shot,p.light,grain,p.style,moodboard]
       .filter(function(s){return s&&s.trim();}).join(', ');
   },
+  updateCharCount:function(){
+    var cc=document.getElementById('prompt-char-count');
+    if(cc)cc.textContent=MG.build().length+' chars';
+  },
   refresh:function(){
-    var el=document.getElementById('prompt-preview');if(!el)return;
-    if(typeof promptLocked!=='undefined'&&promptLocked)return;
-    var p=MG.build();el.value=p;
-    var cc=document.getElementById('prompt-char-count');if(cc)cc.textContent=p.length+' chars';
+    if(typeof promptLocked!=='undefined'&&promptLocked){MG.updateCharCount();return;}
+    var p=MG.parts();
+    var setRow=function(id,val){var el=document.getElementById(id);if(el&&el.value!==val)el.value=val||'';};
+    setRow('ps-character',p.character);
+    setRow('ps-scene',p.scene);
+    setRow('ps-wardrobe',p.wardrobe);
+    setRow('ps-shot',p.shot);
+    setRow('ps-light',p.light);
+    setRow('ps-style',p.style);
+    MG.updateCharCount();
   },
   lbOpen:function(idx){
     var lib=typeof load==='function'?load(typeof LIB_KEY!=='undefined'?LIB_KEY:'mirage_library_v2'):{};
