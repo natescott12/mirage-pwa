@@ -3596,13 +3596,14 @@ function cloudTrainLora() {
       <div style="margin-left:auto;font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em">Persona active</div>
       <div id="conv-persona-dot" style="width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0"></div>
     </div>
-    <div style="margin-bottom:16px">
-      <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px">Your brief</div>
-      <textarea id="conv-brief" placeholder="fire escape, morning, coffee going cold, that black jacket she always wears..." style="width:100%;min-height:90px;background:var(--bg2);border:1px solid var(--border);border-radius:2px;padding:14px;font-size:14px;font-family:'Afacad',sans-serif;color:var(--text);resize:vertical;outline:none;line-height:1.5;box-sizing:border-box;transition:border-color .15s" onfocus="this.style.borderColor='var(--border-strong)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+    <div id="conv-chat" style="background:var(--bg2);border:1px solid var(--border);border-radius:2px;padding:16px;height:420px;overflow-y:auto;margin-bottom:12px;display:flex;flex-direction:column;gap:12px;font-family:'DM Sans',sans-serif"></div>
+    <div style="display:flex;gap:8px;margin-bottom:8px;align-items:stretch">
+      <textarea id="conv-input" rows="2" placeholder="Describe a moment, or answer the question..." style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:2px;padding:12px 14px;font-size:13px;font-family:'Afacad',sans-serif;color:var(--text);resize:none;outline:none;line-height:1.5;box-sizing:border-box;transition:border-color .15s" onfocus="this.style.borderColor='var(--border-strong)'" onblur="this.style.borderColor='var(--border)'" onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();convSendMessage();}"></textarea>
+      <button onclick="convSendMessage()" id="conv-send-msg-btn" style="padding:0 22px;background:var(--text);color:var(--bg);border:none;font-size:10px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:2px;font-family:'DM Sans',sans-serif">Send</button>
     </div>
-    <div style="display:flex;gap:10px;margin-bottom:24px;align-items:center">
-      <button onclick="convBuildPrompt()" style="padding:10px 22px;background:var(--bg2);border:1px solid var(--border-md);border-radius:2px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:var(--text);font-family:'DM Sans',sans-serif;transition:all .15s">✦ Build Prompt</button>
-      <span id="conv-status" style="font-size:10px;color:var(--muted);font-style:italic"></span>
+    <div style="display:flex;gap:12px;margin-bottom:24px;align-items:center">
+      <span id="conv-status" style="font-size:10px;color:var(--muted);font-style:italic;flex:1"></span>
+      <button onclick="convResetChat()" style="background:transparent;border:none;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:9px">Reset chat</button>
     </div>
     <!-- STRUCTURED BRIEF SECTIONS -->
     <div id="conv-sections" style="display:none;margin-bottom:24px">
@@ -3619,25 +3620,25 @@ function cloudTrainLora() {
       <!-- SCENE -->
       <div style="margin-bottom:12px">
         <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px">Scene</div>
-        <textarea id="cs-scene" rows="2" style="width:100%;background:var(--bg2);border:1px solid var(--border);padding:8px 10px;font-size:11px;color:var(--text);resize:none;border-radius:2px;font-family:'Afacad',sans-serif" oninput="convRebuildPrompt()"></textarea>
+        <textarea id="cs-scene" rows="2" style="width:100%;background:var(--bg2);border:1px solid var(--border);padding:8px 10px;font-size:11px;color:var(--text);resize:none;border-radius:2px;font-family:'Afacad',sans-serif"></textarea>
       </div>
 
       <!-- WARDROBE -->
       <div style="margin-bottom:12px">
         <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px">Wardrobe</div>
-        <textarea id="cs-wardrobe" rows="2" style="width:100%;background:var(--bg2);border:1px solid var(--border);padding:8px 10px;font-size:11px;color:var(--text);resize:none;border-radius:2px;font-family:'Afacad',sans-serif" oninput="convRebuildPrompt()"></textarea>
+        <textarea id="cs-wardrobe" rows="2" style="width:100%;background:var(--bg2);border:1px solid var(--border);padding:8px 10px;font-size:11px;color:var(--text);resize:none;border-radius:2px;font-family:'Afacad',sans-serif"></textarea>
       </div>
 
       <!-- SHOT -->
       <div style="margin-bottom:12px">
         <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px">Shot</div>
-        <textarea id="cs-shot" rows="1" style="width:100%;background:var(--bg2);border:1px solid var(--border);padding:8px 10px;font-size:11px;color:var(--text);resize:none;border-radius:2px;font-family:'Afacad',sans-serif" oninput="convRebuildPrompt()"></textarea>
+        <textarea id="cs-shot" rows="1" style="width:100%;background:var(--bg2);border:1px solid var(--border);padding:8px 10px;font-size:11px;color:var(--text);resize:none;border-radius:2px;font-family:'Afacad',sans-serif"></textarea>
       </div>
 
       <!-- LIGHT -->
       <div style="margin-bottom:12px">
         <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px">Light</div>
-        <textarea id="cs-light" rows="1" style="width:100%;background:var(--bg2);border:1px solid var(--border);padding:8px 10px;font-size:11px;color:var(--text);resize:none;border-radius:2px;font-family:'Afacad',sans-serif" oninput="convRebuildPrompt()"></textarea>
+        <textarea id="cs-light" rows="1" style="width:100%;background:var(--bg2);border:1px solid var(--border);padding:8px 10px;font-size:11px;color:var(--text);resize:none;border-radius:2px;font-family:'Afacad',sans-serif"></textarea>
       </div>
 
       <!-- STYLE — auto from persona -->
@@ -3649,15 +3650,6 @@ function cloudTrainLora() {
         <textarea id="cs-style" rows="1" style="width:100%;background:var(--bg3);border:1px solid var(--border);padding:8px 10px;font-size:11px;color:var(--dim);resize:none;border-radius:2px;font-family:'Afacad',sans-serif;opacity:0.7" readonly></textarea>
       </div>
 
-      <!-- ASSEMBLED PROMPT — always visible, always editable -->
-      <div style="margin-bottom:16px">
-        <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;display:flex;align-items:center;gap:8px">
-          <span>Assembled Prompt</span>
-          <span style="font-size:8px;color:var(--green)">● Live</span>
-        </div>
-        <textarea id="conv-prompt" rows="3" style="width:100%;background:var(--bg2);border:1px solid var(--border-md);padding:8px 10px;font-size:11px;color:var(--text);resize:vertical;border-radius:2px;font-family:'Afacad',sans-serif"></textarea>
-      </div>
-
     </div>
 
     <div id="conv-generate-wrap" style="display:none">
@@ -3666,75 +3658,125 @@ function cloudTrainLora() {
         <button onclick="convSaveBrief()" style="padding:14px 18px;background:var(--bg2);border:1px solid var(--border-md);font-size:11px;color:var(--muted);cursor:pointer;border-radius:2px;letter-spacing:.06em" title="Save brief for this icon">Save Brief</button>
       </div>
     </div>
-    <div id="conv-output" style="margin-top:24px"></div>
   </div>
 </div>
 <script>
 (function(){
   var PX='https://mirage-proxy-production.up.railway.app';
-  var BK="conv_brief_v2";
+  var BK="conv_chat_v1";
+  var convMessages=[];
+
+  function escapeHTML(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
   function convSync(){
     var si=window.selectedIcon;if(!si)return;
     var a=document.getElementById('conv-icon-avatar'),n=document.getElementById('conv-icon-name'),ar=document.getElementById('conv-icon-arch');
     if(a)a.textContent=(si.name||'S')[0];if(n)n.textContent=si.name||'';if(ar)ar.textContent=si.archetype||'';
-    convLoadBrief(si.id);
-  }
-  function convLoadBrief(id){
-    if(!id)return;
-    try{
-      var s=JSON.parse(localStorage.getItem(BK+id)||'null');if(!s)return;
-      var bf=document.getElementById('conv-brief'),cs=document.getElementById('conv-sections'),gw=document.getElementById('conv-generate-wrap');
-      if(bf&&s.brief)bf.value=s.brief;
-      if(s.scene||s.wardrobe){
-        ['scene','wardrobe','shot','light'].forEach(function(k){var el=document.getElementById('cs-'+k);if(el)el.value=s[k]||'';});
-        if(cs)cs.style.display='block';if(gw)gw.style.display='block';
-        window.convRebuildPrompt();
-      }
-    }catch(e){}
-  }
-  window.convSaveBrief=function(){
-    var si=window.selectedIcon;if(!si)return;
-    localStorage.setItem(BK+si.id,JSON.stringify({brief:(document.getElementById('conv-brief')||{}).value||'',scene:(document.getElementById('cs-scene')||{}).value||'',wardrobe:(document.getElementById('cs-wardrobe')||{}).value||'',shot:(document.getElementById('cs-shot')||{}).value||'',light:(document.getElementById('cs-light')||{}).value||''}));
-    if(typeof notify==='function')notify('Brief saved for '+si.name);
-  };
-  var _oSI=window.selectIcon;
-  window.selectIcon=function(){if(_oSI)_oSI.apply(this,arguments);setTimeout(convSync,300);};
-  window.convBuildPrompt=function(){
-    var brief=(document.getElementById('conv-brief')||{}).value||'';
-    if(!brief.trim()){if(typeof notify==='function')notify('Write a brief first');return;}
-    var st=document.getElementById('conv-status'),cs=document.getElementById('conv-sections'),gw=document.getElementById('conv-generate-wrap');
-    if(st)st.textContent='Building...';if(cs)cs.style.display='none';if(gw)gw.style.display='none';
-    var si=window.selectedIcon||{};
     var cd=typeof buildCharDesc==='function'?buildCharDesc():(si.name||'woman');
     var sd=((si.style||'minimal')+', '+(si.aesthetic||'')).replace(/,\s*$/,'').trim();
     var csc=document.getElementById('cs-character'),css=document.getElementById('cs-style');
     if(csc)csc.value=cd;if(css)css.value=sd;
-    convSync();
-    fetch(PX+'/claude/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:'Parse the brief. Return ONLY this JSON object, nothing else: {"scene":"location and time, max 8 words","wardrobe":"clothing items only, max 8 words","shot":"camera framing, max 6 words"}',messages:[{role:'user',content:brief}]})})
+    convLoadChat(si.id);
+  }
+
+  function convLoadChat(id){
+    if(!id)return;
+    convMessages=[];
+    var cs=document.getElementById('conv-sections'),gw=document.getElementById('conv-generate-wrap');
+    if(cs)cs.style.display='none';
+    if(gw)gw.style.display='none';
+    try{
+      var s=JSON.parse(localStorage.getItem(BK+id)||'null');
+      if(s){
+        if(Array.isArray(s.messages))convMessages=s.messages;
+        if(s.brief){
+          ['scene','wardrobe','shot','light'].forEach(function(k){var el=document.getElementById('cs-'+k);if(el)el.value=s.brief[k]||'';});
+          if(cs)cs.style.display='block';
+          if(gw)gw.style.display='block';
+        }
+      }
+    }catch(e){}
+    convRenderChat();
+  }
+
+  function convSaveChat(){
+    var si=window.selectedIcon;if(!si)return;
+    var brief={};['scene','wardrobe','shot','light'].forEach(function(k){brief[k]=(document.getElementById('cs-'+k)||{}).value||'';});
+    try{localStorage.setItem(BK+si.id,JSON.stringify({messages:convMessages,brief:brief}));}catch(e){}
+  }
+
+  function convRenderChat(){
+    var c=document.getElementById('conv-chat');if(!c)return;
+    if(!convMessages.length){
+      c.innerHTML='<div style="color:var(--muted);font-size:12px;font-style:italic;text-align:center;margin:auto;max-width:340px;line-height:1.6">Describe a moment. I will ask 1-2 questions to sharpen it, then build the brief.</div>';
+      return;
+    }
+    c.innerHTML=convMessages.map(function(m){
+      var clean=(m.content||'').replace(/<brief>[\s\S]*?<\/brief>/g,'').trim();
+      if(!clean)return '';
+      var isUser=m.role==='user';
+      var bubble='background:'+(isUser?'var(--text)':'var(--bg3)')+';color:'+(isUser?'var(--bg)':'var(--text)')+';padding:10px 14px;border-radius:8px;max-width:78%;font-size:13px;line-height:1.5;font-family:\'Afacad\',sans-serif;word-wrap:break-word;white-space:pre-wrap';
+      var wrap='display:flex;justify-content:'+(isUser?'flex-end':'flex-start');
+      return '<div style="'+wrap+'"><div style="'+bubble+'">'+escapeHTML(clean)+'</div></div>';
+    }).join('');
+    c.scrollTop=c.scrollHeight;
+  }
+
+  window.convSendMessage=function(){
+    var inp=document.getElementById('conv-input');
+    var text=inp?inp.value.trim():'';
+    if(!text)return;
+    var si=window.selectedIcon||{name:'the icon'};
+    convMessages.push({role:'user',content:text});
+    if(inp)inp.value='';
+    convRenderChat();
+    var st=document.getElementById('conv-status');if(st)st.textContent='Claude is thinking...';
+    var btn=document.getElementById('conv-send-msg-btn');if(btn)btn.disabled=true;
+    var sysPrompt='You are a creative director for Mirage, an editorial AI platform. The user is describing a scene for '+(si.name||'the icon')+'. Ask 1-2 focused questions to sharpen the brief before building it. Focus on: shot framing, specific wardrobe details, or lighting mood. Keep responses short and direct. When you have enough — output the brief in this exact JSON format wrapped in <brief> tags:\n<brief>{"scene":"...","wardrobe":"...","shot":"...","light":"..."}</brief>\nOnly output the brief JSON when you feel confident you have enough detail.';
+    fetch(PX+'/claude/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:sysPrompt,messages:convMessages})})
     .then(function(r){return r.json();}).then(function(data){
       if(data.error)throw new Error(data.error);
-      var raw=(data.reply||'{}').replace(/```[a-z]*/g,'').replace(/```/g,'').trim();
-      var p={};try{p=JSON.parse(raw);}catch(e){}
-      var lm=brief.match(/(?:light|sun|golden|overcast|hazy|dusk|dawn|afternoon|morning|evening|neon)[^.,]{0,40}/i);
-      ['scene','wardrobe','shot'].forEach(function(k){var el=document.getElementById('cs-'+k);if(el)el.value=p[k]||'';});
-      var cl=document.getElementById('cs-light');if(cl)cl.value=lm?lm[0].trim():'natural light';
-      if(cs)cs.style.display='block';if(gw)gw.style.display='block';
-      window.convRebuildPrompt();
-      if(st)st.textContent='Ready';setTimeout(function(){if(st)st.textContent='';},2500);
-    }).catch(function(e){if(st)st.textContent='Error: '+e.message;});
+      var reply=data.reply||'';
+      convMessages.push({role:'assistant',content:reply});
+      convRenderChat();
+      var bm=reply.match(/<brief>([\s\S]*?)<\/brief>/);
+      if(bm){
+        try{
+          var brief=JSON.parse(bm[1].trim());
+          ['scene','wardrobe','shot','light'].forEach(function(k){var el=document.getElementById('cs-'+k);if(el)el.value=brief[k]||'';});
+          var cs=document.getElementById('conv-sections'),gw=document.getElementById('conv-generate-wrap');
+          if(cs)cs.style.display='block';
+          if(gw)gw.style.display='block';
+          if(typeof notify==='function')notify('Brief ready — review and send to Studio');
+        }catch(e){console.warn('brief parse failed',e);}
+      }
+      convSaveChat();
+      if(st)st.textContent='';
+      if(btn)btn.disabled=false;
+    }).catch(function(e){
+      if(st)st.textContent='Error: '+e.message;
+      if(btn)btn.disabled=false;
+    });
   };
-  window.convRebuildPrompt=function(){
-    var si=window.selectedIcon||{},g=function(id){return(document.getElementById(id)||{}).value||'';};
-    var parts=['35mm film natural light candid unposed organic',(si.name||'sloan').toLowerCase(),g('cs-character'),g('cs-wardrobe'),g('cs-scene'),g('cs-shot'),g('cs-light'),g('cs-style')].filter(function(s){return s&&s.trim();});
-    var pe=document.getElementById('conv-prompt');if(pe)pe.value=parts.join(', ');
-    if(window.MG){
-      MG.briefScene=g('cs-scene');
-      MG.briefWardrobe=g('cs-wardrobe');
-      MG.briefShot=g('cs-shot');
-      MG.briefLight=g('cs-light');
-      MG.refresh();
-    }
+
+  window.convResetChat=function(){
+    convMessages=[];
+    var cs=document.getElementById('conv-sections'),gw=document.getElementById('conv-generate-wrap');
+    if(cs)cs.style.display='none';
+    if(gw)gw.style.display='none';
+    ['scene','wardrobe','shot','light'].forEach(function(k){var el=document.getElementById('cs-'+k);if(el)el.value='';});
+    convSaveChat();
+    convRenderChat();
   };
+
+  window.convSaveBrief=function(){
+    var si=window.selectedIcon;if(!si)return;
+    convSaveChat();
+    if(typeof notify==='function')notify('Brief saved for '+si.name);
+  };
+
+  var _oSI=window.selectIcon;
+  window.selectIcon=function(){if(_oSI)_oSI.apply(this,arguments);setTimeout(convSync,300);};
   window.convSendToStudio=function(){
     var g=function(id){return((document.getElementById(id)||{}).value||'').trim();};
     var sceneText=g('cs-scene');
