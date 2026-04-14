@@ -2962,27 +2962,60 @@ var MG=window.MG={
   build:function(){
     var icon=typeof selectedIcon!=='undefined'?selectedIcon:null;
     if(!icon)return'';
-    var base=MG.base.size?Array.from(MG.base).join(', '):'35mm film, natural light, candid, unposed, organic';
-    var identity=icon.name.toLowerCase()+', '+(icon.archetype||'').toLowerCase();
-    var charDesc=typeof buildCharDesc==='function'?buildCharDesc():'';
-    charDesc=charDesc.replace(/wearing[^,]*/gi,'').replace(/dressed in[^,]*/gi,'').replace(/,\s*,/g,',').replace(/^,\s*/,'').replace(/,\s*$/,'').trim();
+
+    // 1. BASE STYLE — fixed, short
+    var base=MG.base.size?Array.from(MG.base).join(', '):'35mm film natural light candid unposed organic';
+
+    // 2. TRIGGER WORD — icon name only, no archetype text
+    var identity=icon.name.toLowerCase();
+
+    // 3. WARDROBE — selected chips only
+    var wardrobe=MG.getWardrobePrompt();
+
+    // 4. SHOT — ONE direction only, priority: framing > angle > perspective
+    var shotParts=[];
+    if(MG.framing.size){
+      // Take only the last selected framing chip
+      var framingArr=Array.from(MG.framing);
+      shotParts.push(framingArr[framingArr.length-1]);
+    }
+    if(MG.angle.size){
+      var angleArr=Array.from(MG.angle);
+      shotParts.push(angleArr[angleArr.length-1]);
+    }
+    if(MG.perspective.size&&shotParts.length<2){
+      var perspArr=Array.from(MG.perspective);
+      shotParts.push(perspArr[perspArr.length-1]);
+    }
+    var shots=shotParts.join(', ');
+
+    // 5. LIGHT — one descriptor only from tech params
+    var light='';
+    if(typeof params!=='undefined'&&params.light)light=params.light;
+
+    // 6. FILM GRAIN — one descriptor
+    var grain='';
+    if(typeof params!=='undefined'&&params.grain)grain=params.grain;
+
+    // 7. MOODBOARD — style flavour only, max 20 words at end
     var moodboard='';
     try{
       var mbEl=document.getElementById('mb-extracted');
       if(mbEl)moodboard=(mbEl.value||mbEl.textContent||'').replace(/^['"]+|['"]+$/g,'').trim();
       if(!moodboard&&typeof getMoodboardAesthetic==='function')moodboard=getMoodboardAesthetic();
+      // Strip wardrobe language from moodboard
       moodboard=moodboard.replace(/wearing[^,.]+/gi,'').replace(/dressed in[^,.]+/gi,'').trim();
-      if(moodboard.length>150)moodboard=moodboard.slice(0,150).replace(/,\s*[^,]*$/,'').trim();
+      // Keep it short — style flavour only
+      if(moodboard){
+        var words=moodboard.split(/[,\s]+/).filter(Boolean);
+        moodboard=words.slice(0,12).join(' ');
+      }
     }catch(e){}
-    var wardrobe=MG.getWardrobePrompt();
-    var style=icon.style||'',energy=icon.energy||'',aesthetic=icon.aesthetic||'';
-    var sceneDesc=typeof scene!=='undefined'&&scene?scene+' light':'';
-    var shots=Array.from(MG.framing).concat(Array.from(MG.angle)).concat(Array.from(MG.perspective)).join(', ');
-    var tech=[];
-    if(typeof params!=='undefined'){if(params.grain)tech.push(params.grain);if(params.color)tech.push(params.color);if(params.light)tech.push(params.light);}
-    return[base,identity,charDesc,wardrobe,moodboard,sceneDesc,shots,style,energy,aesthetic,tech.join(', ')]
+
+    return[base,identity,wardrobe,shots,light,grain,moodboard]
       .filter(function(s){return s&&s.trim();}).join(', ');
   },
+  refresh:function(){
   refresh:function(){
     var el=document.getElementById('prompt-preview');if(!el)return;
     if(typeof promptLocked!=='undefined'&&promptLocked)return;
