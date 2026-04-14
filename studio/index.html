@@ -71,7 +71,11 @@
   .scene-opt.active { background: rgba(26,23,20,0.07); border-color: var(--border-strong); color: var(--text); }
   .param-opt { padding: 6px 10px; border-radius: 2px; font-size: 11px; cursor: pointer; border: 1px solid var(--border); transition: all 0.12s; color: var(--muted); font-family: 'DM Sans', sans-serif; }
   .param-opt.active { background: rgba(26,23,20,0.07); border-color: var(--border-strong); color: var(--text); }
-  #prompt-preview { padding: 12px 13px; background: rgba(26,23,20,0.03); border: 1px solid var(--border); border-radius: 2px; font-size: 11px; color: var(--muted); line-height: 1.75; font-style: normal; margin-bottom: 18px; }
+  #prompt-sections .ps-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px solid rgba(26,23,20,0.06); }
+  #prompt-sections .ps-row:last-child { border-bottom: none; }
+  #prompt-sections .ps-label { font-size: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; width: 74px; flex-shrink: 0; font-family: 'DM Sans', sans-serif; }
+  #prompt-sections .ps-input { flex: 1; background: transparent; border: none; outline: none; font-size: 11px; color: var(--text); font-family: 'Afacad', sans-serif; padding: 0; }
+  #prompt-sections .ps-input[readonly] { color: var(--dim); opacity: .65; }
   #btn-generate { width: 100%; padding: 14px; background: var(--text); color: var(--bg); font-size: 11px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; border: none; border-radius: 2px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: opacity 0.15s; font-family: 'DM Sans', sans-serif; }
   #btn-generate:hover { opacity: 0.85; } #btn-generate:disabled { opacity: 0.4; cursor: default; }
   .spinner { width: 13px; height: 13px; border: 1.5px solid rgba(248,246,242,0.25); border-top-color: var(--bg); border-radius: 50%; animation: spin 0.8s linear infinite; }
@@ -195,16 +199,6 @@
 
   /* EDITABLE PROMPT */
   .prompt-area { position: relative; margin-bottom: 18px; }
-  .prompt-textarea {
-    width: 100%; min-height: 110px; padding: 12px 13px;
-    background: rgba(26,23,20,0.03); border: 1px solid var(--border);
-    border-radius: 2px; font-size: 11px; color: var(--text);
-    line-height: 1.75; font-style: normal; resize: vertical;
-    font-family: 'DM Sans', sans-serif; outline: none;
-    transition: border-color 0.15s;
-  }
-  .prompt-textarea:focus { border-color: var(--border-strong); background: rgba(26,23,20,0.02); font-style: normal; }
-  .prompt-textarea.locked { color: var(--muted); font-style: normal; }
   .prompt-controls {
     display: flex; gap: 6px; align-items: center; margin-top: 6px;
   }
@@ -832,30 +826,30 @@
           <div class="prompt-live-dot" id="prompt-live-dot"></div>
           <span class="prompt-live-label" id="prompt-live-label">Live</span>
         </div>
-        <div id="prompt-sections" style="background:rgba(26,23,20,0.03);border:1px solid var(--border);border-radius:2px;padding:10px 12px;margin-bottom:10px;display:flex;flex-direction:column;gap:6px;font-family:'Afacad',sans-serif">
-          <div style="display:flex;align-items:center;gap:10px">
-            <div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;width:74px;flex-shrink:0">Character</div>
-            <input id="ps-character" type="text" readonly placeholder="—" style="flex:1;background:transparent;border:none;outline:none;font-size:11px;color:var(--dim);font-family:'Afacad',sans-serif;opacity:.65" />
+        <div id="prompt-sections" style="background:rgba(26,23,20,0.03);border:1px solid var(--border);border-radius:2px;padding:6px 12px;margin-bottom:10px">
+          <div class="ps-row">
+            <div class="ps-label">Character</div>
+            <input id="ps-character" class="ps-input" type="text" readonly placeholder="—" />
           </div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;width:74px;flex-shrink:0">Scene</div>
-            <input id="ps-scene" type="text" placeholder="—" oninput="MG.briefScene=this.value;MG.updateCharCount();" onchange="MG.refresh()" style="flex:1;background:transparent;border:none;outline:none;font-size:11px;color:var(--text);font-family:'Afacad',sans-serif" />
+          <div class="ps-row">
+            <div class="ps-label">Scene</div>
+            <input id="ps-scene" class="ps-input" type="text" placeholder="—" oninput="MG.briefScene=this.value;MG.updateCharCount();" onchange="MG.refresh()" />
           </div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;width:74px;flex-shrink:0">Wardrobe</div>
-            <input id="ps-wardrobe" type="text" placeholder="—" oninput="MG.briefWardrobe=this.value;MG.updateCharCount();" onchange="MG.refresh()" style="flex:1;background:transparent;border:none;outline:none;font-size:11px;color:var(--text);font-family:'Afacad',sans-serif" />
+          <div class="ps-row">
+            <div class="ps-label">Wardrobe</div>
+            <input id="ps-wardrobe" class="ps-input" type="text" placeholder="—" oninput="MG.briefWardrobe=this.value;MG.updateCharCount();" onchange="MG.refresh()" />
           </div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;width:74px;flex-shrink:0">Shot</div>
-            <input id="ps-shot" type="text" placeholder="—" oninput="MG.briefShot=this.value;MG.updateCharCount();" onchange="MG.refresh()" style="flex:1;background:transparent;border:none;outline:none;font-size:11px;color:var(--text);font-family:'Afacad',sans-serif" />
+          <div class="ps-row">
+            <div class="ps-label">Shot</div>
+            <input id="ps-shot" class="ps-input" type="text" placeholder="—" oninput="MG.briefShot=this.value;MG.updateCharCount();" onchange="MG.refresh()" />
           </div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;width:74px;flex-shrink:0">Light</div>
-            <input id="ps-light" type="text" placeholder="—" oninput="MG.briefLight=this.value;MG.updateCharCount();" onchange="MG.refresh()" style="flex:1;background:transparent;border:none;outline:none;font-size:11px;color:var(--text);font-family:'Afacad',sans-serif" />
+          <div class="ps-row">
+            <div class="ps-label">Light</div>
+            <input id="ps-light" class="ps-input" type="text" placeholder="—" oninput="MG.briefLight=this.value;MG.updateCharCount();" onchange="MG.refresh()" />
           </div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <div style="font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;width:74px;flex-shrink:0">Style</div>
-            <input id="ps-style" type="text" readonly placeholder="—" style="flex:1;background:transparent;border:none;outline:none;font-size:11px;color:var(--dim);font-family:'Afacad',sans-serif;opacity:.65" />
+          <div class="ps-row">
+            <div class="ps-label">Style</div>
+            <input id="ps-style" class="ps-input" type="text" readonly placeholder="—" />
           </div>
         </div>
         <div class="prompt-controls">
