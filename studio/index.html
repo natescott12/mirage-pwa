@@ -3396,122 +3396,6 @@ setTimeout(showLoraPanel, 1000);
 
 })();
 </script><script>
-(function(){
-var SB='https://gmyenvnfuailickepvax.supabase.co';
-var SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdteWVudm5mdWFpbGlja2VwdmF4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTQzMTIwMywiZXhwIjoyMDkxMDA3MjAzfQ.oY14ULMhWOUVHLklxGtz8Sjm35kjcy35p4qx1cnjrIk';
-var PX='https://mirage-proxy-production.up.railway.app';
-var _imgs=[];var _sel=new Set();
-
-window.loadCloudLibrary=function(){
-  if(!selectedIcon)return;
-  var panel=document.getElementById('cloud-lib-panel');
-  var grid=document.getElementById('cloud-lib-grid');
-  if(!panel||!grid)return;
-  if (panel.style.display !== 'block') return; // only load when panel is open
-  grid.innerHTML='<div style="grid-column:1/-1;font-size:9px;color:var(--muted);padding:8px">Loading...</div>';
-  _sel.clear();_updateCount();
-  var name=selectedIcon.name.toLowerCase();
-  fetch(SB+'/storage/v1/object/list/content',{
-    method:'POST',
-    headers:{'Authorization':'Bearer '+SK,'apikey':SK,'Content-Type':'application/json'},
-    body:JSON.stringify({prefix:'',limit:500})
-  })
-  .then(function(r){return r.json();})
-  .then(function(files){
-    // Populate _ci with ALL files for renderCloud filter tabs
-    window._ci=files.filter(function(f){return f.name&&f.name.indexOf('_')>0;}).map(function(f){
-      var prefix=(f.name.split('_')[0]||'').toLowerCase();
-      if(prefix==='sloane')prefix='sloan';
-      return{icon_name:prefix,image_url:SB+'/storage/v1/object/public/content/'+f.name};
-    });
-    // Set active filter to current icon
-    window._cf=name==='sloane'?'sloan':name;
-    // Keep _imgs filtered for select/delete/train operations
-    _imgs=window._ci.filter(function(x){return x.icon_name===window._cf;}).map(function(x){return{name:x.image_url.split('/').pop(),url:x.image_url};});
-    // Let renderCloud handle tabs + grid display
-    if(typeof renderCloud==='function'){renderCloud();}
-    else{grid.innerHTML='<div style="padding:20px;color:var(--muted);text-align:center;font-size:11px">renderCloud not found</div>';}
-  })
-  .catch(function(e){grid.innerHTML='<div style="grid-column:1/-1;font-size:9px;color:rgba(220,70,70,.8);padding:8px">'+e.message+'</div>';});
-};
-
-window.cloudToggle=function(i){
-  if(_sel.has(i))_sel.delete(i);else _sel.add(i);
-  var c=document.getElementById('ci'+i);if(c)c.classList.toggle('selected',_sel.has(i));
-  _updateCount();
-};
-window.cloudSelAll=function(){_imgs.forEach(function(_,i){_sel.add(i);var c=document.getElementById('ci'+i);if(c)c.classList.add('selected');});_updateCount();};
-window.cloudSelNone=function(){_sel.clear();document.querySelectorAll('.cloud-img-card').forEach(function(c){c.classList.remove('selected');});_updateCount();};
-
-function _updateCount(){
-  var n=_sel.size;
-  var b=document.getElementById('cloud-sel-count');var t=document.getElementById('cloud-train-btn');
-  if(b){b.textContent=n+' selected';b.style.display=n>0?'inline':'none';}
-  if(t)t.style.display=n>=5?'block':'none';
-}
-
-window.cloudDelOne=function(i){
-  if(!confirm('Delete this image from cloud?'))return;
-  fetch(SB+'/storage/v1/object/content',{method:'DELETE',headers:{'Authorization':'Bearer '+SK,'apikey':SK,'Content-Type':'application/json'},body:JSON.stringify({prefixes:[_imgs[i].name]})})
-  .then(function(){if(typeof notify==='function')notify('Deleted');loadCloudLibrary();});
-};
-
-window.cloudDelSelected=function(){
-  if(!_sel.size)return;
-  if(!confirm('Delete '+_sel.size+' images?'))return;
-  var names=Array.from(_sel).map(function(i){return _imgs[i].name;});
-  fetch(SB+'/storage/v1/object/content',{method:'DELETE',headers:{'Authorization':'Bearer '+SK,'apikey':SK,'Content-Type':'application/json'},body:JSON.stringify({prefixes:names})})
-  .then(function(){if(typeof notify==='function')notify('Deleted '+names.length);loadCloudLibrary();});
-};
-
-window.cloudLightbox=function(i){
-  if(typeof MG==='undefined')return;
-  MG.lbImages=_imgs.map(function(img){return{id:img.name,imageUrl:img.url,icon:selectedIcon,fluxPrompt:img.name};});
-  MG.lbIdx=i;MG._lbRender();
-  var el=document.getElementById('lb-overlay');if(el)el.classList.add('open');
-  document.addEventListener('keydown',MG._lbKey);
-};
-
-window.cloudTrainSelected=function(){
-  if(_sel.size<5){if(typeof notify==='function')notify('Select at least 5 images');return;}
-  var urls=Array.from(_sel).map(function(i){return _imgs[i].url;});
-  var mode=(document.getElementById('lora-mode')||{}).value||'character';
-  if(typeof notify==='function')notify('Starting LoRA training with '+urls.length+' images...');
-  fetch(PX+'/finetune/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({iconName:selectedIcon.name,imageUrls:urls,mode:mode,steps:300})})
-  .then(function(r){return r.json();})
-  .then(function(data){
-    if(data.error)throw new Error(data.error);
-    localStorage.setItem('lora_'+selectedIcon.id,JSON.stringify({finetune_id:data.finetune_id,status:'Training'}));
-    if(typeof notify==='function')notify('Training started: '+data.finetune_id.slice(0,12)+'...');
-  })
-  .catch(function(e){if(typeof notify==='function')notify('Failed: '+e.message);});
-};
-
-window.checkLora=function(){
-  if(!selectedIcon)return;
-  var d=JSON.parse(localStorage.getItem('lora_'+selectedIcon.id)||'{}');
-  if(!d.finetune_id)return;
-  fetch(PX+'/finetune/status/'+d.finetune_id).then(function(r){return r.json();}).then(function(data){
-    var s=data.status||'';
-    if(typeof notify==='function')notify('LoRA status: '+s);
-    if(s==='Ready'||s==='Completed'){
-      localStorage.setItem('lora_'+selectedIcon.id,JSON.stringify({finetune_id:d.finetune_id,status:'Ready'}));
-      if(typeof MG!=='undefined')MG.finetuneId=d.finetune_id;
-      if(typeof notify==='function')notify('LoRA ready!');
-    }
-  });
-};
-
-var _origSI=window.selectIcon;
-if(typeof window.selectIcon==='function'){
-  window.selectIcon=function(){
-    _origSI&&_origSI.apply(this,arguments);
-    setTimeout(loadCloudLibrary,300);
-  };
-}
-// Also try loading on init with delay
-// auto-load removed — cloud library opens on user action only
-})();
 </script>
 
 <script>
@@ -3782,7 +3666,6 @@ function cloudTrainLora() {
     if(n)n.textContent=si.name||'';
     if(ar)ar.textContent=si.archetype||'';
     if(gn)gn.textContent=si.name||'Sloan';
-    // Auto-load saved brief for this icon
     convLoadBrief(si.id);
   }
 
@@ -3792,18 +3675,15 @@ function cloudTrainLora() {
       var saved=JSON.parse(localStorage.getItem(BRIEF_KEY+iconId)||'null');
       if(!saved)return;
       var bf=document.getElementById('conv-brief');
-      var csScene=document.getElementById('cs-scene');
-      var csWardrobe=document.getElementById('cs-wardrobe');
-      var csShot=document.getElementById('cs-shot');
-      var csLight=document.getElementById('cs-light');
       var cs=document.getElementById('conv-sections');
       var gw=document.getElementById('conv-generate-wrap');
       if(bf&&saved.brief)bf.value=saved.brief;
-      if(saved.scene||saved.wardrobe||saved.shot){
-        if(csScene)csScene.value=saved.scene||'';
-        if(csWardrobe)csWardrobe.value=saved.wardrobe||'';
-        if(csShot)csShot.value=saved.shot||'';
-        if(csLight)csLight.value=saved.light||'';
+      if(saved.scene||saved.wardrobe){
+        var els={scene:'cs-scene',wardrobe:'cs-wardrobe',shot:'cs-shot',light:'cs-light'};
+        Object.keys(els).forEach(function(k){
+          var el=document.getElementById(els[k]);
+          if(el)el.value=saved[k]||'';
+        });
         if(cs)cs.style.display='block';
         if(gw)gw.style.display='block';
         window.convRebuildPrompt();
@@ -3813,14 +3693,13 @@ function cloudTrainLora() {
 
   window.convSaveBrief=function(){
     var si=window.selectedIcon;if(!si)return;
-    var data={
+    localStorage.setItem(BRIEF_KEY+si.id,JSON.stringify({
       brief:(document.getElementById('conv-brief')||{}).value||'',
       scene:(document.getElementById('cs-scene')||{}).value||'',
       wardrobe:(document.getElementById('cs-wardrobe')||{}).value||'',
       shot:(document.getElementById('cs-shot')||{}).value||'',
       light:(document.getElementById('cs-light')||{}).value||''
-    };
-    localStorage.setItem(BRIEF_KEY+si.id, JSON.stringify(data));
+    }));
     if(typeof notify==='function')notify('Brief saved for '+si.name);
   };
 
@@ -3836,21 +3715,17 @@ function cloudTrainLora() {
     if(st)st.textContent='Building...';
     if(cs)cs.style.display='none';
     if(gw)gw.style.display='none';
-
     var si=window.selectedIcon||{};
     var charDesc=typeof buildCharDesc==='function'?buildCharDesc():(si.name||'woman');
     var styleDesc=((si.style||'minimal, understated')+', '+(si.aesthetic||'')).replace(/,\s*$/,'').trim();
-
     var csChar=document.getElementById('cs-character');
     var csStyle=document.getElementById('cs-style');
     if(csChar)csChar.value=charDesc;
     if(csStyle)csStyle.value=styleDesc;
     convSync();
-
-    var sys='You are an art director. Parse this creative brief and return ONLY valid JSON with exactly these 3 keys:\n'+
-      '{"scene":"location and atmosphere, max 10 words","wardrobe":"specific clothing items only, max 10 words","shot":"camera framing and angle in real camera language, max 8 words"}\n'+
-      'No markdown. No explanation. Just the JSON object.';
-
+    var sys='You are an art director. Parse this creative brief and return ONLY valid JSON with exactly these 3 keys:
+{"scene":"location and atmosphere, max 10 words","wardrobe":"specific clothing items only, max 10 words","shot":"camera framing in real camera language, max 8 words"}
+No markdown. No explanation. Just the JSON object.';
     fetch(PX+'/claude/chat',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({system:sys,messages:[{role:'user',content:brief}]})
     }).then(function(r){return r.json();}).then(function(data){
@@ -3858,40 +3733,27 @@ function cloudTrainLora() {
       var raw=(data.reply||'{}').replace(/```json|```/g,'').trim();
       var parsed={};
       try{parsed=JSON.parse(raw);}catch(e){parsed={scene:'',wardrobe:'',shot:''};}
-
-      var lm=brief.match(/(?:light|sun|golden|overcast|hazy|dusk|dawn|afternoon|morning|evening|neon)[^.\n,]{0,40}/i);
+      var lm=brief.match(/(?:light|sun|golden|overcast|hazy|dusk|dawn|afternoon|morning|evening|neon)[^.
+,]{0,40}/i);
       var light=lm?lm[0].trim():'natural light';
-
-      var csScene=document.getElementById('cs-scene');
-      var csWardrobe=document.getElementById('cs-wardrobe');
-      var csShot=document.getElementById('cs-shot');
+      var els={scene:'cs-scene',wardrobe:'cs-wardrobe',shot:'cs-shot'};
+      Object.keys(els).forEach(function(k){var el=document.getElementById(els[k]);if(el)el.value=parsed[k]||'';});
       var csLight=document.getElementById('cs-light');
-      if(csScene)csScene.value=parsed.scene||'';
-      if(csWardrobe)csWardrobe.value=parsed.wardrobe||'';
-      if(csShot)csShot.value=parsed.shot||'';
       if(csLight)csLight.value=light;
-
       if(cs)cs.style.display='block';
       if(gw)gw.style.display='block';
       window.convRebuildPrompt();
       if(st)st.textContent='Ready';
       setTimeout(function(){if(st)st.textContent='';},2500);
-    }).catch(function(e){
-      if(st)st.textContent='Error: '+e.message;
-    });
+    }).catch(function(e){if(st)st.textContent='Error: '+e.message;});
   };
 
   window.convRebuildPrompt=function(){
     var si=window.selectedIcon||{};
     var base='35mm film natural light candid unposed organic';
     var icon=(si.name||'sloan').toLowerCase();
-    var char=(document.getElementById('cs-character')||{}).value||'';
-    var scene=(document.getElementById('cs-scene')||{}).value||'';
-    var wardrobe=(document.getElementById('cs-wardrobe')||{}).value||'';
-    var shot=(document.getElementById('cs-shot')||{}).value||'';
-    var light=(document.getElementById('cs-light')||{}).value||'';
-    var style=(document.getElementById('cs-style')||{}).value||'';
-    var parts=[base,icon,char,wardrobe,scene,shot,light,style].filter(function(s){return s&&s.trim();});
+    var get=function(id){return(document.getElementById(id)||{}).value||'';};
+    var parts=[base,icon,get('cs-character'),get('cs-wardrobe'),get('cs-scene'),get('cs-shot'),get('cs-light'),get('cs-style')].filter(function(s){return s&&s.trim();});
     var pe=document.getElementById('conv-prompt');
     if(pe)pe.value=parts.join(', ');
   };
@@ -3906,8 +3768,7 @@ function cloudTrainLora() {
     if(btn){btn.textContent='Generating...';btn.disabled=true;}
     if(preview)preview.style.display='none';
 
-    // Poll for result and show preview
-    function pollForImage(jobId, attempts){
+    function pollForImage(jobId,attempts){
       if(attempts>60)return;
       fetch(PX+'/flux/result/'+jobId)
         .then(function(r){return r.json();})
@@ -3918,7 +3779,7 @@ function cloudTrainLora() {
             if(btn){btn.textContent='Generate';btn.disabled=false;}
           } else if(data.status==='Content Moderated'||data.status==='Error'||data.status==='Failed'){
             if(btn){btn.textContent='Generate';btn.disabled=false;}
-            if(typeof notify==='function')notify('Generation failed: '+data.status);
+            if(typeof notify==='function')notify('Failed: '+data.status);
           } else {
             setTimeout(function(){pollForImage(jobId,attempts+1);},3000);
           }
@@ -3929,7 +3790,7 @@ function cloudTrainLora() {
       body:JSON.stringify({prompt:prompt,width:768,height:1024})
     }).then(function(r){return r.json();}).then(function(data){
       if(data.error)throw new Error(data.error);
-      pollForImage(data.id, 0);
+      pollForImage(data.id,0);
     }).catch(function(e){
       if(btn){btn.textContent='Generate';btn.disabled=false;}
       if(typeof notify==='function')notify('Error: '+e.message);
