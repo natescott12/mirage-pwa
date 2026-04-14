@@ -3652,66 +3652,6 @@ function cloudTrainLora() {
   </div>
 </div>
 <script>
-
-  function convSync(){
-    var si=window.selectedIcon;if(!si)return;
-    var a=document.getElementById('conv-icon-avatar');
-    var n=document.getElementById('conv-icon-name');
-    var ar=document.getElementById('conv-icon-arch');
-    var gn=document.getElementById('conv-gen-name');
-    if(a)a.textContent=(si.name||'S').charAt(0);
-    if(n)n.textContent=si.name||'';
-    if(ar)ar.textContent=si.archetype||'';
-    if(gn)gn.textContent=si.name||'Sloan';
-  }
-
-  var _oSI=window.selectIcon;
-  window.selectIcon=function(){if(_oSI)_oSI.apply(this,arguments);setTimeout(convSync,300);};
-
-
-  window.convRebuildPrompt=function(){
-    var si=window.selectedIcon||{};
-    var base='35mm film natural light candid unposed organic';
-    var icon=(si.name||'sloan').toLowerCase();
-    var char=(document.getElementById('cs-character')||{}).value||'';
-    var scene=(document.getElementById('cs-scene')||{}).value||'';
-    var wardrobe=(document.getElementById('cs-wardrobe')||{}).value||'';
-    var shot=(document.getElementById('cs-shot')||{}).value||'';
-    var light=(document.getElementById('cs-light')||{}).value||'';
-    var style=(document.getElementById('cs-style')||{}).value||'';
-    var parts=[base,icon,char,wardrobe,scene,shot,light,style].filter(function(s){return s&&s.trim();});
-    var pe=document.getElementById('conv-prompt');
-    if(pe)pe.value=parts.join(', ');
-  };
-
-  window.convGenerate=function(){
-    var pe=document.getElementById('conv-prompt');
-    var prompt=pe?pe.value.trim():'';
-    if(!prompt){if(typeof notify==='function')notify('Build a prompt first');return;}
-    var btn=document.getElementById('conv-gen-btn');
-    if(btn){btn.textContent='Generating...';btn.disabled=true;}
-    if(typeof generateFlux==='function'){
-      generateFlux(prompt);
-      setTimeout(function(){
-        if(btn){btn.textContent='Generate';btn.disabled=false;}
-        if(typeof notify==='function')notify('✦ Generating — check Output panel');
-      },1500);
-    } else {
-      fetch(PX+'/flux/generate-with-lora',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({prompt:prompt,width:768,height:1024})
-      }).then(function(r){return r.json();}).then(function(data){
-        if(data.error)throw new Error(data.error);
-        if(btn){btn.textContent='Generate';btn.disabled=false;}
-        if(typeof notify==='function')notify('✦ Job started');
-      }).catch(function(e){
-        if(btn){btn.textContent='Generate';btn.disabled=false;}
-        if(typeof notify==='function')notify('Error: '+e.message);
-      });
-    }
-  };
-
-  setTimeout(convSync,800);
-})();
 (function(){
   var PX='https://mirage-proxy-production.up.railway.app';
   var BK="conv_brief_v2";
