@@ -2966,8 +2966,19 @@ var MG=window.MG={
     // 1. BASE STYLE — fixed, short
     var base=MG.base.size?Array.from(MG.base).join(', '):'35mm film natural light candid unposed organic';
 
-    // 2. TRIGGER WORD — icon name only, no archetype text
+    // 2. TRIGGER WORD + GENDER ANCHOR + 2-3 PHYSICAL ANCHORS
     var identity=icon.name.toLowerCase();
+    // Always anchor female gender — Flux defaults male without it
+    var physParts=['young woman'];
+    if(typeof buildCharDesc==='function'){
+      var cd=buildCharDesc();
+      // Extract only hair and eye descriptors — max 2 anchors
+      var hairMatch=cd.match(/([a-z\s-]+ hair)/i);
+      var eyeMatch=cd.match(/([a-z\s-]+ eyes)/i);
+      if(hairMatch)physParts.push(hairMatch[1].trim().toLowerCase());
+      if(eyeMatch)physParts.push(eyeMatch[1].trim().toLowerCase());
+    }
+    var physDesc=physParts.join(', ');
 
     // 3. WARDROBE — selected chips only
     var wardrobe=MG.getWardrobePrompt();
@@ -3012,7 +3023,7 @@ var MG=window.MG={
       }
     }catch(e){}
 
-    return[base,identity,wardrobe,shots,light,grain,moodboard]
+    return[base,identity,physDesc,wardrobe,shots,light,grain,moodboard]
       .filter(function(s){return s&&s.trim();}).join(', ');
   },
   refresh:function(){
