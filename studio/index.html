@@ -3238,24 +3238,39 @@ function startLoraTraining() {
 }
 
 function pollLoraStatus(finetuneId) {
-  fetch(PROXY_URL + '/finetune/status/' + finetuneId)
+  var PX = typeof PROXY_URL !== 'undefined' ? PROXY_URL : 'https://mirage-proxy-production.up.railway.app';
+  fetch(PX + '/finetune/status/' + finetuneId)
   .then(function(r) { return r.json(); })
   .then(function(data) {
-    var status = data.status || data.finetune_status || '';
-    if (status === 'Ready' || status === 'Completed') {
-      localStorage.setItem('lora_' + selectedIcon.id, JSON.stringify({finetune_id: finetuneId, status: 'Ready'}));
-      saveLoraToSupabase(selectedIcon.id, finetuneId, 'Ready');
+    console.log('[LoRA status]', finetuneId, JSON.stringify(data).slice(0,150));
+    // Handle both Replicate raw status and normalized finetune_status
+    var raw = data.status || '';
+    var normalized = data.finetune_status || '';
+    var isReady = raw === 'succeeded' || normalized === 'Ready' || raw === 'Ready';
+    var isFailed = raw === 'failed' || normalized === 'Failed' || raw === 'Failed';
+
+    if (isReady) {
+      // Store lora_url if available (Replicate weights URL)
+      var loraUrl = data.lora_url || (data.output && data.output.weights) || null;
+      var stored = {finetune_id: finetuneId, status: 'Ready', lora_url: loraUrl, model: 'natescott12/mirage-' + (selectedIcon ? selectedIcon.name.toLowerCase() : '') + '-lora'};
+      if (selectedIcon) localStorage.setItem('lora_' + selectedIcon.id, JSON.stringify(stored));
+      if (selectedIcon) saveLoraToSupabase(selectedIcon.id, finetuneId, 'Ready');
       setLoraState('ready', finetuneId);
-      if (typeof notify === 'function') notify('✦ LoRA training complete — ' + selectedIcon.name + ' model ready!');
-    } else if (status === 'Failed' || status === 'Error') {
-      if (typeof notify === 'function') notify('Training failed: ' + status);
+      if (typeof notify === 'function') notify('✦ LoRA training complete — ' + (selectedIcon ? selectedIcon.name : 'Icon') + ' model ready!');
+    } else if (isFailed) {
+      if (typeof notify === 'function') notify('Training failed: ' + (raw || normalized));
       setLoraState('untrained');
     } else {
-      // Still training — poll again in 2 min
-      setTimeout(function() { pollLoraStatus(finetuneId); }, 120000);
+      // Still training — poll again in 30s
+      if (typeof notify === 'function') notify('Training in progress... (' + (raw || 'running') + ')');
+      setTimeout(function() { pollLoraStatus(finetuneId); }, 30000);
     }
   })
-  .catch(function(e) { console.log('LoRA status check failed:', e); });
+  .catch(function(e) {
+    console.log('LoRA status check failed:', e);
+    if (typeof notify === 'function') notify('Status check failed — retrying...');
+    setTimeout(function() { pollLoraStatus(finetuneId); }, 30000);
+  });
 }
 
 function checkLoraStatus() {
