@@ -2967,9 +2967,23 @@ var MG=window.MG={
     // 1. BASE STYLE — fixed, short
     var base=MG.base.size?Array.from(MG.base).join(', '):'35mm film natural light candid unposed organic';
 
-    // 2. TRIGGER WORD + FULL CHARACTER DESC (age, build, heritage, physical)
+    // 2. TRIGGER WORD + SLIM PHYS DESC (max 5 visual descriptors, <12 words)
     var identity=icon.name.toLowerCase();
-    var physDesc=typeof buildCharDesc==='function'?buildCharDesc():'woman';
+    var physDesc='woman';
+    if(typeof currentChar!=='undefined'&&currentChar){
+      var cc=currentChar,pp=[];
+      if(cc.skinTonePrompt)pp.push(cc.skinTonePrompt);
+      else if(cc.skinTone)pp.push(cc.skinTone+' skin');
+      if(cc.eyeColor)pp.push(cc.eyeColor+' eyes');
+      var hairBits=[];
+      if(cc.hairLength)hairBits.push(cc.hairLength);
+      if(cc.hairColor)hairBits.push(cc.hairColor);
+      hairBits.push('hair');
+      if(hairBits.length>1)pp.push(hairBits.join(' '));
+      var feat=cc.features||(cc.freckles&&cc.freckles!=='none'?cc.freckles+' freckles':'')||cc.tattoos||'';
+      if(feat)pp.push(feat);
+      if(pp.length)physDesc=pp.slice(0,5).join(', ');
+    }
 
     // 3. WARDROBE — brief override or selected chips
     var wardrobe=MG.briefWardrobe||MG.getWardrobePrompt();
