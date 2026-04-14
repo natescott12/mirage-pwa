@@ -2864,6 +2864,7 @@ var MG=window.MG={
   framing:new Set(),angle:new Set(),perspective:new Set(),
   base:new Set(['35mm film natural light candid unposed organic']),
   tab:'tops',selected:new Set(),ref:null,lbImages:[],lbIdx:0,
+  briefScene:'',briefWardrobe:'',briefShot:'',briefLight:'',
   WARDROBE:{
     tops:[
       {id:'t1',label:'Bralette',prompt:'bralette top'},{id:'t2',label:'Bikini top',prompt:'bikini top'},
@@ -2970,29 +2971,36 @@ var MG=window.MG={
     var identity=icon.name.toLowerCase();
     var physDesc=typeof buildCharDesc==='function'?buildCharDesc():'woman';
 
-    // 3. WARDROBE — selected chips only
-    var wardrobe=MG.getWardrobePrompt();
+    // 3. WARDROBE — brief override or selected chips
+    var wardrobe=MG.briefWardrobe||MG.getWardrobePrompt();
 
-    // 4. SHOT — ONE direction only, priority: framing > angle > perspective
-    var shotParts=[];
-    if(MG.framing.size){
-      // Take only the last selected framing chip
-      var framingArr=Array.from(MG.framing);
-      shotParts.push(framingArr[framingArr.length-1]);
-    }
-    if(MG.angle.size){
-      var angleArr=Array.from(MG.angle);
-      shotParts.push(angleArr[angleArr.length-1]);
-    }
-    if(MG.perspective.size&&shotParts.length<2){
-      var perspArr=Array.from(MG.perspective);
-      shotParts.push(perspArr[perspArr.length-1]);
-    }
-    var shots=shotParts.join(', ');
+    // 3b. SCENE — from brief (no chip slot in Generate tab)
+    var scene=MG.briefScene||'';
 
-    // 5. LIGHT — one descriptor only from tech params
-    var light='';
-    if(typeof params!=='undefined'&&params.light)light=params.light;
+    // 4. SHOT — brief override, else priority: framing > angle > perspective
+    var shots='';
+    if(MG.briefShot){
+      shots=MG.briefShot;
+    }else{
+      var shotParts=[];
+      if(MG.framing.size){
+        var framingArr=Array.from(MG.framing);
+        shotParts.push(framingArr[framingArr.length-1]);
+      }
+      if(MG.angle.size){
+        var angleArr=Array.from(MG.angle);
+        shotParts.push(angleArr[angleArr.length-1]);
+      }
+      if(MG.perspective.size&&shotParts.length<2){
+        var perspArr=Array.from(MG.perspective);
+        shotParts.push(perspArr[perspArr.length-1]);
+      }
+      shots=shotParts.join(', ');
+    }
+
+    // 5. LIGHT — brief override, else tech params
+    var light=MG.briefLight||'';
+    if(!light&&typeof params!=='undefined'&&params.light)light=params.light;
 
     // 6. FILM GRAIN — one descriptor
     var grain='';
@@ -3020,7 +3028,7 @@ var MG=window.MG={
     if(style.indexOf(',')>-1)style=style.split(',').slice(0,2).join(',').trim();
     if(aesthetic.indexOf(',')>-1)aesthetic=aesthetic.split(',').slice(0,2).join(',').trim();
 
-    return[base,identity,physDesc,wardrobe,shots,light,grain,style,aesthetic,moodboard]
+    return[base,identity,physDesc,wardrobe,scene,shots,light,grain,style,aesthetic,moodboard]
       .filter(function(s){return s&&s.trim();}).join(', ');
   },
   refresh:function(){
@@ -3709,6 +3717,13 @@ function cloudTrainLora() {
     var si=window.selectedIcon||{},g=function(id){return(document.getElementById(id)||{}).value||'';};
     var parts=['35mm film natural light candid unposed organic',(si.name||'sloan').toLowerCase(),g('cs-character'),g('cs-wardrobe'),g('cs-scene'),g('cs-shot'),g('cs-light'),g('cs-style')].filter(function(s){return s&&s.trim();});
     var pe=document.getElementById('conv-prompt');if(pe)pe.value=parts.join(', ');
+    if(window.MG){
+      MG.briefScene=g('cs-scene');
+      MG.briefWardrobe=g('cs-wardrobe');
+      MG.briefShot=g('cs-shot');
+      MG.briefLight=g('cs-light');
+      MG.refresh();
+    }
   };
   window.convGenerate=function(){
     var pe=document.getElementById('conv-prompt'),prompt=pe?pe.value.trim():'';
