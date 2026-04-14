@@ -3731,8 +3731,7 @@ function cloudTrainLora() {
       var raw=(data.reply||'{}').replace(/```json|```/g,'').trim();
       var parsed={};
       try{parsed=JSON.parse(raw);}catch(e){parsed={scene:'',wardrobe:'',shot:''};}
-      var lm=brief.match(/(?:light|sun|golden|overcast|hazy|dusk|dawn|afternoon|morning|evening|neon)[^.
-,]{0,40}/i);
+      var lm=brief.match(/(?:light|sun|golden|overcast|hazy|dusk|dawn|afternoon|morning|evening|neon)[^.,]{0,40}/i);
       var light=lm?lm[0].trim():'natural light';
       var els={scene:'cs-scene',wardrobe:'cs-wardrobe',shot:'cs-shot'};
       Object.keys(els).forEach(function(k){var el=document.getElementById(els[k]);if(el)el.value=parsed[k]||'';});
