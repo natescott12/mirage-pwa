@@ -2966,19 +2966,9 @@ var MG=window.MG={
     // 1. BASE STYLE — fixed, short
     var base=MG.base.size?Array.from(MG.base).join(', '):'35mm film natural light candid unposed organic';
 
-    // 2. TRIGGER WORD + GENDER ANCHOR + 2-3 PHYSICAL ANCHORS
+    // 2. TRIGGER WORD + FULL CHARACTER DESC (age, build, heritage, physical)
     var identity=icon.name.toLowerCase();
-    // Always anchor female gender — Flux defaults male without it
-    var physParts=['young woman'];
-    if(typeof buildCharDesc==='function'){
-      var cd=buildCharDesc();
-      // Extract only hair and eye descriptors — max 2 anchors
-      var hairMatch=cd.match(/([a-z\s-]+ hair)/i);
-      var eyeMatch=cd.match(/([a-z\s-]+ eyes)/i);
-      if(hairMatch)physParts.push(hairMatch[1].trim().toLowerCase());
-      if(eyeMatch)physParts.push(eyeMatch[1].trim().toLowerCase());
-    }
-    var physDesc=physParts.join(', ');
+    var physDesc=typeof buildCharDesc==='function'?buildCharDesc():'woman';
 
     // 3. WARDROBE — selected chips only
     var wardrobe=MG.getWardrobePrompt();
