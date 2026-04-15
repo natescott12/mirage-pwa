@@ -3746,7 +3746,7 @@ function cloudTrainLora() {
     convRenderChat();
     var st=document.getElementById('conv-status');if(st)st.textContent='Claude is thinking...';
     var btn=document.getElementById('conv-send-msg-btn');if(btn)btn.disabled=true;
-    var sysPrompt='You are a creative director for Mirage, an editorial AI platform. The user is describing a scene for '+(si.name||'the icon')+'. Ask 1-2 focused questions to sharpen the brief before building it. Focus on: shot framing, specific wardrobe details, or lighting mood. Keep responses short and direct. When you have enough — output the brief in this exact JSON format wrapped in <brief> tags:\n<brief>{"scene":"...","wardrobe":"...","shot":"...","light":"..."}</brief>\n\nField rules — be terse, no narrative, visual nouns only:\n- scene: max 12 words, location and time of day, no story or emotion\n- wardrobe: specific items only, comma separated, max 10 words\n- shot: camera language only (framing, angle, pose), max 8 words\n- light: single light descriptor, max 6 words\n\nExample:\n<brief>{"scene":"quiet city overlook, vintage dark Mercedes, late afternoon","wardrobe":"black oversized blazer unbuttoned, tailored trousers, leather boots","shot":"full body, sideways in driver seat, one leg extended out","light":"soft hazy golden hour, long shadows"}</brief>\n\nOnly output the brief JSON when you feel confident you have enough detail.';
+    var sysPrompt='You are a creative director for Mirage, an editorial AI platform. The user is describing a scene for '+(si.name||'the icon')+'. Ask 1-2 focused questions to sharpen the brief before building it. Focus on: shot framing, specific wardrobe details, or lighting mood. Keep responses short and direct. When you have enough — output the brief in this exact JSON format wrapped in <brief> tags:\n<brief>{"scene":"...","wardrobe":"...","shot":"...","light":"..."}</brief>\n\nThe brief values feed directly into Flux. They must be SHORT Flux-ready language: visual keywords only, comma separated, no full sentences, no story, no emotion, no adverbs. MAX 10 WORDS per field.\n\nExample:\n<brief>{"scene":"quiet city overlook, dark Mercedes, late afternoon","wardrobe":"black blazer unbuttoned, tailored trousers, leather boots","shot":"full body, sideways in driver seat, one leg out","light":"soft golden hour, long shadows"}</brief>\n\nOnly output the brief JSON when you feel confident you have enough detail.';
     fetch(PX+'/claude/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:sysPrompt,messages:convMessages})})
     .then(function(r){return r.json();}).then(function(data){
       if(data.error)throw new Error(data.error);
@@ -3798,6 +3798,14 @@ function cloudTrainLora() {
     var shotText=g('cs-shot');
     var lightText=g('cs-light');
     if(!window.MG){if(typeof switchTab==='function')switchTab('generate');return;}
+
+    // Wipe prior chip state so the Converse brief is the sole source of truth
+    MG.framing.clear();
+    MG.angle.clear();
+    MG.perspective.clear();
+    MG.selected.clear();
+    document.querySelectorAll('#shot-framing .shot-chip.active, #shot-angle .shot-chip.active, #shot-perspective .shot-chip.active').forEach(function(c){c.classList.remove('active');});
+    if(typeof params!=='undefined'&&params)params.light='';
 
     function matches(text,target){
       if(!target||!text)return false;
