@@ -1,4 +1,7 @@
 {
+  "rewrites": [
+    { "source": "/prototype", "destination": "/pwa" }
+  ],
   "headers": [
     {
       "source": "/studio/(.*)",
