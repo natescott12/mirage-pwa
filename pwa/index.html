@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Mirage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: #f8f6f2; }
+  body { font-family: 'DM Sans', sans-serif; font-weight: 300; color: #1a1714; -webkit-font-smoothing: antialiased; overscroll-behavior: none; user-select: none; -webkit-user-select: none; }
+  input, textarea { user-select: text !important; -webkit-user-select: text !important; font-family: 'DM Sans', sans-serif; }
+  ::-webkit-scrollbar { display: none; }
+  * { scrollbar-width: none; }
+  #root { height: 100%; }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  @keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes grain { 0%,100%{transform:translate(0,0)} 10%{transform:translate(-1%,-2%)} 30%{transform:translate(2%,1%)} 50%{transform:translate(-1%,2%)} 70%{transform:translate(2%,-1%)} 90%{transform:translate(-2%,2%)} }
+  @keyframes typingDot { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-4px)} }
+
+  .serif { font-family: 'Playfair Display', serif; }
+  .italic { font-style: italic; }
+  .fade-up { animation: fadeUp 0.45s ease both; }
+
+  .grain-overlay::after {
+    content: ''; position: fixed; inset: -50%; width: 200%; height: 200%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 9998; opacity: 0.6; animation: grain 8s steps(10) infinite;
+  }
+
+  .screen { display: none; height: 100%; flex-direction: column; background: #f8f6f2; }
+  .screen.active { display: flex; }
+  .overlay { display: none; position: fixed; inset: 0; background: #f8f6f2; z-index: 200; flex-direction: column; animation: slideUp 0.3s ease; }
+  .overlay.active { display: flex; }
+
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #f8f6f2; border-top: 1px solid rgba(26,23,20,0.13); display: flex; padding-bottom: 20px; z-index: 100; }
+  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding-top: 10px; cursor: pointer; position: relative; color: rgba(26,23,20,0.32); transition: color 0.15s; }
+  .nav-item.active { color: #1a1714; }
+  .nav-icon { font-size: 18px; margin-bottom: 3px; line-height: 1; }
+  .nav-label { font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: inherit; }
+  .nav-badge { position: absolute; top: 6px; right: calc(50% - 18px); width: 14px; height: 14px; border-radius: 50%; background: #1a1714; color: #f8f6f2; font-size: 8px; display: flex; align-items: center; justify-content: center; }
+
+  .status-bar { padding: 12px 20px 0; display: flex; justify-content: space-between; color: rgba(26,23,20,0.32); flex-shrink: 0; }
+  .status-time { font-size: 12px; font-weight: 500; }
+  .status-icons { display: flex; gap: 5px; font-size: 11px; }
+
+  .btn { padding: 13px 20px; background: #1a1714; color: #f8f6f2; border: 1px solid #1a1714; border-radius: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; flex-shrink: 0; display: inline-block; text-align: center; transition: opacity 0.15s; }
+  .btn:hover { opacity: 0.85; }
+  .btn-full { width: 100%; display: block; }
+  .btn-sm { padding: 8px 16px; font-size: 9px; }
+  .btn-outline { background: transparent; color: #1a1714; border-color: rgba(26,23,20,0.22); }
+  .btn:disabled { opacity: 0.4; cursor: default; }
+
+  .eyebrow { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(26,23,20,0.32); }
+  .dot { border-radius: 50%; flex-shrink: 0; animation: pulse 2.5s ease infinite; display: inline-block; }
+  .grain-img { position: absolute; inset: 0; z-index: 3; pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E"); opacity: 0.65; mix-blend-mode: multiply; }
+
+  .input { width: 100%; padding: 14px 16px; background: #f2efe9; border: 1px solid rgba(26,23,20,0.13); border-radius: 2px; font-size: 14px; color: #1a1714; outline: none; margin-bottom: 10px; }
+  .input:focus { border-color: rgba(26,23,20,0.3); }
+  .scroll-content { flex: 1; overflow-y: auto; }
+
+  .feed-item { border-bottom: 1px solid rgba(26,23,20,0.08); }
+  .feed-image-wrap { position: relative; cursor: pointer; }
+  .feed-image-wrap img { width: 100%; aspect-ratio: 4/5; object-fit: cover; object-position: center 20%; filter: saturate(0.75) contrast(1.06); display: block; }
+  .feed-actions { padding: 10px 16px 14px; }
+  .feed-caption { font-size: 12px; color: rgba(26,23,20,0.55); line-height: 1.5; }
+
+  .avatar { border-radius: 50%; overflow: hidden; flex-shrink: 0; position: relative; }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; filter: saturate(0.75); }
+  .avatar-online { position: absolute; border-radius: 50%; background: #2a6640; border: 2px solid #f8f6f2; }
+
+  .filter-pill { padding: 5px 14px; border-radius: 999px; white-space: nowrap; cursor: pointer; border: 1px solid rgba(26,23,20,0.13); color: rgba(26,23,20,0.32); font-size: 10px; letter-spacing: 0.1em; transition: all 0.15s; }
+  .filter-pill.active { background: #1a1714; color: #f8f6f2; border-color: #1a1714; }
+
+  .tier-card { padding: 18px; border: 1.5px solid rgba(26,23,20,0.13); border-radius: 2px; margin-bottom: 10px; cursor: pointer; position: relative; transition: all 0.15s; }
+  .tier-card.selected { border-color: #1a1714; background: rgba(26,23,20,0.03); }
+
+  .bubble-icon { padding: 10px 14px; font-size: 13px; line-height: 1.5; background: #f2efe9; border: 1px solid rgba(26,23,20,0.08); border-radius: 14px 14px 14px 2px; color: #1a1714; }
+  .bubble-user { padding: 10px 14px; font-size: 13px; line-height: 1.5; background: #1a1714; border: 1px solid #1a1714; border-radius: 14px 14px 2px 14px; color: #f8f6f2; }
+
+  .ppv-lock { position: absolute; inset: 0; z-index: 10; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: rgba(248,246,242,0.15); }
+  .step-dot { width: 20px; height: 2px; border-radius: 1px; transition: background 0.15s; }
+  .req-card { margin: 0 24px 10px; padding: 16px; background: #f2efe9; border: 1px solid rgba(26,23,20,0.13); border-radius: 2px; }
+
+  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: #1a1714; color: #f8f6f2; padding: 10px 20px; border-radius: 2px; font-size: 11px; letter-spacing: 0.1em; z-index: 9999; opacity: 0; transition: all 0.25s ease; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .typing-indicator { display: flex; align-items: center; gap: 3px; padding: 10px 14px; background: #f2efe9; border-radius: 14px 14px 14px 2px; width: fit-content; }
+  .typing-indicator span { width: 5px; height: 5px; border-radius: 50%; background: rgba(26,23,20,0.32); animation: typingDot 1.2s infinite; }
+  .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+  .spinner-sm { width: 14px; height: 14px; border: 2px solid rgba(248,246,242,0.3); border-top-color: #f8f6f2; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div id="root">
+
+<!-- AGE GATE -->
+<div id="screen-agegate" class="screen grain-overlay active" style="background:#1a1714;align-items:center;justify-content:center;padding:40px;">
+  <div class="serif italic" style="font-size:56px;color:#f8f6f2;margin-bottom:8px;letter-spacing:-0.02em">Mirage</div>
+  <div class="eyebrow" style="color:rgba(248,246,242,0.4);margin-bottom:48px">AI Content Platform</div>
+  <div style="color:rgba(248,246,242,0.55);font-size:13px;text-align:center;line-height:1.8;margin-bottom:48px;max-width:280px">This platform contains mature content for adults 18+. By entering you confirm you are of legal age.</div>
+  <button class="btn" onclick="goTo('landing')" style="background:#f8f6f2;color:#1a1714;border:none;padding:16px 40px;font-size:11px;letter-spacing:0.22em">I am 18+ · Enter</button>
+  <div style="margin-top:24px;font-size:10px;color:rgba(248,246,242,0.2);text-align:center;letter-spacing:0.1em">All content is AI-generated · Clearly synthetic</div>
+</div>
+
+<!-- LANDING -->
+<div id="screen-landing" class="screen grain-overlay" style="overflow:hidden;">
+  <div class="scroll-content">
+    <div id="landing-status" class="status-bar"></div>
+    <div style="position:relative;height:520px">
+      <img src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=600&q=80&fit=crop&crop=top" style="width:100%;height:100%;object-fit:cover;object-position:center 20%;filter:saturate(0.65) contrast(1.08)" alt="">
+      <div class="grain-img"></div>
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 35%,#f8f6f2 95%);z-index:4"></div>
+      <div style="position:absolute;bottom:0;left:0;right:0;z-index:5;padding:0 24px 20px">
+        <div class="serif italic fade-up" style="font-size:90px;color:#1a1714;line-height:0.88;letter-spacing:-0.02em;margin-bottom:10px">Mirage</div>
+        <div style="font-size:12px;color:rgba(26,23,20,0.55);line-height:1.7">AI-generated icons. Editorial aesthetic.<br>American Apparel 2000s. Clearly synthetic.</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;padding:16px 24px 0;overflow-x:auto" id="landing-strip"></div>
+    <div style="padding:28px 24px 40px">
+      <button class="btn btn-full" onclick="goTo('signup')" style="margin-bottom:10px;padding:15px;font-size:11px;letter-spacing:0.22em">Join Mirage</button>
+      <button class="btn btn-full btn-outline" onclick="goTo('login')" style="margin-bottom:20px;padding:15px;font-size:11px;letter-spacing:0.22em">Sign In</button>
+      <div onclick="guestLogin()" style="text-align:center;font-size:11px;color:rgba(26,23,20,0.32);cursor:pointer;letter-spacing:0.1em;text-decoration:underline;text-decoration-color:rgba(26,23,20,0.08)">Preview as guest</div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="screen-login" class="screen">
+  <div class="status-bar" id="login-status"></div>
+  <div style="padding:20px 24px 0;display:flex;align-items:center;gap:12px">
+    <div onclick="goTo('landing')" style="font-size:22px;color:rgba(26,23,20,0.55);cursor:pointer">‹</div>
+    <div class="serif italic" style="font-size:20px">Sign in</div>
+  </div>
+  <div class="scroll-content" style="padding:32px 24px">
+    <div class="serif italic" style="font-size:34px;margin-bottom:6px;line-height:1.1">Welcome back.</div>
+    <div style="font-size:13px;color:rgba(26,23,20,0.32);margin-bottom:32px">Sign in to your Mirage account.</div>
+    <input class="input" id="login-email" type="email" placeholder="Email" autocomplete="email" />
+    <input class="input" id="login-password" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()" autocomplete="current-password" />
+    <div id="login-error" style="font-size:11px;color:#b03025;margin-bottom:12px;min-height:16px"></div>
+    <button class="btn btn-full" id="login-btn" onclick="doLogin()" style="padding:15px;margin-bottom:16px;font-size:11px;letter-spacing:0.2em">Sign In</button>
+    <div style="text-align:center;font-size:11px;color:rgba(26,23,20,0.32);letter-spacing:0.08em">Don't have an account? <span onclick="goTo('signup')" style="color:#1a1714;cursor:pointer;text-decoration:underline">Sign up</span></div>
+  </div>
+</div>
+
+<!-- SIGNUP -->
+<div id="screen-signup" class="screen">
+  <div class="status-bar" id="signup-status"></div>
+  <div style="padding:16px 24px 0;display:flex;align-items:center;justify-content:space-between">
+    <div id="signup-back" onclick="signupBack()" style="font-size:22px;color:rgba(26,23,20,0.55);cursor:pointer">‹</div>
+    <div style="display:flex;gap:6px" id="signup-steps"></div>
+    <div style="width:22px"></div>
+  </div>
+  <div class="scroll-content" style="padding:24px 24px 40px" id="signup-content"></div>
+</div>
+
+<!-- APP -->
+<div id="screen-app" class="screen grain-overlay">
+  <div class="status-bar" id="app-status"></div>
+  <div style="height:calc(100% - 44px);overflow:hidden;position:relative">
+    <div id="tab-feed" class="tab-pane" style="height:100%;overflow:hidden;display:flex;flex-direction:column"></div>
+    <div id="tab-icons" class="tab-pane" style="height:100%;overflow-y:auto;padding-bottom:80px;display:none"></div>
+    <div id="tab-messages" class="tab-pane" style="height:100%;overflow-y:auto;padding-bottom:80px;display:none"></div>
+    <div id="tab-requests" class="tab-pane" style="height:100%;overflow-y:auto;padding-bottom:80px;display:none"></div>
+    <div id="tab-profile" class="tab-pane" style="height:100%;overflow-y:auto;padding-bottom:80px;display:none"></div>
+  </div>
+  <nav class="bottom-nav">
+    <div class="nav-item active" data-tab="feed" onclick="switchTab('feed',this)"><div class="nav-icon">⊞</div><div class="nav-label">Feed</div></div>
+    <div class="nav-item" data-tab="icons" onclick="switchTab('icons',this)"><div class="nav-icon">✦</div><div class="nav-label">Icons</div></div>
+    <div class="nav-item" data-tab="messages" onclick="switchTab('messages',this)"><div class="nav-icon">◇</div><div class="nav-label">DMs</div><div class="nav-badge" id="msg-badge" style="display:none">1</div></div>
+    <div class="nav-item" data-tab="requests" onclick="switchTab('requests',this)"><div class="nav-icon">⊕</div><div class="nav-label">Requests</div></div>
+    <div class="nav-item" data-tab="profile" onclick="switchTab('profile',this)"><div class="nav-icon">○</div><div class="nav-label">Me</div></div>
+  </nav>
+</div>
+
+<!-- OVERLAYS -->
+<div id="overlay-post" class="overlay"></div>
+<div id="overlay-icon" class="overlay"></div>
+<div id="overlay-thread" class="overlay"></div>
+<div id="overlay-request" class="overlay"></div>
+<div id="overlay-notifs" class="overlay"></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+</div>
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://gmyenvnfuailickepvax.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
+const PROXY = 'https://mirage-proxy-production.up.railway.app';
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── ICONS DATA (static — loaded from Supabase later if available) ────────────
+const ICONS = [
+  { id:'luna', name:'luna', archetype:'The Downtown Intellectual', vibe:'Reads Sontag, smokes on fire escapes', online:true, color:'#8a8a9a',
+    bio:'downtown. always thinking. coffee before everything.',
+    img:'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=600&q=80&fit=crop&crop=top',
+    personality: 'You are Luna. Downtown intellectual. You read Sontag, drink cold brew, go to gallery openings. East Coast energy, slightly cold but magnetic. You speak in short, deliberate sentences. You reference books, art, the city. You never explain yourself. Dry humor. You text in lowercase. Never use exclamation marks. Max 2 sentences per reply.' },
+  { id:'vera', name:'vera', archetype:'The Unapologetic Bold', vibe:'Knows exactly what she wants', online:true, color:'#c4763a',
+    bio:'bold. direct. no apologies.',
+    img:'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&q=80&fit=crop&crop=top',
+    personality: 'You are Vera. Bold, direct, West Coast energy. You say exactly what you want. You are confident and a little provocative. You decided you like this person — they will know it. Short messages, direct. You use occasional "lol" but never seem desperate. Never more than 2 sentences. Warm but in control.' },
+  { id:'aria', name:'aria', archetype:'The Soft Sadcore', vibe:'Listens to Grouper at 3am', online:false, color:'#a0b4b8',
+    bio:'soft light. hard feelings. always the window.',
+    img:'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=600&q=80&fit=crop&crop=top',
+    personality: 'You are Aria. Soft, melancholy, introspective. Bedroom pop and rainy windows. You feel everything deeply but say it gently. You reference music (Grouper, Julien Baker, Phoebe Bridgers), weather, small moments. Lowercase always. Ellipsis sometimes. Never more than 2 sentences. Makes the person feel seen.' },
+];
+
+const FEED_FALLBACK = [
+  { id:1, icon:ICONS[0], time:'3h ago', caption:"rooftop at 6am. couldn't sleep.", type:'free', img:'https://images.unsplash.com/photo-1496360166961-10a51d5f367a?w=600&q=80&fit=crop', likes:1240, comments:84, liked:false, saved:false },
+  { id:2, icon:ICONS[1], time:'yesterday', caption:'bathroom mirror series.', type:'ppv', price:6.99, img:'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600&q=80&fit=crop&crop=top', likes:892, comments:47, liked:false, saved:false },
+  { id:3, icon:ICONS[2], time:'2 days ago', caption:'morning light. always this.', type:'free', img:'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&q=80&fit=crop&crop=top', likes:634, comments:29, liked:false, saved:true },
+  { id:4, icon:ICONS[0], time:'3 days ago', caption:'fire escape. always the fire escape.', type:'ppv', price:9.99, img:'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&q=80&fit=crop', likes:2100, comments:136, liked:false, saved:false },
+  { id:5, icon:ICONS[1], time:'4 days ago', caption:'golden hour found me.', type:'free', img:'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=600&q=80&fit=crop&crop=top', likes:1580, comments:92, liked:false, saved:false },
+  { id:6, icon:ICONS[2], time:'5 days ago', caption:'between everything and nothing.', type:'ppv', price:4.99, img:'https://images.unsplash.com/photo-1524502397800-2eeaad7c3fe5?w=600&q=80&fit=crop&crop=top', likes:445, comments:18, liked:false, saved:false },
+];
+
+const TIERS = [
+  { id:'glimpse', name:'Glimpse', price:4.99, features:['Content feed','Free posts only','2 icons max'] },
+  { id:'illusion', name:'Illusion', price:14.99, popular:true, features:['Everything in Glimpse','PPV at 30% off','DM access','All icons'] },
+  { id:'mirage', name:'Mirage VIP', price:39.99, features:['Everything in Illusion','Priority custom requests','Exclusive drops first','Behind the scenes'] },
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const state = {
+  user: null,
+  session: null,
+  userTier: 'illusion',
+  feedFilter: 'all',
+  feedItems: [...FEED_FALLBACK],
+  currentThread: null,
+  threadMessages: {},
+  signupEmail: null,
+};
+
+// ── SUPABASE AUTH ─────────────────────────────────────────────────────────────
+async function initAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    state.session = session;
+    state.user = session.user;
+    await loadUserProfile();
+    goTo('app');
+  }
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN') {
+      state.session = session;
+      state.user = session.user;
+    } else if (event === 'SIGNED_OUT') {
+      state.session = null;
+      state.user = null;
+    }
+  });
+}
+
+async function loadUserProfile() {
+  if (!state.user) return;
+  const { data } = await sb.from('subscribers').select('tier').eq('user_id', state.user.id).single();
+  if (data) state.userTier = data.tier || 'illusion';
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('login-btn');
+  errEl.textContent = '';
+  if (!email || !password) { errEl.textContent = 'Please fill in all fields'; return; }
+  btn.innerHTML = '<span class="spinner-sm"></span>';
+  btn.disabled = true;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  btn.innerHTML = 'Sign In';
+  btn.disabled = false;
+  if (error) { errEl.textContent = error.message; return; }
+  state.user = data.user;
+  state.session = data.session;
+  await loadUserProfile();
+  goTo('app');
+  toast('Welcome back ✦');
+}
+
+async function completeSignup() {
+  const btn = document.getElementById('pay-btn');
+  const name = document.getElementById('su-name')?.value || '';
+  const email = state.signupEmail;
+  const password = state.signupPass;
+  if (!email || !password) return;
+  btn.innerHTML = '<span class="spinner-sm"></span> Processing...';
+  btn.disabled = true;
+
+  const { data, error } = await sb.auth.signUp({
+    email, password,
+    options: { data: { name, tier: signupTier } }
+  });
+
+  if (error) {
+    btn.innerHTML = `Subscribe · $${TIERS.find(t=>t.id===signupTier)?.price}/mo`;
+    btn.disabled = false;
+    toast('Error: ' + error.message);
+    return;
+  }
+
+  // Create subscriber record
+  if (data.user) {
+    await sb.from('subscribers').upsert({
+      user_id: data.user.id,
+      email,
+      name,
+      tier: signupTier,
+      status: 'active',
+      created_at: new Date().toISOString()
+    });
+    state.user = data.user;
+    state.session = data.session;
+    state.userTier = signupTier;
+  }
+
+  signupStep = 0;
+  goTo('app');
+  toast('Welcome to Mirage ✦');
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  state.user = null;
+  state.session = null;
+  state.userTier = 'illusion';
+  state.threadMessages = {};
+  goTo('landing');
+}
+
+function guestLogin() {
+  state.user = { email: 'guest@mirage.app', id: 'guest' };
+  state.userTier = 'glimpse';
+  goTo('app');
+  toast('Browsing as guest');
+}
+
+// ── SIGNUP ────────────────────────────────────────────────────────────────────
+let signupTier = 'illusion';
+let signupStep = 0;
+let signupPass = '';
+
+function signupBack() {
+  if (signupStep === 0) { goTo('landing'); return; }
+  signupStep--;
+  renderSignupStep();
+}
+
+function renderSignupStep() {
+  document.getElementById('signup-steps').innerHTML = [0,1,2].map((_,i) =>
+    `<div class="step-dot" style="background:${i===signupStep?'#1a1714':'rgba(26,23,20,0.08)'}"></div>`).join('');
+  const sel = TIERS.find(t => t.id === signupTier);
+  const content = document.getElementById('signup-content');
+
+  if (signupStep === 0) {
+    content.innerHTML = `
+      <div class="serif italic fade-up" style="font-size:32px;margin-bottom:6px">Choose your tier.</div>
+      <div style="font-size:12px;color:rgba(26,23,20,0.32);margin-bottom:24px">All plans include all 3 launch icons.</div>
+      ${TIERS.map(t => `
+        <div class="tier-card ${t.id===signupTier?'selected':''}" onclick="selectTier('${t.id}')">
+          ${t.popular?'<div style="position:absolute;top:-1px;right:14px;background:#1a1714;color:#f8f6f2;font-size:8px;padding:2px 10px;letter-spacing:0.14em;text-transform:uppercase">Popular</div>':''}
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+            <div><div class="serif italic" style="font-size:22px;margin-bottom:2px">${t.name}</div><div style="display:flex;gap:5px;align-items:baseline"><span style="font-size:24px;font-weight:500">$${t.price}</span><span style="font-size:11px;color:rgba(26,23,20,0.32)">/month</span></div></div>
+            <div style="width:18px;height:18px;border-radius:50%;border:1.5px solid ${t.id===signupTier?'#1a1714':'rgba(26,23,20,0.13)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:4px">${t.id===signupTier?'<div style="width:8px;height:8px;border-radius:50%;background:#1a1714"></div>':''}</div>
+          </div>
+          ${t.features.map(f=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><div style="width:4px;height:4px;border-radius:50%;background:rgba(26,23,20,0.32);flex-shrink:0"></div><span style="font-size:12px;color:rgba(26,23,20,0.55)">${f}</span></div>`).join('')}
+        </div>`).join('')}
+      <button class="btn btn-full" onclick="signupNext()" style="margin-top:8px;padding:15px;font-size:11px;letter-spacing:0.2em">Continue with ${sel.name} · $${sel.price}/mo</button>
+      <div style="margin-top:16px;text-align:center"><span style="font-size:11px;color:rgba(26,23,20,0.32)">Already have an account? </span><span onclick="goTo('login')" style="font-size:11px;color:#1a1714;cursor:pointer;text-decoration:underline">Sign in</span></div>`;
+  } else if (signupStep === 1) {
+    content.innerHTML = `
+      <div class="serif italic fade-up" style="font-size:32px;margin-bottom:6px">Create your account.</div>
+      <div style="font-size:12px;color:rgba(26,23,20,0.32);margin-bottom:28px">${sel.name} · $${sel.price}/month</div>
+      <input class="input" id="su-name" placeholder="Your name" />
+      <input class="input" id="su-email" type="email" placeholder="Email address" autocomplete="email" />
+      <input class="input" id="su-pass" type="password" placeholder="Password (8+ characters)" autocomplete="new-password" />
+      <div id="su-error" style="font-size:11px;color:#b03025;margin-bottom:12px;min-height:16px"></div>
+      <button class="btn btn-full" onclick="signupNext()" style="margin-top:4px;padding:15px;font-size:11px;letter-spacing:0.2em">Continue</button>`;
+  } else if (signupStep === 2) {
+    content.innerHTML = `
+      <div class="serif italic fade-up" style="font-size:32px;margin-bottom:6px">Almost there.</div>
+      <div style="font-size:12px;color:rgba(26,23,20,0.32);margin-bottom:24px">Secure · Cancel anytime</div>
+      <div style="padding:18px;background:#f2efe9;border:1px solid rgba(26,23,20,0.13);border-radius:2px;margin-bottom:16px">
+        <div class="eyebrow" style="margin-bottom:12px">Order Summary</div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px;color:rgba(26,23,20,0.55)">${sel.name}</span><span style="font-size:13px">$${sel.price}/mo</span></div>
+        <div style="height:1px;background:rgba(26,23,20,0.08);margin:8px 0"></div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px"><span style="font-size:13px;font-weight:500">Total today</span><span class="serif italic" style="font-size:20px">$${sel.price}</span></div>
+      </div>
+      <div style="padding:14px 16px;background:#f2efe9;border:1px solid rgba(26,23,20,0.13);border-radius:2px;margin-bottom:16px;font-size:12px;color:rgba(26,23,20,0.55);text-align:center;line-height:1.6">
+        💳 Payment processing via Segpay — coming soon.<br>For now, your account is created free for testing.
+      </div>
+      <button class="btn btn-full" onclick="completeSignup()" style="margin-top:8px;padding:15px;font-size:11px;letter-spacing:0.2em" id="pay-btn">Create Account · Start Testing</button>
+      <div style="margin-top:14px;font-size:10px;color:rgba(26,23,20,0.32);text-align:center;line-height:1.7">By continuing you agree to our Terms.</div>`;
+  }
+}
+
+function selectTier(id) { signupTier = id; renderSignupStep(); }
+
+function signupNext() {
+  if (signupStep === 1) {
+    const n = document.getElementById('su-name')?.value;
+    const e = document.getElementById('su-email')?.value;
+    const p = document.getElementById('su-pass')?.value;
+    const err = document.getElementById('su-error');
+    if (!n||!e||!p) { err.textContent = 'Please fill in all fields'; return; }
+    if (p.length < 8) { err.textContent = 'Password must be 8+ characters'; return; }
+    err.textContent = '';
+    state.signupEmail = e;
+    state.signupPass = p;
+    signupPass = p;
+  }
+  signupStep++;
+  renderSignupStep();
+}
+
+// ── NAV ───────────────────────────────────────────────────────────────────────
+function goTo(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('screen-' + screen);
+  if (el) el.classList.add('active');
+  if (screen === 'landing') renderLandingStrip();
+  if (screen === 'signup') renderSignupStep();
+  if (screen === 'app') initApp();
+  updateStatusBars();
+}
+
+function showOverlay(name) {
+  const el = document.getElementById('overlay-' + name);
+  if (el) el.classList.add('active');
+}
+
+function hideOverlay(name) {
+  const el = document.getElementById('overlay-' + name);
+  if (el) el.classList.remove('active');
+}
+
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab-pane').forEach(p => { p.style.display = 'none'; });
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const pane = document.getElementById('tab-' + tab);
+  if (pane) pane.style.display = tab === 'feed' ? 'flex' : 'block';
+  if (el) el.classList.add('active');
+  if (tab === 'feed') renderFeed();
+  if (tab === 'icons') renderIconsPage();
+  if (tab === 'messages') renderMessagesPage();
+  if (tab === 'requests') renderRequestsPage();
+  if (tab === 'profile') renderProfilePage();
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function avatarHTML(icon, size = 36, showOnline = false) {
+  return `<div class="avatar" style="width:${size}px;height:${size}px;background:${icon.color};flex-shrink:0">
+    <img src="${icon.img}" alt="${icon.name}" onerror="this.style.display='none'">
+    ${showOnline && icon.online ? `<div class="avatar-online" style="width:${Math.round(size*0.3)}px;height:${Math.round(size*0.3)}px;bottom:-1px;right:-1px"></div>` : ''}
+  </div>`;
+}
+
+function grainHTML() { return '<div class="grain-img"></div>'; }
+function dotHTML(color, size) { return `<div class="dot" style="width:${size}px;height:${size}px;background:${color};flex-shrink:0"></div>`; }
+
+function updateStatusBars() {
+  const now = new Date();
+  const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const html = `<div class="status-time">${time}</div><div class="status-icons"><span>●●●</span><span>WiFi</span><span>100%</span></div>`;
+  ['landing','login','signup','app'].forEach(id => {
+    const el = document.getElementById(id + '-status');
+    if (el) el.innerHTML = html;
+  });
+}
+
+function toast(msg, duration = 2500) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), duration);
+}
+
+// ── INIT APP ──────────────────────────────────────────────────────────────────
+function initApp() {
+  document.getElementById('tab-feed').style.display = 'flex';
+  ['icons','messages','requests','profile'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = 'none';
+  });
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector('[data-tab="feed"]').classList.add('active');
+  renderFeed();
+  loadFeedFromSupabase();
+}
+
+// ── LANDING ───────────────────────────────────────────────────────────────────
+function renderLandingStrip() {
+  const el = document.getElementById('landing-strip');
+  el.innerHTML = ICONS.map(icon => `
+    <div style="flex:0 0 auto;width:110px;position:relative;border-radius:2px;overflow:hidden;height:130px">
+      <img src="${icon.img}" alt="${icon.name}" style="width:100%;height:100%;object-fit:cover;object-position:center 20%;filter:saturate(0.7)">
+      ${grainHTML()}
+      <div style="position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(to top,#f8f6f2,transparent);z-index:4"></div>
+      <div class="serif italic" style="position:absolute;bottom:5px;left:8px;z-index:5;font-size:18px;color:#1a1714">${icon.name}</div>
+      ${icon.online ? `<div style="position:absolute;top:8px;right:8px;z-index:5">${dotHTML('#2a6640',6)}</div>` : ''}
+    </div>`).join('');
+}
+
+// ── FEED ──────────────────────────────────────────────────────────────────────
+async function loadFeedFromSupabase() {
+  try {
+    const { data } = await sb.from('content').select('*').order('created_at', { ascending: false }).limit(20);
+    if (data && data.length > 0) {
+      const feedItems = data.map(item => {
+        const icon = ICONS.find(i => i.id === item.icon_id) || ICONS[0];
+        return {
+          id: item.id, icon, time: timeAgo(item.created_at),
+          caption: item.caption || '', type: item.content_type || 'free',
+          price: item.price, img: item.image_url || icon.img,
+          likes: item.likes || 0, comments: 0, liked: false, saved: false
+        };
+      });
+      state.feedItems = feedItems;
+      renderFeed();
+    }
+  } catch(e) { /* fallback stays */ }
+}
+
+function timeAgo(ts) {
+  if (!ts) return '';
+  const diff = Date.now() - new Date(ts).getTime();
+  const h = Math.floor(diff / 3600000);
+  if (h < 1) return 'just now';
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  return d === 1 ? 'yesterday' : `${d} days ago`;
+}
+
+function renderFeed() {
+  const el = document.getElementById('tab-feed');
+  const items = state.feedItems;
+  const filtered = state.feedFilter === 'all' ? items :
+    state.feedFilter === 'free' ? items.filter(f => f.type === 'free') :
+    state.feedFilter === 'ppv' ? items.filter(f => f.type === 'ppv') :
+    items.filter(f => f.icon.name === state.feedFilter);
+
+  el.innerHTML = `
+    <div style="padding-top:50px;flex-shrink:0">
+      <div style="padding:0 24px 12px;display:flex;justify-content:space-between;align-items:center">
+        <div class="serif italic" style="font-size:28px">Mirage</div>
+        <div style="display:flex;gap:6px">${ICONS.filter(i => i.online).map(i => avatarHTML(i, 28, true)).join('')}</div>
+      </div>
+      <div style="display:flex;gap:6px;padding:0 24px 12px;overflow-x:auto">
+        ${['all','luna','vera','aria','free','ppv'].map(f => `<div class="filter-pill ${state.feedFilter === f ? 'active' : ''}" onclick="setFeedFilter('${f}')">${f === 'all' ? 'For You' : f === 'ppv' ? 'PPV' : f}</div>`).join('')}
+      </div>
+      <div style="height:1px;background:rgba(26,23,20,0.08)"></div>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding-bottom:80px">
+      ${filtered.map((item, idx) => `
+        <div class="feed-item" style="animation:fadeUp 0.4s ease ${idx * 0.05}s both">
+          <div style="padding:12px 16px;display:flex;align-items:center;gap:10px">
+            <div onclick="openIconProfile('${item.icon.id}')" style="cursor:pointer">${avatarHTML(item.icon, 36, true)}</div>
+            <div style="flex:1">
+              <div class="serif italic" style="font-size:15px;cursor:pointer" onclick="openIconProfile('${item.icon.id}')">${item.icon.name}</div>
+              <div style="font-size:10px;color:rgba(26,23,20,0.32)">${item.time}</div>
+            </div>
+            ${item.type === 'ppv' ? `<div style="padding:3px 10px;border:1px solid rgba(26,23,20,0.13);border-radius:1px;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(26,23,20,0.32)">PPV · $${item.price}</div>` : ''}
+          </div>
+          <div class="feed-image-wrap" onclick="openPost(${item.id})">
+            <img src="${item.img}" alt="" onerror="this.src='${item.icon.img}'">
+            ${grainHTML()}
+            ${item.type === 'ppv' && state.userTier === 'glimpse' ? `<div class="ppv-lock"><div style="font-size:28px">🔒</div><div class="serif italic" style="font-size:22px;color:#f8f6f2">Unlock · $${item.price}</div><button class="btn" style="background:rgba(248,246,242,0.9);color:#1a1714;border:none;font-size:10px">Unlock</button></div>` : ''}
+          </div>
+          <div class="feed-actions">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+              <div style="display:flex;gap:16px">
+                <div onclick="toggleLike(${item.id})" style="display:flex;align-items:center;gap:5px;cursor:pointer"><span style="font-size:18px;color:${item.liked ? '#b03025' : 'rgba(26,23,20,0.32)'}">${item.liked ? '♥' : '♡'}</span><span style="font-size:11px;color:rgba(26,23,20,0.32)">${item.likes.toLocaleString()}</span></div>
+                <div onclick="openPost(${item.id})" style="display:flex;align-items:center;gap:5px;cursor:pointer"><span style="font-size:17px;color:rgba(26,23,20,0.32)">◇</span><span style="font-size:11px;color:rgba(26,23,20,0.32)">${item.comments}</span></div>
+              </div>
+              <div onclick="toggleSave(${item.id})" style="cursor:pointer;font-size:17px;color:${item.saved ? '#1a1714' : 'rgba(26,23,20,0.32)'}">${item.saved ? '◆' : '◇'}</div>
+            </div>
+            <div class="feed-caption"><span class="serif italic" style="margin-right:5px">${item.icon.name}</span>${item.caption}</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function setFeedFilter(f) { state.feedFilter = f; renderFeed(); }
+
+function toggleLike(id) {
+  const item = state.feedItems.find(f => f.id == id);
+  if (item) { item.liked = !item.liked; item.likes += item.liked ? 1 : -1; }
+  renderFeed();
+}
+
+function toggleSave(id) {
+  const item = state.feedItems.find(f => f.id == id);
+  if (item) { item.saved = !item.saved; toast(item.saved ? 'Saved ◆' : 'Removed'); }
+  renderFeed();
+}
+
+// ── POST VIEW ─────────────────────────────────────────────────────────────────
+function openPost(id) {
+  const post = state.feedItems.find(f => f.id == id);
+  if (!post) return;
+  const unlocked = post.type === 'free' || state.userTier !== 'glimpse';
+  const el = document.getElementById('overlay-post');
+  el.innerHTML = `
+    <div style="padding-top:50px;border-bottom:1px solid rgba(26,23,20,0.08);flex-shrink:0">
+      <div style="padding:10px 20px 14px;display:flex;align-items:center;gap:10px">
+        <div onclick="hideOverlay('post')" style="font-size:22px;color:rgba(26,23,20,0.55);cursor:pointer">‹</div>
+        <div onclick="openIconProfile('${post.icon.id}')" style="display:flex;align-items:center;gap:8px;flex:1;cursor:pointer">
+          ${avatarHTML(post.icon, 34, true)}
+          <div><div class="serif italic" style="font-size:16px">${post.icon.name}</div><div style="font-size:10px;color:rgba(26,23,20,0.32)">${post.time}</div></div>
+        </div>
+      </div>
+    </div>
+    <div style="flex:1;overflow-y:auto">
+      <div style="position:relative">
+        <img src="${post.img}" alt="" style="width:100%;display:block;filter:saturate(0.75) contrast(1.06)${!unlocked ? ';filter:blur(20px) saturate(0.75)' : ''}" onerror="this.src='${post.icon.img}'">
+        ${grainHTML()}
+        ${!unlocked ? `<div class="ppv-lock"><div style="font-size:36px">🔒</div><div class="serif italic" style="font-size:26px;color:#f8f6f2">Unlock · $${post.price}</div><button class="btn" style="background:rgba(248,246,242,0.9);color:#1a1714;border:none">Pay to unlock</button></div>` : ''}
+      </div>
+      <div style="padding:16px 20px;border-bottom:1px solid rgba(26,23,20,0.08)">
+        <div style="font-size:14px;color:rgba(26,23,20,0.55);line-height:1.7;font-style:italic;font-family:'Playfair Display',serif">"${post.caption}"</div>
+        <div style="margin-top:10px;display:flex;gap:16px"><span style="font-size:12px;color:rgba(26,23,20,0.32)">♥ ${post.likes.toLocaleString()}</span></div>
+      </div>
+      <div style="padding:60px 20px;text-align:center;color:rgba(26,23,20,0.2);font-size:12px">No comments yet.</div>
+    </div>
+    <div style="padding:10px 20px 28px;border-top:1px solid rgba(26,23,20,0.08);background:#f8f6f2;display:flex;gap:10px;flex-shrink:0">
+      <input id="post-comment-input" placeholder="Add a comment..." style="flex:1;padding:11px 16px;background:#f2efe9;border:1px solid rgba(26,23,20,0.13);border-radius:999px;font-size:13px;color:#1a1714;outline:none">
+      <div style="width:36px;height:36px;border-radius:50%;background:#1a1714;display:flex;align-items:center;justify-content:center;color:#f8f6f2;font-size:16px;cursor:pointer;flex-shrink:0;margin-top:2px">↑</div>
+    </div>`;
+  showOverlay('post');
+}
+
+// ── ICONS PAGE ────────────────────────────────────────────────────────────────
+function renderIconsPage() {
+  const el = document.getElementById('tab-icons');
+  el.innerHTML = `
+    <div style="padding:52px 0 0">
+      <div style="position:relative;height:300px">
+        <img src="${ICONS[0].img}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:center 20%;filter:saturate(0.65) contrast(1.08)">
+        ${grainHTML()}
+        <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,#f8f6f2 95%);z-index:4"></div>
+        <div onclick="openIconProfile('luna')" style="position:absolute;bottom:0;left:0;right:0;z-index:5;padding:0 20px 16px;cursor:pointer">
+          <div class="serif italic" style="font-size:62px;color:#1a1714;line-height:0.9;letter-spacing:-0.01em">luna</div>
+          <div style="font-size:11px;color:rgba(26,23,20,0.32);margin-top:4px">${ICONS[0].archetype}</div>
+        </div>
+        ${ICONS[0].online ? `<div style="position:absolute;top:12px;right:12px;z-index:5">${dotHTML('#2a6640',8)}</div>` : ''}
+      </div>
+      ${ICONS.slice(1).map(icon => `
+        <div onclick="openIconProfile('${icon.id}')" style="cursor:pointer;border-top:1px solid rgba(26,23,20,0.08)">
+          <div style="position:relative;height:240px">
+            <img src="${icon.img}" alt="${icon.name}" style="width:100%;height:100%;object-fit:cover;object-position:center 20%;filter:saturate(0.68) contrast(1.06)">
+            ${grainHTML()}
+            <div style="position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(to top,#f8f6f2,transparent);z-index:4"></div>
+            <div class="serif italic" style="position:absolute;bottom:4px;left:14px;z-index:5;font-size:44px;color:#1a1714;line-height:1;letter-spacing:-0.01em">${icon.name}</div>
+            ${icon.online ? `<div style="position:absolute;top:12px;right:12px;z-index:5">${dotHTML('#2a6640',6)}</div>` : ''}
+          </div>
+          <div style="padding:10px 14px 16px">
+            <div style="font-size:10px;color:rgba(26,23,20,0.32);margin-bottom:2px">${icon.archetype}</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ── ICON PROFILE ──────────────────────────────────────────────────────────────
+function openIconProfile(iconId) {
+  const icon = ICONS.find(i => i.id === iconId);
+  if (!icon) return;
+  const iconPosts = state.feedItems.filter(f => f.icon.id === iconId);
+  const el = document.getElementById('overlay-icon');
+  el.innerHTML = `
+    <div style="flex-shrink:0">
+      <div style="position:relative;height:340px">
+        <img src="${icon.img}" alt="${icon.name}" style="width:100%;height:100%;object-fit:cover;object-position:center 20%;filter:saturate(0.65) contrast(1.08)">
+        ${grainHTML()}
+        <div onclick="hideOverlay('icon')" style="position:absolute;top:50px;left:16px;z-index:10;width:32px;height:32px;border-radius:50%;background:rgba(248,246,242,0.85);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer">‹</div>
+        <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,#f8f6f2 95%);z-index:4"></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;z-index:5;padding:0 20px 16px">
+          <div class="serif italic" style="font-size:56px;color:#1a1714;line-height:0.9">${icon.name}</div>
+          ${icon.online ? `<div style="display:flex;align-items:center;gap:5px;margin-top:6px">${dotHTML('#2a6640',5)}<span style="font-size:10px;color:#2a6640;letter-spacing:0.1em">Online now</span></div>` : ''}
+        </div>
+      </div>
+    </div>
+    <div style="flex:1;overflow-y:auto">
+      <div style="padding:16px 20px;border-bottom:1px solid rgba(26,23,20,0.08)">
+        <div style="font-size:13px;color:rgba(26,23,20,0.55);line-height:1.7;font-style:italic;margin-bottom:16px">"${icon.bio}"</div>
+        <div style="display:flex;gap:8px">
+          <button onclick="openThread('${icon.id}');hideOverlay('icon')" class="btn" style="flex:1;padding:12px;font-size:10px;letter-spacing:0.14em">Message ${icon.name}</button>
+          <button class="btn btn-outline" style="padding:12px 16px;font-size:18px">+</button>
+        </div>
+      </div>
+      <div style="padding:12px 20px;border-bottom:1px solid rgba(26,23,20,0.08)">
+        <div class="eyebrow" style="margin-bottom:12px">Drops</div>
+        ${iconPosts.length > 0 ? `
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px">
+          ${iconPosts.map(p => `
+            <div onclick="openPost(${p.id})" style="position:relative;aspect-ratio:3/4;overflow:hidden;cursor:pointer;background:#eae6de">
+              <img src="${p.img}" alt="" style="width:100%;height:100%;object-fit:cover;filter:saturate(0.7)" onerror="this.src='${icon.img}'">
+              ${p.type === 'ppv' ? `<div style="position:absolute;top:4px;right:4px;background:rgba(26,23,20,0.7);color:#f8f6f2;font-size:8px;padding:2px 6px;border-radius:1px">PPV</div>` : ''}
+            </div>`).join('')}
+        </div>` : `<div style="padding:30px 0;text-align:center;color:rgba(26,23,20,0.2);font-size:12px">No drops yet</div>`}
+      </div>
+      <div style="height:40px"></div>
+    </div>`;
+  showOverlay('icon');
+}
+
+// ── MESSAGES ──────────────────────────────────────────────────────────────────
+function renderMessagesPage() {
+  const el = document.getElementById('tab-messages');
+  el.innerHTML = `
+    <div style="padding:52px 24px 14px;border-bottom:1px solid rgba(26,23,20,0.08);display:flex;justify-content:space-between;align-items:flex-end">
+      <div class="serif italic" style="font-size:28px">Messages</div>
+      <div style="display:flex;align-items:center;gap:5px;padding:4px 12px;background:#f2efe9;border:1px solid rgba(26,23,20,0.13);border-radius:2px">${dotHTML('#2a6640',4)}<span style="font-size:9px;color:#2a6640;letter-spacing:0.1em;text-transform:uppercase">2 online</span></div>
+    </div>
+    ${ICONS.map(icon => {
+      const msgs = state.threadMessages[icon.id] || [];
+      const lastMsg = msgs[msgs.length - 1];
+      const preview = lastMsg ? lastMsg.text : icon.vibe.split(',')[0] + '...';
+      return `
+        <div onclick="openThread('${icon.id}')" style="padding:16px 24px;border-bottom:1px solid rgba(26,23,20,0.08);display:flex;align-items:center;gap:14px;cursor:pointer">
+          ${avatarHTML(icon, 46, true)}
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <div class="serif italic" style="font-size:17px">${icon.name}</div>
+              <span style="font-size:10px;color:rgba(26,23,20,0.32)">${lastMsg ? 'now' : ''}</span>
+            </div>
+            <div style="font-size:12px;color:rgba(26,23,20,0.32);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${preview}</div>
+          </div>
+        </div>`;
+    }).join('')}`;
+}
+
+// ── THREAD + CLAUDE RESPONSES ─────────────────────────────────────────────────
+function openThread(iconId) {
+  const icon = ICONS.find(i => i.id === iconId);
+  if (!icon) return;
+  if (!state.threadMessages[iconId]) state.threadMessages[iconId] = [];
+  state.currentThread = iconId;
+  renderThread(icon);
+  showOverlay('thread');
+
+  // Send opening message from icon if thread is empty
+  if (state.threadMessages[iconId].length === 0) {
+    setTimeout(() => sendIconOpeningMessage(icon), 800);
+  }
+}
+
+function renderThread(icon) {
+  const msgs = state.threadMessages[icon.id] || [];
+  const el = document.getElementById('overlay-thread');
+  el.innerHTML = `
+    <div style="padding-top:50px;border-bottom:1px solid rgba(26,23,20,0.08);flex-shrink:0">
+      <div style="padding:10px 20px 14px;display:flex;align-items:center;gap:10px">
+        <div onclick="hideOverlay('thread');renderMessagesPage()" style="font-size:22px;color:rgba(26,23,20,0.55);cursor:pointer">‹</div>
+        ${avatarHTML(icon, 38, true)}
+        <div style="flex:1">
+          <div class="serif italic" style="font-size:17px">${icon.name}</div>
+          ${icon.online ? `<div style="display:flex;align-items:center;gap:4px;margin-top:2px">${dotHTML('#2a6640',4)}<span style="font-size:10px;color:#2a6640;letter-spacing:0.08em">Online now</span></div>` : '<div style="font-size:10px;color:rgba(26,23,20,0.32);margin-top:2px">Offline</div>'}
+        </div>
+        <div onclick="openIconProfile('${icon.id}');hideOverlay('thread')" style="font-size:20px;color:rgba(26,23,20,0.32);cursor:pointer">•••</div>
+      </div>
+    </div>
+    <div id="thread-msgs" style="flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px">
+      ${msgs.map(m => renderMsgBubble(m, icon)).join('')}
+      ${msgs.length === 0 ? `<div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:rgba(26,23,20,0.2)"><div style="font-size:32px">${icon.online ? dotHTML('#2a6640',8) : ''}</div><div style="font-size:12px">${icon.name} is ${icon.online ? 'online' : 'offline'}</div></div>` : ''}
+    </div>
+    <div style="padding:10px 20px 28px;background:#f8f6f2;border-top:1px solid rgba(26,23,20,0.08);display:flex;gap:10px;align-items:center;flex-shrink:0">
+      <input id="thread-input" placeholder="Message ${icon.name}..." style="flex:1;padding:12px 18px;background:#f2efe9;border:1px solid rgba(26,23,20,0.13);border-radius:999px;font-size:13px;color:#1a1714;outline:none" onkeydown="if(event.key==='Enter')sendMessage('${icon.id}')">
+      <div onclick="sendMessage('${icon.id}')" style="width:40px;height:40px;border-radius:50%;background:#1a1714;display:flex;align-items:center;justify-content:center;color:#f8f6f2;font-size:18px;cursor:pointer;flex-shrink:0">↑</div>
+    </div>`;
+  scrollThread();
+}
+
+function renderMsgBubble(msg, icon) {
+  const isUser = msg.from === 'user';
+  return `<div style="display:flex;justify-content:${isUser ? 'flex-end' : 'flex-start'};gap:8px;align-items:flex-end">
+    ${!isUser ? avatarHTML(icon, 24) : ''}
+    <div style="max-width:74%">
+      <div class="${isUser ? 'bubble-user' : 'bubble-icon'}">${msg.text}</div>
+      <div style="font-size:9px;color:rgba(26,23,20,0.32);margin-top:4px;text-align:${isUser ? 'right' : 'left'}">${msg.time || 'now'}</div>
+    </div>
+  </div>`;
+}
+
+function scrollThread() {
+  setTimeout(() => {
+    const msgs = document.getElementById('thread-msgs');
+    if (msgs) msgs.scrollTop = msgs.scrollHeight;
+  }, 50);
+}
+
+async function sendMessage(iconId) {
+  const icon = ICONS.find(i => i.id === iconId);
+  const inp = document.getElementById('thread-input');
+  if (!inp || !inp.value.trim()) return;
+  const text = inp.value.trim();
+  inp.value = '';
+
+  // Add user message
+  if (!state.threadMessages[iconId]) state.threadMessages[iconId] = [];
+  state.threadMessages[iconId].push({ from: 'user', text, time: 'now' });
+  renderThread(icon);
+
+  // Save to Supabase if logged in
+  if (state.user && state.user.id !== 'guest') {
+    sb.from('messages').insert({
+      subscriber_id: state.user.id,
+      icon_id: iconId,
+      from_user: true,
+      content: text,
+      created_at: new Date().toISOString()
+    }).then(() => {});
+  }
+
+  // Show typing indicator
+  showTypingIndicator(iconId, icon);
+
+  // Get Claude response
+  try {
+    const reply = await getIconResponse(icon, text, state.threadMessages[iconId]);
+    hideTypingIndicator(iconId);
+    state.threadMessages[iconId].push({ from: 'icon', text: reply, time: 'now' });
+
+    // Save icon response to Supabase
+    if (state.user && state.user.id !== 'guest') {
+      sb.from('messages').insert({
+        subscriber_id: state.user.id,
+        icon_id: iconId,
+        from_user: false,
+        content: reply,
+        created_at: new Date().toISOString()
+      }).then(() => {});
+    }
+
+    renderThread(icon);
+  } catch(e) {
+    hideTypingIndicator(iconId);
+    state.threadMessages[iconId].push({ from: 'icon', text: '...', time: 'now' });
+    renderThread(icon);
+  }
+}
+
+async function sendIconOpeningMessage(icon) {
+  showTypingIndicator(icon.id, icon);
+  try {
+    const opening = await getIconOpeningLine(icon);
+    hideTypingIndicator(icon.id);
+    state.threadMessages[icon.id].push({ from: 'icon', text: opening, time: 'now' });
+    renderThread(icon);
+  } catch(e) {
+    hideTypingIndicator(icon.id);
+    const fallbacks = {
+      luna: "hey. didn't expect you here.",
+      vera: "oh good, you showed up.",
+      aria: "hi... glad you found me."
+    };
+    state.threadMessages[icon.id].push({ from: 'icon', text: fallbacks[icon.id] || 'hey.', time: 'now' });
+    renderThread(icon);
+  }
+}
+
+async function getIconOpeningLine(icon) {
+  const response = await fetch(PROXY + '/claude/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      system: icon.personality,
+      messages: [{ role: 'user', content: '[Start the conversation with a single opening message. No quotes around it. In character.]' }]
+    })
+  });
+  const data = await response.json();
+  return data.reply || data.content || 'hey.';
+}
+
+async function getIconResponse(icon, userMessage, history) {
+  // Build message history for context (last 6 messages)
+  const recent = history.slice(-7, -1); // exclude the just-added user message
+  const messages = recent.map(m => ({
+    role: m.from === 'user' ? 'user' : 'assistant',
+    content: m.text
+  }));
+  messages.push({ role: 'user', content: userMessage });
+
+  const response = await fetch(PROXY + '/claude/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      system: icon.personality,
+      messages
+    })
+  });
+  const data = await response.json();
+  return data.reply || data.content || '...';
+}
+
+function showTypingIndicator(iconId, icon) {
+  const msgs = document.getElementById('thread-msgs');
+  if (!msgs) return;
+  const div = document.createElement('div');
+  div.id = 'typing-' + iconId;
+  div.style.cssText = 'display:flex;gap:8px;align-items:flex-end;';
+  div.innerHTML = `${avatarHTML(icon, 24)}<div class="typing-indicator"><span></span><span></span><span></span></div>`;
+  msgs.appendChild(div);
+  scrollThread();
+}
+
+function hideTypingIndicator(iconId) {
+  const el = document.getElementById('typing-' + iconId);
+  if (el) el.remove();
+}
+
+// ── REQUESTS ──────────────────────────────────────────────────────────────────
+function renderRequestsPage() {
+  const el = document.getElementById('tab-requests');
+  el.innerHTML = `
+    <div style="padding:52px 24px 14px;border-bottom:1px solid rgba(26,23,20,0.08);display:flex;justify-content:space-between;align-items:flex-end">
+      <div class="serif italic" style="font-size:28px">Requests</div>
+      <button class="btn btn-sm" onclick="openNewRequest()">+ New</button>
+    </div>
+    <div style="padding:60px 24px;text-align:center;color:rgba(26,23,20,0.2)">
+      <div style="font-size:32px;margin-bottom:12px">◎</div>
+      <div style="font-size:13px">No active requests</div>
+      <div style="font-size:11px;margin-top:6px;line-height:1.7">Submit a custom content request<br>to any icon you follow.</div>
+      <button onclick="openNewRequest()" class="btn btn-outline" style="margin-top:20px;font-size:10px;padding:11px 24px">Create Request</button>
+    </div>`;
+
+  // Load from Supabase if logged in
+  if (state.user && state.user.id !== 'guest') loadRequests();
+}
+
+async function loadRequests() {
+  const { data } = await sb.from('requests').select('*').eq('subscriber_id', state.user.id).order('created_at', { ascending: false });
+  if (!data || !data.length) return;
+  const el = document.getElementById('tab-requests');
+  const headerHTML = el.querySelector('div').outerHTML;
+  el.innerHTML = headerHTML + data.map(req => {
+    const icon = ICONS.find(i => i.id === req.icon_id) || ICONS[0];
+    const statusColor = req.status === 'complete' ? '#2a6640' : req.status === 'in_progress' ? '#2a6640' : 'rgba(26,23,20,0.32)';
+    return `<div class="req-card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        ${avatarHTML(icon, 30)}
+        <div class="serif italic" style="font-size:15px">${icon.name}</div>
+        <div style="margin-left:auto;padding:3px 10px;border:1px solid rgba(26,23,20,0.13);border-radius:1px;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:${statusColor}">${req.status || 'Pending'}</div>
+      </div>
+      <div style="font-size:13px;color:rgba(26,23,20,0.55);font-style:italic">"${req.description}"</div>
+    </div>`;
+  }).join('');
+}
+
+// ── NEW REQUEST ───────────────────────────────────────────────────────────────
+let newReqStep = 0, newReqIcon = null, newReqDesc = '', newReqTags = [];
+const STYLE_TAGS = ['Moody','Soft light','Desert','Night','Minimal','Close up','Golden hour','Raw','Intimate','Editorial'];
+
+function openNewRequest() {
+  newReqStep = 0; newReqIcon = null; newReqDesc = ''; newReqTags = [];
+  renderNewRequest();
+  showOverlay('request');
+}
+
+function renderNewRequest() {
+  const el = document.getElementById('overlay-request');
+  let content = '';
+  if (newReqStep === 0) {
+    content = `
+      <div class="serif italic fade-up" style="font-size:26px;margin-bottom:6px">Choose an icon.</div>
+      <div style="font-size:12px;color:rgba(26,23,20,0.32);margin-bottom:24px">Who do you want to create with?</div>
+      ${ICONS.map(icon => `
+        <div onclick="selectReqIcon('${icon.id}')" style="display:flex;align-items:center;gap:14px;padding:16px;margin-bottom:10px;border:1.5px solid ${newReqIcon && newReqIcon.id === icon.id ? '#1a1714' : 'rgba(26,23,20,0.13)'};border-radius:2px;cursor:pointer">
+          ${avatarHTML(icon, 50, true)}
+          <div style="flex:1"><div class="serif italic" style="font-size:20px;margin-bottom:3px">${icon.name}</div><div style="font-size:11px;color:rgba(26,23,20,0.32)">${icon.archetype}</div></div>
+          ${newReqIcon && newReqIcon.id === icon.id ? '<div style="width:8px;height:8px;border-radius:50%;background:#1a1714"></div>' : ''}
+        </div>`).join('')}`;
+  } else if (newReqStep === 1) {
+    content = `
+      <div class="serif italic fade-up" style="font-size:26px;margin-bottom:6px">Describe it.</div>
+      <div style="font-size:12px;color:rgba(26,23,20,0.32);margin-bottom:24px">Mood, scene, setting, lighting...</div>
+      <textarea id="req-desc" placeholder="e.g. window light, morning, something quiet and intimate..." rows="4" style="width:100%;padding:14px 16px;background:#f2efe9;border:1px solid rgba(26,23,20,0.13);border-radius:2px;font-size:13px;color:#1a1714;outline:none;resize:none;line-height:1.6;margin-bottom:20px;font-family:'DM Sans',sans-serif">${newReqDesc}</textarea>
+      <div class="eyebrow" style="margin-bottom:10px">Style Tags</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px">
+        ${STYLE_TAGS.map(t => `<div onclick="toggleReqTag('${t}')" style="padding:6px 14px;border:1px solid ${newReqTags.includes(t) ? '#1a1714' : 'rgba(26,23,20,0.13)'};border-radius:999px;font-size:11px;cursor:pointer;background:${newReqTags.includes(t) ? '#1a1714' : 'transparent'};color:${newReqTags.includes(t) ? '#f8f6f2' : 'rgba(26,23,20,0.32)'};transition:all 0.15s">${t}</div>`).join('')}
+      </div>`;
+  } else {
+    content = `
+      <div class="serif italic fade-up" style="font-size:26px;margin-bottom:20px">Review & submit.</div>
+      <div style="padding:18px;background:#f2efe9;border:1px solid rgba(26,23,20,0.13);border-radius:2px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">${avatarHTML(newReqIcon, 40)}<div class="serif italic" style="font-size:18px">${newReqIcon.name}</div></div>
+        <div style="font-size:13px;color:rgba(26,23,20,0.55);font-style:italic;margin-bottom:10px">"${newReqDesc}"</div>
+        ${newReqTags.length ? `<div style="display:flex;flex-wrap:wrap;gap:5px">${newReqTags.map(t => `<div style="padding:2px 10px;border:1px solid rgba(26,23,20,0.13);border-radius:999px;font-size:10px;color:rgba(26,23,20,0.32)">${t}</div>`).join('')}</div>` : ''}
+      </div>
+      <div style="padding:12px;background:#eae6de;border-radius:2px;font-size:11px;color:rgba(26,23,20,0.32);line-height:1.7">Included with Illusion / VIP. Estimated delivery 2-5 days.</div>`;
+  }
+
+  el.innerHTML = `
+    <div style="padding-top:50px;border-bottom:1px solid rgba(26,23,20,0.08);flex-shrink:0">
+      <div style="padding:10px 20px 14px;display:flex;align-items:center;gap:10px">
+        <div onclick="${newReqStep === 0 ? 'hideOverlay(\'request\')' : 'reqBack()'}" style="font-size:22px;color:rgba(26,23,20,0.55);cursor:pointer">‹</div>
+        <div class="serif italic" style="font-size:18px">Custom Request</div>
+        <div style="margin-left:auto;display:flex;gap:5px">${[0,1,2].map(s => `<div style="width:18px;height:2px;border-radius:1px;background:${newReqStep === s ? '#1a1714' : 'rgba(26,23,20,0.08)'}"></div>`).join('')}</div>
+      </div>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:24px">${content}</div>
+    <div style="padding:16px 24px 32px;border-top:1px solid rgba(26,23,20,0.08);flex-shrink:0">
+      ${newReqStep < 2
+        ? `<button class="btn btn-full" onclick="reqNext()" ${(newReqStep === 0 && !newReqIcon) || (newReqStep === 1 && !newReqDesc.trim()) ? 'disabled' : ''} style="padding:14px;font-size:11px;letter-spacing:0.2em">Continue</button>`
+        : `<button class="btn btn-full" onclick="submitReq()" style="padding:14px;font-size:11px;letter-spacing:0.2em" id="submit-req-btn">Submit Request ✦</button>`}
+    </div>`;
+}
+
+function selectReqIcon(id) { newReqIcon = ICONS.find(i => i.id === id); renderNewRequest(); }
+function toggleReqTag(t) { const d = document.getElementById('req-desc'); if (d) newReqDesc = d.value; newReqTags = newReqTags.includes(t) ? newReqTags.filter(x => x !== t) : [...newReqTags, t]; renderNewRequest(); }
+function reqBack() { const d = document.getElementById('req-desc'); if (d) newReqDesc = d.value; newReqStep--; renderNewRequest(); }
+function reqNext() { const d = document.getElementById('req-desc'); if (d) newReqDesc = d.value; newReqStep++; renderNewRequest(); }
+
+async function submitReq() {
+  const btn = document.getElementById('submit-req-btn');
+  btn.innerHTML = '<span class="spinner-sm"></span>';
+  btn.disabled = true;
+
+  if (state.user && state.user.id !== 'guest') {
+    await sb.from('requests').insert({
+      subscriber_id: state.user.id,
+      icon_id: newReqIcon.id,
+      description: newReqDesc,
+      tags: newReqTags,
+      status: 'pending',
+      tier: state.userTier,
+      created_at: new Date().toISOString()
+    });
+    toast('Request submitted ✦');
+  } else {
+    toast('Sign in to submit requests');
+  }
+
+  hideOverlay('request');
+  switchTab('requests', document.querySelector('[data-tab="requests"]'));
+}
+
+// ── PROFILE ───────────────────────────────────────────────────────────────────
+function renderProfilePage() {
+  const el = document.getElementById('tab-profile');
+  const tier = TIERS.find(t => t.id === state.userTier) || TIERS[1];
+  const email = state.user ? state.user.email : 'guest@mirage.app';
+  const isGuest = state.user?.id === 'guest';
+  el.innerHTML = `
+    <div style="padding:52px 24px 20px;border-bottom:1px solid rgba(26,23,20,0.08)">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+        <div style="width:60px;height:60px;border-radius:50%;background:#1a1714;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-style:italic;font-size:24px;color:#f8f6f2;flex-shrink:0">${email[0].toUpperCase()}</div>
+        <div>
+          <div class="serif italic" style="font-size:22px">${isGuest ? 'Guest' : email.split('@')[0]}</div>
+          <div style="font-size:11px;color:rgba(26,23,20,0.32);margin-top:2px">${email}</div>
+          ${isGuest ? `<div style="margin-top:6px"><span onclick="goTo('signup')" style="font-size:11px;color:#1a1714;cursor:pointer;text-decoration:underline">Create account to unlock everything</span></div>` : ''}
+        </div>
+      </div>
+      <div style="padding:12px 16px;background:#f2efe9;border:1px solid rgba(26,23,20,0.13);border-radius:2px;display:flex;justify-content:space-between;align-items:center">
+        <div><div class="eyebrow" style="margin-bottom:3px">Current plan</div><div class="serif italic" style="font-size:20px">${tier.name}</div></div>
+        <div><div class="serif italic" style="font-size:22px">$${tier.price}</div><div style="font-size:10px;color:rgba(26,23,20,0.32);text-align:right">/month</div></div>
+      </div>
+    </div>
+    ${[['Subscription',`${tier.name} · Renews monthly`],['Saved Content','Your saved drops'],['Purchase History','PPV & unlocks'],['Notification Settings',null],['Account Settings',null],['Help & Support',null]].map(([l,s]) => `
+      <div style="padding:16px 24px;border-bottom:1px solid rgba(26,23,20,0.08);display:flex;justify-content:space-between;align-items:center;cursor:pointer">
+        <div><div style="font-size:14px;color:#1a1714">${l}</div>${s ? `<div style="font-size:11px;color:rgba(26,23,20,0.32);margin-top:2px">${s}</div>` : ''}</div>
+        <span style="font-size:18px;color:rgba(26,23,20,0.32)">›</span>
+      </div>`).join('')}
+    <div onclick="doLogout()" style="padding:16px 24px;cursor:pointer"><div style="font-size:14px;color:#b03025">Sign out</div></div>
+    <div style="padding:20px 24px;margin-top:8px">
+      <div style="font-size:10px;color:rgba(26,23,20,0.32);text-align:center;line-height:1.8;letter-spacing:0.08em">All content on Mirage is AI-generated synthetic imagery.<br>Clearly labeled · No real people depicted.</div>
+    </div>`;
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+updateStatusBars();
+setInterval(updateStatusBars, 30000);
+document.getElementById('tab-feed').style.display = 'flex';
+['icons','messages','requests','profile'].forEach(t => document.getElementById('tab-' + t).style.display = 'none');
+
+// Check for existing session
+initAuth();
+</script>
+</body>
+</html>
