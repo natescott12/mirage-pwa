@@ -3433,6 +3433,8 @@ function saveLoraToSupabase(iconId, finetuneId, status) {
 // Override generateFlux to use LoRA if available
 var _origGenerateFlux = window.generateFlux;
 window.generateFlux = function(prompt) {
+  console.log('[generateFlux] final prompt:', prompt);
+  console.log('[generateFlux] prompt length:', (prompt || '').length, 'chars');
   var PX = typeof PROXY !== 'undefined' ? PROXY : 'https://mirage-proxy-production.up.railway.app';
   // Check for LoRA — stored on MG or in localStorage
   var finetuneId = MG.finetuneId;
@@ -3446,10 +3448,12 @@ window.generateFlux = function(prompt) {
   if (false && finetuneId) { // LoRA generation via Replicate — coming soon
     // Use LoRA generation
     if (typeof notify === 'function') notify('✦ Generating with LoRA model...');
+    var loraBody = {prompt: prompt, finetuneId: finetuneId, width: 768, height: 1024, finetuneStrength: 1.1};
+    console.log('[generateFlux] -> /flux/generate-with-lora body:', loraBody);
     return fetch(PX + '/flux/generate-with-lora', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({prompt: prompt, finetuneId: finetuneId, width: 768, height: 1024, finetuneStrength: 1.1})
+      body: JSON.stringify(loraBody)
     })
     .then(function(r) { if(!r.ok) return r.json().then(function(e){throw new Error(e.error||'Submit failed');}); return r.json(); })
     .then(function(d) { return _pollFlux(PX, d.id); });
@@ -3458,6 +3462,7 @@ window.generateFlux = function(prompt) {
   var body = MG.ref
     ? Object.assign({prompt:prompt,model:'flux-kontext-pro',width:768,height:1024}, MG.ref.startsWith('http')?{image_url:MG.ref}:{input_image:MG.ref.includes(',')?MG.ref.split(',')[1]:MG.ref})
     : {prompt:prompt,model:'flux-pro-1.1',width:768,height:1024};
+  console.log('[generateFlux] -> /flux/generate body:', body);
   return fetch(PX+'/flux/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.error||'Submit failed');});return r.json();})
     .then(function(d){return _pollFlux(PX, d.id);});
