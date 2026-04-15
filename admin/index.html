@@ -278,6 +278,23 @@ tbody tr:hover td { background: var(--bg); }
 .pd-summary-card-body { font-size: 13px; color: var(--ink-mid); line-height: 1.7; }
 .pd-summary-card-body strong { color: var(--ink); font-weight: 500; }
 
+/* ── TECH REFERENCE ── */
+.tr-kv { background: var(--surface); border: 1px solid var(--border); }
+.tr-row { display: grid; grid-template-columns: 220px 1fr; gap: 16px; padding: 12px 18px; border-bottom: 1px solid var(--border); font-size: 13px; align-items: center; }
+.tr-row:last-child { border-bottom: none; }
+.tr-k { color: var(--ink-mid); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+.tr-v { color: var(--ink); min-width: 0; word-break: break-all; }
+.tr-v.tr-dim, .tr-dim { color: var(--ink-dim); }
+.tr-link { color: #7aa8ff; text-decoration: none; }
+.tr-link:hover { text-decoration: underline; }
+.tr-code { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 12px; background: rgba(255,255,255,0.04); padding: 2px 6px; border-radius: 3px; color: var(--ink); }
+.tr-secret { background: rgba(220,70,70,0.10); color: #ff9b9b; border: 1px solid rgba(220,70,70,0.18); }
+.tr-block-title { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); margin-top: 18px; margin-bottom: 8px; }
+.tr-sql { background: var(--surface); border: 1px solid var(--border); border-left: 2px solid #7aa8ff; padding: 14px 18px; font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 12px; color: var(--ink); white-space: pre-wrap; word-break: break-all; }
+.tr-method { display: inline-block; font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 9px; font-weight: 600; letter-spacing: 0.08em; padding: 2px 6px; border-radius: 2px; margin-right: 4px; }
+.tr-method.get { background: rgba(100,200,140,0.15); color: #5fe396; }
+.tr-method.post { background: rgba(120,160,220,0.15); color: #7aa8ff; }
+
 
     .activate-bar {
       display: flex;
@@ -401,6 +418,9 @@ tbody tr:hover td { background: var(--bg); }
       </div>
       <div class="sidebar-item" onclick="showPane('design')">
         <span class="icon">◈</span> Design System
+      </div>
+      <div class="sidebar-item" onclick="showPane('techref')">
+        <span class="icon">⌘</span> Tech Reference
       </div>
     </div>
 
@@ -840,6 +860,133 @@ tbody tr:hover td { background: var(--bg); }
         </div>
       </div>
 
+      <!-- TECH REFERENCE PANE -->
+      <div class="pane" id="pane-techref">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Tech Reference</div>
+            <div class="page-sub">URLs, repos, credentials, routes — the full infra sheet</div>
+          </div>
+        </div>
+
+        <div class="pd-section">
+          <div class="pd-section-head">
+            <div class="pd-section-title">Live URLs</div>
+            <div class="pd-section-count">6 endpoints</div>
+          </div>
+          <div class="tr-kv">
+            <div class="tr-row"><span class="tr-k">Studio</span><a class="tr-v tr-link" href="https://mirage-pwa.vercel.app/studio" target="_blank">mirage-pwa.vercel.app/studio</a></div>
+            <div class="tr-row"><span class="tr-k">Admin</span><span class="tr-v">mirage-pwa.vercel.app/admin · <span class="tr-dim">nate / MirageAdmin2026!</span></span></div>
+            <div class="tr-row"><span class="tr-k">Domain</span><a class="tr-v tr-link" href="https://www.mirageicons.com" target="_blank">www.mirageicons.com</a></div>
+            <div class="tr-row"><span class="tr-k">Railway Proxy</span><a class="tr-v tr-link" href="https://mirage-proxy-production.up.railway.app" target="_blank">mirage-proxy-production.up.railway.app</a></div>
+            <div class="tr-row"><span class="tr-k">Proxy health</span><a class="tr-v tr-link" href="https://mirage-proxy-production.up.railway.app/health" target="_blank">.../health</a></div>
+            <div class="tr-row"><span class="tr-k">SMS test image</span><a class="tr-v tr-link" href="https://mirage-proxy-production.up.railway.app/sms/test-image" target="_blank">.../sms/test-image</a></div>
+          </div>
+        </div>
+
+        <div class="pd-section">
+          <div class="pd-section-head">
+            <div class="pd-section-title">Repos &amp; Files</div>
+            <div class="pd-section-count">Local + remote</div>
+          </div>
+          <div class="tr-kv">
+            <div class="tr-row"><span class="tr-k">PWA repo</span><a class="tr-v tr-link" href="https://github.com/natescott12/mirage-pwa" target="_blank">github.com/natescott12/mirage-pwa</a></div>
+            <div class="tr-row"><span class="tr-k">Proxy repo</span><a class="tr-v tr-link" href="https://github.com/natescott12/mirage-proxy" target="_blank">github.com/natescott12/mirage-proxy</a></div>
+            <div class="tr-row"><span class="tr-k">Local PWA</span><code class="tr-v tr-code">~/Documents/Claude/Projects/Mirage/mirage-pwa</code></div>
+            <div class="tr-row"><span class="tr-k">Local proxy</span><code class="tr-v tr-code">~/Documents/Claude/Projects/Mirage/mirage-proxy</code></div>
+            <div class="tr-row"><span class="tr-k">Sloan persona</span><code class="tr-v tr-code">mirage-proxy/personas/sloan.js</code></div>
+            <div class="tr-row"><span class="tr-k">Claude Code (PWA)</span><code class="tr-v tr-code">cd ~/Documents/Claude/Projects/Mirage/mirage-pwa &amp;&amp; claude</code></div>
+            <div class="tr-row"><span class="tr-k">Claude Code (Proxy)</span><code class="tr-v tr-code">cd ~/Documents/Claude/Projects/Mirage/mirage-proxy &amp;&amp; claude</code></div>
+          </div>
+        </div>
+
+        <div class="pd-section">
+          <div class="pd-section-head">
+            <div class="pd-section-title">Credentials</div>
+            <div class="pd-section-count">⚠ sensitive — do not share</div>
+          </div>
+          <div class="tr-kv">
+            <div class="tr-row"><span class="tr-k">GitHub token</span><span class="tr-v tr-dim">stored in macOS Keychain (osxkeychain helper) — not committed</span></div>
+            <div class="tr-row"><span class="tr-k">Anthropic account</span><span class="tr-v">platform.claude.com · <span class="tr-dim">~$74 credits remaining</span></span></div>
+            <div class="tr-row"><span class="tr-k">Anthropic proxy key</span><span class="tr-v tr-dim">set in Railway as ANTHROPIC_API_KEY — not committed</span></div>
+            <div class="tr-row"><span class="tr-k">Replicate account</span><span class="tr-v">natescott12 · <span class="tr-dim">$20 loaded</span></span></div>
+            <div class="tr-row"><span class="tr-k">Replicate token</span><span class="tr-v tr-dim">set in Railway as REPLICATE_API_TOKEN — not committed</span></div>
+            <div class="tr-row"><span class="tr-k">Sloan LoRA model</span><code class="tr-v tr-code">natescott12/mirage-sloan-lora</code></div>
+            <div class="tr-row"><span class="tr-k">Sloan LoRA training ID</span><code class="tr-v tr-code">z27jjwyp8drm0cxhhht0s53pm</code></div>
+            <div class="tr-row"><span class="tr-k">BFL Flux API</span><span class="tr-v">api.bfl.ai · <span class="tr-dim">key in Railway as FLUX_API_KEY</span></span></div>
+            <div class="tr-row"><span class="tr-k">Supabase URL</span><a class="tr-v tr-link" href="https://gmyenvnfuailickepvax.supabase.co" target="_blank">gmyenvnfuailickepvax.supabase.co</a></div>
+            <div class="tr-row"><span class="tr-k">Supabase publishable key</span><code class="tr-v tr-code">sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D</code></div>
+            <div class="tr-row"><span class="tr-k">Twilio Account SID</span><span class="tr-v tr-dim">set in Railway as TWILIO_ACCOUNT_SID — not committed</span></div>
+            <div class="tr-row"><span class="tr-k">Twilio Auth Token</span><span class="tr-v tr-dim">set in Railway as TWILIO_AUTH_TOKEN — not committed</span></div>
+            <div class="tr-row"><span class="tr-k">Twilio auth code</span><span class="tr-v tr-dim">see 1Password — not committed</span></div>
+            <div class="tr-row"><span class="tr-k">Twilio WhatsApp sandbox</span><span class="tr-v">+1 415 523 8886 · <span class="tr-dim">join code: join air-poet</span></span></div>
+            <div class="tr-row"><span class="tr-k">Sloan toll-free</span><span class="tr-v">+1 855 533 0518 · <span class="tr-dim">verification pending</span></span></div>
+            <div class="tr-row"><span class="tr-k">Vercel account</span><span class="tr-v">mirage-pwa.vercel.app</span></div>
+            <div class="tr-row"><span class="tr-k">Railway project</span><span class="tr-v">perpetual-patience</span></div>
+            <div class="tr-row"><span class="tr-k">Namecheap</span><span class="tr-v">domain registrar for mirageicons.com</span></div>
+            <div class="tr-row"><span class="tr-k">Anna (collaborator)</span><span class="tr-v">anna@wearecurrent.net</span></div>
+          </div>
+        </div>
+
+        <div class="pd-section">
+          <div class="pd-section-head">
+            <div class="pd-section-title">Railway Env Vars</div>
+            <div class="pd-section-count">set in Railway dashboard</div>
+          </div>
+          <div class="tr-kv">
+            <div class="tr-row"><span class="tr-k">ANTHROPIC_API_KEY</span><span class="tr-v tr-dim">set in Railway</span></div>
+            <div class="tr-row"><span class="tr-k">FLUX_API_KEY</span><span class="tr-v tr-dim">set in Railway</span></div>
+            <div class="tr-row"><span class="tr-k">REPLICATE_API_TOKEN</span><span class="tr-v tr-dim">set in Railway</span></div>
+            <div class="tr-row"><span class="tr-k">TWILIO_ACCOUNT_SID</span><span class="tr-v tr-dim">set in Railway</span></div>
+            <div class="tr-row"><span class="tr-k">TWILIO_AUTH_TOKEN</span><span class="tr-v tr-dim">set in Railway</span></div>
+            <div class="tr-row"><span class="tr-k">SLOAN_PHONE_NUMBER</span><code class="tr-v tr-code">+18555330518</code></div>
+          </div>
+        </div>
+
+        <div class="pd-section">
+          <div class="pd-section-head">
+            <div class="pd-section-title">Supabase Tables</div>
+            <div class="pd-section-count">2 tables</div>
+          </div>
+          <div class="tr-kv">
+            <div class="tr-row"><span class="tr-k">icon_briefs</span><span class="tr-v"><code class="tr-code">icon_id</code> text PK · scene, wardrobe, shot, light, updated_by, updated_at</span></div>
+            <div class="tr-row"><span class="tr-k">icon_chats</span><span class="tr-v"><code class="tr-code">icon_id</code> text PK · messages jsonb, updated_by, updated_at</span></div>
+          </div>
+          <div class="tr-block-title">Clear Sloan SMS history</div>
+          <pre class="tr-sql">DELETE FROM icon_chats WHERE icon_id = 'sms_whatsapp:+13233093096';</pre>
+        </div>
+
+        <div class="pd-section">
+          <div class="pd-section-head">
+            <div class="pd-section-title">Proxy Routes</div>
+            <div class="pd-section-count">v3.3.0</div>
+          </div>
+          <div class="tr-kv">
+            <div class="tr-row"><span class="tr-k"><span class="tr-method get">GET</span> /health</span><span class="tr-v">status check</span></div>
+            <div class="tr-row"><span class="tr-k"><span class="tr-method post">POST</span> /flux/generate</span><span class="tr-v">Flux Pro 1.1 text-to-image</span></div>
+            <div class="tr-row"><span class="tr-k"><span class="tr-method post">POST</span> /flux/generate-with-lora</span><span class="tr-v">Flux Kontext Pro with LoRA</span></div>
+            <div class="tr-row"><span class="tr-k"><span class="tr-method post">POST</span> /claude/chat</span><span class="tr-v">Claude API with image support</span></div>
+            <div class="tr-row"><span class="tr-k"><span class="tr-method post">POST</span> /sms/incoming</span><span class="tr-v">Twilio SMS/WhatsApp webhook (Sloan agent)</span></div>
+            <div class="tr-row"><span class="tr-k"><span class="tr-method post">POST</span> /voice/incoming</span><span class="tr-v">Twilio voice (redirects to SMS)</span></div>
+            <div class="tr-row"><span class="tr-k"><span class="tr-method get">GET</span> /sms/test</span><span class="tr-v">SMS config check</span></div>
+            <div class="tr-row"><span class="tr-k"><span class="tr-method get">GET</span> /sms/test-image</span><span class="tr-v">Fire test image to Nate's WhatsApp</span></div>
+          </div>
+        </div>
+
+        <div class="pd-section">
+          <div class="pd-section-head">
+            <div class="pd-section-title">Deploy Workflow</div>
+            <div class="pd-section-count">auto on push</div>
+          </div>
+          <div class="tr-kv">
+            <div class="tr-row"><span class="tr-k">Vercel (PWA)</span><span class="tr-v">git push <code class="tr-code">natescott12/mirage-pwa</code> → auto deploys ~60s</span></div>
+            <div class="tr-row"><span class="tr-k">Railway (Proxy)</span><span class="tr-v">git push <code class="tr-code">natescott12/mirage-proxy</code> → auto deploys ~2 min</span></div>
+            <div class="tr-row"><span class="tr-k">Hard refresh</span><code class="tr-v tr-code">Cmd + Shift + R</code></div>
+            <div class="tr-row"><span class="tr-k">Check version</span><span class="tr-v">hit <code class="tr-code">/health</code> endpoint</span></div>
+          </div>
+        </div>
+      </div>
+
 
   </div><!-- /main -->
 
@@ -925,7 +1072,7 @@ function showPane(id) {
   document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
   document.getElementById('pane-' + id).classList.add('active');
 
-  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', studio:'Icon Studio', projdash:'Project Dashboard' };
+  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', studio:'Icon Studio', projdash:'Project Dashboard', design:'Design System', techref:'Tech Reference' };
   document.getElementById('topbar-section').textContent = labels[id] || id;
 
   // highlight sidebar
