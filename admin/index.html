@@ -1023,9 +1023,12 @@ function doLogout() {
 
 // ── NAVIGATION ───────────────────────────────────────────────────────────────
 function showPane(id) {
-  document.querySelectorAll('.pane').forEach(p => { 
+  document.querySelectorAll('.pane').forEach(p => {
     p.classList.remove('active');
-    if (p.id === 'pane-studio' || p.id === 'pane-projdash') p.style.display = 'none';
+    // Studio is the only pane that still uses inline display toggling because
+    // its iframe needs absolute-positioned full-height layout. Every other
+    // pane (including projdash) is driven by the .pane.active CSS class.
+    if (p.id === 'pane-studio') p.style.display = 'none';
   });
   document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
   document.getElementById('pane-' + id).classList.add('active');
@@ -1064,10 +1067,15 @@ function showPane(id) {
       }
     }
   }
-  // projdash is now a native pane. Render the interactive Next Priorities
-  // list on entry so the badge state (TO DO / IN PROGRESS / DONE) reflects
-  // whatever is in localStorage.
-  if (id === 'projdash') initPriorities();
+  // projdash is now a native pane. Clear any stale inline display style
+  // left over from the iframe era (which used inline display toggling),
+  // then render the interactive Next Priorities list so the badge state
+  // reflects whatever is in localStorage.
+  if (id === 'projdash') {
+    const pane = document.getElementById('pane-projdash');
+    if (pane) pane.style.display = '';
+    initPriorities();
+  }
   if (id === 'subscribers') loadSubscribers();
   if (id === 'requests') loadRequests();
   if (id === 'checklist') initChecklist();
@@ -1832,7 +1840,7 @@ const CHECKLIST_SECTIONS = [
     { id:'sec1', text:'Rotate Flux API key at dashboard.bfl.ai — mirage-prod was exposed', tag:'urgent' },
     { id:'sec2', text:'Add Twilio webhook signature validation to proxy', tag:'urgent' },
   ]},
-  { title: 'SMS Agent — Done', items: [
+  { title: 'SMS Agent — Done', doneByDefault: true, items: [
     { id:'sms-d1', text:'Twilio account created', tag:'infra' },
     { id:'sms-d2', text:'Sloan WhatsApp sandbox live', tag:'infra' },
     { id:'sms-d3', text:'SMS webhook wired to Railway proxy', tag:'infra' },
@@ -1846,7 +1854,7 @@ const CHECKLIST_SECTIONS = [
     { id:'sms-w2', text:'Contextual image quality dialing in', tag:'infra' },
     { id:'sms-w3', text:'Twilio webhook signature validation', tag:'infra' },
   ]},
-  { title: 'Studio — Done', items: [
+  { title: 'Studio — Done', doneByDefault: true, items: [
     { id:'st-d1', text:'Converse tab chat UI', tag:'infra' },
     { id:'st-d2', text:'Brief extraction to Generate tab', tag:'infra' },
     { id:'st-d3', text:'Supabase brief/chat persistence', tag:'infra' },
@@ -1893,7 +1901,9 @@ function initChecklist() {
     html += `<div style="margin-bottom:32px">
       <div class="cl-section-title">${section.title}</div>`;
     section.items.forEach(item => {
-      const done = state[item.id];
+      // Sections marked doneByDefault pre-check their items. A concrete
+      // state[id] always wins so the user can uncheck "done" items.
+      const done = state[item.id] !== undefined ? state[item.id] : !!section.doneByDefault;
       html += `
         <div class="cl-task${done ? ' cl-done' : ''}" data-id="${item.id}" onclick="toggleTask('${item.id}')">
           <div class="cl-task-box">
@@ -1911,9 +1921,23 @@ function initChecklist() {
   updateChecklistProgress();
 }
 
+function getItemDefaultDone(id) {
+  for (const section of CHECKLIST_SECTIONS) {
+    if (section.items.some(i => i.id === id)) return !!section.doneByDefault;
+  }
+  return false;
+}
+
+function getItemEffectiveDone(id, state) {
+  return state[id] !== undefined ? state[id] : getItemDefaultDone(id);
+}
+
 function toggleTask(id) {
   const state = getChecklistState();
-  state[id] = !state[id];
+  // Flip the effective (state-or-default) value so doneByDefault sections
+  // start checked and a click unchecks them the first time.
+  const current = getItemEffectiveDone(id, state);
+  state[id] = !current;
   saveChecklistState(state);
   initChecklist();
 }
@@ -1921,7 +1945,7 @@ function toggleTask(id) {
 function updateChecklistProgress() {
   const state = getChecklistState();
   const allItems = CHECKLIST_SECTIONS.flatMap(s => s.items);
-  const done = allItems.filter(i => state[i.id]).length;
+  const done = allItems.filter(i => getItemEffectiveDone(i.id, state)).length;
   const pct = Math.round((done / allItems.length) * 100);
   const bar = document.getElementById('cl-bar');
   const label = document.getElementById('cl-label');
