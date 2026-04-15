@@ -3742,24 +3742,56 @@ function cloudTrainLora() {
     convLoadChat(si.id);
   }
 
+  function _convApplyBrief(brief){
+    if(!brief)return false;
+    var any=false;
+    ['scene','wardrobe','shot','light'].forEach(function(k){
+      var el=document.getElementById('cs-'+k);
+      if(el)el.value=brief[k]||'';
+      if(brief[k])any=true;
+    });
+    var cs=document.getElementById('conv-sections'),gw=document.getElementById('conv-generate-wrap');
+    if(any){if(cs)cs.style.display='block';if(gw)gw.style.display='block';}
+    return any;
+  }
+
+  function _convLoadFromLocal(id){
+    try{
+      var s=JSON.parse(localStorage.getItem(BK+id)||'null');
+      if(s){
+        if(Array.isArray(s.messages)){convMessages=s.messages;convRenderChat();}
+        if(s.brief)_convApplyBrief(s.brief);
+      }
+    }catch(e){}
+  }
+
   function convLoadChat(id){
     if(!id)return;
     convMessages=[];
     var cs=document.getElementById('conv-sections'),gw=document.getElementById('conv-generate-wrap');
     if(cs)cs.style.display='none';
     if(gw)gw.style.display='none';
-    try{
-      var s=JSON.parse(localStorage.getItem(BK+id)||'null');
-      if(s){
-        if(Array.isArray(s.messages))convMessages=s.messages;
-        if(s.brief){
-          ['scene','wardrobe','shot','light'].forEach(function(k){var el=document.getElementById('cs-'+k);if(el)el.value=s.brief[k]||'';});
-          if(cs)cs.style.display='block';
-          if(gw)gw.style.display='block';
-        }
-      }
-    }catch(e){}
+    ['scene','wardrobe','shot','light'].forEach(function(k){var el=document.getElementById('cs-'+k);if(el)el.value='';});
     convRenderChat();
+
+    var iid=String(id);
+    if(window.sbStudio){
+      var briefP=window.sbStudio.from('icon_briefs').select('scene,wardrobe,shot,light').eq('icon_id',iid).maybeSingle();
+      var chatP=window.sbStudio.from('icon_chats').select('messages').eq('icon_id',iid).maybeSingle();
+      Promise.all([briefP,chatP]).then(function(rows){
+        var bErr=rows[0]&&rows[0].error,cErr=rows[1]&&rows[1].error;
+        if(bErr||cErr){console.warn('[conv] supabase load partial error',bErr||cErr);}
+        var bRow=rows[0]&&rows[0].data, cRow=rows[1]&&rows[1].data;
+        if(bRow)_convApplyBrief(bRow);
+        if(cRow&&Array.isArray(cRow.messages)){convMessages=cRow.messages;convRenderChat();}
+        if(!bRow&&!cRow)_convLoadFromLocal(id);
+      }).catch(function(e){
+        console.warn('[conv] supabase load failed, using localStorage',e);
+        _convLoadFromLocal(id);
+      });
+    }else{
+      _convLoadFromLocal(id);
+    }
   }
 
   // Pull a plain-text representation out of a message that may carry a content
@@ -3787,7 +3819,28 @@ function cloudTrainLora() {
     var si=window.selectedIcon;if(!si)return;
     var brief={};['scene','wardrobe','shot','light'].forEach(function(k){brief[k]=(document.getElementById('cs-'+k)||{}).value||'';});
     var slim=convMessages.map(stripImages);
+    // Local cache — fast-path read on next load and fallback if Supabase is down
     try{localStorage.setItem(BK+si.id,JSON.stringify({messages:slim,brief:brief}));}catch(e){}
+    // Persist to Supabase in background
+    if(window.sbStudio){
+      var iid=String(si.id);
+      window.sbStudio.from('icon_briefs').upsert({
+        icon_id:iid,
+        scene:brief.scene,
+        wardrobe:brief.wardrobe,
+        shot:brief.shot,
+        light:brief.light,
+        updated_by:'studio'
+      },{onConflict:'icon_id'}).then(function(r){
+        if(r&&r.error)console.warn('[conv] icon_briefs upsert failed',r.error);
+      });
+      window.sbStudio.from('icon_chats').upsert({
+        icon_id:iid,
+        messages:slim
+      },{onConflict:'icon_id'}).then(function(r){
+        if(r&&r.error)console.warn('[conv] icon_chats upsert failed',r.error);
+      });
+    }
   }
 
   var convAttachments=[];
