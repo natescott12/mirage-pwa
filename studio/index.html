@@ -2993,8 +2993,15 @@ var MG=window.MG={
     // SCENE — brief only, no chip equivalent
     var scene=MG.briefScene||'';
 
-    // WARDROBE — brief override or selected chips
+    // WARDROBE — brief override or selected chips. When the brief override is
+    // in play, still tack on any accessory chips the user has selected so they
+    // can layer extras (jewelry, bags, shoes) onto a Converse-built brief.
     var wardrobe=MG.briefWardrobe||MG.getWardrobePrompt()||'';
+    if(MG.briefWardrobe&&MG.selected&&MG.selected.size){
+      var accParts=[];
+      MG.getItems(icon.id,'accessories').forEach(function(i){if(MG.selected.has(i.id))accParts.push(i.prompt);});
+      if(accParts.length)wardrobe=wardrobe+(wardrobe?', ':'')+accParts.join(', ');
+    }
 
     // SHOT — brief override, else priority: framing > angle > perspective
     var shot='';
@@ -3808,7 +3815,8 @@ function cloudTrainLora() {
     MG.angle.clear();
     MG.perspective.clear();
     MG.selected.clear();
-    document.querySelectorAll('#shot-framing .shot-chip.active, #shot-angle .shot-chip.active, #shot-perspective .shot-chip.active').forEach(function(c){c.classList.remove('active');});
+    MG.base.clear();
+    document.querySelectorAll('#shot-framing .shot-chip.active, #shot-angle .shot-chip.active, #shot-perspective .shot-chip.active, #shot-base .shot-chip.active').forEach(function(c){c.classList.remove('active');});
     if(typeof params!=='undefined'&&params)params.light='';
 
     // Drop the cached chat/brief for this icon so stale long-form briefs don't persist
