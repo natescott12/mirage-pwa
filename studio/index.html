@@ -3677,7 +3677,7 @@ function cloudTrainLora() {
 <script>
 (function(){
   var PX='https://mirage-proxy-production.up.railway.app';
-  var BK="conv_chat_v1";
+  var BK="conv_chat_v2";
   var convMessages=[];
 
   function escapeHTML(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -3806,6 +3806,10 @@ function cloudTrainLora() {
     MG.selected.clear();
     document.querySelectorAll('#shot-framing .shot-chip.active, #shot-angle .shot-chip.active, #shot-perspective .shot-chip.active').forEach(function(c){c.classList.remove('active');});
     if(typeof params!=='undefined'&&params)params.light='';
+
+    // Drop the cached chat/brief for this icon so stale long-form briefs don't persist
+    var _si=window.selectedIcon;
+    if(_si&&_si.id)try{localStorage.removeItem(BK+_si.id);}catch(e){}
 
     function matches(text,target){
       if(!target||!text)return false;
