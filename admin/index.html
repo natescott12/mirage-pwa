@@ -399,7 +399,7 @@ tbody tr:hover td { background: var(--bg); }
       <div class="sidebar-item" onclick="showPane('content')">
         <span class="icon">▣</span> Content Library
       </div>
-      <div class="sidebar-item" onclick="showPane('studio')">
+      <div class="sidebar-item" onclick="window.location.href='https://mirage-pwa.vercel.app/studio'">
         <span class="icon">⚡</span> Icon Studio
       </div>
       <div class="sidebar-section">Platform</div>
@@ -671,10 +671,6 @@ tbody tr:hover td { background: var(--bg); }
         </div>
       </div>
 
-
-      <div class="pane" id="pane-studio" style="padding:0;height:calc(100vh - 48px);display:none;width:100%;overflow:hidden;position:absolute;top:0;left:0;right:0;bottom:0">
-        <iframe id="studio-frame" src="/studio" style="width:100%;height:100%;border:none;display:block;" sandbox="allow-scripts allow-same-origin allow-downloads allow-forms allow-popups"></iframe>
-      </div>
 
       <!-- CHECKLIST -->
       <div class="pane" id="pane-checklist">
@@ -1023,17 +1019,16 @@ function doLogout() {
 
 // ── NAVIGATION ───────────────────────────────────────────────────────────────
 function showPane(id) {
-  document.querySelectorAll('.pane').forEach(p => {
-    p.classList.remove('active');
-    // Studio is the only pane that still uses inline display toggling because
-    // its iframe needs absolute-positioned full-height layout. Every other
-    // pane (including projdash) is driven by the .pane.active CSS class.
-    if (p.id === 'pane-studio') p.style.display = 'none';
-  });
-  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-  document.getElementById('pane-' + id).classList.add('active');
+  // Icon Studio is no longer embedded — it navigates away to the Vercel
+  // deployment via the sidebar item's onclick. Guard against legacy calls.
+  if (id === 'studio') { window.location.href = 'https://mirage-pwa.vercel.app/studio'; return; }
 
-  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', studio:'Icon Studio', projdash:'Project Dashboard', design:'Design System', techref:'Tech Reference' };
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  const pane = document.getElementById('pane-' + id);
+  if (pane) pane.classList.add('active');
+
+  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', projdash:'Project Dashboard', design:'Design System', techref:'Tech Reference' };
   document.getElementById('topbar-section').textContent = labels[id] || id;
 
   // highlight sidebar
@@ -1044,29 +1039,6 @@ function showPane(id) {
   // save bar visibility
   document.getElementById('save-bar').style.display = id === 'personas' ? 'flex' : 'none';
 
-  // Studio needs full height, no padding
-  if (id === 'studio') {
-    const studioPane = document.getElementById('pane-studio');
-    if (studioPane) studioPane.style.display = 'block';
-    // Force iframe to fill pane and inject in-admin class
-    const sf = document.getElementById('studio-frame');
-    if (sf) {
-      sf.style.cssText = 'width:100%;height:100%;border:none;display:block;position:absolute;inset:0;';
-      const injectClass = () => {
-        try {
-          const d = sf.contentDocument;
-          if (d && d.body) {
-            d.body.classList.add('in-admin');
-          }
-        } catch(e) {}
-      };
-      if (sf.contentDocument && sf.contentDocument.readyState === 'complete') {
-        injectClass();
-      } else {
-        sf.addEventListener('load', injectClass, { once: true });
-      }
-    }
-  }
   // projdash is now a native pane. Clear any stale inline display style
   // left over from the iframe era (which used inline display toggling),
   // then render the interactive Next Priorities list so the badge state
