@@ -2459,7 +2459,15 @@ function renderCloud() {
       if (b) { _cf = b.getAttribute('data-cf'); renderCloud(); }
     };
   }
-  var list = _cf === 'all' ? _ci : _ci.filter(function(x){return x.icon_name===_cf;});
+  var list = _cf === 'all' ? _ci.slice() : _ci.filter(function(x){return x.icon_name===_cf;});
+  // Newest first — prefer created_at, fall back to uploaded_at. Server already
+  // orders by created_at.desc, but re-sort defensively in case upstream
+  // ordering changes or rows arrive via a different path.
+  list.sort(function(a,b){
+    var ta = Date.parse(a.created_at || a.uploaded_at || 0) || 0;
+    var tb = Date.parse(b.created_at || b.uploaded_at || 0) || 0;
+    return tb - ta;
+  });
   if (!list.length) { grid.innerHTML = '<div style="padding:40px;color:var(--dim);text-align:center;font-size:11px">No images yet.</div>'; return; }
   window._clist = list;
   var h = '';
