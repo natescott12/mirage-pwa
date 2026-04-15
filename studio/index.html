@@ -3804,16 +3804,39 @@ function cloudTrainLora() {
     }).join('');
   }
 
+  // Anthropic only accepts these four image media types. file.type can lie
+  // (especially on macOS where the system MIME map sometimes mislabels) so
+  // resolve from the file extension first, fall back to the data URL header,
+  // then to file.type, and finally clamp to image/jpeg.
+  var ALLOWED_MEDIA={'image/jpeg':1,'image/png':1,'image/gif':1,'image/webp':1};
+  var EXT_MEDIA={jpg:'image/jpeg',jpeg:'image/jpeg',jpe:'image/jpeg',jfif:'image/jpeg',png:'image/png',gif:'image/gif',webp:'image/webp'};
+
+  function detectMediaType(file,dataUrl){
+    var name=(file&&file.name||'').toLowerCase();
+    var extMatch=name.match(/\.([a-z0-9]+)$/);
+    if(extMatch&&EXT_MEDIA[extMatch[1]])return EXT_MEDIA[extMatch[1]];
+    var headerMatch=(dataUrl||'').match(/^data:([^;]+);base64,/);
+    if(headerMatch){
+      var t=headerMatch[1].toLowerCase();
+      if(ALLOWED_MEDIA[t])return t;
+    }
+    var ft=(file&&file.type||'').toLowerCase();
+    if(ALLOWED_MEDIA[ft])return ft;
+    return 'image/jpeg';
+  }
+
   window.convOnFilePick=function(ev){
     var files=ev.target.files;if(!files||!files.length)return;
     Array.prototype.forEach.call(files,function(file){
-      if(!file.type||file.type.indexOf('image/')!==0)return;
+      var ft=(file.type||'').toLowerCase();
+      if(ft&&ft.indexOf('image/')!==0)return;
       var reader=new FileReader();
       reader.onload=function(e){
         var dataUrl=e.target.result;
         var comma=dataUrl.indexOf(',');
         var b64=comma>-1?dataUrl.slice(comma+1):dataUrl;
-        convAttachments.push({id:'att'+Date.now()+Math.random().toString(36).slice(2,7),dataUrl:dataUrl,base64:b64,mediaType:file.type||'image/jpeg'});
+        var mediaType=detectMediaType(file,dataUrl);
+        convAttachments.push({id:'att'+Date.now()+Math.random().toString(36).slice(2,7),dataUrl:dataUrl,base64:b64,mediaType:mediaType});
         convRenderAttachments();
       };
       reader.readAsDataURL(file);
@@ -3874,9 +3897,32 @@ function cloudTrainLora() {
     var st=document.getElementById('conv-status');if(st)st.textContent='Claude is thinking...';
     var btn=document.getElementById('conv-send-msg-btn');if(btn)btn.disabled=true;
     var sysPrompt='You are a creative director for Mirage, an editorial AI platform. Help the user develop a scene for '+(si.name||'the icon')+' through natural conversation. Ask questions, explore ideas, suggest directions — be a collaborator not a form. There is no limit on how many turns you take. Only output the <brief> JSON when you have clear, confident answers for all four fields (scene, wardrobe, shot, light). If anything is ambiguous, keep asking. When you do output the brief, values must be SHORT Flux-ready visual keywords — max 10 words per field, comma separated, no sentences.\n\nExample brief output:\n<brief>{"scene":"quiet city overlook, dark Mercedes, late afternoon","wardrobe":"black blazer unbuttoned, tailored trousers, leather boots","shot":"full body, sideways driver seat, one leg out","light":"soft golden hour, long shadows"}</brief>';
-    fetch(PX+'/claude/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:sysPrompt,messages:convMessages})})
-    .then(function(r){return r.json();}).then(function(data){
-      if(data.error)throw new Error(data.error);
+
+    function coerceImagesToJpeg(msgs){
+      return msgs.map(function(m){
+        if(!Array.isArray(m.content))return m;
+        return {role:m.role,content:m.content.map(function(b){
+          if(b&&b.type==='image'&&b.source)return {type:'image',source:{type:b.source.type,media_type:'image/jpeg',data:b.source.data}};
+          return b;
+        })};
+      });
+    }
+
+    function callClaude(msgs){
+      return fetch(PX+'/claude/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:sysPrompt,messages:msgs})})
+        .then(function(r){return r.json();})
+        .then(function(data){if(data.error)throw new Error(typeof data.error==='string'?data.error:JSON.stringify(data.error));return data;});
+    }
+
+    callClaude(convMessages).catch(function(err){
+      // Retry once with all image media types coerced to image/jpeg if the
+      // upstream looked like a media-type complaint.
+      var msg=(err&&err.message||'').toLowerCase();
+      var looksLikeMediaError=/media[_ ]type|image\/|invalid_image|could not process image/.test(msg);
+      if(!looksLikeMediaError)throw err;
+      console.warn('[convSendMessage] media type error, retrying with image/jpeg:',err.message);
+      return callClaude(coerceImagesToJpeg(convMessages));
+    }).then(function(data){
       var reply=data.reply||'';
       convMessages.push({role:'assistant',content:reply});
       convRenderChat();
