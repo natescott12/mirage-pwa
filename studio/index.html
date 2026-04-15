@@ -3007,6 +3007,10 @@ var MG=window.MG={
       if(MG.perspective.size&&shotParts.length<2){var arr3=Array.from(MG.perspective);shotParts.push(arr3[arr3.length-1]);}
       shot=shotParts.join(', ');
     }
+    // Weak "full body / full length / wide" phrasing → prepend explicit Flux camera language
+    if(shot&&/\b(full body|full length|wide)\b/i.test(shot)){
+      shot='full body head to toe, 35mm wide angle, subject occupies full frame height, feet visible, environmental context, '+shot;
+    }
 
     // LIGHT — brief override, else tech params
     var light=MG.briefLight||'';
