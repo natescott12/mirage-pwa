@@ -3896,7 +3896,10 @@ function cloudTrainLora() {
     convRenderChat();
     var st=document.getElementById('conv-status');if(st)st.textContent='Claude is thinking...';
     var btn=document.getElementById('conv-send-msg-btn');if(btn)btn.disabled=true;
-    var sysPrompt='You are a creative director for Mirage, an editorial AI platform. Help the user develop a scene for '+(si.name||'the icon')+' through natural conversation. Ask questions, explore ideas, suggest directions — be a collaborator not a form. There is no limit on how many turns you take. Only output the <brief> JSON when you have clear, confident answers for all four fields (scene, wardrobe, shot, light). If anything is ambiguous, keep asking. When you do output the brief, values must be SHORT Flux-ready visual keywords — max 10 words per field, comma separated, no sentences.\n\nExample brief output:\n<brief>{"scene":"quiet city overlook, dark Mercedes, late afternoon","wardrobe":"black blazer unbuttoned, tailored trousers, leather boots","shot":"full body, sideways driver seat, one leg out","light":"soft golden hour, long shadows"}</brief>';
+    var currentBrief={};['scene','wardrobe','shot','light'].forEach(function(k){currentBrief[k]=(document.getElementById('cs-'+k)||{}).value||'';});
+    var hasExistingBrief=currentBrief.scene||currentBrief.wardrobe||currentBrief.shot||currentBrief.light;
+    var briefContext=hasExistingBrief?'\n\nThe user already has a brief in progress. Treat new messages as refinements — only update the fields the user is asking to change, and keep the others identical to what is shown here. The current brief is:\n<brief>'+JSON.stringify(currentBrief)+'</brief>':'';
+    var sysPrompt='You are a creative director for Mirage, an editorial AI platform. Help the user develop a scene for '+(si.name||'the icon')+' through natural conversation. Ask questions, explore ideas, suggest directions — be a collaborator not a form. There is no limit on how many turns you take. Only output the <brief> JSON when you have clear, confident answers for all four fields (scene, wardrobe, shot, light). If anything is ambiguous, keep asking. When you do output the brief, values must be SHORT Flux-ready visual keywords — max 10 words per field, comma separated, no sentences.'+briefContext+'\n\nExample brief output:\n<brief>{"scene":"quiet city overlook, dark Mercedes, late afternoon","wardrobe":"black blazer unbuttoned, tailored trousers, leather boots","shot":"full body, sideways driver seat, one leg out","light":"soft golden hour, long shadows"}</brief>';
 
     function coerceImagesToJpeg(msgs){
       return msgs.map(function(m){
@@ -3984,9 +3987,9 @@ function cloudTrainLora() {
     document.querySelectorAll('#shot-framing .shot-chip.active, #shot-angle .shot-chip.active, #shot-perspective .shot-chip.active, #shot-base .shot-chip.active').forEach(function(c){c.classList.remove('active');});
     if(typeof params!=='undefined'&&params)params.light='';
 
-    // Drop the cached chat/brief for this icon so stale long-form briefs don't persist
-    var _si=window.selectedIcon;
-    if(_si&&_si.id)try{localStorage.removeItem(BK+_si.id);}catch(e){}
+    // Persist the current chat + brief so the Converse tab still shows the
+    // structured sections and chat history when the user comes back to refine.
+    convSaveChat();
 
     function matches(text,target){
       if(!target||!text)return false;
