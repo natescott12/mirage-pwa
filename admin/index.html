@@ -268,10 +268,13 @@ tbody tr:hover td { background: var(--bg); }
 .pd-priority-body { flex: 1; min-width: 0; }
 .pd-priority-title { font-size: 15px; color: var(--ink); margin-bottom: 4px; letter-spacing: -0.2px; }
 .pd-priority-detail { font-size: 13px; color: var(--ink-mid); line-height: 1.5; }
-.pd-badge { display: inline-flex; align-items: center; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; flex-shrink: 0; }
-.pd-badge.done { background: rgba(100,200,140,0.15); color: #5fe396; }
-.pd-badge.wip { background: rgba(224,160,80,0.18); color: #e0a050; }
-.pd-badge.todo { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.55); }
+.pd-badge { display: inline-flex; align-items: center; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; padding: 5px 12px; border-radius: 999px; flex-shrink: 0; border: 1px solid transparent; }
+.pd-badge.done { background: rgba(100,200,140,0.15); color: #5fe396; border-color: rgba(100,200,140,0.25); }
+.pd-badge.wip { background: rgba(224,160,80,0.18); color: #e0a050; border-color: rgba(224,160,80,0.28); }
+.pd-badge.todo { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.55); border-color: rgba(255,255,255,0.14); }
+.pd-badge-clickable { cursor: pointer; user-select: none; transition: filter 0.12s, transform 0.08s; }
+.pd-badge-clickable:hover { filter: brightness(1.25); }
+.pd-badge-clickable:active { transform: scale(0.96); }
 .pd-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .pd-summary-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; }
 .pd-summary-card-title { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 10px; }
@@ -570,6 +573,26 @@ tbody tr:hover td { background: var(--bg); }
           </div>
         </div>
 
+        <!-- HEADLINE STATS -->
+        <div class="stats-grid" style="margin-bottom:40px">
+          <div class="stat-card">
+            <div class="stat-value">20</div>
+            <div class="stat-label">Files Built</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">100</div>
+            <div class="stat-label">Icon Archetypes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">$145K</div>
+            <div class="stat-label">Net Monthly at 10K Subs</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">84.5%</div>
+            <div class="stat-label">Net Margin</div>
+          </div>
+        </div>
+
         <!-- INFRASTRUCTURE STATUS -->
         <div class="pd-section">
           <div class="pd-section-head">
@@ -616,74 +639,9 @@ tbody tr:hover td { background: var(--bg); }
         <div class="pd-section">
           <div class="pd-section-head">
             <div class="pd-section-title">Next Priorities</div>
-            <div class="pd-section-count">8 tasks</div>
+            <div class="pd-section-count">Click a status badge to cycle</div>
           </div>
-          <div>
-            <div class="pd-priority">
-              <div class="pd-priority-num">1</div>
-              <div class="pd-priority-body">
-                <div class="pd-priority-title">Sloan SMS agent — dialing in</div>
-                <div class="pd-priority-detail">Live on WhatsApp sandbox. Tuning persona voice, image quality, and [SEND_IMAGE] flow.</div>
-              </div>
-              <div><span class="pd-badge wip">In Progress</span></div>
-            </div>
-            <div class="pd-priority">
-              <div class="pd-priority-num">2</div>
-              <div class="pd-priority-body">
-                <div class="pd-priority-title">Toll-free SMS verification</div>
-                <div class="pd-priority-detail">+1 855 533 0518 submitted. Awaiting Twilio approval — 1 to 3 days.</div>
-              </div>
-              <div><span class="pd-badge wip">In Progress</span></div>
-            </div>
-            <div class="pd-priority">
-              <div class="pd-priority-num">3</div>
-              <div class="pd-priority-body">
-                <div class="pd-priority-title">Guardrail framework</div>
-                <div class="pd-priority-detail">Content moderation, hard stops, escalation policy, age verification for Sloan and every Icon.</div>
-              </div>
-              <div><span class="pd-badge todo">To Do</span></div>
-            </div>
-            <div class="pd-priority">
-              <div class="pd-priority-num">4</div>
-              <div class="pd-priority-body">
-                <div class="pd-priority-title">LoRA face consistency</div>
-                <div class="pd-priority-detail">Wire Replicate inference path so Icon faces stay consistent across generations.</div>
-              </div>
-              <div><span class="pd-badge todo">To Do</span></div>
-            </div>
-            <div class="pd-priority">
-              <div class="pd-priority-num">5</div>
-              <div class="pd-priority-body">
-                <div class="pd-priority-title">PWA Figma screens</div>
-                <div class="pd-priority-detail">Landing &rarr; World Intro &rarr; World Features &rarr; Free Preview. Figma nodes 12-79 / 12-105 / 12-137 / 12-175.</div>
-              </div>
-              <div><span class="pd-badge todo">To Do</span></div>
-            </div>
-            <div class="pd-priority">
-              <div class="pd-priority-num">6</div>
-              <div class="pd-priority-body">
-                <div class="pd-priority-title">Supabase PWA backend</div>
-                <div class="pd-priority-detail">Anna — wire auth, subscriptions, and content fetch from gmyenvnfuailickepvax.</div>
-              </div>
-              <div><span class="pd-badge todo">To Do</span></div>
-            </div>
-            <div class="pd-priority">
-              <div class="pd-priority-num">7</div>
-              <div class="pd-priority-body">
-                <div class="pd-priority-title">Segpay integration</div>
-                <div class="pd-priority-detail">Wire payment flow into signup. 12% processing — biggest cost.</div>
-              </div>
-              <div><span class="pd-badge todo">To Do</span></div>
-            </div>
-            <div class="pd-priority">
-              <div class="pd-priority-num">8</div>
-              <div class="pd-priority-body">
-                <div class="pd-priority-title">mirageicons.com full launch</div>
-                <div class="pd-priority-detail">End-to-end flow live: marketing &rarr; age gate &rarr; signup &rarr; Icons &rarr; Sloan SMS.</div>
-              </div>
-              <div><span class="pd-badge todo">To Do</span></div>
-            </div>
-          </div>
+          <div id="pd-priorities-list"></div>
         </div>
 
         <!-- PROJECT SUMMARY -->
@@ -1106,8 +1064,10 @@ function showPane(id) {
       }
     }
   }
-  // projdash is now a native pane — nothing to inject, the default pane
-  // show logic above already handles display:block for it.
+  // projdash is now a native pane. Render the interactive Next Priorities
+  // list on entry so the badge state (TO DO / IN PROGRESS / DONE) reflects
+  // whatever is in localStorage.
+  if (id === 'projdash') initPriorities();
   if (id === 'subscribers') loadSubscribers();
   if (id === 'requests') loadRequests();
   if (id === 'checklist') initChecklist();
@@ -1972,6 +1932,59 @@ function updateChecklistProgress() {
 function resetChecklist() {
   saveChecklistState({});
   initChecklist();
+}
+
+// ── PROJECT DASHBOARD — NEXT PRIORITIES ─────────────────────────────────────
+const PRIORITIES_KEY = 'mirage-priorities-v1';
+
+const PRIORITIES = [
+  { id: 'pr1', title: 'Sloan SMS agent — dialing in', detail: 'Live on WhatsApp sandbox. Tuning persona voice, image quality, and [SEND_IMAGE] flow.', default: 'wip' },
+  { id: 'pr2', title: 'Toll-free SMS verification',   detail: '+1 855 533 0518 submitted. Awaiting Twilio approval — 1 to 3 days.',                 default: 'wip' },
+  { id: 'pr3', title: 'Guardrail framework',           detail: 'Content moderation, hard stops, escalation policy, age verification for Sloan and every Icon.', default: 'todo' },
+  { id: 'pr4', title: 'LoRA face consistency',         detail: 'Wire Replicate inference path so Icon faces stay consistent across generations.',  default: 'todo' },
+  { id: 'pr5', title: 'PWA Figma screens',             detail: 'Landing → World Intro → World Features → Free Preview. Figma nodes 12-79 / 12-105 / 12-137 / 12-175.', default: 'todo' },
+  { id: 'pr6', title: 'Supabase PWA backend',          detail: 'Anna — wire auth, subscriptions, and content fetch from gmyenvnfuailickepvax.',    default: 'todo' },
+  { id: 'pr7', title: 'Segpay integration',            detail: 'Wire payment flow into signup. 12% processing — biggest cost.',                    default: 'todo' },
+  { id: 'pr8', title: 'mirageicons.com full launch',   detail: 'End-to-end flow live: marketing → age gate → signup → Icons → Sloan SMS.',         default: 'todo' },
+];
+
+const STATUS_CYCLE = ['todo', 'wip', 'done'];
+const STATUS_LABEL = { todo: 'To Do', wip: 'In Progress', done: 'Done' };
+
+function getPrioritiesState() {
+  try { return JSON.parse(localStorage.getItem(PRIORITIES_KEY)) || {}; } catch { return {}; }
+}
+function savePrioritiesState(s) { localStorage.setItem(PRIORITIES_KEY, JSON.stringify(s)); }
+
+function initPriorities() {
+  const list = document.getElementById('pd-priorities-list');
+  if (!list) return;
+  const state = getPrioritiesState();
+  list.innerHTML = PRIORITIES.map((p, idx) => {
+    const status = state[p.id] || p.default;
+    return `
+      <div class="pd-priority">
+        <div class="pd-priority-num">${idx + 1}</div>
+        <div class="pd-priority-body">
+          <div class="pd-priority-title">${p.title}</div>
+          <div class="pd-priority-detail">${p.detail}</div>
+        </div>
+        <div>
+          <span class="pd-badge pd-badge-clickable ${status}" onclick="cyclePriorityStatus('${p.id}')" title="Click to cycle status">${STATUS_LABEL[status]}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function cyclePriorityStatus(id) {
+  const state = getPrioritiesState();
+  const p = PRIORITIES.find(x => x.id === id);
+  if (!p) return;
+  const current = state[id] || p.default;
+  const next = STATUS_CYCLE[(STATUS_CYCLE.indexOf(current) + 1) % STATUS_CYCLE.length];
+  state[id] = next;
+  savePrioritiesState(state);
+  initPriorities();
 }
 
 // ── P&L MODEL ─────────────────────────────────────────────────────────────────
