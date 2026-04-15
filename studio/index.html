@@ -2873,7 +2873,7 @@ var MG=window.MG={
   framing:new Set(),angle:new Set(),perspective:new Set(),
   base:new Set(['35mm film natural light candid unposed organic']),
   tab:'tops',selected:new Set(),ref:null,lbImages:[],lbIdx:0,
-  briefScene:'',briefWardrobe:'',briefShot:'',briefLight:'',
+  briefScene:'',briefWardrobe:'',briefShot:'',briefLight:'',briefStyle:'',
   WARDROBE:{
     tops:[
       {id:'t1',label:'Bralette',prompt:'bralette top'},{id:'t2',label:'Bikini top',prompt:'bikini top'},
@@ -2903,6 +2903,36 @@ var MG=window.MG={
     look:[]
   },
   toggleShot:function(el,g,v){
+    // ANGLE / PERSPECTIVE: when a brief shot is active, append to / remove from
+    // briefShot directly so chip clicks add to the brief instead of being shadowed.
+    if((g==='angle'||g==='perspective')&&MG.briefShot){
+      var bs=MG.briefShot||'';
+      var has=bs.split(/,\s*/).indexOf(v)>-1;
+      if(has){
+        bs=bs.split(/,\s*/).filter(function(part){return part&&part!==v;}).join(', ');
+        el.classList.remove('active');
+      }else{
+        bs=bs+(bs?', ':'')+v;
+        el.classList.add('active');
+      }
+      MG.briefShot=bs;
+      MG.refresh();
+      return;
+    }
+    // BASE: single-select, drives the visible Style row via briefStyle
+    if(g==='base'){
+      if(MG.briefStyle===v){
+        MG.briefStyle='';
+        el.classList.remove('active');
+      }else{
+        document.querySelectorAll('#shot-base .shot-chip.active').forEach(function(c){c.classList.remove('active');});
+        MG.briefStyle=v;
+        el.classList.add('active');
+      }
+      MG.refresh();
+      return;
+    }
+    // Default: framing chips, or angle/perspective without a brief
     var s=MG[g];if(!s)return;
     if(s.has(v)){s.delete(v);el.classList.remove('active');}
     else{s.add(v);el.classList.add('active');}
@@ -3023,12 +3053,17 @@ var MG=window.MG={
     var light=MG.briefLight||'';
     if(!light&&typeof params!=='undefined'&&params.light)light=params.light;
 
-    // STYLE — persona style + aesthetic (first clauses only)
-    var styleStr=icon.style||'';
-    var aesthetic=icon.aesthetic||'';
-    if(styleStr.indexOf(',')>-1)styleStr=styleStr.split(',').slice(0,2).join(',').trim();
-    if(aesthetic.indexOf(',')>-1)aesthetic=aesthetic.split(',').slice(0,2).join(',').trim();
-    var style=[styleStr,aesthetic].filter(function(s){return s&&s.trim();}).join(', ');
+    // STYLE — base style chip override, else persona style + aesthetic
+    var style;
+    if(MG.briefStyle){
+      style=MG.briefStyle;
+    }else{
+      var styleStr=icon.style||'';
+      var aesthetic=icon.aesthetic||'';
+      if(styleStr.indexOf(',')>-1)styleStr=styleStr.split(',').slice(0,2).join(',').trim();
+      if(aesthetic.indexOf(',')>-1)aesthetic=aesthetic.split(',').slice(0,2).join(',').trim();
+      style=[styleStr,aesthetic].filter(function(s){return s&&s.trim();}).join(', ');
+    }
 
     return{character:character,scene:scene,wardrobe:wardrobe,shot:shot,light:light,style:style};
   },
@@ -3816,6 +3851,7 @@ function cloudTrainLora() {
     MG.perspective.clear();
     MG.selected.clear();
     MG.base.clear();
+    MG.briefStyle='';
     document.querySelectorAll('#shot-framing .shot-chip.active, #shot-angle .shot-chip.active, #shot-perspective .shot-chip.active, #shot-base .shot-chip.active').forEach(function(c){c.classList.remove('active');});
     if(typeof params!=='undefined'&&params)params.light='';
 
