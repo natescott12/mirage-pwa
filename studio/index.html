@@ -1693,11 +1693,16 @@ function renderLibrary() {
   let images=[];
   if(libIconId==="all"){
     ICONS_DATA.forEach(icon=>(lib[icon.id]||[]).forEach(img=>images.push({...img,icon})));
-    images.sort((a,b)=>b.id-a.id);
   } else {
     const icon=ICONS_DATA.find(i=>i.id===libIconId);
     if(icon) images=(lib[libIconId]||[]).map(img=>({...img,icon}));
   }
+  // Newest first — prefer createdAt (ISO string) then fall back to id (Date.now ms)
+  images.sort((a,b)=>{
+    const ta=a.createdAt?Date.parse(a.createdAt):(a.id||0);
+    const tb=b.createdAt?Date.parse(b.createdAt):(b.id||0);
+    return tb-ta;
+  });
   if(libFilter==="free") images=images.filter(i=>i.contentType==="free");
   if(libFilter==="ppv") images=images.filter(i=>i.contentType==="ppv");
   if(libFilter==="fav") images=images.filter(i=>i.favourite);
