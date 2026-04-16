@@ -1176,6 +1176,7 @@ document.getElementById('login-pass').addEventListener('keydown', e => {
 });
 
 function doLogout() {
+  if (typeof andieStopPolling === 'function') andieStopPolling();
   mirageClearAuth();
   currentUser = null;
   document.getElementById('app').classList.remove('visible');
@@ -1199,6 +1200,10 @@ function showPane(id) {
   // Icon Studio is no longer embedded — it navigates away to the Vercel
   // deployment via the sidebar item's onclick. Guard against legacy calls.
   if (id === 'studio') { window.location.href = 'https://mirage-pwa.vercel.app/studio'; return; }
+
+  // Stop Andie polling whenever we leave her pane. The id === 'andie'
+  // branch below restarts it if that's where we're heading.
+  if (id !== 'andie' && typeof andieStopPolling === 'function') andieStopPolling();
 
   document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
@@ -2395,6 +2400,64 @@ function andieSaveHistory() {
     .catch(e => console.warn('[andie][save] exception:', e.message));
 }
 
+// Cross-device polling — every 5s while the Andie tab is active, fetch
+// the Supabase row and pull in any new messages from Anna / Nate's
+// other device. Started when the user lands on the Andie pane, stopped
+// the moment they navigate away or sign out.
+//
+// Race note: if both sides send at the exact same instant, the later
+// save wins and the earlier message is silently lost. Real merge/CRDT
+// semantics are out of scope here — the 5s window plus the "only pull
+// if remote has MORE messages than local" guard keeps the common case
+// clean.
+var andiePollInterval = null;
+var ANDIE_POLL_MS = 5000;
+
+function andieStartPolling() {
+  if (andiePollInterval) return;
+  andiePollInterval = setInterval(andiePollTick, ANDIE_POLL_MS);
+  console.log('[andie][poll] started (' + (ANDIE_POLL_MS / 1000) + 's interval)');
+}
+
+function andieStopPolling() {
+  if (!andiePollInterval) return;
+  clearInterval(andiePollInterval);
+  andiePollInterval = null;
+  console.log('[andie][poll] stopped');
+}
+
+async function andiePollTick() {
+  // Bail if the user has navigated away while the interval was still alive.
+  const pane = document.getElementById('pane-andie');
+  if (!pane || !pane.classList.contains('active')) {
+    andieStopPolling();
+    return;
+  }
+  // Skip while the user's own send is in flight — avoids clobbering the
+  // optimistic local append with a stale remote snapshot.
+  const btn = document.getElementById('andie-send-btn');
+  if (btn && btn.disabled) return;
+
+  try {
+    const url = SUPABASE_URL + '/rest/v1/icon_chats?icon_id=eq.' + encodeURIComponent(ANDIE_CHAT_ROW_ID) + '&select=messages';
+    const r = await fetch(url, {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+    });
+    if (!r.ok) { console.warn('[andie][poll] non-ok', r.status); return; }
+    const rows = await r.json();
+    if (!Array.isArray(rows) || !rows[0] || !Array.isArray(rows[0].messages)) return;
+    const remote = rows[0].messages;
+    if (remote.length > andieMessages.length) {
+      console.log('[andie][poll] remote has', remote.length, 'vs local', andieMessages.length, '— syncing');
+      andieMessages = remote;
+      try { localStorage.setItem(ANDIE_HISTORY_KEY, JSON.stringify(remote)); } catch (_) {}
+      andieRender();
+    }
+  } catch (e) {
+    console.warn('[andie][poll] tick exception:', e.message);
+  }
+}
+
 // Phase 1 data integration — Andie reads the full platform state before her
 // first message. Pulls four sources in parallel: personas.json (roster),
 // icon_briefs (active studio briefs), image_logs (last 20 image attempts),
@@ -2564,6 +2627,10 @@ async function initAndie() {
   andieRender();
   const inp = document.getElementById('andie-input');
   if (inp) inp.focus();
+
+  // Start the 5s Supabase sync now that the pane is live. showPane handles
+  // stopping it on any navigation away — no teardown needed here.
+  andieStartPolling();
 }
 
 // "New conversation" flow:
