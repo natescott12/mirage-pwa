@@ -390,6 +390,10 @@ tbody tr:hover td { background: var(--bg); }
     .persona-pct { font-size: 11px; color: var(--ink-dim); }
     #icon-grid,
     #persona-list-grid { display: flex; flex-direction: column; gap: 8px; }
+    #icon-grid .icon-card,
+    #persona-list-grid .icon-card { cursor: pointer; }
+    #icon-grid .icon-card:hover,
+    #persona-list-grid .icon-card:hover { border-color: var(--border-strong); background: var(--bg); }
 
   </style>
 </head>
@@ -1373,7 +1377,10 @@ function renderIconCardsInto(icons, targetId) {
     const statusClass = status === 'live' ? 'live' : status === 'active' ? 'in-progress' : 'draft';
     const statusLabel = status === 'live' ? 'LIVE' : status === 'active' ? 'ACTIVE' : 'INACTIVE';
     const initial = (icon.name || '?')[0].toUpperCase();
-    return '<div class="icon-card" data-id="' + icon.id + '" onclick="openPersona(' + icon.id + ')">' +
+    // Quote the id so it always reaches openPersona as a string — some
+    // personas have string ids and strict equality later would fail on
+    // a naked numeric literal.
+    return '<div class="icon-card" data-id="' + icon.id + '" onclick="openPersona(\'' + String(icon.id).replace(/\x27/g, "\\x27") + '\')">' +
       '<div class="icon-card-avatar">' + initial + '</div>' +
       '<div class="icon-card-info">' +
         '<div class="icon-card-name">' + (icon.name || '') + '</div>' +
@@ -1527,10 +1534,12 @@ function populateIconSelect(personasObj) {
 
 function openPersona(iconId) {
   showPane('personas');
-  // Find this icon's persona index
-  const icon = allIcons.find(i => i.id === iconId);
-  if (!icon) return;
-  const idx = icon._personaIdx !== undefined ? icon._personaIdx : (iconId - 1);
+  // Find this icon's persona index. String() on both sides because
+  // allIcons stores string ids ("1"..."100") and callers might pass
+  // either a number or a string depending on where the click came from.
+  const icon = allIcons.find(i => String(i.id) === String(iconId));
+  if (!icon) { console.warn('[openPersona] no icon matched id', iconId, '— allIcons has', allIcons.length, 'entries'); return; }
+  const idx = icon._personaIdx !== undefined ? icon._personaIdx : (parseInt(iconId, 10) - 1);
   // Wait for personas to load then swap into the form view for this icon.
   function _trySelect(attempts) {
     const sel = document.getElementById('persona-icon-select');
