@@ -2313,52 +2313,79 @@ const ANDIE_CHAT_ROW_ID = 'andie-chat-history';
 
 async function andieLoadHistory() {
   // Prefer Supabase — authoritative shared source of truth.
+  const url = SUPABASE_URL + '/rest/v1/icon_chats?icon_id=eq.' + encodeURIComponent(ANDIE_CHAT_ROW_ID) + '&select=messages,updated_at';
+  console.log('[andie][load] GET', url);
   try {
-    const r = await fetch(
-      SUPABASE_URL + '/rest/v1/icon_chats?icon_id=eq.' + encodeURIComponent(ANDIE_CHAT_ROW_ID) + '&select=messages',
-      { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY } }
-    );
+    const r = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+      },
+    });
+    const rawText = await r.text();
+    console.log('[andie][load] response', r.status, rawText.slice(0, 500));
     if (r.ok) {
-      const rows = await r.json();
+      let rows = [];
+      try { rows = JSON.parse(rawText); }
+      catch (e) { console.warn('[andie][load] body not json:', e.message); }
       if (Array.isArray(rows) && rows[0] && Array.isArray(rows[0].messages)) {
-        // Keep localStorage in sync so a later offline reload still has the thread.
+        console.log('[andie][load] restored', rows[0].messages.length, 'messages from Supabase (updated_at:', rows[0].updated_at, ')');
         try { localStorage.setItem(ANDIE_HISTORY_KEY, JSON.stringify(rows[0].messages)); } catch (_) {}
         return rows[0].messages;
       }
-      // No row yet — fall through to localStorage so first-time reloads still
-      // land on whatever was cached locally.
+      console.log('[andie][load] Supabase returned no matching row — falling back to localStorage');
     } else {
-      console.warn('[andie] sb history load non-ok', r.status);
+      console.warn('[andie][load] Supabase non-ok', r.status, '— falling back to localStorage');
     }
   } catch (e) {
-    console.warn('[andie] sb history load failed, falling back to localStorage:', e.message);
+    console.warn('[andie][load] Supabase exception:', e.message, '— falling back to localStorage');
   }
   try {
     const raw = localStorage.getItem(ANDIE_HISTORY_KEY);
-    if (!raw) return null;
+    if (!raw) { console.log('[andie][load] no localStorage history either'); return null; }
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length ? parsed : null;
-  } catch (_) { return null; }
+    if (Array.isArray(parsed) && parsed.length) {
+      console.log('[andie][load] restored', parsed.length, 'messages from localStorage');
+      return parsed;
+    }
+  } catch (_) {}
+  return null;
 }
 
 function andieSaveHistory() {
-  // Write-through: localStorage is instant so UI reads never block; the
-  // Supabase upsert runs in the background and any failure is logged
-  // without disturbing the chat flow.
+  // Write-through: localStorage synchronous (UI-instant), Supabase upsert
+  // fire-and-forget in the background with verbose logging so we can see
+  // the actual status + response body when something goes wrong.
   try { localStorage.setItem(ANDIE_HISTORY_KEY, JSON.stringify(andieMessages)); }
-  catch (e) { console.warn('[andie] local save failed:', e.message); }
-  fetch(SUPABASE_URL + '/rest/v1/icon_chats?on_conflict=icon_id', {
+  catch (e) { console.warn('[andie][save] local save failed:', e.message); }
+
+  const url = SUPABASE_URL + '/rest/v1/icon_chats?on_conflict=icon_id';
+  const payload = {
+    icon_id: ANDIE_CHAT_ROW_ID,
+    messages: andieMessages,
+    updated_at: new Date().toISOString(),
+  };
+  console.log('[andie][save] POST', url, '— payload messages:', andieMessages.length, 'updated_at:', payload.updated_at);
+
+  fetch(url, {
     method: 'POST',
     headers: {
       'apikey': SUPABASE_ANON_KEY,
       'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
       'Content-Type': 'application/json',
-      'Prefer': 'resolution=merge-duplicates',
+      'Prefer': 'resolution=merge-duplicates,return=representation',
     },
-    body: JSON.stringify({ icon_id: ANDIE_CHAT_ROW_ID, messages: andieMessages }),
-  }).then(r => {
-    if (!r.ok) r.text().then(t => console.warn('[andie] sb history save failed', r.status, t.slice(0, 200)));
-  }).catch(e => console.warn('[andie] sb history save exception:', e.message));
+    body: JSON.stringify(payload),
+  })
+    .then(async r => {
+      const body = await r.text();
+      if (r.ok) {
+        console.log('[andie][save] ok', r.status, '— response:', body.slice(0, 400));
+      } else {
+        console.warn('[andie][save] FAILED', r.status, '— response:', body);
+      }
+    })
+    .catch(e => console.warn('[andie][save] exception:', e.message));
 }
 
 // Phase 1 data integration — Andie reads the full platform state before her
