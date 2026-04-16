@@ -444,6 +444,9 @@ tbody tr:hover td { background: var(--bg); }
       <div class="sidebar-item" onclick="showPane('personas')">
         <span class="icon">◎</span> Persona Builder
       </div>
+      <div class="sidebar-item" onclick="showPane('sloanlog')">
+        <span class="icon">✎</span> Sloan Learning Log
+      </div>
       <div class="sidebar-item" onclick="window.location.href='https://mirage-pwa.vercel.app/studio'">
         <span class="icon">⚡</span> Icon Studio
       </div>
@@ -575,6 +578,13 @@ tbody tr:hover td { background: var(--bg); }
             </div>
           </div>
 
+          <!-- Protected-Icon lock banner. Hidden by default; shown by
+               applyPersonaLockState when a protected Icon is selected. -->
+          <div id="persona-lock-banner" style="display:none;align-items:center;gap:10px;padding:10px 16px;background:rgba(201,169,110,0.08);border:1px solid rgba(201,169,110,0.28);border-radius:2px;margin-bottom:20px;color:#c9a96e;font-size:12px;letter-spacing:0.06em">
+            <span style="font-size:14px" aria-hidden="true">&#128274;</span>
+            <span id="persona-lock-banner-text">Locked &mdash; contact Nate to edit</span>
+          </div>
+
           <!-- Hidden select — kept so populateIconSelect and other legacy
                code that reads/writes sel.value still works while the
                visible picker UI is the list grid. -->
@@ -587,6 +597,41 @@ tbody tr:hover td { background: var(--bg); }
               <div class="empty-state-icon">◎</div>
               <div class="empty-state-text">Loading persona…</div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLOAN LEARNING LOG -->
+      <div class="pane" id="pane-sloanlog" style="overflow-y:auto;height:calc(100vh - 48px)">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Sloan Learning Log</div>
+            <div class="page-sub">Key Mirage insights from test sessions &mdash; these load into Sloan&rsquo;s context automatically</div>
+          </div>
+        </div>
+
+        <div style="max-width:880px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:20px;margin-bottom:24px">
+            <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:14px">Add Learning</div>
+
+            <div style="display:grid;grid-template-columns:220px 1fr;gap:12px;margin-bottom:12px">
+              <select id="sloanlog-category" style="background:var(--bg);color:var(--ink);border:1px solid var(--border);padding:9px 10px;border-radius:3px;font-family:'Afacad',sans-serif;font-size:13px">
+                <option>Image Pipeline</option>
+                <option>Voice Calibration</option>
+                <option>Character Decisions</option>
+                <option>UX Observations</option>
+                <option>Guardrails</option>
+                <option>General</option>
+              </select>
+              <button id="sloanlog-save" onclick="saveSloanLog()" style="background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:3px;font-family:'Afacad',sans-serif;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;justify-self:end;align-self:start;min-width:120px">Save</button>
+            </div>
+
+            <textarea id="sloanlog-summary" placeholder="What did you learn? Keep it tight &mdash; one observation per entry." style="width:100%;min-height:100px;background:var(--bg);color:var(--ink);border:1px solid var(--border);padding:12px;border-radius:3px;font-family:'Afacad',sans-serif;font-size:13px;resize:vertical;box-sizing:border-box"></textarea>
+            <div id="sloanlog-status" style="font-size:11px;color:var(--ink-dim);margin-top:8px;min-height:14px"></div>
+          </div>
+
+          <div id="sloanlog-list">
+            <div style="padding:40px;text-align:center;color:var(--ink-dim);font-size:12px">Loading&hellip;</div>
           </div>
         </div>
       </div>
@@ -1201,6 +1246,11 @@ const ADMIN_USERS = {
   'anna': 'MirageAnna2026!'
 };
 
+// Icons protected from edits by non-admin users. Expand as Vera/Aria lock down.
+const PROTECTED_ICONS = ['Sloan'];
+function isIconProtected(iconName) { return PROTECTED_ICONS.includes(iconName); }
+function canEditIcon(iconName, user) { return user === 'nate' || !isIconProtected(iconName); }
+
 let sb = null;
 let currentUser = null;
 let allIcons = [];
@@ -1326,7 +1376,7 @@ function showPane(id) {
   const pane = document.getElementById('pane-' + id);
   if (pane) pane.classList.add('active');
 
-  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', projdash:'Project Dashboard', design:'Design System', techref:'Tech Reference', andie:'Andie' };
+  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', sloanlog:'Sloan Learning Log', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', projdash:'Project Dashboard', design:'Design System', techref:'Tech Reference', andie:'Andie' };
   document.getElementById('topbar-section').textContent = labels[id] || id;
 
   // highlight sidebar
@@ -1351,6 +1401,7 @@ function showPane(id) {
   if (id === 'checklist') initChecklist();
   if (id === 'pnl') initPnl();
   if (id === 'andie') initAndie();
+  if (id === 'sloanlog') loadSloanLog();
  { loadPersonasFromJSON().then(function(p){ window.__personas=p; populateIconSelect(p); }); }
 
   if (id === 'personas') {
@@ -1676,6 +1727,41 @@ function openPersona(iconId) {
   _trySelect(10);
 }
 
+function applyPersonaLockState(iconName) {
+  const banner = document.getElementById('persona-lock-banner');
+  const editor = document.getElementById('persona-editor');
+  const saveBtn = document.getElementById('save-btn');
+  const protectedIcon = isIconProtected(iconName);
+  const editable = canEditIcon(iconName, currentUser);
+
+  if (banner) {
+    if (protectedIcon) {
+      banner.style.display = 'flex';
+      const text = document.getElementById('persona-lock-banner-text');
+      if (text) text.innerHTML = editable
+        ? 'Protected Icon &mdash; changes affect a live character.'
+        : 'Locked &mdash; contact Nate to edit.';
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+
+  if (editor) {
+    const controls = editor.querySelectorAll('input, textarea, select, button.tag-chip');
+    controls.forEach(function(el) {
+      if (editable) {
+        el.disabled = false;
+        el.removeAttribute('readonly');
+      } else {
+        el.disabled = true;
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.setAttribute('readonly', 'readonly');
+      }
+    });
+  }
+
+  if (saveBtn) saveBtn.style.display = editable ? '' : 'none';
+}
+
 function loadPersonaForIcon(idx) {
   const editor = document.getElementById('persona-editor');
   if (!editor) return;
@@ -1725,6 +1811,7 @@ function loadPersonaForIcon(idx) {
   '</div>';
 
   editor.innerHTML = activateBar + buildPersonaForm(p, iconObj);
+  applyPersonaLockState(iconObj.name);
 
   // Now fetch from Supabase and overwrite with full saved data
   if (sb) {
@@ -1786,6 +1873,7 @@ function loadPersonaForIcon(idx) {
           c.classList.toggle('selected', sp.scene_tags.includes(c.textContent.trim()));
         });
       }
+      applyPersonaLockState(iconObj.name);
     });
   }
 }
@@ -2930,6 +3018,106 @@ async function andieSend() {
     if (btn) btn.disabled = false;
     andieRender();
     if (inp) inp.focus();
+  }
+}
+
+// ── SLOAN LEARNING LOG ────────────────────────────────────────────────────
+const SLOAN_PROXY_URL = 'https://mirage-proxy-production.up.railway.app';
+
+function sloanLogStatus(msg, isError) {
+  const el = document.getElementById('sloanlog-status');
+  if (!el) return;
+  el.textContent = msg || '';
+  el.style.color = isError ? 'var(--accent)' : 'var(--ink-dim)';
+}
+
+async function loadSloanLog() {
+  const list = document.getElementById('sloanlog-list');
+  if (!list) return;
+  if (!sb) {
+    list.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-dim);font-size:12px">Supabase unavailable.</div>';
+    return;
+  }
+  try {
+    const { data, error } = await sb
+      .from('sloan_memory')
+      .select('id, created_at, category, summary')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    renderSloanLog(data || []);
+  } catch (e) {
+    console.warn('[sloanlog] load error', e);
+    list.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-dim);font-size:12px">Failed to load: ' + (e.message || e) + '</div>';
+  }
+}
+
+function renderSloanLog(rows) {
+  const list = document.getElementById('sloanlog-list');
+  if (!list) return;
+  if (!rows.length) {
+    list.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-dim);font-size:12px">No learnings yet. Add the first one above.</div>';
+    return;
+  }
+  const esc = function(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+  list.innerHTML = rows.map(function(r) {
+    const d = r.created_at ? new Date(r.created_at) : null;
+    const dateStr = d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' \u00b7 ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '';
+    return '' +
+      '<div style="background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:16px 18px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start">' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;flex-wrap:wrap">' +
+            '<span style="background:rgba(201,169,110,0.12);border:1px solid rgba(201,169,110,0.32);color:#c9a96e;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;padding:3px 9px;border-radius:2px">' + esc(r.category || 'general') + '</span>' +
+            '<span style="font-size:11px;color:var(--ink-dim)">' + esc(dateStr) + '</span>' +
+          '</div>' +
+          '<div style="font-size:13px;line-height:1.55;white-space:pre-wrap;word-break:break-word">' + esc(r.summary || '') + '</div>' +
+        '</div>' +
+        '<button onclick="deleteSloanLog(\'' + esc(r.id) + '\')" title="Delete" style="background:transparent;color:var(--ink-dim);border:1px solid var(--border);padding:5px 10px;border-radius:2px;font-family:\'Afacad\',sans-serif;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;flex-shrink:0">Delete</button>' +
+      '</div>';
+  }).join('');
+}
+
+async function saveSloanLog() {
+  const catEl = document.getElementById('sloanlog-category');
+  const sumEl = document.getElementById('sloanlog-summary');
+  const btn = document.getElementById('sloanlog-save');
+  if (!catEl || !sumEl) return;
+  const category = catEl.value;
+  const summary = (sumEl.value || '').trim();
+  if (!summary) { sloanLogStatus('Write something first.', true); return; }
+
+  if (btn) btn.disabled = true;
+  sloanLogStatus('Saving\u2026');
+  try {
+    const r = await fetch(SLOAN_PROXY_URL + '/sloan/memory', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category: category, summary: summary }),
+    });
+    if (!r.ok) {
+      const err = await r.text();
+      throw new Error(err || ('status ' + r.status));
+    }
+    sumEl.value = '';
+    sloanLogStatus('Saved.');
+    loadSloanLog();
+  } catch (e) {
+    console.warn('[sloanlog] save error', e);
+    sloanLogStatus('Failed: ' + (e.message || e), true);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function deleteSloanLog(id) {
+  if (!id || !sb) return;
+  if (!confirm('Delete this learning?')) return;
+  try {
+    const { error } = await sb.from('sloan_memory').delete().eq('id', id);
+    if (error) throw error;
+    loadSloanLog();
+  } catch (e) {
+    console.warn('[sloanlog] delete error', e);
+    sloanLogStatus('Delete failed: ' + (e.message || e), true);
   }
 }
 
