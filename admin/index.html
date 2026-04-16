@@ -2299,11 +2299,17 @@ const ANDIE_HISTORY_KEY = 'mirage-andie-history';
 
 // Persistent across page reloads via localStorage. Each message is
 // { role: 'user' | 'assistant', content: string }.
-let andieMessages = [];
-let andieInitialized = false;
+// NOTE: var (not let) so these hoist above their declaration site — the
+// restoreAdminSession IIFE in the auth block runs during script parse
+// and cascades into initAndie, which accesses andieInitialized before
+// the script reaches this line. With let, that read throws a TDZ
+// ReferenceError; var makes them `undefined` at read time, which the
+// boolean check tolerates.
+var andieMessages = [];
+var andieInitialized = false;
 // Augmented system prompt: base ANDIE_SYSTEM_PROMPT + ICON ROSTER + briefs.
 // Built once per session by andieLoadPlatformData; sendMessage reads this.
-let andieSystemPromptAugmented = null;
+var andieSystemPromptAugmented = null;
 
 // Andie chat history — primary store is Supabase so Nate and Anna share
 // the same thread across devices. localStorage mirrors every write as a
@@ -2359,13 +2365,14 @@ function andieSaveHistory() {
   try { localStorage.setItem(ANDIE_HISTORY_KEY, JSON.stringify(andieMessages)); }
   catch (e) { console.warn('[andie][save] local save failed:', e.message); }
 
+  // Match the SMS agent's known-good payload shape exactly — anything
+  // that isn't a real column in icon_chats makes PostgREST return 400
+  // "Could not find the 'X' column of 'icon_chats'". If updated_at is
+  // a real column, Supabase's default will set it on insert; if it's
+  // not a column, including it here breaks the upsert entirely.
   const url = SUPABASE_URL + '/rest/v1/icon_chats?on_conflict=icon_id';
-  const payload = {
-    icon_id: ANDIE_CHAT_ROW_ID,
-    messages: andieMessages,
-    updated_at: new Date().toISOString(),
-  };
-  console.log('[andie][save] POST', url, '— payload messages:', andieMessages.length, 'updated_at:', payload.updated_at);
+  const payload = { icon_id: ANDIE_CHAT_ROW_ID, messages: andieMessages };
+  console.log('[andie][save] POST', url, '— payload:', JSON.stringify(payload).slice(0, 200));
 
   fetch(url, {
     method: 'POST',
