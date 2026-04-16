@@ -669,7 +669,7 @@ tbody tr:hover td { background: var(--bg); }
         <div class="pd-section">
           <div class="pd-section-head">
             <div class="pd-section-title">Infrastructure</div>
-            <div class="pd-section-count">9 services</div>
+            <div class="pd-section-count">8 services</div>
           </div>
           <div class="pd-info-bar">
             <div class="pd-info-item">
@@ -702,11 +702,7 @@ tbody tr:hover td { background: var(--bg); }
             </div>
             <div class="pd-info-item">
               <div class="pd-info-label">Twilio · Toll-free</div>
-              <div class="pd-info-value pending">+1 855 533 0518 — Pending</div>
-            </div>
-            <div class="pd-info-item">
-              <div class="pd-info-label">SLOAN_MODE</div>
-              <div class="pd-info-value">test &#10003; Active</div>
+              <div class="pd-info-value pending">+1 855 533 0518 &mdash; Pending</div>
             </div>
           </div>
         </div>
@@ -720,23 +716,83 @@ tbody tr:hover td { background: var(--bg); }
           <div class="pd-info-bar" style="grid-template-columns:repeat(2,1fr)">
             <div class="pd-info-item">
               <div class="pd-info-label">Andie</div>
-              <div class="pd-info-value">Live &mdash; Mirage Operations Director, synced across devices</div>
+              <div class="pd-info-value">&#10003; Live &mdash; Operations Director, Supabase-synced, polling active</div>
             </div>
             <div class="pd-info-item">
               <div class="pd-info-label">Test Sloan</div>
-              <div class="pd-info-value">Active &mdash; SLOAN_MODE=test, WhatsApp sandbox</div>
-            </div>
-            <div class="pd-info-item">
-              <div class="pd-info-label">Toll-free SMS</div>
-              <div class="pd-info-value pending">Pending verification (+1 855 533 0518)</div>
+              <div class="pd-info-value">&#10003; Active &mdash; SLOAN_MODE=test, WhatsApp sandbox +1 415 523 8886</div>
             </div>
             <div class="pd-info-item">
               <div class="pd-info-label">Image Pipeline</div>
-              <div class="pd-info-value">BFL flux-pro-1.1, image_logs table active</div>
+              <div class="pd-info-value">&#10003; Active &mdash; BFL flux-pro-1.1, image_logs table logging</div>
+            </div>
+            <div class="pd-info-item">
+              <div class="pd-info-label">Admin Auth</div>
+              <div class="pd-info-value">&#10003; Live &mdash; 24hr session, shared between Nate + Anna</div>
             </div>
             <div class="pd-info-item" style="grid-column:span 2">
+              <div class="pd-info-label">Toll-Free SMS</div>
+              <div class="pd-info-value pending">&#9203; Pending verification &mdash; +1 855 533 0518</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LIVE URLS -->
+        <div class="pd-section">
+          <div class="pd-section-head">
+            <div class="pd-section-title">Live URLs</div>
+            <div class="pd-section-count">6 endpoints</div>
+          </div>
+          <div class="pd-info-bar" style="grid-template-columns:repeat(2,1fr)">
+            <div class="pd-info-item">
+              <div class="pd-info-label">PWA</div>
+              <div class="pd-info-value"><a href="https://mirage-pwa.vercel.app" target="_blank" style="color:inherit;text-decoration:none">mirage-pwa.vercel.app</a></div>
+            </div>
+            <div class="pd-info-item">
               <div class="pd-info-label">Admin</div>
-              <div class="pd-info-value">Live &mdash; Andie + Anna synced, Persona Builder, Studio</div>
+              <div class="pd-info-value"><a href="https://mirage-pwa.vercel.app/admin" target="_blank" style="color:inherit;text-decoration:none">mirage-pwa.vercel.app/admin</a></div>
+            </div>
+            <div class="pd-info-item">
+              <div class="pd-info-label">Studio</div>
+              <div class="pd-info-value"><a href="https://mirage-pwa.vercel.app/studio" target="_blank" style="color:inherit;text-decoration:none">mirage-pwa.vercel.app/studio</a></div>
+            </div>
+            <div class="pd-info-item">
+              <div class="pd-info-label">Proxy</div>
+              <div class="pd-info-value"><a href="https://mirage-proxy-production.up.railway.app" target="_blank" style="color:inherit;text-decoration:none">mirage-proxy-production.up.railway.app</a></div>
+            </div>
+            <div class="pd-info-item">
+              <div class="pd-info-label">Health</div>
+              <div class="pd-info-value"><a href="https://mirage-proxy-production.up.railway.app/health" target="_blank" style="color:inherit;text-decoration:none">.../health</a></div>
+            </div>
+            <div class="pd-info-item">
+              <div class="pd-info-label">Supabase</div>
+              <div class="pd-info-value"><a href="https://supabase.com/dashboard/project/gmyenvnfuailickepvax" target="_blank" style="color:inherit;text-decoration:none">supabase.com/dashboard/project/gmyenvnfuailickepvax</a></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CREDENTIALS -->
+        <div class="pd-section">
+          <div class="pd-section-head">
+            <div class="pd-section-title">Credentials</div>
+            <div class="pd-section-count">&#9888; sensitive &mdash; do not share</div>
+          </div>
+          <div class="pd-info-bar" style="grid-template-columns:1fr">
+            <div class="pd-info-item">
+              <div class="pd-info-label">Admin logins</div>
+              <div class="pd-info-value"><code style="font-family:ui-monospace,Menlo,monospace;font-size:12px">nate / MirageAdmin2026!</code> &middot; <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px">anna / MirageAnna2026!</code></div>
+            </div>
+            <div class="pd-info-item">
+              <div class="pd-info-label">Supabase project</div>
+              <div class="pd-info-value"><code style="font-family:ui-monospace,Menlo,monospace;font-size:12px">gmyenvnfuailickepvax</code></div>
+            </div>
+            <div class="pd-info-item">
+              <div class="pd-info-label">Supabase anon key</div>
+              <div class="pd-info-value"><code style="font-family:ui-monospace,Menlo,monospace;font-size:12px;word-break:break-all">sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D</code></div>
+            </div>
+            <div class="pd-info-item">
+              <div class="pd-info-label">GitHub repos</div>
+              <div class="pd-info-value"><code style="font-family:ui-monospace,Menlo,monospace;font-size:12px">natescott12/mirage-pwa</code> &middot; <code style="font-family:ui-monospace,Menlo,monospace;font-size:12px">natescott12/mirage-proxy</code></div>
             </div>
           </div>
         </div>
@@ -2258,14 +2314,14 @@ function resetChecklist() {
 const PRIORITIES_KEY = 'mirage-priorities-v2';
 
 const PRIORITIES = [
-  { id: 'pr-sloan-builder',      title: 'Fill Sloan Persona Builder with Test Sloan',      detail: 'Wire Test Sloan\u2019s input through the Persona Builder so the production persona inherits the refined voice, knowledge, and guardrails.', default: 'wip' },
+  { id: 'pr-sloan-builder',      title: 'Fill Sloan Persona Builder with Test Sloan',      detail: 'Wire Test Sloan\u2019s input through the Persona Builder so the production persona inherits refined voice, knowledge, and guardrails.', default: 'wip' },
   { id: 'pr-andie-phase2',       title: 'Andie Phase 2 — write access to Persona Builder', detail: 'Let Andie update Icon personas directly from the chat \u2014 capture the diff, review, and commit.', default: 'todo' },
-  { id: 'pr-subscriber-profile', title: 'Subscriber Profile Builder',                      detail: 'Capture name, city, age, interests at signup. Injected into every Icon system prompt. "The more Sloan knows about you, the better she gets."', default: 'todo' },
+  { id: 'pr-subscriber-profile', title: 'Subscriber Profile Builder',                      detail: 'Capture name, city, age, interests at signup. Injected into every Icon system prompt.', default: 'todo' },
   { id: 'pr-guardrails',         title: 'Guardrail framework',                             detail: 'Content moderation, hard stops, escalation policy, age verification. The ethical spine of the product.', default: 'todo' },
-  { id: 'pr-lora',               title: 'LoRA face consistency',                           detail: 'Wire Replicate inference path so Icon faces stay consistent across all image generations.', default: 'todo' },
-  { id: 'pr-figma-screens',      title: 'PWA Figma screens',                               detail: 'Build Landing, World Intro, Features, Free Preview screens from Figma designs.', default: 'todo' },
-  { id: 'pr-supabase-pwa',       title: 'Supabase PWA backend (Anna)',                     detail: 'Wire real Supabase client into the PWA mock adapter. Anna is leading this.', default: 'todo' },
-  { id: 'pr-segpay',             title: 'Segpay payment integration',                      detail: 'Wire payment processing. 12% processing fee. Gate content behind subscription tiers.', default: 'todo' },
+  { id: 'pr-lora',               title: 'LoRA face consistency',                           detail: 'Wire Replicate inference so Icon faces stay consistent across all image generations.', default: 'todo' },
+  { id: 'pr-figma-screens',      title: 'PWA Figma screens',                               detail: 'Build Landing, World Intro, Features, Free Preview from Figma designs.', default: 'todo' },
+  { id: 'pr-supabase-pwa',       title: 'Supabase PWA backend (Anna)',                     detail: 'Wire real Supabase client into the PWA mock adapter.', default: 'todo' },
+  { id: 'pr-segpay',             title: 'Segpay payment integration',                      detail: 'Wire payment processing. 12% fee. Gate content behind subscription tiers.', default: 'todo' },
 ];
 
 const STATUS_CYCLE = ['todo', 'wip', 'done'];
