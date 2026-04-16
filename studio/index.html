@@ -14,16 +14,28 @@
   var KEY = 'mirage-admin-auth';
   var TTL = 24 * 60 * 60 * 1000;
   var valid = false;
+  var validUser = null;
   try {
     var raw = localStorage.getItem(KEY);
     if (raw) {
       var p = JSON.parse(raw);
-      if (p && typeof p.at === 'number' && (Date.now() - p.at) <= TTL) valid = true;
-      else localStorage.removeItem(KEY);
+      if (p && typeof p.at === 'number' && (Date.now() - p.at) <= TTL) {
+        valid = true;
+        validUser = p.user || null;
+      } else {
+        localStorage.removeItem(KEY);
+      }
     }
   } catch (_) { valid = false; }
-  if (!valid) window.location.replace('/admin');
+  if (!valid) { window.location.replace('/admin'); return; }
+  // Backfill the plain-string user key if the admin session predates the mirror.
+  try {
+    if (validUser && !localStorage.getItem('mirage-admin-user')) {
+      localStorage.setItem('mirage-admin-user', validUser);
+    }
+  } catch (_) {}
 })();
+console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(localStorage.getItem('mirage-admin-user')));
 </script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 <style>
@@ -1545,6 +1557,7 @@ function loadCharIntoBuilder() {
   renderAllChips();
   updateCharPreview();
   updateCharSummary();
+  if (typeof applyStudioIconLock === 'function') applyStudioIconLock();
 }
 
 function updateChar(field, val) {
@@ -1581,7 +1594,58 @@ function selectChip(group, val, el) {
   refreshPrompt();
 }
 
+// ── Icon lock (Studio) ─────────────────────────────────────────────────
+// Mirrors the admin Persona Builder lock: users who aren't 'nate' can't
+// edit PROTECTED_ICONS. Currently just Sloan; expand as Vera/Aria lock.
+const STUDIO_PROTECTED_ICONS = ['Sloan'];
+function studioCurrentUser() {
+  try {
+    var u = localStorage.getItem('mirage-admin-user');
+    if (u) return u;
+    var raw = localStorage.getItem('mirage-admin-auth');
+    if (raw) { var p = JSON.parse(raw); if (p && p.user) return p.user; }
+  } catch (_) {}
+  return null;
+}
+function studioCanEdit(iconName) {
+  var user = studioCurrentUser();
+  if (user === 'nate') return true;
+  return STUDIO_PROTECTED_ICONS.indexOf(iconName) === -1;
+}
+function applyStudioIconLock() {
+  var name = (window.selectedIcon && window.selectedIcon.name) || '';
+  var editable = studioCanEdit(name);
+  var protectedIcon = STUDIO_PROTECTED_ICONS.indexOf(name) !== -1;
+  console.log('[studio-lock] icon:', name, '| user:', studioCurrentUser(), '| editable:', editable);
+
+  var btn = document.querySelector('.char-save-btn');
+  if (btn) {
+    btn.disabled = !editable;
+    btn.style.opacity = editable ? '' : '0.45';
+    btn.style.cursor = editable ? '' : 'not-allowed';
+    btn.title = editable ? '' : 'Locked \u2014 contact Nate to edit';
+  }
+
+  var notice = document.getElementById('studio-lock-notice');
+  if (protectedIcon && !editable) {
+    if (!notice) {
+      notice = document.createElement('div');
+      notice.id = 'studio-lock-notice';
+      notice.style.cssText = 'display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(192,152,80,0.1);border:1px solid rgba(192,152,80,0.32);border-radius:2px;color:#c09850;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;margin:8px 0';
+      notice.innerHTML = '<span style="font-size:12px" aria-hidden="true">&#128274;</span><span>Locked &mdash; contact Nate to edit</span>';
+      if (btn && btn.parentNode) btn.parentNode.insertBefore(notice, btn);
+    }
+    notice.style.display = 'flex';
+  } else if (notice) {
+    notice.style.display = 'none';
+  }
+}
+
 function saveCharacter() {
+  if (!studioCanEdit(selectedIcon && selectedIcon.name)) {
+    notify('Locked \u2014 contact Nate to edit ' + (selectedIcon ? selectedIcon.name : 'this icon'));
+    return;
+  }
   saveChar(selectedIcon.id, currentChar);
   notify(selectedIcon.name+" character profile saved");
   // Sync full currentChar to Supabase for cross-machine access
@@ -1851,7 +1915,7 @@ $("lightbox").addEventListener("click",function(e){if(e.target===this)closeLight
 function notify(msg,type="success") { const el=$("notification");if(!el)return;el.textContent=msg;el.className=type;el.style.display="block";clearTimeout(el._t);el._t=setTimeout(()=>{el.style.display="none";},3500); }
 function updateQueueCount() { const c=queue.length;setText("queue-count",c);setText("queue-sub",`${c} ${c===1?"drop":"drops"} scheduled`); }
 function updateLibCount() { const c=getTotalCount();setText("lib-total",c);setText("lib-subtitle",`${c} total images · saved automatically per icon`); }
-function selectIcon(id) { selectedIcon=ICONS_DATA.find(i=>i.id===id); window.selectedIcon=selectedIcon; if(selectedIcon && typeof loadPersonaIntoStudio==='function') loadPersonaIntoStudio(selectedIcon.id);renderIconList();renderIconCard();renderSceneTabs();renderParams();refreshPrompt();loadCharIntoBuilder();loadMoodboardForIcon();if(typeof loadPersonaForIcon==="function")loadPersonaForIcon();if(typeof loadWardrobeForIcon==="function")loadWardrobeForIcon();if(typeof resetVoicePreview==="function")resetVoicePreview(); }
+function selectIcon(id) { selectedIcon=ICONS_DATA.find(i=>i.id===id); window.selectedIcon=selectedIcon; if(selectedIcon && typeof loadPersonaIntoStudio==='function') loadPersonaIntoStudio(selectedIcon.id);renderIconList();renderIconCard();renderSceneTabs();renderParams();refreshPrompt();loadCharIntoBuilder();loadMoodboardForIcon();if(typeof loadPersonaForIcon==="function")loadPersonaForIcon();if(typeof loadWardrobeForIcon==="function")loadWardrobeForIcon();if(typeof resetVoicePreview==="function")resetVoicePreview();if(typeof applyStudioIconLock==="function")applyStudioIconLock(); }
 
 
 async function fetchPersonaFromSupabase(iconName) {
