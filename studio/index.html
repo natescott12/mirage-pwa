@@ -5,6 +5,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mirage · Icon Studio</title>
+<script>
+// Auth gate — redirect to /admin if no valid mirage-admin-auth session.
+// Runs before any Studio UI renders so unauthenticated visitors never see
+// the interface. Token shape must match what admin/index.html writes:
+//   { user: string|null, at: number }   with 24h TTL.
+(function mirageStudioAuthGate() {
+  var KEY = 'mirage-admin-auth';
+  var TTL = 24 * 60 * 60 * 1000;
+  var valid = false;
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (raw) {
+      var p = JSON.parse(raw);
+      if (p && typeof p.at === 'number' && (Date.now() - p.at) <= TTL) valid = true;
+      else localStorage.removeItem(KEY);
+    }
+  } catch (_) { valid = false; }
+  if (!valid) window.location.replace('/admin');
+})();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 <style>
   :root {

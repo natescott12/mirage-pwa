@@ -1047,6 +1047,48 @@ function initSupabase() {
 }
 
 // ── AUTH ─────────────────────────────────────────────────────────────────────
+// ── SHARED AUTH (localStorage) ──
+// Both admin and studio honor the same key so a login in admin unlocks
+// the studio gate automatically. Token is JSON { user, at } with a 24h
+// TTL so stale sessions eventually require a fresh password.
+const MIRAGE_AUTH_KEY = 'mirage-admin-auth';
+const MIRAGE_AUTH_TTL_MS = 24 * 60 * 60 * 1000;
+
+function mirageGetAuth() {
+  try {
+    const raw = localStorage.getItem(MIRAGE_AUTH_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed.at !== 'number') return null;
+    if (Date.now() - parsed.at > MIRAGE_AUTH_TTL_MS) {
+      localStorage.removeItem(MIRAGE_AUTH_KEY);
+      return null;
+    }
+    return parsed;
+  } catch (_) { return null; }
+}
+function mirageSetAuth(user) {
+  try { localStorage.setItem(MIRAGE_AUTH_KEY, JSON.stringify({ user: user || null, at: Date.now() })); }
+  catch (_) {}
+}
+function mirageClearAuth() {
+  try { localStorage.removeItem(MIRAGE_AUTH_KEY); } catch (_) {}
+}
+
+// Everything doLogin does after the password check passes. Also called
+// directly on page load when a valid localStorage token is found.
+function hydrateAuthenticatedApp(user) {
+  currentUser = user;
+  document.getElementById('topbar-user').textContent = user;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+  initSupabase();
+  loadDashboard();
+  loadIcons();
+  if (typeof initAndie === 'function') initAndie();
+  applyPaneHash();
+}
+
 function doLogin() {
   const user = document.getElementById('login-user').value.trim().toLowerCase();
   const pass = document.getElementById('login-pass').value;
@@ -1057,19 +1099,8 @@ function doLogin() {
     return;
   }
 
-  currentUser = user;
-  document.getElementById('topbar-user').textContent = user;
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').classList.add('visible');
-  initSupabase();
-  loadDashboard();
-  loadIcons();
-  // Andie is the landing pane — seed her opening line so the chat is
-  // already there when they see it.
-  if (typeof initAndie === 'function') initAndie();
-  // Deep-link: honor a #pane hash so cross-nav from Icon Studio
-  // (e.g., /admin#personas) lands on the requested pane.
-  applyPaneHash();
+  mirageSetAuth(user);
+  hydrateAuthenticatedApp(user);
 }
 
 function applyPaneHash() {
@@ -1089,12 +1120,23 @@ document.getElementById('login-pass').addEventListener('keydown', e => {
 });
 
 function doLogout() {
+  mirageClearAuth();
   currentUser = null;
   document.getElementById('app').classList.remove('visible');
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('login-pass').value = '';
   document.getElementById('login-error').textContent = '';
 }
+
+// Auto-restore: if a valid session exists in localStorage, skip the login
+// screen and hydrate directly. Fresh reloads land exactly where the user
+// left off (including deep-link hash).
+(function restoreAdminSession() {
+  const auth = mirageGetAuth();
+  if (!auth) return;
+  const user = auth.user && ADMIN_USERS[auth.user] ? auth.user : Object.keys(ADMIN_USERS)[0];
+  hydrateAuthenticatedApp(user);
+})();
 
 // ── NAVIGATION ───────────────────────────────────────────────────────────────
 function showPane(id) {
