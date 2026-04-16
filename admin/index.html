@@ -1246,9 +1246,31 @@ function getMockIcons() {
 }
 
 async function loadPersonasFromJSON() {
+  // Canonical source is /icons-data.json — extracted from the Studio's
+  // ICONS_DATA array so admin and Studio always show the same 100 Icons
+  // in the same order. Fall back to /personas.json for legacy behavior
+  // only if the canonical file isn't reachable.
   try {
-    const r = await fetch('/personas.json');
-    const data = await r.json();
+    const r = await fetch('/icons-data.json');
+    if (r.ok) {
+      const data = await r.json();
+      window.__personas = data.map((p, i) => ({
+        id: p.id != null ? String(p.id) : String(i + 1),
+        name: p.name,
+        archetype: p.archetype || '',
+        persona_data: p,
+        status: 'partial'
+      }));
+      return window.__personas;
+    }
+    console.warn('icons-data.json fetch non-ok', r.status);
+  } catch(e) {
+    console.warn('icons-data.json fetch failed:', e.message);
+  }
+  // Legacy fallback — older seed file
+  try {
+    const r2 = await fetch('/personas.json');
+    const data = await r2.json();
     window.__personas = data.map((p, i) => ({
       id: p.id || String(i + 1),
       name: p.name,
@@ -1258,7 +1280,7 @@ async function loadPersonasFromJSON() {
     }));
     return window.__personas;
   } catch(e) {
-    console.warn('Could not load personas.json:', e.message);
+    console.warn('Could not load personas fallback:', e.message);
     return [];
   }
 }

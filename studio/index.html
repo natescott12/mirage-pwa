@@ -999,6 +999,10 @@ const setVal = (id, v) => { const e=$(id); if(e) e.value=v; };
 const setHTML = (id, v) => { const e=$(id); if(e) e.innerHTML=v; };
 
 // ── DATA ──────────────────────────────────────────────────────────────────────
+// ── Canonical Icon roster. This inline definition is still used for sync
+// access throughout the Studio, but admin/Persona Builder reads the same
+// list from /icons-data.json (generated from this block). If you edit any
+// entry here, regenerate icons-data.json so the admin stays in sync.
 const ICONS_DATA = [
   {id:1,name:"Sloan",archetype:"The Downtown Intellectual",vibe:"Reads Sontag, smokes on fire escapes, owns one leather jacket she's had for 10 years",aesthetic:"Cool grey tones, overcast window light, angular",setting:"Lower East Side apartment, bookshelf walls, black coffee",style:"minimal, understated, never overdressed",energy:"Direct stare, never smiling, thinks before she speaks",hair:"Dark, grown-out bob",color:"#8a8a9a"},
   {id:2,name:"Vera",archetype:"The Unapologetic Bold",vibe:"Knows exactly what she wants and isn't shy about it",aesthetic:"Warm golden hour, bathroom mirror energy, high contrast",setting:"LA apartment, ring light glow, unmade bed",style:"Crop top, high waist, gold hoops, thick liner",energy:"Confrontational stare, owns every room",hair:"Long, dark, slightly tousled",color:"#c4763a"},
