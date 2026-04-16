@@ -737,6 +737,41 @@ tbody tr:hover td { background: var(--bg); }
           </div>
         </div>
 
+        <!-- SLOAN AS CREATIVE DIRECTOR — 5-phase roadmap -->
+        <div class="pd-section">
+          <div class="pd-section-head">
+            <div class="pd-section-title">Sloan as Creative Director</div>
+            <div class="pd-section-count">The goal: she generates &rarr; Nate reviews &rarr; approved &rarr; implemented.</div>
+          </div>
+          <div class="pd-info-bar" style="grid-template-columns:repeat(5,1fr)">
+            <div class="pd-info-item">
+              <div class="pd-info-label">Phase 1</div>
+              <div class="pd-info-value">Text Advisor</div>
+              <div style="margin-top:8px"><span class="pd-badge done">Active</span></div>
+            </div>
+            <div class="pd-info-item">
+              <div class="pd-info-label">Phase 2</div>
+              <div class="pd-info-value">Image Agent</div>
+              <div style="margin-top:8px"><span class="pd-badge wip">In Progress</span></div>
+            </div>
+            <div class="pd-info-item">
+              <div class="pd-info-label">Phase 3</div>
+              <div class="pd-info-value">UX/UI Partner</div>
+              <div style="margin-top:8px"><span class="pd-badge todo">To Do</span></div>
+            </div>
+            <div class="pd-info-item">
+              <div class="pd-info-label">Phase 4</div>
+              <div class="pd-info-value">Figma Agent</div>
+              <div style="margin-top:8px"><span class="pd-badge todo">To Do</span></div>
+            </div>
+            <div class="pd-info-item">
+              <div class="pd-info-label">Phase 5</div>
+              <div class="pd-info-value">Full Creative Director</div>
+              <div style="margin-top:8px"><span class="pd-badge todo">To Do</span></div>
+            </div>
+          </div>
+        </div>
+
         <!-- LIVE URLS -->
         <div class="pd-section">
           <div class="pd-section-head">
@@ -2219,6 +2254,34 @@ const CHECKLIST_SECTIONS = [
     { id:'pend4', text:'Andie Phase 4 \u2014 automated monitoring and alerts', tag:'infra' },
     { id:'pend5', text:'Subscriber Profile Builder \u2014 name, city, interests captured at signup', tag:'infra' },
     { id:'pend6', text:'Image logs admin viewer page', tag:'infra' },
+  ]},
+  { title: 'Sloan CD \u2014 Phase 1 (Text Advisor, Active)', doneByDefault: true, items: [
+    { id:'scd1-1', text:'Test Sloan deployed with full self-awareness and job description', tag:'content' },
+    { id:'scd1-2', text:'Evaluates conversations, images, flags guardrails', tag:'content' },
+    { id:'scd1-3', text:'Testing commands wired \u2014 describe yourself, evaluate last response, etc', tag:'content' },
+  ]},
+  { title: 'Sloan CD \u2014 Phase 2 (Image Agent, In Progress)', items: [
+    { id:'scd2-1', text:'Images triggering reliably on request', tag:'infra' },
+    { id:'scd2-2', text:'LoRA inference wired \u2014 consistent face across all generations', tag:'infra' },
+    { id:'scd2-3', text:'Scene descriptions match conversation context every time', tag:'infra' },
+    { id:'scd2-4', text:'Image lock reliable \u2014 no more stuck locks', tag:'infra' },
+  ]},
+  { title: 'Sloan CD \u2014 Phase 3 (UX/UI Thinking Partner, To Do)', items: [
+    { id:'scd3-1', text:'Sloan reviews PWA screens and gives creative director feedback', tag:'content' },
+    { id:'scd3-2', text:'Flags off-brand decisions', tag:'content' },
+    { id:'scd3-3', text:'Reviews Figma designs against brand strategy', tag:'design' },
+  ]},
+  { title: 'Sloan CD \u2014 Phase 4 (Figma Agent, To Do)', items: [
+    { id:'scd4-1', text:'Figma MCP wired in', tag:'infra' },
+    { id:'scd4-2', text:'Can suggest and execute changes directly in Figma', tag:'design' },
+  ]},
+  { title: 'Sloan CD \u2014 Phase 5 (Full Creative Director, To Do)', items: [
+    { id:'scd5-1', text:'Site design proposals \u2014 Nate reviews and approves', tag:'design' },
+    { id:'scd5-2', text:'Brand identity evolution \u2014 flags drift, proposes refinements', tag:'design' },
+    { id:'scd5-3', text:'Marketing concepts \u2014 fully formed, ready to pressure test', tag:'content' },
+    { id:'scd5-4', text:'Icon development \u2014 designs Vera and Aria from the inside', tag:'content' },
+    { id:'scd5-5', text:'Content direction \u2014 defines what each Icon\u2019s dispatches look like', tag:'content' },
+    { id:'scd5-6', text:'Quality control \u2014 nothing ships without her evaluation', tag:'content' },
   ]},
   { title: 'Future', items: [
     { id:'fut1', text:'Build Vera and Aria Icons using Sloan as template', tag:'content' },
