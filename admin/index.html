@@ -648,7 +648,7 @@ tbody tr:hover td { background: var(--bg); }
         <!-- HEADLINE STATS -->
         <div class="stats-grid" style="margin-bottom:40px">
           <div class="stat-card">
-            <div class="stat-value">20</div>
+            <div class="stat-value">25+</div>
             <div class="stat-label">Files Built</div>
           </div>
           <div class="stat-card">
@@ -669,7 +669,7 @@ tbody tr:hover td { background: var(--bg); }
         <div class="pd-section">
           <div class="pd-section-head">
             <div class="pd-section-title">Infrastructure</div>
-            <div class="pd-section-count">8 services</div>
+            <div class="pd-section-count">9 services</div>
           </div>
           <div class="pd-info-bar">
             <div class="pd-info-item">
@@ -678,7 +678,7 @@ tbody tr:hover td { background: var(--bg); }
             </div>
             <div class="pd-info-item">
               <div class="pd-info-label">Proxy · Railway</div>
-              <div class="pd-info-value">mirage-proxy-production.up.railway.app &#10003; v3.3.0</div>
+              <div class="pd-info-value">mirage-proxy-production.up.railway.app &#10003; v3.5.0</div>
             </div>
             <div class="pd-info-item">
               <div class="pd-info-label">GitHub · proxy</div>
@@ -703,6 +703,40 @@ tbody tr:hover td { background: var(--bg); }
             <div class="pd-info-item">
               <div class="pd-info-label">Twilio · Toll-free</div>
               <div class="pd-info-value pending">+1 855 533 0518 — Pending</div>
+            </div>
+            <div class="pd-info-item">
+              <div class="pd-info-label">SLOAN_MODE</div>
+              <div class="pd-info-value">test &#10003; Active</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PLATFORM STATUS -->
+        <div class="pd-section">
+          <div class="pd-section-head">
+            <div class="pd-section-title">Platform</div>
+            <div class="pd-section-count">5 surfaces</div>
+          </div>
+          <div class="pd-info-bar" style="grid-template-columns:repeat(2,1fr)">
+            <div class="pd-info-item">
+              <div class="pd-info-label">Andie</div>
+              <div class="pd-info-value">Live &mdash; Mirage Operations Director, synced across devices</div>
+            </div>
+            <div class="pd-info-item">
+              <div class="pd-info-label">Test Sloan</div>
+              <div class="pd-info-value">Active &mdash; SLOAN_MODE=test, WhatsApp sandbox</div>
+            </div>
+            <div class="pd-info-item">
+              <div class="pd-info-label">Toll-free SMS</div>
+              <div class="pd-info-value pending">Pending verification (+1 855 533 0518)</div>
+            </div>
+            <div class="pd-info-item">
+              <div class="pd-info-label">Image Pipeline</div>
+              <div class="pd-info-value">BFL flux-pro-1.1, image_logs table active</div>
+            </div>
+            <div class="pd-info-item" style="grid-column:span 2">
+              <div class="pd-info-label">Admin</div>
+              <div class="pd-info-value">Live &mdash; Andie + Anna synced, Persona Builder, Studio</div>
             </div>
           </div>
         </div>
@@ -2224,14 +2258,14 @@ function resetChecklist() {
 const PRIORITIES_KEY = 'mirage-priorities-v2';
 
 const PRIORITIES = [
-  { id: 'pr-sloan-builder',   title: 'Fill Sloan Persona Builder with Test Sloan', detail: 'Wire Test Sloan\u2019s input through the Persona Builder so the production persona inherits the refined voice, knowledge, and guardrails.', default: 'wip' },
-  { id: 'pr-andie-phase2',    title: 'Andie Phase 2 — write access to Persona Builder', detail: 'Let Andie update Icon personas directly from the chat — capture the diff, review, and commit.', default: 'todo' },
-  { id: 'pr-subscriber-profile', title: 'Subscriber Profile Builder', detail: 'Capture name, city, and interests at signup so every Icon has a real profile to personalize against.', default: 'todo' },
-  { id: 'pr-guardrails',      title: 'Guardrail framework',           detail: 'Content moderation, hard stops, escalation policy, age verification for Sloan and every Icon.', default: 'todo' },
-  { id: 'pr-lora',            title: 'LoRA face consistency',         detail: 'Wire Replicate inference path so Icon faces stay consistent across generations.',  default: 'todo' },
-  { id: 'pr-figma-screens',   title: 'PWA Figma screens',             detail: 'Landing \u2192 World Intro \u2192 World Features \u2192 Free Preview. Figma nodes 12-79 / 12-105 / 12-137 / 12-175.', default: 'todo' },
-  { id: 'pr-supabase-pwa',    title: 'Supabase PWA backend (Anna)',   detail: 'Anna \u2014 wire auth, subscriptions, and content fetch from gmyenvnfuailickepvax.',    default: 'todo' },
-  { id: 'pr-segpay',          title: 'Segpay integration',            detail: 'Wire payment flow into signup. 12% processing \u2014 biggest cost.',                    default: 'todo' },
+  { id: 'pr-sloan-builder',      title: 'Fill Sloan Persona Builder with Test Sloan',      detail: 'Wire Test Sloan\u2019s input through the Persona Builder so the production persona inherits the refined voice, knowledge, and guardrails.', default: 'wip' },
+  { id: 'pr-andie-phase2',       title: 'Andie Phase 2 — write access to Persona Builder', detail: 'Let Andie update Icon personas directly from the chat \u2014 capture the diff, review, and commit.', default: 'todo' },
+  { id: 'pr-subscriber-profile', title: 'Subscriber Profile Builder',                      detail: 'Capture name, city, age, interests at signup. Injected into every Icon system prompt. "The more Sloan knows about you, the better she gets."', default: 'todo' },
+  { id: 'pr-guardrails',         title: 'Guardrail framework',                             detail: 'Content moderation, hard stops, escalation policy, age verification. The ethical spine of the product.', default: 'todo' },
+  { id: 'pr-lora',               title: 'LoRA face consistency',                           detail: 'Wire Replicate inference path so Icon faces stay consistent across all image generations.', default: 'todo' },
+  { id: 'pr-figma-screens',      title: 'PWA Figma screens',                               detail: 'Build Landing, World Intro, Features, Free Preview screens from Figma designs.', default: 'todo' },
+  { id: 'pr-supabase-pwa',       title: 'Supabase PWA backend (Anna)',                     detail: 'Wire real Supabase client into the PWA mock adapter. Anna is leading this.', default: 'todo' },
+  { id: 'pr-segpay',             title: 'Segpay payment integration',                      detail: 'Wire payment processing. 12% processing fee. Gate content behind subscription tiers.', default: 'todo' },
 ];
 
 const STATUS_CYCLE = ['todo', 'wip', 'done'];
