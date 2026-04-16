@@ -450,8 +450,8 @@ tbody tr:hover td { background: var(--bg); }
       <div class="sidebar-item" onclick="showPane('content')">
         <span class="icon">▣</span> Content Library
       </div>
-      <div class="sidebar-section">Sloan</div>
-      <div class="sidebar-item" onclick="showPane('sloanlog')">
+      <div class="sidebar-section" id="nav-section-sloan">Sloan</div>
+      <div class="sidebar-item" id="nav-item-sloanlog" onclick="showPane('sloanlog')">
         <span class="icon">✎</span> Sloan Learning Log
       </div>
       <div class="sidebar-section">Platform</div>
@@ -1462,8 +1462,20 @@ function hydrateAuthenticatedApp(user) {
   initSupabase();
   loadDashboard();
   loadIcons();
+  applyUserVisibility(user);
   if (typeof initAndie === 'function') initAndie();
   applyPaneHash();
+}
+
+// Hide user-scoped surfaces. Anna has no visibility into anything Sloan —
+// the SLOAN nav section and the Sloan Learning Log entry get hidden entirely
+// so she can't even see the option.
+function applyUserVisibility(user) {
+  const hideForAnna = user === 'anna';
+  const section = document.getElementById('nav-section-sloan');
+  const item = document.getElementById('nav-item-sloanlog');
+  if (section) section.style.display = hideForAnna ? 'none' : '';
+  if (item) item.style.display = hideForAnna ? 'none' : '';
 }
 
 function doLogin() {
@@ -1521,6 +1533,14 @@ function showPane(id) {
   // Icon Studio is no longer embedded — it navigates away to the Vercel
   // deployment via the sidebar item's onclick. Guard against legacy calls.
   if (id === 'studio') { window.location.href = 'https://mirage-pwa.vercel.app/studio'; return; }
+
+  // Anna has no access to Sloan-scoped panes even via deep links.
+  if (id === 'sloanlog') {
+    try {
+      const user = (typeof getAdminUser === 'function') ? getAdminUser() : null;
+      if (user === 'anna') { console.warn('[nav] sloanlog blocked for', user); id = 'dashboard'; }
+    } catch (_) {}
+  }
 
   // Stop Andie polling whenever we leave her pane. The id === 'andie'
   // branch below restarts it if that's where we're heading.
@@ -1860,6 +1880,19 @@ function populateIconSelect(personasObj) {
 }
 
 function openPersona(iconId) {
+  // Anna is fully walled off from Sloan. Block navigation here — never
+  // navigate to the persona form, never flip the view, just notify and
+  // stay on the list so she doesn't even see Sloan's page structure.
+  try {
+    const user = (typeof getAdminUser === 'function') ? getAdminUser() : null;
+    if (user === 'anna' && typeof allIcons !== 'undefined') {
+      const icon = allIcons.find(i => String(i.id) === String(iconId));
+      if (icon && icon.name === 'Sloan') {
+        if (typeof toast === 'function') toast('Sloan is managed by Nate.');
+        return;
+      }
+    }
+  } catch (_) {}
   showPane('personas');
   // Find this icon's persona index. String() on both sides because
   // allIcons stores string ids ("1"..."100") and callers might pass

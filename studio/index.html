@@ -1083,7 +1083,21 @@ const CHIPS = {
 };
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
-let selectedIcon = ICONS_DATA[0]; window.selectedIcon = selectedIcon;
+// Default to Sloan (ICONS_DATA[0]) for everyone except Anna, who is walled
+// off from Sloan entirely. studioCurrentUser() reads mirage-admin-user with
+// a JSON-blob fallback so this works even when the plain key hasn't been
+// backfilled yet on first visit after the change.
+let __defaultIcon = ICONS_DATA[0];
+try {
+  var __u = (typeof studioCurrentUser === 'function')
+    ? studioCurrentUser()
+    : (localStorage.getItem('mirage-admin-user') || (function(){ try { var p = JSON.parse(localStorage.getItem('mirage-admin-auth') || 'null'); return p && p.user || null; } catch(_) { return null; } })());
+  if (__u === 'anna' && __defaultIcon && __defaultIcon.name === 'Sloan') {
+    var __fb = ICONS_DATA.find(function(i){ return i.name !== 'Sloan'; });
+    if (__fb) { console.warn('[studio-lock] boot default flipped from Sloan ->', __fb.name, 'for anna'); __defaultIcon = __fb; }
+  }
+} catch (_) {}
+let selectedIcon = __defaultIcon; window.selectedIcon = selectedIcon;
 let scene = "morning", scenePrompt = SCENES.morning[0];
 let params = {grain:PARAMS.grain[0],color:PARAMS.color[0],light:PARAMS.light[0]};
 let generating = false, generatedContent = [], queue = [];
@@ -1929,7 +1943,34 @@ $("lightbox").addEventListener("click",function(e){if(e.target===this)closeLight
 function notify(msg,type="success") { const el=$("notification");if(!el)return;el.textContent=msg;el.className=type;el.style.display="block";clearTimeout(el._t);el._t=setTimeout(()=>{el.style.display="none";},3500); }
 function updateQueueCount() { const c=queue.length;setText("queue-count",c);setText("queue-sub",`${c} ${c===1?"drop":"drops"} scheduled`); }
 function updateLibCount() { const c=getTotalCount();setText("lib-total",c);setText("lib-subtitle",`${c} total images · saved automatically per icon`); }
-function selectIcon(id) { selectedIcon=ICONS_DATA.find(i=>i.id===id); window.selectedIcon=selectedIcon; if(selectedIcon && typeof loadPersonaIntoStudio==='function') loadPersonaIntoStudio(selectedIcon.id);renderIconList();renderIconCard();renderSceneTabs();renderParams();refreshPrompt();loadCharIntoBuilder();loadMoodboardForIcon();if(typeof loadPersonaForIcon==="function")loadPersonaForIcon();if(typeof loadWardrobeForIcon==="function")loadWardrobeForIcon();if(typeof resetVoicePreview==="function")resetVoicePreview();if(typeof applyStudioIconLock==="function")applyStudioIconLock(); }
+function selectIcon(id) {
+  var target = ICONS_DATA.find(function(i){ return i.id === id; });
+  // Anna is walled off from Sloan. If she clicks Sloan (or deep-lands on
+  // her), bounce to the next available icon so Sloan's Studio page never
+  // loads under her session.
+  if (target && target.name === 'Sloan' && studioCurrentUser() === 'anna') {
+    var fallback = ICONS_DATA.find(function(i){ return i.name !== 'Sloan'; });
+    if (fallback) {
+      console.warn('[studio-lock] redirecting anna away from Sloan ->', fallback.name);
+      target = fallback;
+      id = fallback.id;
+    }
+  }
+  selectedIcon = target;
+  window.selectedIcon = selectedIcon;
+  if(selectedIcon && typeof loadPersonaIntoStudio==='function') loadPersonaIntoStudio(selectedIcon.id);
+  renderIconList();
+  renderIconCard();
+  renderSceneTabs();
+  renderParams();
+  refreshPrompt();
+  loadCharIntoBuilder();
+  loadMoodboardForIcon();
+  if(typeof loadPersonaForIcon==="function") loadPersonaForIcon();
+  if(typeof loadWardrobeForIcon==="function") loadWardrobeForIcon();
+  if(typeof resetVoicePreview==="function") resetVoicePreview();
+  if(typeof applyStudioIconLock==="function") applyStudioIconLock();
+}
 
 
 async function fetchPersonaFromSupabase(iconName) {
