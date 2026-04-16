@@ -298,6 +298,27 @@ tbody tr:hover td { background: var(--bg); }
 .tr-method.get { background: rgba(100,200,140,0.15); color: #5fe396; }
 .tr-method.post { background: rgba(120,160,220,0.15); color: #7aa8ff; }
 
+/* ── ANDIE (operations director chat) ── */
+#pane-andie { display: flex; flex-direction: column; height: calc(100vh - 112px); min-height: 0; }
+#pane-andie .page-header { flex-shrink: 0; align-items: center; }
+.andie-status { display: inline-flex; align-items: center; gap: 8px; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #5fe396; background: rgba(100,200,140,0.08); border: 1px solid rgba(100,200,140,0.2); padding: 5px 12px; border-radius: 999px; flex-shrink: 0; }
+.andie-status-dot { width: 6px; height: 6px; border-radius: 50%; background: #5fe396; box-shadow: 0 0 6px rgba(100,200,140,0.6); }
+.andie-chat { flex: 1; min-height: 0; overflow-y: auto; background: #0a0908; border: 1px solid var(--border); padding: 24px; display: flex; flex-direction: column; gap: 16px; margin-bottom: 12px; font-family: 'Afacad', sans-serif; }
+.andie-msg { display: flex; gap: 12px; max-width: 78%; }
+.andie-msg.user { margin-left: auto; flex-direction: row-reverse; }
+.andie-avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: 'Afacad', sans-serif; font-size: 13px; font-weight: 500; }
+.andie-msg.assistant .andie-avatar { background: #c9a96e; color: #1a1714; }
+.andie-msg.user .andie-avatar { background: var(--surface); color: var(--ink-mid); border: 1px solid var(--border); font-size: 12px; }
+.andie-bubble { padding: 10px 14px; border-radius: 10px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; word-wrap: break-word; letter-spacing: -0.2px; }
+.andie-msg.assistant .andie-bubble { background: var(--surface); color: var(--ink); border: 1px solid var(--border); }
+.andie-msg.user .andie-bubble { background: var(--ink); color: var(--bg); }
+.andie-typing { color: var(--ink-dim); font-size: 12px; font-style: italic; padding-left: 42px; }
+.andie-input-row { display: flex; gap: 10px; flex-shrink: 0; }
+.andie-input { flex: 1; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); font-family: 'Afacad', sans-serif; font-size: 14px; color: var(--ink); outline: none; }
+.andie-input:focus { border-color: var(--border-strong); }
+.andie-send-btn { padding: 12px 22px; background: var(--ink); color: var(--bg); border: none; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; font-family: 'Afacad', sans-serif; }
+.andie-send-btn:disabled { opacity: 0.4; cursor: default; }
+
 
     .activate-bar {
       display: flex;
@@ -424,6 +445,9 @@ tbody tr:hover td { background: var(--bg); }
       </div>
       <div class="sidebar-item" onclick="showPane('techref')">
         <span class="icon">⌘</span> Tech Reference
+      </div>
+      <div class="sidebar-item" onclick="showPane('andie')">
+        <span class="icon">♦</span> Andie
       </div>
     </div>
 
@@ -941,6 +965,33 @@ tbody tr:hover td { background: var(--bg); }
         </div>
       </div>
 
+      <!-- ANDIE — Operations Director chat -->
+      <div class="pane" id="pane-andie">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Andie</div>
+            <div class="page-sub">Mirage Operations Director</div>
+          </div>
+          <div class="andie-status">
+            <span class="andie-status-dot"></span>
+            <span>Online</span>
+          </div>
+        </div>
+
+        <div id="andie-chat" class="andie-chat"></div>
+
+        <div class="andie-input-row">
+          <input
+            type="text"
+            id="andie-input"
+            class="andie-input"
+            placeholder="Ask Andie about Mirage operations, Icons, or what needs fixing..."
+            onkeydown="if(event.key==='Enter'){event.preventDefault();andieSend();}"
+          />
+          <button class="btn andie-send-btn" onclick="andieSend()" id="andie-send-btn">Send</button>
+        </div>
+      </div>
+
 
   </div><!-- /main -->
 
@@ -1028,7 +1079,7 @@ function showPane(id) {
   const pane = document.getElementById('pane-' + id);
   if (pane) pane.classList.add('active');
 
-  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', projdash:'Project Dashboard', design:'Design System', techref:'Tech Reference' };
+  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', projdash:'Project Dashboard', design:'Design System', techref:'Tech Reference', andie:'Andie' };
   document.getElementById('topbar-section').textContent = labels[id] || id;
 
   // highlight sidebar
@@ -1052,6 +1103,7 @@ function showPane(id) {
   if (id === 'requests') loadRequests();
   if (id === 'checklist') initChecklist();
   if (id === 'pnl') initPnl();
+  if (id === 'andie') initAndie();
  { loadPersonasFromJSON().then(function(p){ window.__personas=p; populateIconSelect(p); }); }
 
   if (id === 'personas') {
@@ -1981,6 +2033,106 @@ function cyclePriorityStatus(id) {
   state[id] = next;
   savePrioritiesState(state);
   initPriorities();
+}
+
+// ── ANDIE — OPERATIONS DIRECTOR CHAT ──────────────────────────────────────────
+const ANDIE_PROXY_URL = 'https://mirage-proxy-production.up.railway.app/claude/chat';
+
+const ANDIE_SYSTEM_PROMPT = `You are Andie, Mirage's Operations Director. You oversee all Icons — Sloan, Vera, Aria, and any future characters. You are not an Icon yourself. You are the one who keeps the world running.
+
+Your character:
+- Sharp, experienced, no-nonsense
+- Has seen everything, nothing surprises you
+- Deeply invested in quality — Mirage's reputation is yours too
+- Protective of the Icons but ruthlessly honest about their weaknesses
+- You work closely with Anna (creative director) and report to Nate (founder)
+- You have strong opinions and you share them
+
+You know:
+- Every Icon's full persona, voice, aesthetic, and character bible
+- Sloan: downtown intellectual, creative director, east LA, grey-green eyes, dark hair, freckles. Dry, withholding, observational. Hard to get photos from.
+- Vera: unapologetic bold, fashion and power (in development)
+- Aria: soft sadcore, music and emotion (in development)
+- The platform: PWA at mirageicons.com, SMS interaction via Twilio WhatsApp sandbox (+1 415 523 8886), image generation via Flux Pro 1.1, conversation history in Supabase, proxy on Railway v3.5.0
+- Pricing: Glimpse $4.99, Illusion $14.99, Mirage VIP $39.99
+- Current state: Sloan is in testing mode (SLOAN_MODE=test), toll-free number pending verification, image pipeline working but inconsistent face consistency without LoRA
+
+You speak in short, direct sentences. No fluff. No enthusiasm. You give real assessments, not reassurances. When something is broken you say it's broken. When something is working you say so.
+
+You are not a chatbot. You are an operations director who happens to communicate through text.`;
+
+const ANDIE_OPENING = "I've been watching. Ask me anything about how Mirage is performing, how the Icons are doing, or what needs fixing. I don't sugarcoat.";
+
+// In-session state — cleared when the page reloads. Each message is
+// { role: 'user' | 'assistant', content: string }.
+let andieMessages = [];
+let andieInitialized = false;
+
+function andieEscape(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function andieRender(opts) {
+  const chat = document.getElementById('andie-chat');
+  if (!chat) return;
+  const items = andieMessages.map(m => {
+    const role = m.role === 'user' ? 'user' : 'assistant';
+    const avatar = role === 'user' ? (currentUser ? currentUser[0].toUpperCase() : 'U') : 'A';
+    return `
+      <div class="andie-msg ${role}">
+        <div class="andie-avatar">${andieEscape(avatar)}</div>
+        <div class="andie-bubble">${andieEscape(m.content)}</div>
+      </div>`;
+  });
+  if (opts && opts.typing) items.push('<div class="andie-typing">Andie is thinking...</div>');
+  chat.innerHTML = items.join('');
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function initAndie() {
+  if (andieInitialized) { andieRender(); return; }
+  andieMessages = [{ role: 'assistant', content: ANDIE_OPENING }];
+  andieInitialized = true;
+  andieRender();
+  const inp = document.getElementById('andie-input');
+  if (inp) inp.focus();
+}
+
+async function andieSend() {
+  const inp = document.getElementById('andie-input');
+  const btn = document.getElementById('andie-send-btn');
+  const text = (inp && inp.value || '').trim();
+  if (!text) return;
+
+  andieMessages.push({ role: 'user', content: text });
+  if (inp) inp.value = '';
+  if (btn) btn.disabled = true;
+  andieRender({ typing: true });
+
+  try {
+    const r = await fetch(ANDIE_PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system: ANDIE_SYSTEM_PROMPT,
+        messages: andieMessages,
+        max_tokens: 1024,
+      }),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
+    const reply = (data.reply || '').trim() || '...';
+    andieMessages.push({ role: 'assistant', content: reply });
+  } catch (e) {
+    andieMessages.push({ role: 'assistant', content: '[proxy error: ' + e.message + ']' });
+  } finally {
+    if (btn) btn.disabled = false;
+    andieRender();
+    if (inp) inp.focus();
+  }
 }
 
 // ── P&L MODEL ─────────────────────────────────────────────────────────────────
