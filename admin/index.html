@@ -2940,17 +2940,21 @@ async function andieLoadPlatformData() {
     // andie_memory (accumulated cross-session summaries, most recent first)
     fetch(SUPABASE_URL + '/rest/v1/andie_memory?select=summary,created_at&order=created_at.desc&limit=20', { headers: sbHeaders })
       .then(r => r.ok ? r.json() : []),
+    // sloan_memory (Sloan Learning Log — everything Mirage Sloan has flagged)
+    fetch(SUPABASE_URL + '/rest/v1/sloan_memory?select=category,summary,created_at&order=created_at.desc', { headers: sbHeaders })
+      .then(r => r.ok ? r.json() : []),
   ]);
 
   const pick = (t) => (t.status === 'fulfilled' && Array.isArray(t.value)) ? t.value : [];
-  const personas = pick(tasks[0]);
-  const briefs   = pick(tasks[1]);
-  const logs     = pick(tasks[2]);
-  const chats    = pick(tasks[3]);
-  const memory   = pick(tasks[4]);
+  const personas    = pick(tasks[0]);
+  const briefs      = pick(tasks[1]);
+  const logs        = pick(tasks[2]);
+  const chats       = pick(tasks[3]);
+  const memory      = pick(tasks[4]);
+  const sloanMemory = pick(tasks[5]);
 
   tasks.forEach((t, i) => {
-    const name = ['personas.json', 'icon_briefs', 'image_logs', 'icon_chats', 'andie_memory'][i];
+    const name = ['personas.json', 'icon_briefs', 'image_logs', 'icon_chats', 'andie_memory', 'sloan_memory'][i];
     if (t.status === 'rejected') console.warn('[andie] ' + name + ' fetch failed:', t.reason && t.reason.message);
   });
 
@@ -3005,14 +3009,38 @@ async function andieLoadPlatformData() {
     .map(s => '- ' + s)
     .join('\n');
 
+  // --- SLOAN LEARNING LOG: every insight Mirage Sloan has flagged. Formatted
+  //     "[category] summary (date)" per spec so Andie can reference entries
+  //     by category when Nate or Anna asks what she thinks about a specific
+  //     area (image pipeline, guardrails, voice, etc.).
+  const sloanLogLines = sloanMemory.map(m => {
+    const cat = (m.category || 'general').trim();
+    const sum = (m.summary || '').replace(/\s+/g, ' ').trim();
+    if (!sum) return null;
+    const d = m.created_at ? new Date(m.created_at) : null;
+    const dateStr = d && !isNaN(d.getTime())
+      ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      : '';
+    return dateStr ? `[${cat}] ${sum} (${dateStr})` : `[${cat}] ${sum}`;
+  }).filter(Boolean).join('\n');
+
+  // Cross-icon applicability framing — included whenever the learning log
+  // has anything in it so Andie knows to actively map Sloan's findings onto
+  // Vera and Aria when asked.
+  const veraAriaApplicability = 'When reviewing Sloan\'s learnings, consider which insights apply to Vera and Aria. Vera is bold, warm, more social \u2014 she leans in where Sloan holds back. Aria is soft, sadcore, open \u2014 she shares freely where Sloan is selective. When Nate asks, flag which of Sloan\'s learnings should be applied to other Icons and how they\'d need to adapt.';
+
   // Assemble the augmented prompt. Memory goes at the very top so Andie
   // sees her accumulated context before the current-state data blocks.
   const sections = [];
-  if (memoryLines)  sections.push(`ANDIE'S ACCUMULATED KNOWLEDGE (from previous sessions):\n${memoryLines}`);
-  if (rosterLines)  sections.push(`ICON ROSTER (${personas.length} Icons):\n${rosterLines}`);
-  if (briefLines)   sections.push(`ACTIVE BRIEFS:\n${briefLines}`);
-  if (logLines)     sections.push(`RECENT IMAGE LOGS (last ${logs.length}):\n${logLines}`);
-  if (activity)     sections.push(`CONVERSATION ACTIVITY:\n${activity}`);
+  if (memoryLines)    sections.push(`ANDIE'S ACCUMULATED KNOWLEDGE (from previous sessions):\n${memoryLines}`);
+  if (rosterLines)    sections.push(`ICON ROSTER (${personas.length} Icons):\n${rosterLines}`);
+  if (briefLines)     sections.push(`ACTIVE BRIEFS:\n${briefLines}`);
+  if (logLines)       sections.push(`RECENT IMAGE LOGS (last ${logs.length}):\n${logLines}`);
+  if (activity)       sections.push(`CONVERSATION ACTIVITY:\n${activity}`);
+  if (sloanLogLines) {
+    sections.push(`# SLOAN LEARNING LOG\n${sloanLogLines}`);
+    sections.push(`# APPLYING SLOAN'S LEARNINGS TO OTHER ICONS\n${veraAriaApplicability}`);
+  }
 
   const augmented = sections.length
     ? sections.join('\n\n') + '\n\n' + ANDIE_SYSTEM_PROMPT
@@ -3021,7 +3049,8 @@ async function andieLoadPlatformData() {
   andieSystemPromptAugmented = augmented;
   console.log('[andie] platform data loaded — personas:', personas.length,
     'briefs:', briefs.length, 'logs:', logs.length, 'chats:', chats.length,
-    'memory:', memory.length, 'promptChars:', augmented.length);
+    'memory:', memory.length, 'sloanMemory:', sloanMemory.length,
+    'promptChars:', augmented.length);
 }
 
 function _andieRelTime(date) {
