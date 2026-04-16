@@ -376,7 +376,8 @@ tbody tr:hover td { background: var(--bg); }
     .icon-card-archetype { font-size: 11px; color: var(--ink-mid); margin-top: 2px; }
     .icon-card-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .persona-pct { font-size: 11px; color: var(--ink-dim); }
-    #icon-grid { display: flex; flex-direction: column; gap: 8px; }
+    #icon-grid,
+    #persona-list-grid { display: flex; flex-direction: column; gap: 8px; }
 
   </style>
 </head>
@@ -2268,7 +2269,34 @@ let andieInitialized = false;
 // Built once per session by andieLoadPlatformData; sendMessage reads this.
 let andieSystemPromptAugmented = null;
 
-function andieLoadHistory() {
+// Andie chat history — primary store is Supabase so Nate and Anna share
+// the same thread across devices. localStorage mirrors every write as a
+// fast fallback (instant render on reload, survives Supabase outages).
+// Row lives in icon_chats under icon_id = 'andie-chat-history'.
+const ANDIE_CHAT_ROW_ID = 'andie-chat-history';
+
+async function andieLoadHistory() {
+  // Prefer Supabase — authoritative shared source of truth.
+  try {
+    const r = await fetch(
+      SUPABASE_URL + '/rest/v1/icon_chats?icon_id=eq.' + encodeURIComponent(ANDIE_CHAT_ROW_ID) + '&select=messages',
+      { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY } }
+    );
+    if (r.ok) {
+      const rows = await r.json();
+      if (Array.isArray(rows) && rows[0] && Array.isArray(rows[0].messages)) {
+        // Keep localStorage in sync so a later offline reload still has the thread.
+        try { localStorage.setItem(ANDIE_HISTORY_KEY, JSON.stringify(rows[0].messages)); } catch (_) {}
+        return rows[0].messages;
+      }
+      // No row yet — fall through to localStorage so first-time reloads still
+      // land on whatever was cached locally.
+    } else {
+      console.warn('[andie] sb history load non-ok', r.status);
+    }
+  } catch (e) {
+    console.warn('[andie] sb history load failed, falling back to localStorage:', e.message);
+  }
   try {
     const raw = localStorage.getItem(ANDIE_HISTORY_KEY);
     if (!raw) return null;
@@ -2278,8 +2306,23 @@ function andieLoadHistory() {
 }
 
 function andieSaveHistory() {
+  // Write-through: localStorage is instant so UI reads never block; the
+  // Supabase upsert runs in the background and any failure is logged
+  // without disturbing the chat flow.
   try { localStorage.setItem(ANDIE_HISTORY_KEY, JSON.stringify(andieMessages)); }
-  catch (e) { console.warn('[andie] save history failed:', e.message); }
+  catch (e) { console.warn('[andie] local save failed:', e.message); }
+  fetch(SUPABASE_URL + '/rest/v1/icon_chats?on_conflict=icon_id', {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates',
+    },
+    body: JSON.stringify({ icon_id: ANDIE_CHAT_ROW_ID, messages: andieMessages }),
+  }).then(r => {
+    if (!r.ok) r.text().then(t => console.warn('[andie] sb history save failed', r.status, t.slice(0, 200)));
+  }).catch(e => console.warn('[andie] sb history save exception:', e.message));
 }
 
 // Phase 1 data integration — Andie reads the full platform state before her
@@ -2422,12 +2465,13 @@ async function initAndie() {
     console.warn('[andie] platform data load threw:', e.message);
   }
 
-  // Restore prior conversation from localStorage if present; otherwise seed
-  // with the opening line so every first-time user gets her intro.
-  const saved = andieLoadHistory();
+  // Restore prior conversation — Supabase first (shared across devices),
+  // localStorage as a fallback. If neither returns anything, seed with
+  // the opening line so a first-time user still gets her intro.
+  const saved = await andieLoadHistory();
   if (saved) {
     andieMessages = saved;
-    console.log('[andie] restored', saved.length, 'messages from localStorage');
+    console.log('[andie] restored', saved.length, 'messages');
   } else {
     andieMessages = [{ role: 'assistant', content: ANDIE_OPENING }];
     andieSaveHistory();
@@ -2439,6 +2483,12 @@ async function initAndie() {
 
 function andieClearHistory() {
   try { localStorage.removeItem(ANDIE_HISTORY_KEY); } catch (_) {}
+  // Drop the shared row too so Anna/Nate both land on a fresh opening.
+  // Fire-and-forget — if the delete fails the next save will overwrite.
+  fetch(SUPABASE_URL + '/rest/v1/icon_chats?icon_id=eq.' + encodeURIComponent(ANDIE_CHAT_ROW_ID), {
+    method: 'DELETE',
+    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+  }).catch(e => console.warn('[andie] sb history delete failed:', e.message));
   andieMessages = [{ role: 'assistant', content: ANDIE_OPENING }];
   andieSaveHistory();
   andieRender();
