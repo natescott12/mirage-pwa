@@ -17,6 +17,8 @@
   body { font-family: 'DM Sans', sans-serif; font-weight: 300; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
   .serif { font-family: 'Afacad', sans-serif; font-style: normal; }
   .eyebrow { font-size: 10px; letter-spacing: 0.22em; color: var(--muted); text-transform: uppercase; }
+  .studio-crossnav { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); text-decoration: none; font-family: 'DM Sans', sans-serif; transition: color 0.15s; }
+  .studio-crossnav:hover { color: var(--text); }
   ::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 2px; }
   @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
@@ -445,10 +447,13 @@
 
 <!-- HEADER -->
 <div id="header">
-  <div style="display:flex;align-items:center;gap:20px">
+  <div style="display:flex;align-items:center;gap:16px">
     <div class="logo">Mirage</div>
     <div style="width:1px;height:18px;background:var(--border-md)"></div>
     <div class="eyebrow">Icon Studio</div>
+    <div style="width:1px;height:14px;background:var(--border-md);opacity:.6;margin-left:4px"></div>
+    <a href="/admin" class="studio-crossnav" title="Back to admin">← Admin</a>
+    <a href="/admin#personas" class="studio-crossnav" title="Open Persona Builder in admin">Persona Builder</a>
   </div>
   <div style="display:flex;align-items:center;gap:20px">
     <div id="proxy-status" style="font-size:10px;letter-spacing:0.1em;cursor:pointer" onclick="checkProxy()">Checking...</div>

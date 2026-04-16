@@ -299,7 +299,11 @@ tbody tr:hover td { background: var(--bg); }
 .tr-method.post { background: rgba(120,160,220,0.15); color: #7aa8ff; }
 
 /* ── ANDIE (operations director chat) ── */
-#pane-andie { display: flex; flex-direction: column; height: calc(100vh - 112px); min-height: 0; }
+/* Scope to .active — naked #pane-andie beats .pane { display: none } on
+   specificity and was leaving Andie's chat visible under every other
+   pane. With .active attached the rule only fires when Andie is the
+   selected tab. */
+#pane-andie.active { display: flex; flex-direction: column; height: calc(100vh - 112px); min-height: 0; }
 #pane-andie .page-header { flex-shrink: 0; align-items: center; }
 .andie-header-actions { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .andie-clear-btn { background: transparent; border: 1px solid var(--border); color: var(--ink-dim); font-family: 'Afacad', sans-serif; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; padding: 5px 12px; border-radius: 999px; cursor: pointer; transition: color 0.15s, border-color 0.15s; }
@@ -1063,7 +1067,22 @@ function doLogin() {
   // Andie is the landing pane — seed her opening line so the chat is
   // already there when they see it.
   if (typeof initAndie === 'function') initAndie();
+  // Deep-link: honor a #pane hash so cross-nav from Icon Studio
+  // (e.g., /admin#personas) lands on the requested pane.
+  applyPaneHash();
 }
+
+function applyPaneHash() {
+  const hash = (window.location.hash || '').replace(/^#/, '').trim();
+  if (!hash) return;
+  if (document.getElementById('pane-' + hash) && typeof showPane === 'function') {
+    showPane(hash);
+  }
+}
+
+// If the user navigates via a hash change (Studio link, browser back/forward,
+// or a new tab with a hash) the admin responds even without a full reload.
+window.addEventListener('hashchange', applyPaneHash);
 
 document.getElementById('login-pass').addEventListener('keydown', e => {
   if (e.key === 'Enter') doLogin();
