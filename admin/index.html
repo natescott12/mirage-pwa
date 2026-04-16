@@ -1751,34 +1751,42 @@ function openPersona(iconId) {
   _trySelect(10);
 }
 
+function getAdminUser() {
+  try {
+    const u = localStorage.getItem('mirage-admin-user');
+    if (u) return u;
+    const raw = localStorage.getItem('mirage-admin-auth');
+    if (raw) { const p = JSON.parse(raw); if (p && p.user) return p.user; }
+  } catch (_) {}
+  return null;
+}
+
 function applyPersonaLockState(iconName) {
   const banner = document.getElementById('persona-lock-banner');
   const editor = document.getElementById('persona-editor');
   const saveBtn = document.getElementById('save-btn');
-
-  // Read user from localStorage directly so this works even if the
-  // currentUser variable hasn't been hydrated yet (e.g., the Persona
-  // Builder rendered from a deep link before auth finished).
-  let user = null;
-  try { user = localStorage.getItem('mirage-admin-user'); } catch (_) {}
-  if (!user) {
-    try {
-      const raw = localStorage.getItem('mirage-admin-auth');
-      if (raw) { const p = JSON.parse(raw); if (p && p.user) user = p.user; }
-    } catch (_) {}
-  }
+  const user = getAdminUser();
 
   const protectedIcon = isIconProtected(iconName);
   const editable = canEditIcon(iconName, user);
   console.log('[persona-lock] icon:', iconName, '| user:', user, '| protected:', protectedIcon, '| editable:', editable);
 
   if (banner) {
-    if (protectedIcon) {
+    const text = document.getElementById('persona-lock-banner-text');
+    if (protectedIcon && !editable) {
+      // Hard lock — red banner, explicit message.
       banner.style.display = 'flex';
-      const text = document.getElementById('persona-lock-banner-text');
-      if (text) text.innerHTML = editable
-        ? 'Protected Icon &mdash; changes affect a live character.'
-        : 'Locked &mdash; contact Nate to edit.';
+      banner.style.background = 'rgba(208,64,53,0.08)';
+      banner.style.borderColor = 'rgba(208,64,53,0.35)';
+      banner.style.color = '#d04035';
+      if (text) text.innerHTML = '\uD83D\uDD12 ' + iconName + ' is locked. Only Nate can edit this Icon.';
+    } else if (protectedIcon) {
+      // Soft note — gold banner for Nate on a protected icon.
+      banner.style.display = 'flex';
+      banner.style.background = 'rgba(201,169,110,0.08)';
+      banner.style.borderColor = 'rgba(201,169,110,0.28)';
+      banner.style.color = '#c9a96e';
+      if (text) text.innerHTML = 'Protected Icon &mdash; changes affect a live character.';
     } else {
       banner.style.display = 'none';
     }
@@ -1787,8 +1795,7 @@ function applyPersonaLockState(iconName) {
   if (editor) {
     const controls = editor.querySelectorAll('input, textarea, select, button');
     controls.forEach(function(el) {
-      // Don't disable the Save button via this loop — we hide it below.
-      if (el.id === 'save-btn') return;
+      if (el.id === 'save-btn') return; // handled below
       if (editable) {
         el.disabled = false;
         el.removeAttribute('readonly');
@@ -1797,15 +1804,28 @@ function applyPersonaLockState(iconName) {
       } else {
         el.disabled = true;
         if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.setAttribute('readonly', 'readonly');
-        // Button `disabled` is enough, but some inline handlers bypass it
-        // via classList/click — belt + suspenders:
         el.style.pointerEvents = 'none';
-        el.style.opacity = '0.55';
+        el.style.opacity = '0.35';
       }
     });
   }
 
-  if (saveBtn) saveBtn.style.display = editable ? '' : 'none';
+  if (saveBtn) {
+    if (editable) {
+      saveBtn.style.display = '';
+      saveBtn.style.pointerEvents = '';
+      saveBtn.style.opacity = '';
+      saveBtn.disabled = false;
+    } else {
+      // Leave visible but totally inert so there's no mystery "where did
+      // the button go" moment — pointer-events:none + opacity:0.3 +
+      // disabled attribute together.
+      saveBtn.style.display = '';
+      saveBtn.style.pointerEvents = 'none';
+      saveBtn.style.opacity = '0.3';
+      saveBtn.disabled = true;
+    }
+  }
 }
 
 function loadPersonaForIcon(idx) {
@@ -2168,19 +2188,14 @@ function collectPersonaData() {
 }
 
 function savePersona() {
-  // Server-side-style guard: even if the Save button escapes the lock UI,
-  // reject the save when the current user can't edit the current icon.
+  // Hard guard — silently bail for any user who can't edit this icon.
+  // This fires even if something re-enables the Save button at runtime.
   try {
     const iconName = (document.getElementById('f-name') || {}).value;
-    let user = localStorage.getItem('mirage-admin-user');
-    if (!user) {
-      const raw = localStorage.getItem('mirage-admin-auth');
-      if (raw) { const p = JSON.parse(raw); if (p && p.user) user = p.user; }
-    }
+    const user = (typeof getAdminUser === 'function') ? getAdminUser() : null;
     if (iconName && !canEditIcon(iconName, user)) {
       console.warn('[savePersona] blocked — user', user, 'cannot edit', iconName);
-      if (typeof showToast === 'function') showToast('Locked \u2014 contact Nate to edit.');
-      return;
+      return; // silent no-op — do NOT overwrite Supabase, local state, or anything else
     }
   } catch (_) {}
 

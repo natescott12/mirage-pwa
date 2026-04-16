@@ -1620,10 +1620,19 @@ function applyStudioIconLock() {
 
   var btn = document.querySelector('.char-save-btn');
   if (btn) {
-    btn.disabled = !editable;
-    btn.style.opacity = editable ? '' : '0.45';
-    btn.style.cursor = editable ? '' : 'not-allowed';
-    btn.title = editable ? '' : 'Locked \u2014 contact Nate to edit';
+    if (editable) {
+      btn.disabled = false;
+      btn.style.pointerEvents = '';
+      btn.style.opacity = '';
+      btn.style.cursor = '';
+      btn.title = '';
+    } else {
+      btn.disabled = true;
+      btn.style.pointerEvents = 'none';
+      btn.style.opacity = '0.3';
+      btn.style.cursor = 'not-allowed';
+      btn.title = 'Locked \u2014 contact Nate to edit';
+    }
   }
 
   var notice = document.getElementById('studio-lock-notice');
@@ -1631,20 +1640,25 @@ function applyStudioIconLock() {
     if (!notice) {
       notice = document.createElement('div');
       notice.id = 'studio-lock-notice';
-      notice.style.cssText = 'display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(192,152,80,0.1);border:1px solid rgba(192,152,80,0.32);border-radius:2px;color:#c09850;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;margin:8px 0';
-      notice.innerHTML = '<span style="font-size:12px" aria-hidden="true">&#128274;</span><span>Locked &mdash; contact Nate to edit</span>';
+      notice.style.cssText = 'display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(208,64,53,0.08);border:1px solid rgba(208,64,53,0.35);border-radius:2px;color:#d04035;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;margin:8px 0';
+      notice.innerHTML = '<span style="font-size:13px" aria-hidden="true">&#128274;</span><span>' + name + ' is locked. Only Nate can edit this Icon.</span>';
       if (btn && btn.parentNode) btn.parentNode.insertBefore(notice, btn);
+    } else {
+      notice.innerHTML = '<span style="font-size:13px" aria-hidden="true">&#128274;</span><span>' + name + ' is locked. Only Nate can edit this Icon.</span>';
+      notice.style.display = 'flex';
     }
-    notice.style.display = 'flex';
   } else if (notice) {
     notice.style.display = 'none';
   }
 }
 
+// Alias so any caller using the descriptive name hits the same hard guard.
+function saveCharacterProfile() { return saveCharacter(); }
+
 function saveCharacter() {
   if (!studioCanEdit(selectedIcon && selectedIcon.name)) {
-    notify('Locked \u2014 contact Nate to edit ' + (selectedIcon ? selectedIcon.name : 'this icon'));
-    return;
+    console.warn('[studio-lock] saveCharacter blocked for', selectedIcon && selectedIcon.name);
+    return; // silent no-op — do NOT write to localStorage, Supabase, or anything else
   }
   saveChar(selectedIcon.id, currentChar);
   notify(selectedIcon.name+" character profile saved");
