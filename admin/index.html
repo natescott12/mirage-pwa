@@ -1881,6 +1881,18 @@ const CHECKLIST_SECTIONS = [
     { id:'sms-w2', text:'Contextual image quality dialing in', tag:'infra' },
     { id:'sms-w3', text:'Twilio webhook signature validation', tag:'infra' },
   ]},
+  { title: 'Andie — Done', doneByDefault: true, items: [
+    { id:'andie-d1', text:'Andie (Operations Director) built and live in admin', tag:'infra' },
+    { id:'andie-d2', text:'Andie moved to top of admin nav', tag:'infra' },
+    { id:'andie-d3', text:'Andie loaded with full platform data — 101 Icons, briefs, image logs, conversation activity', tag:'infra' },
+    { id:'andie-d4', text:'Andie wired to Claude API via proxy', tag:'infra' },
+  ]},
+  { title: 'Sloan Test Mode — Done', doneByDefault: true, items: [
+    { id:'stm-d1', text:'sloan-test.js persona created with full meta-awareness', tag:'infra' },
+    { id:'stm-d2', text:'SLOAN_MODE=test env var added to Railway', tag:'infra' },
+    { id:'stm-d3', text:'Image generation lock rebuilt with timestamp-based expiry (never gets permanently stuck)', tag:'infra' },
+    { id:'stm-d4', text:'v3.5.0 deployed — sloanMode reported in /health', tag:'infra' },
+  ]},
   { title: 'Studio — Done', doneByDefault: true, items: [
     { id:'st-d1', text:'Converse tab chat UI', tag:'infra' },
     { id:'st-d2', text:'Brief extraction to Generate tab', tag:'infra' },
@@ -1904,6 +1916,14 @@ const CHECKLIST_SECTIONS = [
     { id:'sloan1', text:'Fill Persona Builder profile', tag:'content' },
     { id:'sloan2', text:'Build design/career knowledge documents Layer 2', tag:'content' },
     { id:'sloan3', text:'Guardrail framework (moderation, hard stops, escalation, age verification)', tag:'urgent' },
+  ]},
+  { title: 'Pending', items: [
+    { id:'pend1', text:'Fill Sloan Persona Builder with Test Sloan\u2019s input', tag:'content' },
+    { id:'pend2', text:'Andie Phase 2 \u2014 write access to Persona Builder', tag:'infra' },
+    { id:'pend3', text:'Andie Phase 3 \u2014 side panel in Persona Builder for Anna', tag:'infra' },
+    { id:'pend4', text:'Andie Phase 4 \u2014 automated monitoring and alerts', tag:'infra' },
+    { id:'pend5', text:'Subscriber Profile Builder \u2014 name, city, interests captured at signup', tag:'infra' },
+    { id:'pend6', text:'Image logs admin viewer page', tag:'infra' },
   ]},
   { title: 'Future', items: [
     { id:'fut1', text:'Build Vera and Aria Icons using Sloan as template', tag:'content' },
@@ -1986,17 +2006,19 @@ function resetChecklist() {
 }
 
 // ── PROJECT DASHBOARD — NEXT PRIORITIES ─────────────────────────────────────
-const PRIORITIES_KEY = 'mirage-priorities-v1';
+// Bumped to v2 so the refresh of priority titles doesn't collide with any
+// state the user had clicked into the old v1 list.
+const PRIORITIES_KEY = 'mirage-priorities-v2';
 
 const PRIORITIES = [
-  { id: 'pr1', title: 'Sloan SMS agent — dialing in', detail: 'Live on WhatsApp sandbox. Tuning persona voice, image quality, and [SEND_IMAGE] flow.', default: 'wip' },
-  { id: 'pr2', title: 'Toll-free SMS verification',   detail: '+1 855 533 0518 submitted. Awaiting Twilio approval — 1 to 3 days.',                 default: 'wip' },
-  { id: 'pr3', title: 'Guardrail framework',           detail: 'Content moderation, hard stops, escalation policy, age verification for Sloan and every Icon.', default: 'todo' },
-  { id: 'pr4', title: 'LoRA face consistency',         detail: 'Wire Replicate inference path so Icon faces stay consistent across generations.',  default: 'todo' },
-  { id: 'pr5', title: 'PWA Figma screens',             detail: 'Landing → World Intro → World Features → Free Preview. Figma nodes 12-79 / 12-105 / 12-137 / 12-175.', default: 'todo' },
-  { id: 'pr6', title: 'Supabase PWA backend',          detail: 'Anna — wire auth, subscriptions, and content fetch from gmyenvnfuailickepvax.',    default: 'todo' },
-  { id: 'pr7', title: 'Segpay integration',            detail: 'Wire payment flow into signup. 12% processing — biggest cost.',                    default: 'todo' },
-  { id: 'pr8', title: 'mirageicons.com full launch',   detail: 'End-to-end flow live: marketing → age gate → signup → Icons → Sloan SMS.',         default: 'todo' },
+  { id: 'pr-sloan-builder',   title: 'Fill Sloan Persona Builder with Test Sloan', detail: 'Wire Test Sloan\u2019s input through the Persona Builder so the production persona inherits the refined voice, knowledge, and guardrails.', default: 'wip' },
+  { id: 'pr-andie-phase2',    title: 'Andie Phase 2 — write access to Persona Builder', detail: 'Let Andie update Icon personas directly from the chat — capture the diff, review, and commit.', default: 'todo' },
+  { id: 'pr-subscriber-profile', title: 'Subscriber Profile Builder', detail: 'Capture name, city, and interests at signup so every Icon has a real profile to personalize against.', default: 'todo' },
+  { id: 'pr-guardrails',      title: 'Guardrail framework',           detail: 'Content moderation, hard stops, escalation policy, age verification for Sloan and every Icon.', default: 'todo' },
+  { id: 'pr-lora',            title: 'LoRA face consistency',         detail: 'Wire Replicate inference path so Icon faces stay consistent across generations.',  default: 'todo' },
+  { id: 'pr-figma-screens',   title: 'PWA Figma screens',             detail: 'Landing \u2192 World Intro \u2192 World Features \u2192 Free Preview. Figma nodes 12-79 / 12-105 / 12-137 / 12-175.', default: 'todo' },
+  { id: 'pr-supabase-pwa',    title: 'Supabase PWA backend (Anna)',   detail: 'Anna \u2014 wire auth, subscriptions, and content fetch from gmyenvnfuailickepvax.',    default: 'todo' },
+  { id: 'pr-segpay',          title: 'Segpay integration',            detail: 'Wire payment flow into signup. 12% processing \u2014 biggest cost.',                    default: 'todo' },
 ];
 
 const STATUS_CYCLE = ['todo', 'wip', 'done'];
