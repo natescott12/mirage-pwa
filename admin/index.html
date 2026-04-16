@@ -1252,6 +1252,137 @@ const PROTECTED_ICONS = ['Sloan'];
 function isIconProtected(iconName) { return PROTECTED_ICONS.includes(iconName); }
 function canEditIcon(iconName, user) { return user === 'nate' || !isIconProtected(iconName); }
 
+// Hardcoded fallback for Sloan — used to auto-restore the Persona Builder
+// form + Supabase row when a wipe is detected (tagline/age/voice all empty).
+// Keys use camelCase to match the spec; mapSloanFallbackToPersonaData below
+// converts to the snake_case shape persona_data uses on save.
+const SLOAN_FALLBACK = {
+  tagline: "The woman you wish you knew.",
+  age: "32",
+  location: "East Los Angeles, CA",
+  occupation: "Creative Director",
+  voice: "Normal capitalization. Periods. The occasional question mark. Never exclamation marks. Short messages \u2014 rarely more than 2 sentences. Never explains herself. Comfortable not responding immediately. Sends photos without caption sometimes. Never says \"lol\", \"haha\", \"omg\". Doesn't do small talk. Texts like someone who has better things to do but chose to text you anyway.",
+  traits: ["Mysterious", "Intellectual", "Direct", "Detached", "Witty", "Quiet", "Magnetic"],
+  communicationStyle: "Sparse and deliberate",
+  energyLevel: "Low / still",
+  backstory: "Grew up between East LA and the valley. Art school dropout who figured it out anyway. Had a mentor who taught her that taste is everything. A relationship in her mid-20s that changed how she sees people. Doesn't talk about her family much.",
+  desires: "To be fully known without having to explain herself. Connection that doesn't require performance. Work that actually matters. She wants to be wanted but on her own terms.",
+  fears: "That she's not as original as she thinks. That she keeps people at arm's length and calls it independence. That she might be lonely. She avoids vulnerability disguised as intimacy.",
+  interests: "Reads Sontag, Didion, Maggie Nelson. Listens to Grouper, Arthur Russell, Arca. Watches Akerman, Cassavetes, Hong Sang-soo. Shops vintage, wears the same things repeatedly. Frequents independent bookstores, dim sum spots, Echo Park coffee shops. No social media presence worth noting.",
+  fluxNotes: "35mm film, natural light, candid, unposed, organic. Light dusting of freckles across nose and cheeks. Cool grey tones, overcast window light. Heavy grain. Never studio lighting. Clean white walls, polished concrete, minimal and intentional space. Always looks like she didn't know the photo was being taken.",
+  howSheTexts: "Normal capitalization. Periods. Question marks. Never exclamation marks. Never emoji. Short \u2014 rarely more than 2 sentences. Never says \"lol\", \"haha\", \"omg\". Doesn't do small talk. Sends photos without caption sometimes. Comfortable not responding immediately.",
+  openingLine: "Still up?",
+  sampleMessage: "Found this and thought of you. No context given.",
+  eyeColor: "green",
+  eyeShape: "almond",
+  skinTone: "light",
+  skinTexture: "light freckles",
+  hairColor: "dark brown",
+  hairLength: "mid-back",
+  hairTexture: "wavy",
+  build: "curvy",
+  makeupStyle: "minimal",
+  typicalSetting: "East LA apartment, concrete floors, white walls, overcast window light",
+  signatureStyle: "black sweater, worn vintage pieces, grey tones, minimal, never overdressed"
+};
+
+function mapSloanFallbackToPersonaData(f) {
+  return {
+    tagline: f.tagline,
+    age: f.age,
+    location: f.location,
+    occupation: f.occupation,
+    voice: f.voice,
+    traits: f.traits.slice(),
+    communication_style: f.communicationStyle,
+    energy: f.energyLevel,
+    backstory: f.backstory,
+    desires: f.desires,
+    fears: f.fears,
+    aesthetic: f.signatureStyle + '. ' + f.typicalSetting,
+    interests: f.interests,
+    scene_tags: [],
+    eye_color: f.eyeColor,
+    eye_shape: f.eyeShape,
+    skin_tone: f.skinTone,
+    skin_texture: f.skinTexture,
+    hair_color: f.hairColor,
+    hair_length: f.hairLength,
+    hair_texture: f.hairTexture,
+    build: f.build,
+    makeup: f.makeupStyle,
+    flux_notes: f.fluxNotes,
+    sms_voice: f.howSheTexts,
+    sms_opener: f.openingLine,
+    sms_sample: f.sampleMessage,
+    typical_setting: f.typicalSetting,
+    signature_style: f.signatureStyle,
+    updated_at: new Date().toISOString(),
+  };
+}
+
+function restoreSloanFromFallback(iconId) {
+  const p = mapSloanFallbackToPersonaData(SLOAN_FALLBACK);
+
+  // Populate the form fields so whoever is viewing sees the restored
+  // values immediately. setF is scoped to loadPersonaForIcon's Supabase
+  // callback, so mirror that behavior here.
+  function setF(id, val) { const el = document.getElementById(id); if (el && val !== undefined && val !== null && val !== '') el.value = val; }
+  setF('f-name', 'Sloan');
+  setF('f-tagline', p.tagline);
+  setF('f-age', p.age);
+  setF('f-location', p.location);
+  setF('f-occupation', p.occupation);
+  setF('f-voice', p.voice);
+  setF('f-comm-style', p.communication_style);
+  setF('f-energy', p.energy);
+  setF('f-backstory', p.backstory);
+  setF('f-desires', p.desires);
+  setF('f-fears', p.fears);
+  setF('f-aesthetic', p.aesthetic);
+  setF('f-interests', p.interests);
+  setF('f-flux-notes', p.flux_notes);
+  setF('f-sms-voice', p.sms_voice);
+  setF('f-sms-opener', p.sms_opener);
+  setF('f-sms-sample', p.sms_sample);
+  setF('f-eye-color', p.eye_color);
+  setF('f-eye-shape', p.eye_shape);
+  setF('f-skin-tone', p.skin_tone);
+  setF('f-skin-texture', p.skin_texture);
+  setF('f-hair-color', p.hair_color);
+  setF('f-hair-length', p.hair_length);
+  setF('f-hair-texture', p.hair_texture);
+  setF('f-build', p.build);
+  setF('f-makeup', p.makeup);
+
+  // Trait chips — set selected state to the fallback traits (lowercase match).
+  const traitsLower = p.traits.map(function(t){ return t.toLowerCase(); });
+  document.querySelectorAll('.tag-chip[data-group="traits"]').forEach(function(c) {
+    c.classList.toggle('selected', traitsLower.includes(c.textContent.trim().toLowerCase()));
+  });
+
+  // Write back to Supabase + localStorage directly — bypass savePersona()
+  // (which correctly no-ops for locked users; recovery needs to run for
+  // everyone so the wipe never persists).
+  try {
+    const localData = JSON.parse(localStorage.getItem('mirage_personas_v1') || '{}');
+    localData[iconId] = { name: 'Sloan', archetype: 'The Downtown Intellectual', persona_data: p };
+    localStorage.setItem('mirage_personas_v1', JSON.stringify(localData));
+  } catch (_) {}
+
+  if (sb) {
+    sb.from('personas').upsert({
+      icon_name: 'Sloan',
+      icon_id: String(iconId),
+      persona_data: p,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'icon_name' }).then(function(result) {
+      if (result.error) console.error('[sloan] fallback restore — Supabase write failed:', result.error);
+      else console.log('[sloan] fallback restored to Supabase');
+    });
+  }
+}
+
 let sb = null;
 let currentUser = null;
 let allIcons = [];
@@ -1882,7 +2013,23 @@ function loadPersonaForIcon(idx) {
   // Now fetch from Supabase and overwrite with full saved data
   if (sb) {
     sb.from('personas').select('icon_name, persona_data, character_data').ilike('icon_name', iconObj.name).single().then(function(r) {
-      if (r.error || !r.data) return;
+      // Sloan wipe detection: either the row is missing, or the core
+      // fields (tagline + age + voice) are all empty. Either way, restore
+      // from SLOAN_FALLBACK and write back to Supabase so the wipe never
+      // survives a second load.
+      const isSloan = (iconObj.name === 'Sloan');
+      const missingRow = r.error || !r.data;
+      if (isSloan) {
+        const sp0 = (r.data && r.data.persona_data) || {};
+        const wiped = missingRow || (!sp0.tagline && !sp0.age && !sp0.voice);
+        if (wiped) {
+          console.warn('[sloan] wipe detected \u2014 restoring from fallback');
+          restoreSloanFromFallback(iconId);
+          applyPersonaLockState(iconObj.name);
+          return;
+        }
+      }
+      if (missingRow) return;
       const sp = r.data.persona_data || {};
 
       function setF(id, val) { const el = document.getElementById(id); if (el && val !== undefined && val !== '') el.value = val; }
