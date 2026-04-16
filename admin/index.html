@@ -325,6 +325,18 @@ tbody tr:hover td { background: var(--bg); }
 .andie-input:focus { border-color: var(--border-strong); }
 .andie-send-btn { padding: 12px 22px; background: var(--ink); color: var(--bg); border: none; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; font-family: 'Afacad', sans-serif; }
 .andie-send-btn:disabled { opacity: 0.4; cursor: default; }
+/* New-conversation confirm modal */
+.andie-modal { position: fixed; inset: 0; z-index: 9000; display: flex; align-items: center; justify-content: center; }
+.andie-modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.55); }
+.andie-modal-box { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 28px 32px; max-width: 420px; width: calc(100% - 48px); box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
+.andie-modal-title { font-size: 18px; font-weight: 500; color: var(--ink); margin-bottom: 10px; letter-spacing: -0.3px; }
+.andie-modal-body { font-size: 13px; color: var(--ink-mid); line-height: 1.55; margin-bottom: 22px; }
+.andie-modal-hint { font-size: 11px; color: var(--ink-dim); font-style: italic; margin-top: -10px; margin-bottom: 18px; }
+.andie-modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.andie-modal-btn-cancel { background: transparent; border: 1px solid var(--border); color: var(--ink-mid); font-family: 'Afacad', sans-serif; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; padding: 8px 16px; cursor: pointer; transition: color 0.15s, border-color 0.15s; }
+.andie-modal-btn-cancel:hover { color: var(--ink); border-color: var(--border-strong); }
+.andie-modal-btn-confirm { background: var(--ink); color: var(--bg); border: 1px solid var(--ink); font-family: 'Afacad', sans-serif; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; padding: 8px 18px; cursor: pointer; }
+.andie-modal-btn-confirm:disabled, .andie-modal-btn-cancel:disabled { opacity: 0.4; cursor: default; }
 
 
     .activate-bar {
@@ -1005,7 +1017,7 @@ tbody tr:hover td { background: var(--bg); }
             <div class="page-sub">Mirage Operations Director</div>
           </div>
           <div class="andie-header-actions">
-            <button class="andie-clear-btn" onclick="andieClearHistory()" title="Clear conversation and start fresh">Clear</button>
+            <button class="andie-clear-btn" onclick="andieNewConversation()" title="Start a new conversation — Andie will remember key decisions from this session">New</button>
             <div class="andie-status">
               <span class="andie-status-dot"></span>
               <span>Online</span>
@@ -1024,6 +1036,21 @@ tbody tr:hover td { background: var(--bg); }
             onkeydown="if(event.key==='Enter'){event.preventDefault();andieSend();}"
           />
           <button class="btn andie-send-btn" onclick="andieSend()" id="andie-send-btn">Send</button>
+        </div>
+
+        <!-- Confirm modal for "New conversation" — shown when the user clicks
+             the New button in the header. Summarize + archive runs here. -->
+        <div id="andie-confirm-modal" class="andie-modal" style="display:none">
+          <div class="andie-modal-backdrop" onclick="andieCancelNew()"></div>
+          <div class="andie-modal-box">
+            <div class="andie-modal-title">Start a new conversation?</div>
+            <div class="andie-modal-body">Andie will remember key decisions from this session.</div>
+            <div class="andie-modal-hint" id="andie-modal-hint" style="display:none">Summarizing this session…</div>
+            <div class="andie-modal-actions">
+              <button class="andie-modal-btn-cancel" onclick="andieCancelNew()" id="andie-modal-cancel">Cancel</button>
+              <button class="andie-modal-btn-confirm" onclick="andieConfirmNew()" id="andie-modal-confirm">Confirm</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -2347,6 +2374,9 @@ async function andieLoadPlatformData() {
     // icon_chats (lightweight — enough to count + show most recent)
     fetch(SUPABASE_URL + '/rest/v1/icon_chats?select=icon_id,updated_at&order=updated_at.desc&limit=50', { headers: sbHeaders })
       .then(r => r.ok ? r.json() : []),
+    // andie_memory (accumulated cross-session summaries, most recent first)
+    fetch(SUPABASE_URL + '/rest/v1/andie_memory?select=summary,created_at&order=created_at.desc&limit=20', { headers: sbHeaders })
+      .then(r => r.ok ? r.json() : []),
   ]);
 
   const pick = (t) => (t.status === 'fulfilled' && Array.isArray(t.value)) ? t.value : [];
@@ -2354,9 +2384,10 @@ async function andieLoadPlatformData() {
   const briefs   = pick(tasks[1]);
   const logs     = pick(tasks[2]);
   const chats    = pick(tasks[3]);
+  const memory   = pick(tasks[4]);
 
   tasks.forEach((t, i) => {
-    const name = ['personas.json', 'icon_briefs', 'image_logs', 'icon_chats'][i];
+    const name = ['personas.json', 'icon_briefs', 'image_logs', 'icon_chats', 'andie_memory'][i];
     if (t.status === 'rejected') console.warn('[andie] ' + name + ' fetch failed:', t.reason && t.reason.message);
   });
 
@@ -2402,12 +2433,23 @@ async function andieLoadPlatformData() {
              + (topIds ? `- Active threads (most recent 5): ${topIds}` : '');
   }
 
-  // Assemble the augmented prompt
+  // --- ACCUMULATED KNOWLEDGE: summaries archived when the team started
+  //     a new conversation. Most recent first so the freshest context is
+  //     nearest the top of the memory block.
+  const memoryLines = memory
+    .map(m => (m.summary || '').replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .map(s => '- ' + s)
+    .join('\n');
+
+  // Assemble the augmented prompt. Memory goes at the very top so Andie
+  // sees her accumulated context before the current-state data blocks.
   const sections = [];
-  if (rosterLines) sections.push(`ICON ROSTER (${personas.length} Icons):\n${rosterLines}`);
-  if (briefLines)  sections.push(`ACTIVE BRIEFS:\n${briefLines}`);
-  if (logLines)    sections.push(`RECENT IMAGE LOGS (last ${logs.length}):\n${logLines}`);
-  if (activity)    sections.push(`CONVERSATION ACTIVITY:\n${activity}`);
+  if (memoryLines)  sections.push(`ANDIE'S ACCUMULATED KNOWLEDGE (from previous sessions):\n${memoryLines}`);
+  if (rosterLines)  sections.push(`ICON ROSTER (${personas.length} Icons):\n${rosterLines}`);
+  if (briefLines)   sections.push(`ACTIVE BRIEFS:\n${briefLines}`);
+  if (logLines)     sections.push(`RECENT IMAGE LOGS (last ${logs.length}):\n${logLines}`);
+  if (activity)     sections.push(`CONVERSATION ACTIVITY:\n${activity}`);
 
   const augmented = sections.length
     ? sections.join('\n\n') + '\n\n' + ANDIE_SYSTEM_PROMPT
@@ -2416,7 +2458,7 @@ async function andieLoadPlatformData() {
   andieSystemPromptAugmented = augmented;
   console.log('[andie] platform data loaded — personas:', personas.length,
     'briefs:', briefs.length, 'logs:', logs.length, 'chats:', chats.length,
-    'promptChars:', augmented.length);
+    'memory:', memory.length, 'promptChars:', augmented.length);
 }
 
 function _andieRelTime(date) {
@@ -2481,19 +2523,123 @@ async function initAndie() {
   if (inp) inp.focus();
 }
 
-function andieClearHistory() {
+// "New conversation" flow:
+//   click → andieNewConversation (open modal)
+//     ↓ Confirm → andieConfirmNew (summarize → save to andie_memory → clear)
+//     ↓ Cancel  → andieCancelNew (just hide modal)
+// The summarization runs through /claude/chat with a dedicated system
+// prompt so the stored bullets are tight and operations-focused. On
+// failure anywhere, the clear still runs — we don't block a user reset
+// because summarization hiccuped.
+
+function andieNewConversation() {
+  const hint = document.getElementById('andie-modal-hint');
+  if (hint) hint.style.display = 'none';
+  const cancelBtn = document.getElementById('andie-modal-cancel');
+  const confirmBtn = document.getElementById('andie-modal-confirm');
+  if (cancelBtn) cancelBtn.disabled = false;
+  if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.textContent = 'Confirm'; }
+  const modal = document.getElementById('andie-confirm-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function andieCancelNew() {
+  const modal = document.getElementById('andie-confirm-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function andieConfirmNew() {
+  const hint = document.getElementById('andie-modal-hint');
+  const cancelBtn = document.getElementById('andie-modal-cancel');
+  const confirmBtn = document.getElementById('andie-modal-confirm');
+  if (cancelBtn) cancelBtn.disabled = true;
+  if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.textContent = 'Archiving…'; }
+  if (hint) hint.style.display = 'block';
+
+  // Only bother summarizing if there's real conversation — skip when the
+  // thread is just the opening line or a single exchange.
+  if (andieMessages && andieMessages.length >= 2) {
+    try { await andieSummarizeAndArchive(andieMessages); }
+    catch (e) { console.warn('[andie] summarize/archive failed, proceeding with clear:', e.message); }
+  }
+
+  // Now actually clear.
   try { localStorage.removeItem(ANDIE_HISTORY_KEY); } catch (_) {}
-  // Drop the shared row too so Anna/Nate both land on a fresh opening.
-  // Fire-and-forget — if the delete fails the next save will overwrite.
   fetch(SUPABASE_URL + '/rest/v1/icon_chats?icon_id=eq.' + encodeURIComponent(ANDIE_CHAT_ROW_ID), {
     method: 'DELETE',
     headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
   }).catch(e => console.warn('[andie] sb history delete failed:', e.message));
   andieMessages = [{ role: 'assistant', content: ANDIE_OPENING }];
   andieSaveHistory();
+  // Refresh the augmented prompt so the newly-archived summary is loaded
+  // into the next turn's context without requiring a page reload.
+  try { await andieLoadPlatformData(); } catch (_) {}
   andieRender();
+
+  andieCancelNew();
   const inp = document.getElementById('andie-input');
   if (inp) inp.focus();
+}
+
+// Ask Claude (via the proxy) to summarize the current session for the
+// andie_memory table. Returns the summary string on success, null on
+// failure. Inserts one row into andie_memory with summary +
+// conversation_context (the raw transcript, for retrospective audit).
+async function andieSummarizeAndArchive(messages) {
+  const transcript = messages.map(m => {
+    const label = m.role === 'user' ? 'User' : 'Andie';
+    const content = typeof m.content === 'string' ? m.content
+                    : Array.isArray(m.content) ? m.content.filter(b => b && b.type === 'text').map(b => b.text).join(' ')
+                    : '';
+    return label + ': ' + content;
+  }).join('\n\n').slice(0, 12000);
+
+  const summarySystem = 'You summarize operations conversations for Andie, the Mirage Operations Director, so she can carry context forward. Return ONLY bullet points — key decisions made, Icon status changes or notes, important context worth remembering, pending action items. Max 6 bullets. No preamble, no sign-off, no hedging. Plain text. If the conversation has nothing worth remembering, return the single line: NOTHING_TO_ARCHIVE';
+
+  const summaryUserMsg = 'Summarize this conversation for future reference:\n\n' + transcript;
+
+  let summary = '';
+  try {
+    const r = await fetch('https://mirage-proxy-production.up.railway.app/claude/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system: summarySystem,
+        messages: [{ role: 'user', content: summaryUserMsg }],
+        max_tokens: 512,
+      }),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
+    summary = (data.reply || '').trim();
+  } catch (e) {
+    console.warn('[andie] summarization failed:', e.message);
+    return null;
+  }
+
+  if (!summary || /^NOTHING_TO_ARCHIVE/i.test(summary)) {
+    console.log('[andie] summarization returned nothing worth archiving');
+    return null;
+  }
+
+  // Insert into andie_memory. Fire-and-forget is fine — this is logging.
+  try {
+    const r = await fetch(SUPABASE_URL + '/rest/v1/andie_memory', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify({ summary: summary, conversation_context: transcript }),
+    });
+    if (!r.ok) console.warn('[andie] andie_memory insert failed', r.status, (await r.text()).slice(0, 200));
+    else console.log('[andie] archived summary (' + summary.length + ' chars) to andie_memory');
+  } catch (e) {
+    console.warn('[andie] andie_memory insert exception:', e.message);
+  }
+  return summary;
 }
 
 async function andieSend() {
