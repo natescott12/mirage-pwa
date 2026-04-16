@@ -2074,58 +2074,106 @@ let andieInitialized = false;
 // Built once per session by andieLoadPlatformData; sendMessage reads this.
 let andieSystemPromptAugmented = null;
 
-// Fetch personas.json + icon_briefs and fold them into Andie's system prompt.
-// Failures degrade gracefully — she still works with the base prompt alone.
+// Phase 1 data integration — Andie reads the full platform state before her
+// first message. Pulls four sources in parallel: personas.json (roster),
+// icon_briefs (active studio briefs), image_logs (last 20 image attempts),
+// icon_chats (conversation activity summary). Each fetch degrades
+// independently — a 404 or network error on one source doesn't block the
+// others. Everything folds into a prepended context block ahead of the
+// base ANDIE_SYSTEM_PROMPT.
 async function andieLoadPlatformData() {
-  let personas = [];
-  let briefs = [];
+  const sbHeaders = { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY };
 
-  try {
-    const pRes = await fetch('https://mirage-pwa.vercel.app/personas.json');
-    if (pRes.ok) personas = await pRes.json();
-    else console.warn('[andie] personas.json fetch non-ok', pRes.status);
-  } catch (e) { console.warn('[andie] personas.json fetch failed:', e.message); }
+  const tasks = await Promise.allSettled([
+    // personas.json (roster)
+    fetch('https://mirage-pwa.vercel.app/personas.json').then(r => r.ok ? r.json() : []),
+    // icon_briefs (all rows)
+    fetch(SUPABASE_URL + '/rest/v1/icon_briefs?select=*', { headers: sbHeaders })
+      .then(r => r.ok ? r.json() : []),
+    // image_logs (last 20 desc)
+    fetch(SUPABASE_URL + '/rest/v1/image_logs?select=*&order=created_at.desc&limit=20', { headers: sbHeaders })
+      .then(r => r.ok ? r.json() : []),
+    // icon_chats (lightweight — enough to count + show most recent)
+    fetch(SUPABASE_URL + '/rest/v1/icon_chats?select=icon_id,updated_at&order=updated_at.desc&limit=50', { headers: sbHeaders })
+      .then(r => r.ok ? r.json() : []),
+  ]);
 
-  try {
-    const bRes = await fetch(SUPABASE_URL + '/rest/v1/icon_briefs?select=*', {
-      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
-    });
-    if (bRes.ok) briefs = await bRes.json();
-    else console.warn('[andie] icon_briefs fetch non-ok', bRes.status);
-  } catch (e) { console.warn('[andie] icon_briefs fetch failed:', e.message); }
+  const pick = (t) => (t.status === 'fulfilled' && Array.isArray(t.value)) ? t.value : [];
+  const personas = pick(tasks[0]);
+  const briefs   = pick(tasks[1]);
+  const logs     = pick(tasks[2]);
+  const chats    = pick(tasks[3]);
 
-  // Build compact roster — one line per Icon, bio truncated to keep context tight.
-  const roster = (Array.isArray(personas) ? personas : [])
-    .map(p => {
-      const name = p.name || 'Unknown';
-      const arch = p.archetype || '—';
-      const bioRaw = p.bio || p.persona || p.vibe || '';
-      const bio = String(bioRaw).replace(/\s+/g, ' ').trim().slice(0, 110);
-      return `- ${name} (${arch})${bio ? ': ' + bio : ''}`;
-    })
-    .join('\n');
+  tasks.forEach((t, i) => {
+    const name = ['personas.json', 'icon_briefs', 'image_logs', 'icon_chats'][i];
+    if (t.status === 'rejected') console.warn('[andie] ' + name + ' fetch failed:', t.reason && t.reason.message);
+  });
 
-  // Briefs are keyed by icon_id. Only include icons that actually have one.
-  const briefLines = (Array.isArray(briefs) ? briefs : [])
+  // --- ICON ROSTER: "Name (Archetype) — bio one sentence"
+  const firstSentence = (s) => {
+    const clean = String(s || '').replace(/\s+/g, ' ').trim();
+    const m = clean.match(/^([^.!?]*[.!?])/);
+    return (m ? m[1] : clean).slice(0, 160).trim();
+  };
+  const rosterLines = personas.map(p => {
+    const name = p.name || 'Unknown';
+    const arch = p.archetype || '—';
+    const bio  = firstSentence(p.bio || p.persona || p.vibe || '');
+    return `- ${name} (${arch})${bio ? ' — ' + bio : ''}`;
+  }).join('\n');
+
+  // --- ACTIVE BRIEFS: "Icon [id]: scene=..., wardrobe=..., shot=..., light=..."
+  const briefLines = briefs
     .map(b => {
-      const parts = [b.scene, b.wardrobe, b.shot, b.light]
-        .map(s => (s || '').trim()).filter(Boolean).join(' | ');
-      if (!parts) return null;
-      return `- icon_id ${b.icon_id}: ${parts}`;
+      const kv = ['scene', 'wardrobe', 'shot', 'light']
+        .map(k => (b[k] || '').trim() ? `${k}=${(b[k] || '').replace(/\s+/g, ' ').trim()}` : null)
+        .filter(Boolean).join(', ');
+      return kv ? `- Icon ${b.icon_id}: ${kv}` : null;
     })
     .filter(Boolean)
     .join('\n');
 
-  let augmented = ANDIE_SYSTEM_PROMPT;
-  if (roster) {
-    augmented = `ICON ROSTER (${(personas || []).length} Icons):\n${roster}\n\n` + augmented;
-  }
-  if (briefLines) {
-    augmented = augmented + `\n\nCURRENT STUDIO BRIEFS:\n${briefLines}`;
+  // --- RECENT IMAGE LOGS: "from=... scene=... status=... url=..."
+  const logLines = logs.map(l => {
+    const scene = (l.scene_description || '').replace(/\s+/g, ' ').trim().slice(0, 120);
+    const url   = (l.image_url || '').slice(0, 80);
+    return `- from=${l.from_number || '—'} scene=${scene || '—'} status=${l.delivery_status || '—'} url=${url || '—'}`;
+  }).join('\n');
+
+  // --- CONVERSATION ACTIVITY
+  let activity = '';
+  if (chats.length) {
+    const mostRecent = chats[0] && chats[0].updated_at;
+    const recentAgo = mostRecent ? _andieRelTime(new Date(mostRecent)) : 'unknown';
+    const topIds = chats.slice(0, 5).map(c => c.icon_id).filter(Boolean).join(', ');
+    activity = `- ${chats.length} conversation thread${chats.length === 1 ? '' : 's'} (showing up to 50)\n`
+             + `- Most recent activity: ${recentAgo}\n`
+             + (topIds ? `- Active threads (most recent 5): ${topIds}` : '');
   }
 
+  // Assemble the augmented prompt
+  const sections = [];
+  if (rosterLines) sections.push(`ICON ROSTER (${personas.length} Icons):\n${rosterLines}`);
+  if (briefLines)  sections.push(`ACTIVE BRIEFS:\n${briefLines}`);
+  if (logLines)    sections.push(`RECENT IMAGE LOGS (last ${logs.length}):\n${logLines}`);
+  if (activity)    sections.push(`CONVERSATION ACTIVITY:\n${activity}`);
+
+  const augmented = sections.length
+    ? sections.join('\n\n') + '\n\n' + ANDIE_SYSTEM_PROMPT
+    : ANDIE_SYSTEM_PROMPT;
+
   andieSystemPromptAugmented = augmented;
-  console.log('[andie] platform data loaded — personas:', personas.length, 'briefs:', briefs.length, 'promptChars:', augmented.length);
+  console.log('[andie] platform data loaded — personas:', personas.length,
+    'briefs:', briefs.length, 'logs:', logs.length, 'chats:', chats.length,
+    'promptChars:', augmented.length);
+}
+
+function _andieRelTime(date) {
+  const s = Math.max(0, (Date.now() - date.getTime()) / 1000);
+  if (s < 60)       return Math.round(s) + 's ago';
+  if (s < 3600)     return Math.round(s / 60) + ' min ago';
+  if (s < 86400)    return Math.round(s / 3600) + ' hr ago';
+  return Math.round(s / 86400) + ' days ago';
 }
 
 function andieEscape(s) {
@@ -2158,7 +2206,7 @@ async function initAndie() {
 
   // Loading state — show immediately so the pane isn't blank while we fetch.
   const chat = document.getElementById('andie-chat');
-  if (chat) chat.innerHTML = '<div class="andie-typing">Loading Icon data...</div>';
+  if (chat) chat.innerHTML = '<div class="andie-typing">Loading Mirage data...</div>';
 
   try {
     await andieLoadPlatformData();
