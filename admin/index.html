@@ -522,30 +522,54 @@ tbody tr:hover td { background: var(--bg); }
 
       <!-- PERSONA BUILDER -->
       <div class="pane" id="pane-personas" style="overflow-y:auto;height:calc(100vh - 48px)">
-        <div class="page-header">
-          <div>
-            <div class="page-title">Persona Builder</div>
-            <div class="page-sub" id="persona-sub">Select an icon to edit</div>
+        <!-- LIST VIEW (default landing) -->
+        <div id="persona-list-view">
+          <div class="page-header">
+            <div>
+              <div class="page-title">Persona Builder</div>
+              <div class="page-sub">Select an Icon to build or edit her persona</div>
+            </div>
           </div>
-          <div style="display:flex;gap:10px">
-            <button class="btn btn-outline" onclick="showPane('icons')">← All Icons</button>
-            <button id="save-btn" onclick="savePersona()" style="padding:9px 18px;background:var(--accent);color:#fff;border:none;font-family:'Afacad',sans-serif;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer">Save</button>
+          <div class="filter-bar">
+            <input type="text" placeholder="Search icons…" id="persona-list-search" oninput="filterPersonaList()">
+            <select class="filter-select" id="persona-list-filter" onchange="filterPersonaList()">
+              <option value="">All Status</option>
+              <option value="complete">Complete</option>
+              <option value="partial">In Progress</option>
+              <option value="empty">Empty</option>
+            </select>
+          </div>
+          <div class="icon-grid" id="persona-list-grid">
+            <div class="empty-state"><div class="empty-state-text">Loading icons…</div></div>
           </div>
         </div>
 
-        <!-- Icon picker strip -->
-        <div style="background:var(--surface);border:1px solid var(--border);padding:12px 16px;margin-bottom:20px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <span style="font-size:11px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:0.12em;margin-right:4px">Icon:</span>
-          <select id="persona-icon-select" onchange="loadPersonaForIcon(this.value)" style="padding:6px 10px;border:1px solid var(--border);background:var(--bg);font-family:'Afacad',sans-serif;font-size:14px;color:var(--ink);outline:none;flex:1;max-width:280px">
+        <!-- FORM VIEW (shown when an Icon is selected from the list) -->
+        <div id="persona-form-view" style="display:none">
+          <div class="page-header">
+            <div>
+              <button class="btn btn-outline btn-sm" onclick="showPersonaList()" style="margin-bottom:12px;font-size:11px">← Persona Builder</button>
+              <div class="page-title" id="persona-form-name">—</div>
+              <div class="page-sub" id="persona-form-archetype">—</div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div id="persona-progress-label" style="font-size:12px;color:var(--ink-dim);padding-top:9px"></div>
+              <button id="save-btn" onclick="savePersona()" style="padding:9px 18px;background:var(--accent);color:#fff;border:none;font-family:'Afacad',sans-serif;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer">Save</button>
+            </div>
+          </div>
+
+          <!-- Hidden select — kept so populateIconSelect and other legacy
+               code that reads/writes sel.value still works while the
+               visible picker UI is the list grid. -->
+          <select id="persona-icon-select" onchange="loadPersonaForIcon(this.value)" style="display:none">
             <option value="">— Select Icon —</option>
           </select>
-          <div id="persona-progress-label" style="font-size:12px;color:var(--ink-dim);margin-left:8px"></div>
-        </div>
 
-        <div class="editor-main" id="persona-editor">
-          <div class="empty-state">
-            <div class="empty-state-icon">◎</div>
-            <div class="empty-state-text">Select an icon above to begin building her persona.</div>
+          <div class="editor-main" id="persona-editor">
+            <div class="empty-state">
+              <div class="empty-state-icon">◎</div>
+              <div class="empty-state-text">Loading persona…</div>
+            </div>
           </div>
         </div>
       </div>
@@ -1177,9 +1201,13 @@ function showPane(id) {
  { loadPersonasFromJSON().then(function(p){ window.__personas=p; populateIconSelect(p); }); }
 
   if (id === 'personas') {
+    // Default landing is the list view — openPersona (click from anywhere)
+    // will flip to the form view right after this via showPersonaForm.
+    showPersonaList();
     loadPersonasFromJSON().then(function(p) {
       window.__personas = p;
       populateIconSelect(p);
+      filterPersonaList();
     });
   }
 }
@@ -1300,28 +1328,18 @@ function getStatusFromCompletion(pct) {
   return 'empty';
 }
 
-function renderIconGrid(icons) {
-  const grid = document.getElementById('icon-grid');
-  const filter = document.getElementById('icon-filter-status')?.value || '';
-
-  // Sort alphabetically by name first
-  const sorted = [...icons].sort(function(a,b) {
-    return (a.name||'').toLowerCase().localeCompare((b.name||'').toLowerCase());
-  });
-  let filtered = sorted;
-  if (filter === 'active') filtered = icons.filter(i => i.status === 'active' || i.status === 'live');
-  else if (filter === 'inactive') filtered = icons.filter(i => i.status === 'inactive');
-  else if (filter === 'complete') filtered = icons.filter(i => {
-    const pct = getPersonaCompletion(i);
-    return pct >= 80;
-  });
-
-  if (!filtered.length) {
+// Render the same icon-card list into the Icons pane grid AND the Persona
+// Builder list view. Both surfaces always show the Studio's canonical
+// roster in the same order, and either grid's search/filter reads its
+// own inputs independently.
+function renderIconCardsInto(icons, targetId) {
+  const grid = document.getElementById(targetId);
+  if (!grid) return;
+  if (!icons.length) {
     grid.innerHTML = '<div class="empty-state"><div class="empty-state-text">No icons found.</div></div>';
     return;
   }
-
-  grid.innerHTML = filtered.map(icon => {
+  grid.innerHTML = icons.map(icon => {
     const pct = getPersonaCompletion(icon);
     const status = icon.status || 'inactive';
     const statusClass = status === 'live' ? 'live' : status === 'active' ? 'in-progress' : 'draft';
@@ -1341,6 +1359,27 @@ function renderIconGrid(icons) {
   }).join('');
 }
 
+function _personaListFilterSorted(icons, filterStatus) {
+  const sorted = [...icons].sort(function(a,b) {
+    return (a.name||'').toLowerCase().localeCompare((b.name||'').toLowerCase());
+  });
+  if (filterStatus === 'active') return sorted.filter(i => i.status === 'active' || i.status === 'live');
+  if (filterStatus === 'inactive') return sorted.filter(i => i.status === 'inactive');
+  if (filterStatus === 'complete') return sorted.filter(i => getPersonaCompletion(i) >= 80);
+  return sorted;
+}
+
+function renderIconGrid(icons) {
+  // Icons pane
+  const iconFilter = document.getElementById('icon-filter-status')?.value || '';
+  renderIconCardsInto(_personaListFilterSorted(icons, iconFilter), 'icon-grid');
+  // Persona Builder list view — mirror the same icons so the two surfaces
+  // stay in sync on initial load. filterPersonaList() will re-render with
+  // the persona list's own search/filter when the user interacts.
+  const personaFilter = document.getElementById('persona-list-filter')?.value || '';
+  renderIconCardsInto(_personaListFilterSorted(icons, personaFilter), 'persona-list-grid');
+}
+
 function filterIcons() {
   const q = document.getElementById('icon-search').value.toLowerCase();
   const s = document.getElementById('icon-filter-status').value;
@@ -1351,7 +1390,50 @@ function filterIcons() {
     const matchS = !s || status === s;
     return matchQ && matchS;
   });
-  renderIconGrid(filtered);
+  renderIconCardsInto(_personaListFilterSorted(filtered, s), 'icon-grid');
+}
+
+// Persona Builder list-view search/filter. Same semantics as filterIcons
+// but driven by the Persona Builder's own inputs so the two surfaces
+// filter independently.
+function filterPersonaList() {
+  const q = (document.getElementById('persona-list-search')?.value || '').toLowerCase();
+  const s = document.getElementById('persona-list-filter')?.value || '';
+  const filtered = (allIcons || []).filter(icon => {
+    const matchQ = !q || (icon.name||'').toLowerCase().includes(q) || (icon.archetype||'').toLowerCase().includes(q);
+    const pct = getPersonaCompletion(icon);
+    const status = getStatusFromCompletion(pct);
+    const matchS = !s || status === s;
+    return matchQ && matchS;
+  });
+  renderIconCardsInto(_personaListFilterSorted(filtered, s), 'persona-list-grid');
+}
+
+// Toggle between the list view (grid of all Icons) and the form view
+// (one Icon's persona editor). showPersonaForm also loads the icon's
+// persona data into the editor and updates the header.
+function showPersonaList() {
+  const list = document.getElementById('persona-list-view');
+  const form = document.getElementById('persona-form-view');
+  if (list) list.style.display = '';
+  if (form) form.style.display = 'none';
+  window.scrollTo(0, 0);
+}
+
+function showPersonaForm(idx) {
+  const list = document.getElementById('persona-list-view');
+  const form = document.getElementById('persona-form-view');
+  if (list) list.style.display = 'none';
+  if (form) form.style.display = '';
+  window.scrollTo(0, 0);
+  const personas = window.__personas || [];
+  const wrapper = Array.isArray(personas) ? personas[parseInt(idx)] : personas[String(idx)];
+  const nameEl = document.getElementById('persona-form-name');
+  const archEl = document.getElementById('persona-form-archetype');
+  if (wrapper) {
+    if (nameEl) nameEl.textContent = wrapper.name || 'Persona';
+    if (archEl) archEl.textContent = wrapper.archetype || '—';
+  }
 }
 
 // ── DASHBOARD ────────────────────────────────────────────────────────────────
@@ -1421,8 +1503,7 @@ function openPersona(iconId) {
   const icon = allIcons.find(i => i.id === iconId);
   if (!icon) return;
   const idx = icon._personaIdx !== undefined ? icon._personaIdx : (iconId - 1);
-  // Set the select value
-  // Wait for personas to load then select
+  // Wait for personas to load then swap into the form view for this icon.
   function _trySelect(attempts) {
     const sel = document.getElementById('persona-icon-select');
     if (!sel) return;
@@ -1431,6 +1512,7 @@ function openPersona(iconId) {
       return;
     }
     sel.value = String(idx);
+    showPersonaForm(String(idx));
     loadPersonaForIcon(String(idx));
   }
   _trySelect(10);
