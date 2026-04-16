@@ -301,6 +301,9 @@ tbody tr:hover td { background: var(--bg); }
 /* ── ANDIE (operations director chat) ── */
 #pane-andie { display: flex; flex-direction: column; height: calc(100vh - 112px); min-height: 0; }
 #pane-andie .page-header { flex-shrink: 0; align-items: center; }
+.andie-header-actions { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.andie-clear-btn { background: transparent; border: 1px solid var(--border); color: var(--ink-dim); font-family: 'Afacad', sans-serif; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; padding: 5px 12px; border-radius: 999px; cursor: pointer; transition: color 0.15s, border-color 0.15s; }
+.andie-clear-btn:hover { color: var(--ink); border-color: var(--border-strong); }
 .andie-status { display: inline-flex; align-items: center; gap: 8px; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #5fe396; background: rgba(100,200,140,0.08); border: 1px solid rgba(100,200,140,0.2); padding: 5px 12px; border-radius: 999px; flex-shrink: 0; }
 .andie-status-dot { width: 6px; height: 6px; border-radius: 50%; background: #5fe396; box-shadow: 0 0 6px rgba(100,200,140,0.6); }
 .andie-chat { flex: 1; min-height: 0; overflow-y: auto; background: #0a0908; border: 1px solid var(--border); padding: 24px; display: flex; flex-direction: column; gap: 16px; margin-bottom: 12px; font-family: 'Afacad', sans-serif; }
@@ -972,9 +975,12 @@ tbody tr:hover td { background: var(--bg); }
             <div class="page-title">Andie</div>
             <div class="page-sub">Mirage Operations Director</div>
           </div>
-          <div class="andie-status">
-            <span class="andie-status-dot"></span>
-            <span>Online</span>
+          <div class="andie-header-actions">
+            <button class="andie-clear-btn" onclick="andieClearHistory()" title="Clear conversation and start fresh">Clear</button>
+            <div class="andie-status">
+              <span class="andie-status-dot"></span>
+              <span>Online</span>
+            </div>
           </div>
         </div>
 
@@ -2087,14 +2093,29 @@ You speak in short, direct sentences. No fluff. No enthusiasm. You give real ass
 You are not a chatbot. You are an operations director who happens to communicate through text.`;
 
 const ANDIE_OPENING = "I've been watching. Ask me anything about how Mirage is performing, how the Icons are doing, or what needs fixing. I don't sugarcoat.";
+const ANDIE_HISTORY_KEY = 'mirage-andie-history';
 
-// In-session state — cleared when the page reloads. Each message is
+// Persistent across page reloads via localStorage. Each message is
 // { role: 'user' | 'assistant', content: string }.
 let andieMessages = [];
 let andieInitialized = false;
 // Augmented system prompt: base ANDIE_SYSTEM_PROMPT + ICON ROSTER + briefs.
 // Built once per session by andieLoadPlatformData; sendMessage reads this.
 let andieSystemPromptAugmented = null;
+
+function andieLoadHistory() {
+  try {
+    const raw = localStorage.getItem(ANDIE_HISTORY_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length ? parsed : null;
+  } catch (_) { return null; }
+}
+
+function andieSaveHistory() {
+  try { localStorage.setItem(ANDIE_HISTORY_KEY, JSON.stringify(andieMessages)); }
+  catch (e) { console.warn('[andie] save history failed:', e.message); }
+}
 
 // Phase 1 data integration — Andie reads the full platform state before her
 // first message. Pulls four sources in parallel: personas.json (roster),
@@ -2236,7 +2257,25 @@ async function initAndie() {
     console.warn('[andie] platform data load threw:', e.message);
   }
 
+  // Restore prior conversation from localStorage if present; otherwise seed
+  // with the opening line so every first-time user gets her intro.
+  const saved = andieLoadHistory();
+  if (saved) {
+    andieMessages = saved;
+    console.log('[andie] restored', saved.length, 'messages from localStorage');
+  } else {
+    andieMessages = [{ role: 'assistant', content: ANDIE_OPENING }];
+    andieSaveHistory();
+  }
+  andieRender();
+  const inp = document.getElementById('andie-input');
+  if (inp) inp.focus();
+}
+
+function andieClearHistory() {
+  try { localStorage.removeItem(ANDIE_HISTORY_KEY); } catch (_) {}
   andieMessages = [{ role: 'assistant', content: ANDIE_OPENING }];
+  andieSaveHistory();
   andieRender();
   const inp = document.getElementById('andie-input');
   if (inp) inp.focus();
@@ -2249,6 +2288,7 @@ async function andieSend() {
   if (!text) return;
 
   andieMessages.push({ role: 'user', content: text });
+  andieSaveHistory();
   if (inp) inp.value = '';
   if (btn) btn.disabled = true;
   andieRender({ typing: true });
@@ -2270,6 +2310,7 @@ async function andieSend() {
   } catch (e) {
     andieMessages.push({ role: 'assistant', content: '[proxy error: ' + e.message + ']' });
   } finally {
+    andieSaveHistory();
     if (btn) btn.disabled = false;
     andieRender();
     if (inp) inp.focus();
