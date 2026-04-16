@@ -394,7 +394,7 @@ tbody tr:hover td { background: var(--bg); }
     <div class="topbar-left">
       <div class="topbar-wordmark">Mirage</div>
       <div class="topbar-sep"></div>
-      <div class="topbar-section" id="topbar-section">Dashboard</div>
+      <div class="topbar-section" id="topbar-section">Andie</div>
     </div>
     <div class="topbar-right">
       <div class="topbar-user" id="topbar-user"></div>
@@ -405,8 +405,11 @@ tbody tr:hover td { background: var(--bg); }
   <div class="main">
     <!-- SIDEBAR -->
     <div class="sidebar">
+      <div class="sidebar-item active" onclick="showPane('andie')">
+        <span class="icon">♦</span> Andie
+      </div>
       <div class="sidebar-section">Main</div>
-      <div class="sidebar-item active" onclick="showPane('dashboard')">
+      <div class="sidebar-item" onclick="showPane('dashboard')">
         <span class="icon">◈</span> Dashboard
       </div>
       <div class="sidebar-item" onclick="showPane('icons')">
@@ -446,16 +449,13 @@ tbody tr:hover td { background: var(--bg); }
       <div class="sidebar-item" onclick="showPane('techref')">
         <span class="icon">⌘</span> Tech Reference
       </div>
-      <div class="sidebar-item" onclick="showPane('andie')">
-        <span class="icon">♦</span> Andie
-      </div>
     </div>
 
     <!-- CONTENT PANES -->
     <div class="content">
 
       <!-- DASHBOARD -->
-      <div class="pane active" id="pane-dashboard">
+      <div class="pane" id="pane-dashboard">
         <div class="page-header">
           <div>
             <div class="page-title">Dashboard</div>
@@ -965,8 +965,8 @@ tbody tr:hover td { background: var(--bg); }
         </div>
       </div>
 
-      <!-- ANDIE — Operations Director chat -->
-      <div class="pane" id="pane-andie">
+      <!-- ANDIE — Operations Director chat (initial active pane) -->
+      <div class="pane active" id="pane-andie">
         <div class="page-header">
           <div>
             <div class="page-title">Andie</div>
@@ -1054,6 +1054,9 @@ function doLogin() {
   initSupabase();
   loadDashboard();
   loadIcons();
+  // Andie is the landing pane — seed her opening line so the chat is
+  // already there when they see it.
+  if (typeof initAndie === 'function') initAndie();
 }
 
 document.getElementById('login-pass').addEventListener('keydown', e => {
