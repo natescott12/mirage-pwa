@@ -2070,6 +2070,63 @@ const ANDIE_OPENING = "I've been watching. Ask me anything about how Mirage is p
 // { role: 'user' | 'assistant', content: string }.
 let andieMessages = [];
 let andieInitialized = false;
+// Augmented system prompt: base ANDIE_SYSTEM_PROMPT + ICON ROSTER + briefs.
+// Built once per session by andieLoadPlatformData; sendMessage reads this.
+let andieSystemPromptAugmented = null;
+
+// Fetch personas.json + icon_briefs and fold them into Andie's system prompt.
+// Failures degrade gracefully — she still works with the base prompt alone.
+async function andieLoadPlatformData() {
+  let personas = [];
+  let briefs = [];
+
+  try {
+    const pRes = await fetch('https://mirage-pwa.vercel.app/personas.json');
+    if (pRes.ok) personas = await pRes.json();
+    else console.warn('[andie] personas.json fetch non-ok', pRes.status);
+  } catch (e) { console.warn('[andie] personas.json fetch failed:', e.message); }
+
+  try {
+    const bRes = await fetch(SUPABASE_URL + '/rest/v1/icon_briefs?select=*', {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+    });
+    if (bRes.ok) briefs = await bRes.json();
+    else console.warn('[andie] icon_briefs fetch non-ok', bRes.status);
+  } catch (e) { console.warn('[andie] icon_briefs fetch failed:', e.message); }
+
+  // Build compact roster — one line per Icon, bio truncated to keep context tight.
+  const roster = (Array.isArray(personas) ? personas : [])
+    .map(p => {
+      const name = p.name || 'Unknown';
+      const arch = p.archetype || '—';
+      const bioRaw = p.bio || p.persona || p.vibe || '';
+      const bio = String(bioRaw).replace(/\s+/g, ' ').trim().slice(0, 110);
+      return `- ${name} (${arch})${bio ? ': ' + bio : ''}`;
+    })
+    .join('\n');
+
+  // Briefs are keyed by icon_id. Only include icons that actually have one.
+  const briefLines = (Array.isArray(briefs) ? briefs : [])
+    .map(b => {
+      const parts = [b.scene, b.wardrobe, b.shot, b.light]
+        .map(s => (s || '').trim()).filter(Boolean).join(' | ');
+      if (!parts) return null;
+      return `- icon_id ${b.icon_id}: ${parts}`;
+    })
+    .filter(Boolean)
+    .join('\n');
+
+  let augmented = ANDIE_SYSTEM_PROMPT;
+  if (roster) {
+    augmented = `ICON ROSTER (${(personas || []).length} Icons):\n${roster}\n\n` + augmented;
+  }
+  if (briefLines) {
+    augmented = augmented + `\n\nCURRENT STUDIO BRIEFS:\n${briefLines}`;
+  }
+
+  andieSystemPromptAugmented = augmented;
+  console.log('[andie] platform data loaded — personas:', personas.length, 'briefs:', briefs.length, 'promptChars:', augmented.length);
+}
 
 function andieEscape(s) {
   return String(s || '')
@@ -2095,10 +2152,21 @@ function andieRender(opts) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-function initAndie() {
+async function initAndie() {
   if (andieInitialized) { andieRender(); return; }
-  andieMessages = [{ role: 'assistant', content: ANDIE_OPENING }];
   andieInitialized = true;
+
+  // Loading state — show immediately so the pane isn't blank while we fetch.
+  const chat = document.getElementById('andie-chat');
+  if (chat) chat.innerHTML = '<div class="andie-typing">Loading Icon data...</div>';
+
+  try {
+    await andieLoadPlatformData();
+  } catch (e) {
+    console.warn('[andie] platform data load threw:', e.message);
+  }
+
+  andieMessages = [{ role: 'assistant', content: ANDIE_OPENING }];
   andieRender();
   const inp = document.getElementById('andie-input');
   if (inp) inp.focus();
@@ -2120,7 +2188,7 @@ async function andieSend() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        system: ANDIE_SYSTEM_PROMPT,
+        system: andieSystemPromptAugmented || ANDIE_SYSTEM_PROMPT,
         messages: andieMessages,
         max_tokens: 1024,
       }),
