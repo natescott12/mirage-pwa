@@ -1,5 +1,5 @@
 // Sloan Live — code.js
-figma.showUI(__html__, { visible: false, width: 0, height: 0 });
+figma.showUI(__html__, { width: 300, height: 48 });
 
 function getTargetPage(taskText) {
   const t = (taskText || '').toLowerCase();
@@ -36,8 +36,8 @@ async function runWithTheatre(code, delayMs = 150) {
   }
 
   try {
-    const fn = new Function('figma', 'return (async()=>{\n' + code + '\n})()');
-    await fn(figma);
+    const fn = new Function('return (async()=>{\n' + code + '\n})()');
+    await fn();
   } finally {
     for (const m of patchable) figma[m] = originals[m];
   }

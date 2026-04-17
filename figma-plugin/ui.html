@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <body>
+<div id="s" style="font:11px/48px system-ui;text-align:center;color:#888;background:#111;margin:0;padding:0 16px;">Sloan Live — watching...</div>
 <script>
 const PROXY = 'https://mirage-proxy-production.up.railway.app';
 const KEY = 'mirage-int-2026';
@@ -20,6 +21,7 @@ async function poll() {
     const data = await r.json();
     if (data && data.id) {
       busy = true;
+      document.getElementById('s').textContent = 'Sloan is working...';
       await fetch(PROXY + '/sloan/figma/' + data.id, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'x-mirage-key': KEY },
@@ -44,6 +46,7 @@ window.onmessage = async function(event) {
       });
     } catch (e) {}
     busy = false;
+    document.getElementById('s').textContent = 'Sloan Live \u2014 watching...';
   }
 };
 
