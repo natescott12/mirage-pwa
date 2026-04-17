@@ -5,6 +5,7 @@
   "ui": "ui.html",
   "editorType": ["figma"],
   "networkAccess": {
-    "allowedDomains": ["https://mirage-proxy-production.up.railway.app"]
+    "allowedDomains": ["https://mirage-proxy-production.up.railway.app"],
+    "reasoning": "Polls Mirage proxy for Figma design tasks queued by Sloan"
   }
 }
