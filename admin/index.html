@@ -3309,6 +3309,7 @@ async function andieSend() {
 
 // ── SLOAN LEARNING LOG ────────────────────────────────────────────────────
 const SLOAN_PROXY_URL = 'https://mirage-proxy-production.up.railway.app';
+const MIRAGE_INTERNAL_KEY = 'mirage-int-2026';
 
 function sloanLogStatus(msg, isError) {
   const el = document.getElementById('sloanlog-status');
@@ -3376,7 +3377,7 @@ async function saveSloanLog() {
   try {
     const r = await fetch(SLOAN_PROXY_URL + '/sloan/memory', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-mirage-key': MIRAGE_INTERNAL_KEY },
       body: JSON.stringify({ category: category, summary: summary }),
     });
     if (!r.ok) {

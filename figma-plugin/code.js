@@ -4,6 +4,7 @@
 // natural delay so you can watch Sloan work.
 
 const PROXY = 'https://mirage-proxy-production.up.railway.app';
+const INTERNAL_KEY = 'mirage-int-2026';
 const POLL_MS = 3000;
 
 let theatreMode = true;
@@ -77,7 +78,7 @@ async function patchTask(id, status, result) {
   try {
     await fetch(PROXY + '/sloan/figma/' + id, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-mirage-key': INTERNAL_KEY },
       body: JSON.stringify({ status: status, result: result || null }),
     });
   } catch (e) {
@@ -115,7 +116,7 @@ async function executeCode(code, taskName) {
 
 async function pollOnce() {
   try {
-    var r = await fetch(PROXY + '/sloan/figma/pending');
+    var r = await fetch(PROXY + '/sloan/figma/pending', { headers: { 'x-mirage-key': INTERNAL_KEY } });
     if (!r.ok) { uiMsg({ type: 'error' }); return; }
     var task = await r.json();
     if (!task || !task.id) { uiMsg({ type: 'empty' }); return; }

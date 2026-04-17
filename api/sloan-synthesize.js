@@ -3,6 +3,7 @@
 // memory entries into permanent character growth.
 
 const PROXY = 'https://mirage-proxy-production.up.railway.app';
+const INTERNAL_KEY = process.env.MIRAGE_INTERNAL_KEY || '';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET' && req.method !== 'POST') return res.status(405).json({ error: 'GET or POST only' });
@@ -11,7 +12,7 @@ export default async function handler(req, res) {
     console.log('[sloan-synthesize] triggering weekly synthesis');
     const r = await fetch(PROXY + '/sloan/synthesize', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-mirage-key': INTERNAL_KEY },
     });
     if (!r.ok) {
       const err = await r.text();
