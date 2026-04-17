@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<!-- Sloan Image Audit — Live Viewer -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sloan — Image Audit (Live)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  #gate { position: fixed; inset: 0; background: #0f0e0d; display: flex; align-items: center; justify-content: center; z-index: 999; }
+  .gate-box { text-align: center; }
+  .gate-box h2 { font-size: 22px; font-weight: 600; color: #f6eaea; margin-bottom: 6px; letter-spacing: -0.3px; }
+  .gate-box p { font-size: 13px; color: rgba(255,255,255,0.35); margin-bottom: 28px; }
+  .gate-box input { width: 260px; padding: 12px 16px; background: #1a1814; border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; color: #f6eaea; font-size: 14px; outline: none; display: block; margin: 0 auto 12px; letter-spacing: 0.05em; }
+  .gate-box input:focus { border-color: rgba(255,255,255,0.3); }
+  .gate-box button { width: 260px; padding: 12px; background: #c9622f; border: none; border-radius: 4px; color: white; font-size: 13px; font-weight: 600; cursor: pointer; letter-spacing: 0.05em; }
+  .gate-box button:hover { background: #b8572a; }
+  .gate-error { color: #e06060; font-size: 12px; margin-top: 10px; height: 16px; }
+  body { background: #0f0e0d; color: #f6eaea; font-family: 'DM Sans', system-ui, sans-serif; min-height: 100vh; }
+  header { padding: 32px 40px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .header-top { display: flex; align-items: baseline; gap: 16px; margin-bottom: 8px; }
+  h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; }
+  .subtitle { font-size: 13px; color: rgba(255,255,255,0.4); }
+  .stats { display: flex; gap: 32px; margin-top: 16px; }
+  .stat { display: flex; align-items: center; gap: 8px; }
+  .stat-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot-keep { background: #2a6640; }
+  .dot-flag { background: #c9622f; }
+  .dot-discard { background: #6b2020; }
+  .dot-new { background: rgba(255,255,255,0.2); }
+  .stat-label { font-size: 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.1em; }
+  .stat-num { font-size: 18px; font-weight: 600; }
+  .controls { padding: 20px 40px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .filter-btn { padding: 7px 16px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.15); background: transparent; color: rgba(255,255,255,0.6); font-size: 12px; cursor: pointer; letter-spacing: 0.05em; text-transform: uppercase; transition: all 0.15s; }
+  .filter-btn:hover { border-color: rgba(255,255,255,0.3); color: #f6eaea; }
+  .filter-btn.active { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.35); color: #f6eaea; }
+  .filter-btn.keep.active { background: rgba(42,102,64,0.25); border-color: #2a6640; color: #6dc98a; }
+  .filter-btn.flag.active { background: rgba(201,98,47,0.2); border-color: #c9622f; color: #e8855a; }
+  .filter-btn.discard.active { background: rgba(107,32,32,0.25); border-color: #6b2020; color: #e06060; }
+  .count-label { margin-left: auto; font-size: 12px; color: rgba(255,255,255,0.3); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 2px; padding: 2px; }
+  .card { position: relative; aspect-ratio: 2/3; overflow: hidden; cursor: pointer; background: #1a1814; }
+  .card img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
+  .card:hover img { transform: scale(1.04); }
+  .card.hidden { display: none; }
+  .badge { position: absolute; top: 8px; left: 8px; padding: 3px 8px; border-radius: 3px; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+  .badge.keep { background: rgba(42,102,64,0.9); color: #9df5b8; }
+  .badge.flag { background: rgba(201,98,47,0.9); color: #ffd4b8; }
+  .badge.discard { background: rgba(107,32,32,0.85); color: #ffb8b8; }
+  .badge.new { background: rgba(0,0,0,0.6); color: rgba(255,255,255,0.5); }
+  .img-num { position: absolute; bottom: 8px; right: 8px; font-size: 10px; color: rgba(255,255,255,0.4); background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 2px; }
+  .card .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0); transition: background 0.2s; }
+  .card:hover .overlay { background: rgba(0,0,0,0.15); }
+  .card.keep { outline: 2px solid rgba(42,102,64,0.5); outline-offset: -2px; }
+  .card.flag { outline: 2px solid rgba(201,98,47,0.5); outline-offset: -2px; }
+  .card.discard { outline: 2px solid rgba(107,32,32,0.4); outline-offset: -2px; }
+  .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100; }
+  .lightbox.open { display: flex; }
+  .lb-inner { display: flex; width: 100%; height: 100%; }
+  .lb-img-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px; }
+  .lb-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 2px; }
+  .lb-panel { width: 360px; flex-shrink: 0; background: #1a1814; padding: 40px 32px; overflow-y: auto; border-left: 1px solid rgba(255,255,255,0.06); }
+  .lb-num { font-size: 11px; color: rgba(255,255,255,0.3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 16px; }
+  .lb-verdict { display: inline-block; padding: 4px 12px; border-radius: 3px; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 20px; }
+  .lb-verdict.keep { background: rgba(42,102,64,0.3); color: #6dc98a; border: 1px solid rgba(42,102,64,0.5); }
+  .lb-verdict.flag { background: rgba(201,98,47,0.2); color: #e8855a; border: 1px solid rgba(201,98,47,0.4); }
+  .lb-verdict.discard { background: rgba(107,32,32,0.3); color: #e06060; border: 1px solid rgba(107,32,32,0.5); }
+  .lb-verdict.new { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.1); }
+  .lb-scene { font-size: 11px; color: rgba(255,255,255,0.3); margin-bottom: 20px; text-transform: capitalize; }
+  .lb-notes-title { font-size: 10px; color: rgba(255,255,255,0.3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px; }
+  .lb-notes { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.7; }
+  .lb-close { position: fixed; top: 24px; right: 24px; background: rgba(255,255,255,0.1); border: none; color: #f6eaea; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; z-index: 101; }
+  .lb-close:hover { background: rgba(255,255,255,0.2); }
+  .lb-nav { display: flex; gap: 12px; margin-top: 32px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); }
+  .lb-nav button { flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); border-radius: 4px; cursor: pointer; font-size: 12px; }
+  .lb-nav button:hover { background: rgba(255,255,255,0.12); color: #f6eaea; }
+  .findings { background: rgba(201,98,47,0.06); border: 1px solid rgba(201,98,47,0.2); border-radius: 6px; margin: 24px 40px; padding: 24px 28px; }
+  .findings h3 { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #c9622f; margin-bottom: 16px; }
+  .findings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .finding { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.5; padding-left: 16px; position: relative; }
+  .finding::before { content: '\2192'; position: absolute; left: 0; color: #c9622f; }
+  .loading { text-align: center; padding: 80px 40px; color: rgba(255,255,255,0.3); font-size: 13px; }
+  @media (max-width: 700px) { .findings-grid { grid-template-columns: 1fr; } .lb-inner { flex-direction: column; } .lb-panel { width: 100%; max-height: 50vh; } }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-box">
+    <h2>Mirage — Internal</h2>
+    <p>Restricted access.</p>
+    <input type="password" id="gateInput" placeholder="Access code" onkeydown="if(event.key==='Enter')checkGate()">
+    <button onclick="checkGate()">Enter</button>
+    <div class="gate-error" id="gateError"></div>
+  </div>
+</div>
+<div id="app" style="display:none">
+<header>
+  <div class="header-top">
+    <h1>Sloan — Image Audit</h1>
+    <span class="subtitle" id="subtitle">Live view — auto-refreshes every 60s</span>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-dot dot-keep"></div><span class="stat-num" id="keepCount">0</span><span class="stat-label">Keep</span></div>
+    <div class="stat"><div class="stat-dot dot-flag"></div><span class="stat-num" id="flagCount">0</span><span class="stat-label">Flag</span></div>
+    <div class="stat"><div class="stat-dot dot-discard"></div><span class="stat-num" id="discardCount">0</span><span class="stat-label">Discard</span></div>
+    <div class="stat"><div class="stat-dot dot-new"></div><span class="stat-num" id="newCount">0</span><span class="stat-label">New</span></div>
+  </div>
+</header>
+
+<div class="findings" id="findingsPanel" style="display:none">
+  <h3>Sloan's Key Findings</h3>
+  <div class="findings-grid" id="findingsGrid"></div>
+</div>
+
+<div class="controls">
+  <button class="filter-btn active" onclick="filterCards('all', this)">All</button>
+  <button class="filter-btn keep" onclick="filterCards('keep', this)">Keep</button>
+  <button class="filter-btn flag" onclick="filterCards('flag', this)">Flag</button>
+  <button class="filter-btn discard" onclick="filterCards('discard', this)">Discard</button>
+  <span class="count-label" id="visibleCount">Loading...</span>
+</div>
+
+<div id="loadingMsg" class="loading">Loading images from Supabase...</div>
+<div class="grid" id="grid"></div>
+
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" onclick="closeLightbox()">&#10005;</button>
+  <div class="lb-inner">
+    <div class="lb-img-wrap"><img id="lbImg" src="" alt=""></div>
+    <div class="lb-panel">
+      <div class="lb-num" id="lbNum"></div>
+      <div class="lb-verdict" id="lbVerdict"></div>
+      <div class="lb-scene" id="lbScene"></div>
+      <div class="lb-notes-title">Sloan's Notes</div>
+      <div class="lb-notes" id="lbNotes"></div>
+      <div class="lb-nav">
+        <button onclick="navLightbox(-1)">&larr; Prev</button>
+        <button onclick="navLightbox(1)">Next &rarr;</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+var SB_URL = 'https://gmyenvnfuailickepvax.supabase.co';
+var SB_KEY = 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
+var items = [];
+var currentFilter = 'all';
+var currentIndex = 0;
+
+function sbHeaders() {
+  return { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
+}
+
+function loadData() {
+  var contentUrl = SB_URL + '/rest/v1/content?icon_name=eq.Sloan&select=id,image_url,scene,created_at&order=created_at.asc';
+  var verdictsUrl = SB_URL + '/rest/v1/sloan_image_verdicts?icon_name=eq.Sloan&select=image_url,verdict,notes';
+
+  Promise.all([
+    fetch(contentUrl, { headers: sbHeaders() }).then(function(r) { return r.ok ? r.json() : []; }),
+    fetch(verdictsUrl, { headers: sbHeaders() }).then(function(r) { return r.ok ? r.json() : []; }).catch(function() { return []; })
+  ]).then(function(results) {
+    var content = results[0] || [];
+    var verdicts = results[1] || [];
+
+    var verdictMap = {};
+    verdicts.forEach(function(v) {
+      if (v.image_url) verdictMap[v.image_url] = v;
+    });
+
+    items = content.map(function(row, i) {
+      var v = verdictMap[row.image_url];
+      return {
+        url: row.image_url,
+        scene: row.scene || '',
+        created: row.created_at || '',
+        verdict: v ? v.verdict.toLowerCase() : 'new',
+        notes: v ? (v.notes || '') : 'Not yet reviewed by Sloan.'
+      };
+    });
+
+    render();
+    document.getElementById('loadingMsg').style.display = 'none';
+    document.getElementById('subtitle').textContent = 'Live view — ' + items.length + ' images — auto-refreshes every 60s';
+  }).catch(function(e) {
+    document.getElementById('loadingMsg').textContent = 'Failed to load: ' + e.message;
+  });
+}
+
+function render() {
+  var keepN = 0, flagN = 0, discardN = 0, newN = 0;
+  items.forEach(function(it) {
+    if (it.verdict === 'keep') keepN++;
+    else if (it.verdict === 'flag') flagN++;
+    else if (it.verdict === 'discard') discardN++;
+    else newN++;
+  });
+  document.getElementById('keepCount').textContent = keepN;
+  document.getElementById('flagCount').textContent = flagN;
+  document.getElementById('discardCount').textContent = discardN;
+  document.getElementById('newCount').textContent = newN;
+
+  var grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  items.forEach(function(it, i) {
+    var card = document.createElement('div');
+    card.className = 'card ' + it.verdict;
+    card.dataset.verdict = it.verdict;
+    card.dataset.index = i;
+    card.innerHTML = '<img src="' + it.url + '" alt="Sloan ' + (i+1) + '" loading="lazy">' +
+      '<div class="overlay"></div>' +
+      '<span class="badge ' + it.verdict + '">' + (it.verdict === 'new' ? 'New' : it.verdict.toUpperCase()) + '</span>' +
+      '<span class="img-num">' + (i+1) + '</span>';
+    card.onclick = function() { openLightbox(i); };
+    grid.appendChild(card);
+  });
+
+  applyFilter();
+  loadFindings();
+}
+
+function loadFindings() {
+  var findingsUrl = SB_URL + '/rest/v1/sloan_memory?category=eq.image_pipeline&select=summary&order=created_at.desc&limit=6';
+  fetch(findingsUrl, { headers: sbHeaders() })
+    .then(function(r) { return r.ok ? r.json() : []; })
+    .then(function(rows) {
+      var panel = document.getElementById('findingsPanel');
+      var grid = document.getElementById('findingsGrid');
+      if (!rows.length) { panel.style.display = 'none'; return; }
+      panel.style.display = '';
+      grid.innerHTML = rows.map(function(r) {
+        return '<div class="finding">' + (r.summary || '').replace(/</g, '&lt;') + '</div>';
+      }).join('');
+    }).catch(function() {});
+}
+
+function filterCards(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  applyFilter();
+}
+
+function applyFilter() {
+  var visible = 0;
+  document.querySelectorAll('.card').forEach(function(card) {
+    var show = currentFilter === 'all' || card.dataset.verdict === currentFilter;
+    card.classList.toggle('hidden', !show);
+    if (show) visible++;
+  });
+  document.getElementById('visibleCount').textContent = visible + ' image' + (visible !== 1 ? 's' : '');
+}
+
+function openLightbox(i) {
+  currentIndex = i;
+  updateLightbox();
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function updateLightbox() {
+  var it = items[currentIndex];
+  if (!it) return;
+  document.getElementById('lbImg').src = it.url;
+  document.getElementById('lbNum').textContent = 'Image ' + (currentIndex+1) + ' of ' + items.length;
+  var vEl = document.getElementById('lbVerdict');
+  vEl.textContent = it.verdict === 'new' ? 'Not Reviewed' : it.verdict === 'keep' ? 'Keep' : it.verdict === 'flag' ? 'Flag for Review' : 'Discard';
+  vEl.className = 'lb-verdict ' + it.verdict;
+  document.getElementById('lbScene').textContent = 'Scene: ' + (it.scene || 'unknown');
+  document.getElementById('lbNotes').textContent = it.notes || 'No notes.';
+}
+
+function navLightbox(dir) {
+  currentIndex = (currentIndex + dir + items.length) % items.length;
+  updateLightbox();
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowRight') navLightbox(1);
+  if (e.key === 'ArrowLeft') navLightbox(-1);
+});
+
+loadData();
+setInterval(loadData, 60000);
+</script>
+
+<script>
+var ACCESS_CODE = 'MirageAdmin2026!';
+function checkGate() {
+  var val = document.getElementById('gateInput').value;
+  if (val === ACCESS_CODE) {
+    sessionStorage.setItem('mirage_auth', '1');
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').style.display = '';
+  } else {
+    document.getElementById('gateError').textContent = 'Incorrect access code.';
+    document.getElementById('gateInput').value = '';
+  }
+}
+if (sessionStorage.getItem('mirage_auth') === '1') {
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('app').style.display = '';
+}
+document.addEventListener('DOMContentLoaded', function() {
+  var input = document.getElementById('gateInput');
+  if (input) input.focus();
+});
+</script>
+</body>
+</html>
