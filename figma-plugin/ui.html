@@ -7,8 +7,8 @@ var PROXY = 'https://mirage-proxy-production.up.railway.app';
 var KEY = 'mirage-int-2026';
 var busy = false;
 
-window.onerror = function(msg, src, line, col, err) {
-  parent.postMessage({ pluginMessage: { type: 'ERROR', error: String(err || msg) } }, '*');
+window.onerror = function(msg) {
+  parent.postMessage({ pluginMessage: { type: 'ERROR', error: String(msg) } }, '*');
 };
 
 function poll() {
@@ -18,12 +18,7 @@ function poll() {
     .then(function(data) {
       if (data && data.id) {
         busy = true;
-        document.getElementById('s').textContent = 'Sloan is working...';
-        fetch(PROXY + '/sloan/figma/' + data.id, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', 'x-mirage-key': KEY },
-          body: JSON.stringify({ status: 'running' })
-        });
+        document.getElementById('s').textContent = 'Task received — ' + data.id.slice(0,8);
         parent.postMessage({ pluginMessage: { type: 'EXECUTE_TASK', task: data } }, '*');
       }
     })
