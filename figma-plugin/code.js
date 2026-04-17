@@ -20,45 +20,38 @@ function getTargetPage(taskText) {
   return figma.root.children[0];
 }
 
-async function runWithTheatre(code, delayMs = 150) {
-  const delay = (ms) => new Promise(r => setTimeout(r, ms));
-  const originals = {};
-  const created = [];
-  const patchable = ['createFrame','createText','createRectangle','createEllipse','createLine','createVector','createComponent','createGroup'];
+async function runWithTheatre(code, delayMs) {
+  delayMs = delayMs || 150;
+  var delay = function(ms) { return new Promise(function(r) { setTimeout(r, ms); }); };
 
-  for (const m of patchable) {
-    originals[m] = figma[m].bind(figma);
-    figma[m] = function(...args) {
-      const node = originals[m](...args);
-      created.push(node);
-      return node;
-    };
+  // Snapshot existing page children before running
+  var before = {};
+  for (var i = 0; i < figma.currentPage.children.length; i++) {
+    before[figma.currentPage.children[i].id] = true;
   }
 
-  try {
-    const fn = new Function('return (async()=>{\n' + code + '\n})()');
-    await fn();
-  } finally {
-    for (const m of patchable) figma[m] = originals[m];
-  }
+  // Run the code — no monkey patching
+  var fn = new Function('return (async function(){' + code + '})()');
+  await fn();
 
-  const topLevel = created.filter(n => {
-    try { return n.parent === figma.currentPage; } catch { return false; }
-  });
+  // Find nodes that were added to the page
+  var newNodes = figma.currentPage.children.filter(function(n) { return !before[n.id]; });
 
-  for (const root of topLevel) {
+  // Theatre mode: animate children of each new node
+  for (var ni = 0; ni < newNodes.length; ni++) {
+    var root = newNodes[ni];
     figma.viewport.scrollAndZoomIntoView([root]);
-    if ('children' in root && root.children.length > 0) {
-      const children = [...root.children];
-      for (const child of children) {
-        try { child.opacity = 0; } catch {}
+    if (root.children && root.children.length > 0) {
+      var children = root.children.slice();
+      for (var ci = 0; ci < children.length; ci++) {
+        try { children[ci].opacity = 0; } catch(e) {}
       }
-      await delay(200);
-      for (const child of children) {
+      await delay(300);
+      for (var ci2 = 0; ci2 < children.length; ci2++) {
         try {
-          child.opacity = 1;
+          children[ci2].opacity = 1;
           await delay(delayMs);
-        } catch {}
+        } catch(e) {}
       }
     }
   }
