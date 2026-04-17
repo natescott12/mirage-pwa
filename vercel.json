@@ -4,7 +4,8 @@
     { "path": "/api/sloan-synthesize", "schedule": "0 16 * * 0" }
   ],
   "rewrites": [
-    { "source": "/prototype", "destination": "/pwa" }
+    { "source": "/prototype", "destination": "/pwa" },
+    { "source": "/audit", "destination": "/audit/index.html" }
   ],
   "headers": [
     {
