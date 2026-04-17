@@ -40,7 +40,7 @@ window.onmessage = function(event) {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'x-mirage-key': KEY },
       body: JSON.stringify({ status: msg.status, result: msg.result || '' })
-    });
+    }).catch(function(){});
     busy = false;
     document.getElementById('s').textContent = 'Sloan Live — watching...';
   }
