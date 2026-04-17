@@ -1,6 +1,7 @@
 {
   "crons": [
-    { "path": "/api/sloan-figma-executor", "schedule": "* * * * *" }
+    { "path": "/api/sloan-figma-executor", "schedule": "* * * * *" },
+    { "path": "/api/sloan-synthesize", "schedule": "0 16 * * 0" }
   ],
   "rewrites": [
     { "source": "/prototype", "destination": "/pwa" }
