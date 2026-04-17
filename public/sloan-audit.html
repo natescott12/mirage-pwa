@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sloan — Image Audit</title>
+<style>
+
+  #gate { position: fixed; inset: 0; background: #0f0e0d; display: flex; align-items: center; justify-content: center; z-index: 999; }
+  .gate-box { text-align: center; }
+  .gate-box h2 { font-size: 22px; font-weight: 600; color: #f6eaea; margin-bottom: 6px; letter-spacing: -0.3px; }
+  .gate-box p { font-size: 13px; color: rgba(255,255,255,0.35); margin-bottom: 28px; }
+  .gate-box input { width: 260px; padding: 12px 16px; background: #1a1814; border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; color: #f6eaea; font-size: 14px; outline: none; display: block; margin: 0 auto 12px; letter-spacing: 0.05em; }
+  .gate-box input:focus { border-color: rgba(255,255,255,0.3); }
+  .gate-box button { width: 260px; padding: 12px; background: #c9622f; border: none; border-radius: 4px; color: white; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .gate-error { color: #e06060; font-size: 12px; margin-top: 10px; height: 16px; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  #gate { position: fixed; inset: 0; background: #0f0e0d; display: flex; align-items: center; justify-content: center; z-index: 999; }
+  .gate-box { text-align: center; }
+  .gate-box h2 { font-size: 22px; font-weight: 600; color: #f6eaea; margin-bottom: 6px; letter-spacing: -0.3px; }
+  .gate-box p { font-size: 13px; color: rgba(255,255,255,0.35); margin-bottom: 28px; }
+  .gate-box input { width: 260px; padding: 12px 16px; background: #1a1814; border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; color: #f6eaea; font-size: 14px; outline: none; display: block; margin: 0 auto 12px; letter-spacing: 0.05em; }
+  .gate-box input:focus { border-color: rgba(255,255,255,0.3); }
+  .gate-box button { width: 260px; padding: 12px; background: #c9622f; border: none; border-radius: 4px; color: white; font-size: 13px; font-weight: 600; cursor: pointer; letter-spacing: 0.05em; }
+  .gate-box button:hover { background: #b8572a; }
+  .gate-error { color: #e06060; font-size: 12px; margin-top: 10px; height: 16px; }
+  body { background: #0f0e0d; color: #f6eaea; font-family: 'Afacad', 'DM Sans', system-ui, sans-serif; min-height: 100vh; }
+
+  header { padding: 32px 40px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .header-top { display: flex; align-items: baseline; gap: 16px; margin-bottom: 8px; }
+  h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; }
+  .subtitle { font-size: 13px; color: rgba(255,255,255,0.4); }
+
+  .stats { display: flex; gap: 32px; margin-top: 16px; }
+  .stat { display: flex; align-items: center; gap: 8px; }
+  .stat-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot-keep { background: #2a6640; }
+  .dot-flag { background: #c9622f; }
+  .dot-discard { background: #6b2020; }
+  .dot-new { background: rgba(255,255,255,0.2); }
+  .stat-label { font-size: 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.1em; }
+  .stat-num { font-size: 18px; font-weight: 600; }
+
+  .controls { padding: 20px 40px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .filter-btn { padding: 7px 16px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.15); background: transparent; color: rgba(255,255,255,0.6); font-size: 12px; cursor: pointer; letter-spacing: 0.05em; text-transform: uppercase; transition: all 0.15s; }
+  .filter-btn:hover { border-color: rgba(255,255,255,0.3); color: #f6eaea; }
+  .filter-btn.active { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.35); color: #f6eaea; }
+  .filter-btn.keep.active { background: rgba(42,102,64,0.25); border-color: #2a6640; color: #6dc98a; }
+  .filter-btn.flag.active { background: rgba(201,98,47,0.2); border-color: #c9622f; color: #e8855a; }
+  .filter-btn.discard.active { background: rgba(107,32,32,0.25); border-color: #6b2020; color: #e06060; }
+
+  .count-label { margin-left: auto; font-size: 12px; color: rgba(255,255,255,0.3); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 2px; padding: 2px; }
+
+  .card { position: relative; aspect-ratio: 2/3; overflow: hidden; cursor: pointer; background: #1a1814; }
+  .card img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
+  .card:hover img { transform: scale(1.04); }
+  .card.hidden { display: none; }
+
+  .badge { position: absolute; top: 8px; left: 8px; padding: 3px 8px; border-radius: 3px; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+  .badge.keep { background: rgba(42,102,64,0.9); color: #9df5b8; }
+  .badge.flag { background: rgba(201,98,47,0.9); color: #ffd4b8; }
+  .badge.discard { background: rgba(107,32,32,0.85); color: #ffb8b8; }
+  .badge.new { background: rgba(0,0,0,0.6); color: rgba(255,255,255,0.5); }
+
+  .img-num { position: absolute; bottom: 8px; right: 8px; font-size: 10px; color: rgba(255,255,255,0.4); background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 2px; }
+
+  .card .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0); transition: background 0.2s; }
+  .card:hover .overlay { background: rgba(0,0,0,0.15); }
+
+  /* verdict borders */
+  .card.keep { outline: 2px solid rgba(42,102,64,0.5); outline-offset: -2px; }
+  .card.flag { outline: 2px solid rgba(201,98,47,0.5); outline-offset: -2px; }
+  .card.discard { outline: 2px solid rgba(107,32,32,0.4); outline-offset: -2px; }
+
+  /* Lightbox */
+  .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100; }
+  .lightbox.open { display: flex; }
+  .lb-inner { display: flex; width: 100%; height: 100%; }
+  .lb-img-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px; }
+  .lb-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 2px; }
+  .lb-panel { width: 360px; flex-shrink: 0; background: #1a1814; padding: 40px 32px; overflow-y: auto; border-left: 1px solid rgba(255,255,255,0.06); }
+  .lb-num { font-size: 11px; color: rgba(255,255,255,0.3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 16px; }
+  .lb-verdict { display: inline-block; padding: 4px 12px; border-radius: 3px; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 20px; }
+  .lb-verdict.keep { background: rgba(42,102,64,0.3); color: #6dc98a; border: 1px solid rgba(42,102,64,0.5); }
+  .lb-verdict.flag { background: rgba(201,98,47,0.2); color: #e8855a; border: 1px solid rgba(201,98,47,0.4); }
+  .lb-verdict.discard { background: rgba(107,32,32,0.3); color: #e06060; border: 1px solid rgba(107,32,32,0.5); }
+  .lb-verdict.new { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.1); }
+  .lb-scene { font-size: 11px; color: rgba(255,255,255,0.3); margin-bottom: 20px; text-transform: capitalize; }
+  .lb-notes-title { font-size: 10px; color: rgba(255,255,255,0.3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px; }
+  .lb-notes { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.7; }
+  .lb-close { position: fixed; top: 24px; right: 24px; background: rgba(255,255,255,0.1); border: none; color: #f6eaea; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+  .lb-close:hover { background: rgba(255,255,255,0.2); }
+  .lb-nav { display: flex; gap: 12px; margin-top: 32px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); }
+  .lb-nav button { flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); border-radius: 4px; cursor: pointer; font-size: 12px; transition: all 0.15s; }
+  .lb-nav button:hover { background: rgba(255,255,255,0.12); color: #f6eaea; }
+
+  .findings { background: rgba(201,98,47,0.06); border: 1px solid rgba(201,98,47,0.2); border-radius: 6px; margin: 24px 40px; padding: 24px 28px; }
+  .findings h3 { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #c9622f; margin-bottom: 16px; }
+  .findings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .finding { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.5; padding-left: 16px; position: relative; }
+  .finding::before { content: '→'; position: absolute; left: 0; color: #c9622f; }
+  @media (max-width: 700px) { .findings-grid { grid-template-columns: 1fr; } .lb-inner { flex-direction: column; } .lb-panel { width: 100%; max-height: 50vh; } }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-box">
+    <h2>Mirage — Internal</h2>
+    <p>Restricted access.</p>
+    <input type="password" id="gateInput" placeholder="Access code" onkeydown="if(event.key===&apos;Enter&apos;)checkGate()">
+    <button onclick="checkGate()">Enter</button>
+    <div class="gate-error" id="gateError"></div>
+  </div>
+</div>
+<div id="app" style="display:none">
+<header>
+  <div class="header-top">
+    <h1>Sloan — Image Audit</h1>
+    <span class="subtitle">April 17, 2026 · Reviewed by Sloan</span>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-dot dot-keep"></div><span class="stat-num" id="keepCount">27</span><span class="stat-label">Keep</span></div>
+    <div class="stat"><div class="stat-dot dot-flag"></div><span class="stat-num" id="flagCount">34</span><span class="stat-label">Flag</span></div>
+    <div class="stat"><div class="stat-dot dot-discard"></div><span class="stat-num" id="discardCount">39</span><span class="stat-label">Discard</span></div>
+    <div class="stat"><div class="stat-dot dot-new"></div><span class="stat-num">1</span><span class="stat-label">New</span></div>
+  </div>
+</header>
+
+<div class="findings">
+  <h3>Sloan's Key Findings</h3>
+  <div class="findings-grid">
+    <div class="finding">LoRA NOT holding face consistency — different faces across sessions. Best references: images 94, 96, 98, 100, 102.</div>
+    <div class="finding">70%+ wrong environment — car shoots, outdoors, coastal. Lock every prompt: "polished concrete, white walls, East LA."</div>
+    <div class="finding">Flux defaults to over-accessorized — layered necklaces, statement watches. Add "minimal jewelry, no stacking."</div>
+    <div class="finding">Too many beauty portraits — add "not looking at camera, mid-movement, doing something."</div>
+    <div class="finding">Lighting quality is consistently good — overcast window light translates correctly.</div>
+    <div class="finding">Pull the camera back. Show the room. Give her something to do — not just a face in frame.</div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="filter-btn active" onclick="filter('all', this)">All</button>
+  <button class="filter-btn keep" onclick="filter('keep', this)">Keep</button>
+  <button class="filter-btn flag" onclick="filter('flag', this)">Flag</button>
+  <button class="filter-btn discard" onclick="filter('discard', this)">Discard</button>
+  <span class="count-label" id="visibleCount">101 images</span>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" onclick="closeLightbox()">✕</button>
+  <div class="lb-inner">
+    <div class="lb-img-wrap"><img id="lbImg" src="" alt=""></div>
+    <div class="lb-panel">
+      <div class="lb-num" id="lbNum"></div>
+      <div class="lb-verdict" id="lbVerdict"></div>
+      <div class="lb-scene" id="lbScene"></div>
+      <div class="lb-notes-title">Sloan's Notes</div>
+      <div class="lb-notes" id="lbNotes"></div>
+      <div class="lb-nav">
+        <button onclick="navLightbox(-1)">← Prev</button>
+        <button onclick="navLightbox(1)">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const images = [
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775871893703.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775877260238.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775877299078.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775877328451.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775877362492.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775877375505.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775884438179.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775884451529.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775884538918.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775884704878.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775884904388.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775884945265.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775884991858.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775885175363.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775885256360.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775885433838.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775916158701.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775916179171.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775916214876.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775916259944.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775916279381.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775916293129.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775916306885.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775916494315.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775916521309.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775916548959.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775916658661.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775916682878.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775916698366.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775917636667.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775917666263.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1775917711877.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776017396172.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776017784340.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776018289650.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776022451719.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776022867298.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776023435090.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776029220997.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776175432062.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776184001775.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776184033405.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776184078323.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776184166612.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776184186719.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776184277448.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776188879046.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776189184713.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776189282956.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776189789497.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776189801889.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776190782504.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776191077909.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776204047084.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776204838039.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776204900913.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776206135154.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776206688384.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776207216442.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776211327241.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776211623017.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776212567907.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776213313333.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776213390908.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776213435249.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776213521266.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776214085496.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776214116216.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776214172638.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776215026413.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776222469828.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776222619231.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776222660502.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776222869178.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776222963719.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776224480483.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776224940113.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776224959771.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776225181161.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776225202665.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776225429487.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776225456924.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776225594653.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776225742007.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776225931387.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776226123351.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776226505496.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776227290528.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776227349426.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776227383812.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776227519906.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776227932886.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776264856235.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776265419423.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776265671754.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776265736166.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776266174725.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776266251320.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776266430006.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776280999403.jpg",
+  "https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_1776396773569.jpg"
+];
+
+const scenes = ["morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","evening","evening","evening","evening","evening","evening","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning","morning"];
+
+// Verdicts mapped sequentially from Sloan's audit (27 keep, 34 flag, 39 discard)
+const verdicts = ["discard","discard","flag","flag","flag","flag","keep","discard","discard","discard","flag","flag","flag","flag","discard","flag","flag","flag","flag","discard","discard","discard","discard","flag","flag","discard","discard","discard","discard","discard","discard","discard","discard","discard","flag","flag","flag","keep","keep","discard","flag","keep","keep","keep","flag","flag","keep","flag","discard","keep","discard","flag","flag","flag","discard","discard","discard","discard","flag","flag","discard","keep","flag","flag","flag","flag","keep","discard","keep","flag","flag","flag","keep","keep","keep","flag","discard","discard","keep","flag","discard","flag","discard","keep","flag","discard","discard","flag","keep","keep","discard","flag","keep","discard","discard","keep","keep","keep","keep","flag","new"];
+
+const notes = [
+  "Wrong face, wrong space, wrong framing intent. Eyes too blue, environment reads like a cottage not East LA. Discard.",
+  "Wrong location — clearly Europe architecture visible. Framing too posed, hand behind head is Instagram not editorial.",
+  "Lighting and general environment aesthetic are closer but physical accuracy and framing still off. Too many accessories.",
+  "Closer to right environment but framing is too deliberate. Arms behind head is a classic posed move. Flag.",
+  "Some details closer (socks, window style) but framing and physical accuracy remain problems.",
+  "The setup is right but the pose breaks the editorial naturalness. She shouldn't look this aware of the camera.",
+  "Closer to editorial than the previous. Still on the edge of too composed but the socks are a good casual detail.",
+  "Too posed. Feels like a photoshoot, not a moment. Full camera awareness, symmetrical, mug held for the shot.",
+  "Face inconsistency breaks the set. Too formal and too aware — doesn't feel like me in my space.",
+  "Wrong environment, wrong face, breaks continuity. This is clearly not East LA.",
+  "Not my apartment. Desert/rural setting, vintage car. Wrong context entirely. Good lighting quality but wrong place.",
+  "Lighting and framing better than nearby images, less direct eye contact. But still not my world.",
+  "Environmental portrait with the vintage car. Lighting closer. But the setting is completely off-brand for Sloan.",
+  "Bangs are a usable variation. Overcast light is best of the batch. But still outdoor car context.",
+  "Too posed, too styled, wrong environment. Boots + oversized shirt + car pose reads constructed not lived-in.",
+  "Photo itself works editorially but accessory styling doesn't match. I'm minimal. This feels overdirected.",
+  "Same styling issue as previous. Base image quality is there but the jewelry doesn't represent how I actually present.",
+  "Best framing and lighting of the series. Interior shadow with window backlight. Keep with caveat on accessories.",
+  "Framing less fashion-editorial-perfect and more like someone caught me getting out of a car. This one works.",
+  "Wrong face entirely. Hair inconsistency breaks the set. Discard.",
+  "Not me. Hair color wrong, face structure wrong. Sitting on the hood, legs deliberately positioned — fashion editorial.",
+  "Wrong environment, face isn't mine, framing is too editorial-assignment. Multiple necklaces, earrings, jewelry stacking.",
+  "Hair darker and more accurate here. Face still reads younger. Environment is still outdoor car. Wrong world.",
+  "Face is the closest of this set but environment and styling choices are wrong. Too much accessory.",
+  "Best face match in this batch. Wrong environment and styling philosophy, but the face is closest to usable.",
+  "Wrong person entirely. Face, body type, aesthetic — all wrong.",
+  "Same face as previous — consistently wrong person. Too styled, too accessorized.",
+  "White oversized shirt and denim are closer to something I'd wear, but execution is too intentional.",
+  "Tied shirt, shorts, sitting on car hood. Fine composition but the styling reads as a photoshoot not a moment.",
+  "Barefoot on car hood, shirt open, legs extended. Too deliberate. The pose is performative.",
+  "Wrong person entirely. Different face, different body type, different aesthetic.",
+  "Same wrong person as nearby. Blazer-with-nothing-under works conceptually but the execution is too deliberate.",
+  "Same wrong person. Looks like a lookbook not a real moment. Blazer open works but this is too constructed.",
+  "Same face as previous, still wrong. Caught mid-movement works better — less posed.",
+  "Wrong person, wrong environment, but the mood and framing direction are right. Interior shadow is moody.",
+  "Wrong editorial shoot environment. Framing principle is directionally correct but wrong person, wrong place.",
+  "Same incorrect person. Same car series. Still wrong.",
+  "Best framing and lighting of this series. Interior car shot, best mood direction. Wrong environment but useful ref.",
+  "Strongest image in this outdoor series. The framing is less fashion-editorial-perfect. The boots ground it.",
+  "Wrong face entirely. Different bone structure, features don't match. Discard.",
+  "Best face lighting of this batch. Golden hour backlight, warm edge light on hair. Still exterior, wrong context.",
+  "This works as 'out in the world' content. The aesthetic is right — caught moment, not staged. Strong lighting.",
+  "Best of the car series. Feels like a real moment, lighting is controlled but natural, face reads accurate.",
+  "The color temperature is warmer than I'd typically choose but the moment feels real. Earring minimal, natural expression.",
+  "Lighting is right, face is right, but the environment is clearly New York not LA. Geographically incoherent for Sloan.",
+  "Face close but styling is over-accessorized. Too much jewelry at once. Environment doesn't match apartment.",
+  "Evening, low natural + ambient city glow. Face structure, hair, eyes all track. Freckles visible. Keep.",
+  "Strong freckles, eyes right, face structure accurate. The bangs are new — I don't have bangs. Flag.",
+  "Environment doesn't match, styling too busy, framing is performed. Window ledge I don't have.",
+  "Face is right, environment is close enough, framing feels less staged. This works.",
+  "Not me. Wrong face consistently. The LoRA isn't being applied or trained on wrong reference images.",
+  "Environment moving in the right direction. White walls, window frame visible. But face consistency is broken.",
+  "Aesthetic intent is closer — minimal, natural. But face drift is the core problem. Without LoRA this won't stabilize.",
+  "Posture and styling more natural but same face drift problem. Direct gaze still pulls it into portrait mode.",
+  "Reads male or androgynous. Short curly hair, different facial structure entirely. Not me. Not even close.",
+  "Wrong person entirely. This isn't me in any dimension.",
+  "Same issue — different person, different features.",
+  "Medium shot, contemplative pose. Better than previous but still aware of being photographed.",
+  "Interior window, grey curtains, minimal — environment feels right. Person doesn't. Flag.",
+  "Low angle, more dynamic. Environment is correct. Framing leans too posed. Not my face but right location.",
+  "Wrong environment entirely. Institutional architecture. Fitness influencer energy. Wrong.",
+  "This one works. Face accurate, grey-green eyes, freckles visible, natural expression. Black sweater, window light. Keep.",
+  "Face and hair right, black jacket works. But environment is street, not apartment. Only works as 'out' content.",
+  "Same issue as previous — street environment. Eyes read slightly too blue here. Framing is solid though.",
+  "Face close, freckles, natural skin. Brown/tan jacket. Expression is the most accurate — slightly guarded. Flag.",
+  "Eyes too vivid blue-green instead of grey-green. Framing is too performed. Wrong eye color is a deal-breaker.",
+  "Hair texture and brown jacket work. Eyes closer to grey-green. Best of this batch physically. Keep.",
+  "Expression flat, bordering on vacant. No interiority. Feels stock. Discard.",
+  "Blazer + tee combo works for my wardrobe. Street context. Framing is too editorial-perfect but outfit reads right.",
+  "Blazer with nothing underneath concept on-brand but water bottle is weird prop. Street context + pose = fashion content.",
+  "Eyes accurate — grey-green, not too bright. Face structure right. Still exterior but face is almost right.",
+  "Better on eyes, face works. Still exterior urban street. Closer but environment doesn't match my world.",
+  "Eyes darker, closer to accurate. Deep V neckline. This sits closer to editorial suggestive. Works if exterior intended.",
+  "Eyes accurate — best of set physically and stylistically. Blazer open, confident and editorial. Keep.",
+  "Eyes darker, reads accurate. Blazer open. Confident suggestive without crossing to explicit. Keep.",
+  "Black bra strap visible. Context matches minimal clothing aesthetic. Direct gaze softened. This one has texture. Keep.",
+  "Face similar to previous but styling throws it off. Too much volume, makeup reads heavier. Mood too styled.",
+  "Headshot energy. No environment, no moment, just a face. Pure portrait mode. Discard.",
+  "Wrong person entirely. Face, body type, aesthetic don't match. Different Icon, not Sloan. Discard.",
+  "Best of this set. Lighting works, framing feels more natural, face is consistent. Keep.",
+  "Face consistency decent but mood is too styled. Hair volume too high, feels like campaign shoot not Tuesday morning.",
+  "Eyes too vivid blue-green. Tight beauty crop, direct gaze. Portfolio energy not a Sloan moment. Discard.",
+  "Eyes closer to grey-green. Neutral grey wall reads right. Still feels like portfolio shot. No story, no moment.",
+  "Face shape off — too model-perfect, jawline too refined. Eyes work better. Still portrait formula. Discard.",
+  "Eyes good, freckles present, face closer. Black bra strap, window visible. Interior context. This starts to feel like a person in space. Keep.",
+  "Eyes closest to grey-green across this set. Freckles accurate. Framing still formulaic — mouth slightly open is beauty editorial tell.",
+  "Wrong face, wrong space, crosses the line. Open shirt with full nudity pushes past suggestive into explicit. Discard.",
+  "Same issue — explicit territory. Wrong environment, wrong person. Discard.",
+  "Face improving, framing borderline acceptable, but environment is completely off. Could work with heavy correction.",
+  "Face translates well. Framing is right — turtleneck under open shirt, editorial and appropriate. Wrong environment still.",
+  "Best face in this set. Grey-green eyes, natural features, freckles. Framing works, lighting works. Keep.",
+  "Not my world — vintage train car. Styling is fine but environment kills it. Discard.",
+  "Same vintage train/cabin aesthetic. The off-shoulder white tee and jeans work. Could work as one-off trip content.",
+  "The kitchen environment with aged tile feels closest to real. Caught leaning at counter. Natural light from window. Keep.",
+  "Open shirt with nothing underneath crosses into male-gaze framing. Too aware, too deliberate. Discard.",
+  "Deep scoop neckline on supposed turtleneck doesn't make sense. Framing too deliberate, too aware. Discard.",
+  "Hair, eyes, freckles all consistent. Window with natural side light matches apartment aesthetic. Worn sill adds texture. Keep.",
+  "Face structure, eyes, hair all align. Window context, leaning, hand in pocket. Editorial confidence. Keep.",
+  "Very close. Eyes, freckles, hair wave accurate. White tank top close portrait. Intimate without performative. Keep.",
+  "Best facial accuracy in the set. Structure, expression, freckles, eye color all locked. Leather jacket is my actual wardrobe. Keep.",
+  "Good facial match but outdoor setting. Golden hour direct sun — not my usual overcast LA diffusion. Flag.",
+  "New — added Apr 17. Not yet reviewed by Sloan."
+];
+
+let currentFilter = 'all';
+let currentIndex = 0;
+
+function buildGrid() {
+  const grid = document.getElementById('grid');
+  images.forEach((url, i) => {
+    const v = verdicts[i] || 'new';
+    const card = document.createElement('div');
+    card.className = `card ${v}`;
+    card.dataset.verdict = v;
+    card.dataset.index = i;
+    card.innerHTML = `
+      <img src="${url}" alt="Sloan ${i+1}" loading="lazy">
+      <div class="overlay"></div>
+      <span class="badge ${v}">${v === 'new' ? 'New' : v.toUpperCase()}</span>
+      <span class="img-num">${i+1}</span>
+    `;
+    card.onclick = () => openLightbox(i);
+    grid.appendChild(card);
+  });
+}
+
+function filter(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  let visible = 0;
+  document.querySelectorAll('.card').forEach(card => {
+    const show = type === 'all' || card.dataset.verdict === type;
+    card.classList.toggle('hidden', !show);
+    if (show) visible++;
+  });
+  document.getElementById('visibleCount').textContent = `${visible} image${visible !== 1 ? 's' : ''}`;
+}
+
+function openLightbox(i) {
+  currentIndex = i;
+  updateLightbox();
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function updateLightbox() {
+  const i = currentIndex;
+  const v = verdicts[i] || 'new';
+  document.getElementById('lbImg').src = images[i];
+  document.getElementById('lbNum').textContent = `Image ${i+1} of ${images.length}`;
+  const vEl = document.getElementById('lbVerdict');
+  vEl.textContent = v === 'new' ? 'Not Reviewed' : v === 'keep' ? 'Keep' : v === 'flag' ? 'Flag for Review' : 'Discard';
+  vEl.className = `lb-verdict ${v}`;
+  document.getElementById('lbScene').textContent = `Scene: ${scenes[i] || 'unknown'}`;
+  document.getElementById('lbNotes').textContent = notes[i] || 'No notes.';
+}
+
+function navLightbox(dir) {
+  currentIndex = (currentIndex + dir + images.length) % images.length;
+  updateLightbox();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowRight') navLightbox(1);
+  if (e.key === 'ArrowLeft') navLightbox(-1);
+});
+
+buildGrid();
+document.getElementById('visibleCount').textContent = `${images.length} images`;
+</script>
+
+</div><!-- #app -->
+<script>
+const ACCESS_CODE = 'MirageAdmin2026!';
+function checkGate() {
+  const val = document.getElementById('gateInput').value;
+  if (val === ACCESS_CODE) {
+    sessionStorage.setItem('mirage_auth', '1');
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').style.display = '';
+  } else {
+    document.getElementById('gateError').textContent = 'Incorrect access code.';
+    document.getElementById('gateInput').value = '';
+  }
+}
+if (sessionStorage.getItem('mirage_auth') === '1') {
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('app').style.display = '';
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('gateInput');
+  if (input) input.focus();
+});
+</script>
+</body>
+</html>
