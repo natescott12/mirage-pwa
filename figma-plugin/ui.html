@@ -141,12 +141,15 @@
 </div>
 
 <script>
+var PROXY = 'https://mirage-proxy-production.up.railway.app';
+var INTERNAL_KEY = 'mirage-int-2026';
+var POLL_MS = 3000;
 var theatreMode = true;
+var busy = false;
 
 function toggleTheatre() {
   theatreMode = !theatreMode;
-  var el = document.getElementById('toggle');
-  el.classList.toggle('on', theatreMode);
+  document.getElementById('toggle').classList.toggle('on', theatreMode);
   parent.postMessage({ pluginMessage: { type: 'theatre', value: theatreMode } }, '*');
 }
 
@@ -166,16 +169,78 @@ function setLastTask(name) {
   document.getElementById('lastTask').textContent = name ? 'Last: ' + name : '';
 }
 
+// ── Network layer — all fetch calls live here ──
+
+function proxyHeaders(json) {
+  var h = { 'x-mirage-key': INTERNAL_KEY };
+  if (json) h['Content-Type'] = 'application/json';
+  return h;
+}
+
+async function fetchPending() {
+  try {
+    var r = await fetch(PROXY + '/sloan/figma/pending', { headers: proxyHeaders() });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch (e) { console.warn('[ui] poll error:', e.message); return null; }
+}
+
+async function patchTask(id, status, result) {
+  try {
+    await fetch(PROXY + '/sloan/figma/' + id, {
+      method: 'PATCH',
+      headers: proxyHeaders(true),
+      body: JSON.stringify({ status: status, result: result || null }),
+    });
+  } catch (e) { console.warn('[ui] patch error:', e.message); }
+}
+
+// ── Poll loop ──
+
+async function poll() {
+  if (busy) return;
+
+  var task = await fetchPending();
+  if (!task || !task.id) {
+    setStatus('Queue empty', false);
+    setProgress(0);
+    return;
+  }
+
+  busy = true;
+  var taskName = (task.task || '').slice(0, 80);
+  setStatus('Sloan is working...', true);
+  setProgress(2);
+
+  // Mark running
+  await patchTask(task.id, 'running');
+
+  // Send task to code.js for Figma API execution
+  parent.postMessage({ pluginMessage: { type: 'EXECUTE_TASK', task: task } }, '*');
+}
+
+// ── Listen for results from code.js ──
+
 window.onmessage = function(e) {
   var msg = e.data.pluginMessage;
   if (!msg) return;
-  if (msg.type === 'watching') { setStatus('Watching...', true); setProgress(0); }
-  if (msg.type === 'working')  { setStatus('Sloan is working...', true); setProgress(2); }
+
+  if (msg.type === 'TASK_DONE') {
+    patchTask(msg.id, msg.status || 'complete', msg.result || null);
+    setStatus('Ready for review', false);
+    setProgress(100);
+    setTimeout(function() { setProgress(0); }, 1500);
+    setLastTask(msg.result || '');
+    busy = false;
+  }
+
   if (msg.type === 'progress') { setProgress(msg.percent || 0); }
-  if (msg.type === 'complete') { setStatus('Ready for review', false); setProgress(100); setTimeout(function(){ setProgress(0); }, 1500); setLastTask(msg.task); }
-  if (msg.type === 'empty')    { setStatus('Queue empty', false); setProgress(0); }
-  if (msg.type === 'error')    { setStatus('Error — check console', false); setProgress(0); }
 };
+
+// ── Start polling ──
+
+setStatus('Watching...', true);
+setInterval(poll, POLL_MS);
 </script>
 
 </body>
