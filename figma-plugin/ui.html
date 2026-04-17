@@ -141,6 +141,11 @@
 </div>
 
 <script>
+window.onerror = function(msg, src, line, col, err) {
+  console.error('[ui] uncaught:', msg, 'at', src, line);
+  try { parent.postMessage({ pluginMessage: { type: 'ERROR', error: String(msg).slice(0, 200) } }, '*'); } catch(_){}
+};
+
 var PROXY = 'https://mirage-proxy-production.up.railway.app';
 var INTERNAL_KEY = 'mirage-int-2026';
 var POLL_MS = 3000;
@@ -240,7 +245,12 @@ window.onmessage = function(e) {
 // ── Start polling ──
 
 setStatus('Watching...', true);
-setInterval(poll, POLL_MS);
+setInterval(function() {
+  try { poll(); } catch (e) {
+    console.error('[ui] poll crash:', e.message);
+    parent.postMessage({ pluginMessage: { type: 'ERROR', error: 'Poll crash: ' + e.message } }, '*');
+  }
+}, POLL_MS);
 </script>
 
 </body>

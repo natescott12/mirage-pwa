@@ -8,6 +8,11 @@ var theatreMode = true;
 figma.ui.onmessage = async function(msg) {
   if (msg.type === 'theatre') { theatreMode = msg.value; return; }
 
+  if (msg.type === 'ERROR') {
+    figma.notify('Plugin error: ' + (msg.error || 'unknown'), { timeout: 6000, error: true });
+    return;
+  }
+
   if (msg.type === 'EXECUTE_TASK') {
     var task = msg.task;
     if (!task || !task.id) return;
