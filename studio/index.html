@@ -2788,6 +2788,62 @@ window.addEventListener('load', function() {
   }, 2000);
 });
 
+// ── ONE-TIME SLOANE→SLOAN MIGRATION ──────────────────────────────────────────
+// Renames sloane_*.jpg files in the content bucket to sloan_*.jpg and updates
+// the content table to match. Runs once per browser, gated by localStorage.
+async function migrateSloanImages() {
+  if (localStorage.getItem('sloane_migration_done')) return;
+  if (!window.sbStudio) { console.warn('[migrate] no Supabase client, skipping'); return; }
+  const sb = window.sbStudio;
+  console.log('[migrate] starting sloane_ → sloan_ migration');
+
+  try {
+    const { data: files, error: listErr } = await sb.storage.from('content').list('', { limit: 1000 });
+    if (listErr) { console.error('[migrate] list error:', listErr); return; }
+    const targets = (files || []).filter(function(f) { return f.name && f.name.startsWith('sloane_'); });
+    if (!targets.length) {
+      console.log('[migrate] no sloane_ files found — nothing to migrate');
+      localStorage.setItem('sloane_migration_done', '1');
+      return;
+    }
+    console.log('[migrate] found', targets.length, 'files to rename');
+
+    var success = 0, fail = 0;
+    for (var i = 0; i < targets.length; i++) {
+      var oldName = targets[i].name;
+      var newName = oldName.replace(/^sloane_/, 'sloan_');
+      console.log('[migrate] (' + (i + 1) + '/' + targets.length + ') moving', oldName, '→', newName);
+
+      var moveResult = await sb.storage.from('content').move(oldName, newName);
+      if (moveResult.error) {
+        console.error('[migrate] move failed for', oldName, ':', moveResult.error);
+        fail++;
+        continue;
+      }
+
+      var { error: updateErr } = await sb.rpc('', undefined).then(function() { return { error: null }; }).catch(function() { return { error: 'rpc-skip' }; });
+      var updateResult = await sb.from('content')
+        .update({ image_url: sb.storage.from('content').getPublicUrl(newName).data.publicUrl, icon_name: 'Sloan' })
+        .like('image_url', '%' + oldName + '%');
+      if (updateResult.error) {
+        console.warn('[migrate] content table update failed for', oldName, ':', updateResult.error);
+      }
+      success++;
+      console.log('[migrate] ✓', oldName, '→', newName);
+    }
+
+    console.log('[migrate] complete —', success, 'moved,', fail, 'failed');
+    localStorage.setItem('sloane_migration_done', '1');
+  } catch (e) {
+    console.error('[migrate] exception:', e.message);
+  }
+}
+
+// Kick off migration after load sync completes (3s delay to stay out of the way)
+window.addEventListener('load', function() {
+  setTimeout(function() { migrateSloanImages(); }, 3000);
+});
+
 // ── WARDROBE OVERHAUL ────────────────────────────────────────────────────────
 const WARDROBE_DEFAULTS = {
   tops: [
