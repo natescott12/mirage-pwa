@@ -1,4 +1,7 @@
 {
+  "crons": [
+    { "path": "/api/sloan-figma-executor", "schedule": "* * * * *" }
+  ],
   "rewrites": [
     { "source": "/prototype", "destination": "/pwa" }
   ],
