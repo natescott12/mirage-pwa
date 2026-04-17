@@ -4,17 +4,27 @@
 <script>
 const PROXY = 'https://mirage-proxy-production.up.railway.app';
 const KEY = 'mirage-int-2026';
+let busy = false;
 
-window.onerror = (msg, src, line, col, err) => {
+window.onerror = function(msg, src, line, col, err) {
   parent.postMessage({ pluginMessage: { type: 'ERROR', error: String(err || msg) } }, '*');
 };
 
 async function poll() {
+  if (busy) return;
   try {
-    const r = await fetch(PROXY + '/sloan/figma/pending', { headers: { 'x-mirage-key': KEY } });
+    const r = await fetch(PROXY + '/sloan/figma/pending', {
+      headers: { 'x-mirage-key': KEY }
+    });
     if (!r.ok) return;
     const data = await r.json();
     if (data && data.id) {
+      busy = true;
+      await fetch(PROXY + '/sloan/figma/' + data.id, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-mirage-key': KEY },
+        body: JSON.stringify({ status: 'running' })
+      });
       parent.postMessage({ pluginMessage: { type: 'EXECUTE_TASK', task: data } }, '*');
     }
   } catch (e) {
@@ -22,19 +32,23 @@ async function poll() {
   }
 }
 
-window.onmessage = (event) => {
+window.onmessage = async function(event) {
   const msg = event.data.pluginMessage;
   if (!msg) return;
   if (msg.type === 'TASK_DONE') {
-    fetch(PROXY + '/sloan/figma/' + msg.id, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'x-mirage-key': KEY },
-      body: JSON.stringify({ status: msg.status, result: msg.result })
-    });
+    try {
+      await fetch(PROXY + '/sloan/figma/' + msg.id, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-mirage-key': KEY },
+        body: JSON.stringify({ status: msg.status, result: msg.result || '' })
+      });
+    } catch (e) {}
+    busy = false;
   }
 };
 
 setInterval(poll, 3000);
+poll();
 </script>
 </body>
 </html>
