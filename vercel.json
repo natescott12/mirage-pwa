@@ -5,8 +5,8 @@
   ],
   "rewrites": [
     { "source": "/prototype", "destination": "/pwa" },
-    { "source": "/audit", "destination": "/audit/index.html" },
-    { "source": "/audit/", "destination": "/audit/index.html" }
+    { "source": "/audit", "destination": "/audit.html" },
+    { "source": "/audit/", "destination": "/audit.html" }
   ],
   "headers": [
     {
