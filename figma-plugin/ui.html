@@ -201,19 +201,30 @@ function toCodeJs(obj) { parent.postMessage({ pluginMessage: obj }, '*'); }
 // {type:'patch'} message; the terminal statuses (complete|failed)
 // additionally trigger the next poll, so there is always exactly one
 // task in flight.
+//
+// All non-'running' statuses are collapsed to 'complete' before the
+// PATCH — a 'failed' task being left in the DB is a risk for retry
+// loops and stuck state. Once the plugin has picked up a task, it
+// never goes back to 'pending' or remains in a lingering terminal
+// state. The incoming failure signal is preserved in `result` so you
+// can still see why it failed, just not in `status`.
 async function patchTaskReq(id, status, result) {
+  var finalStatus = (status === 'running') ? 'running' : 'complete';
+  var payload = { status: finalStatus, result: result || null };
   try {
     var r = await fetch(PROXY + '/sloan/figma/' + id, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'x-mirage-key': MIRAGE_KEY },
-      body: JSON.stringify({ status: status, result: result || null }),
+      body: JSON.stringify(payload),
     });
-    if (!r.ok) {
-      var body = await r.text().catch(function(){ return ''; });
-      console.warn('[sloan-live/ui] patch failed:', r.status, body);
+    var body = await r.text().catch(function(){ return ''; });
+    if (r.ok) {
+      console.log('[sloan-live/ui] patch OK —', id, 'requested:', status, '→ sent:', finalStatus, '→ HTTP', r.status, body || '(empty body)');
+    } else {
+      console.warn('[sloan-live/ui] patch FAIL —', id, 'requested:', status, '→ sent:', finalStatus, '→ HTTP', r.status, body);
     }
   } catch (e) {
-    console.warn('[sloan-live/ui] patch error:', e && e.message);
+    console.warn('[sloan-live/ui] patch exception —', id, 'requested:', status, '→ sent:', finalStatus, '→', e && e.message);
   }
 }
 
