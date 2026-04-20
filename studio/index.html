@@ -1402,7 +1402,14 @@ try {
 } catch (_) {}
 let selectedIcon = __defaultIcon; window.selectedIcon = selectedIcon;
 let scene = "morning", scenePrompt = SCENES.morning[0];
-let params = {grain:PARAMS.grain[0],color:PARAMS.color[0],light:PARAMS.light[0]};
+// grain and color were removed from PARAMS when the Filters panel took
+// over those concerns post-generation; keep params.light only and tolerate
+// PARAMS gaining/losing keys in the future.
+let params = {};
+Object.keys(PARAMS || {}).forEach(function(k) {
+  var opts = PARAMS[k];
+  if (opts && opts.length) params[k] = opts[0];
+});
 let generating = false, generatedContent = [], queue = [];
 let libIconId = "all", libFilter = "all", libSelected = new Set();
 let lbImages = [], lbIdx = 0;
