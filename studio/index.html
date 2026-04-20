@@ -715,14 +715,13 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     <a href="/admin#personas" class="studio-crossnav" title="Open Persona Builder in admin">Persona Builder</a>
   </div>
   <div style="display:flex;align-items:center;gap:20px">
-    <div id="proxy-status" style="font-size:10px;letter-spacing:0.1em;cursor:pointer" onclick="checkProxy()">Checking...</div>
+    <div id="proxy-status" style="font-size:10px;letter-spacing:0.1em;cursor:pointer;color:var(--muted)" onclick="checkProxy()"><span style="display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:var(--muted);display:inline-block"></span>Checking proxy...</span></div>
     <div style="display:flex;gap:4px">
       <div class="nav-tab active" data-tab="generate" onclick="switchTab('generate')">Generate</div>
       <div class="nav-tab active" data-tab="generate" onclick="switchTab('converse')">Converse</div>
       <div class="nav-tab" data-tab="library" onclick="switchTab('library')">Library <span class="badge" id="lib-total">0</span></div>
       <div class="nav-tab" data-tab="icons" onclick="switchTab('icons')">Icons</div>
       <div class="nav-tab" data-tab="queue" onclick="switchTab('queue')">Queue <span class="badge" id="queue-count">0</span></div>
-      <div class="nav-tab" data-tab="schedule" onclick="switchTab('schedule')">Schedule</div>
     </div>
   </div>
 </div>
@@ -799,46 +798,6 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
         </div>
       </div>
 
-      <!-- Moodboard -->
-      <div class="moodboard" id="moodboard">
-        <div class="moodboard-header" onclick="toggleMoodboard()">
-          <div style="display:flex;align-items:center;gap:10px">
-            <div class="char-builder-title">Moodboard</div>
-            <div style="font-size:9px;color:var(--muted);background:var(--bg3);padding:2px 8px;border-radius:999px" id="mb-count">0 references</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <div style="font-size:10px;color:var(--muted)" id="mb-summary">Visual references for generation</div>
-            <div id="mb-chevron" style="font-size:10px;color:var(--muted)">▼</div>
-          </div>
-        </div>
-        <div class="moodboard-body" id="moodboard-body">
-
-          <!-- Drop zone -->
-          <div class="moodboard-dropzone" id="mb-dropzone"
-            onclick="document.getElementById('mb-file-input').click()"
-            ondragover="mbDragOver(event)"
-            ondragleave="mbDragLeave(event)"
-            ondrop="mbDrop(event)">
-            <div class="moodboard-dropzone-icon">⊕</div>
-            <div class="moodboard-dropzone-text"><strong>Drop images here</strong> or click to upload<br>Editorial refs · lighting · color · face</div>
-          </div>
-          <input type="file" id="mb-file-input" accept="image/*" multiple style="display:none" onchange="mbFilePicked(event)" />
-
-          <!-- Image grid -->
-          <div class="moodboard-grid" id="mb-grid"></div>
-
-          <!-- Extract button -->
-          <button class="mb-extract-btn" id="mb-extract-btn" onclick="extractMoodboard()" style="display:none">
-            <span id="mb-extract-spinner" style="display:none;width:11px;height:11px;border-width:1.5px;border-color:rgba(26,23,20,0.2);border-top-color:var(--text)" class="spinner"></span>
-            ✦ Extract aesthetic from moodboard
-          </button>
-
-          <!-- Extracted description -->
-          <div class="mb-extracted" id="mb-extracted"></div>
-
-        </div>
-      </div>
-
       <!-- Character Builder -->
       <div class="char-builder" id="char-builder">
         <div class="char-builder-header" onclick="toggleCharBuilder()">
@@ -849,6 +808,35 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
           </div>
         </div>
         <div class="char-builder-body" id="char-builder-body">
+
+          <!-- Simplified 3-field view. Covers 90% of the daily-use case;
+               everything below lives behind the Advanced toggle. Setting
+               and Signature Style bind to the same icon fields (icon.setting
+               and icon.style) as their advanced counterparts — editing
+               either view updates the shared state. -->
+          <div class="char-field">
+            <div class="char-section-label">Appearance Notes</div>
+            <textarea id="cb-appearance-simple" class="char-input" rows="2" style="resize:vertical;line-height:1.5;min-height:56px" placeholder="Free text — what she looks like, the feel of her, anything that matters for the shot" oninput="updateChar('appearanceNotes',this.value)"></textarea>
+          </div>
+          <div class="char-field">
+            <div class="char-section-label">Typical Setting</div>
+            <input id="cb-setting-simple" class="char-input" placeholder="Her default environment — e.g. East LA apartment, overcast window light" oninput="syncSimpleCharField('setting',this.value)" />
+          </div>
+          <div class="char-field">
+            <div class="char-section-label">Signature Style</div>
+            <input id="cb-style-simple" class="char-input" placeholder="Her default wardrobe/feel — e.g. black slip dress, bare feet, always slightly off-duty" oninput="syncSimpleCharField('style',this.value)" />
+          </div>
+
+          <!-- Advanced toggle + collapsible wrapper. Everything previously
+               visible is here by default so full control is one click away. -->
+          <div class="char-field" style="margin-top:4px;padding-top:10px;border-top:1px solid var(--border)">
+            <div class="char-section-label" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none" onclick="toggleCharAdvanced()">
+              <span>Advanced · full control</span>
+              <span id="cb-adv-chevron" style="font-size:10px;color:var(--muted)">▼</span>
+            </div>
+          </div>
+
+          <div id="cb-advanced" style="display:none;flex-direction:column;gap:14px">
 
           <!-- Ethnicity / Heritage -->
           <div class="char-field">
@@ -861,12 +849,6 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
             <div class="char-section-label">Skin Tone</div>
             <div class="skin-swatches" id="skin-swatches"></div>
             <input id="cb-skin" class="char-input" style="margin-top:6px" placeholder="or describe e.g. warm olive, cool porcelain..." oninput="updateChar('skinTone',this.value)" />
-          </div>
-
-          <!-- Skin texture -->
-          <div class="char-field">
-            <div class="char-section-label">Skin Texture</div>
-            <div class="char-chips" id="chips-skinTexture"></div>
           </div>
 
           <!-- Skin texture -->
@@ -964,6 +946,7 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
           </div>
 
           <button class="char-save-btn" onclick="saveCharacter()">Save Character Profile</button>
+          </div>  <!-- /#cb-advanced -->
         </div>
       </div>
 
@@ -1087,7 +1070,6 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
         <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
           <button class="wardrobe-tab-btn active" onclick="MG.switchTab('tops')" id="wtab-tops">Tops</button>
           <button class="wardrobe-tab-btn" onclick="MG.switchTab('bottoms')" id="wtab-bottoms">Bottoms</button>
-          <button class="wardrobe-tab-btn" onclick="MG.switchTab('accessories')" id="wtab-accessories">Accessories</button>
           <button class="wardrobe-tab-btn" onclick="MG.switchTab('look')" id="wtab-look">Full Look</button>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px" id="wardrobe-chips"></div>
@@ -1227,18 +1209,6 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     <div id="queue-list"><div style="padding:60px 32px;text-align:center;border:1px solid var(--border);border-radius:2px;background:var(--bg2)"><div class="serif" style="font-size:24px;color:rgba(26,23,20,0.18);margin-bottom:10px">Queue is empty</div><div style="font-size:12px;color:rgba(26,23,20,0.28)">Generate content and add drops to the queue</div></div></div>
   </div>
 
-  <!-- SCHEDULE -->
-  <div id="tab-schedule" class="tab-content">
-    <div style="margin-bottom:24px"><div class="serif" style="font-size:32px;margin-bottom:4px">Daily Schedule</div><div style="font-size:11px;color:var(--muted)">Automated drop cadence · 4 drops per day per icon</div></div>
-    <div class="schedule-grid" id="schedule-grid"></div>
-    <div class="pipeline-card">
-      <div class="pipeline-head"><div class="eyebrow">Pipeline Status</div></div>
-      <div class="pipeline-item"><div class="pip-dot live"></div><div style="flex:1"><div style="font-size:13px;margin-bottom:2px">Flux Pro 1.1 · Image Generation</div><div style="font-size:11px;color:var(--muted)">Connected via local proxy · api.bfl.ai</div></div><div class="pip-status live">Live</div></div>
-      <div class="pipeline-item"><div class="pip-dot live"></div><div style="flex:1"><div style="font-size:13px;margin-bottom:2px">Image Library · localStorage</div><div style="font-size:11px;color:var(--muted)">Auto-saves all generations per icon · persists between sessions</div></div><div class="pip-status live">Live</div></div>
-      <div class="pipeline-item"><div class="pip-dot soon"></div><div style="flex:1"><div style="font-size:13px;margin-bottom:2px">Weavy Workflows · Icon Pipelines</div><div style="font-size:11px;color:var(--muted)">Node workflows per icon — launching soon</div></div><div class="pip-status soon">Soon</div></div>
-      <div class="pipeline-item"><div class="pip-dot soon"></div><div style="flex:1"><div style="font-size:13px;margin-bottom:2px">Mirage Platform · Auto-publish</div><div style="font-size:11px;color:var(--muted)">Connects queue to live platform</div></div><div class="pip-status soon">Soon</div></div>
-    </div>
-  </div>
 
 </div>
 
@@ -1696,10 +1666,14 @@ const LOCAL_PROXY  = "http://localhost:3579";
 const PROXY = HOSTED_PROXY; // Switch to LOCAL_PROXY if running locally
 let proxyOk = false;
 async function checkProxy() {
-  try { const r=await fetch(PROXY+"/health",{signal:AbortSignal.timeout(3000)}); proxyOk=(await r.json()).status==="ok"; }
-  catch { proxyOk=false; }
-  const el=$("proxy-status"); if(!el) return;
-  el.style.color = proxyOk?"var(--green)":"var(--gold)";
+  try {
+    const r = await fetch(PROXY + "/health", { signal: AbortSignal.timeout(1500) });
+    const j = await r.json();
+    proxyOk = j && j.status === "ok";
+  } catch (_) { proxyOk = false; }
+  const el = $("proxy-status");
+  if (!el) return;
+  el.style.color = proxyOk ? "var(--green)" : "var(--gold)";
   el.innerHTML = proxyOk
     ? `<span style="display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>Proxy connected · Flux ready</span>`
     : `<span style="display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s ease infinite;display:inline-block"></span>Proxy offline — run node server.js</span>`;
@@ -1886,7 +1860,12 @@ function copyFullPrompt() {
 // ── CHARACTER BUILDER ─────────────────────────────────────────────────────────
 function loadCharIntoBuilder() {
   currentChar = {...getChar(selectedIcon.id)};
-  // Text fields — all null-safe
+  // Simple-view fields — populated alongside the advanced view so they
+  // always reflect the current icon.
+  setVal("cb-appearance-simple", currentChar.appearanceNotes || "");
+  setVal("cb-setting-simple", selectedIcon.setting || "");
+  setVal("cb-style-simple", selectedIcon.style || "");
+  // Advanced text fields — all null-safe
   setVal("cb-ethnicity", currentChar.ethnicity||"");
   setVal("cb-skin", currentChar.skinTone||"");
   setVal("cb-eye-color-custom", currentChar.eyeColor&&!CHIPS.eyeColor.includes(currentChar.eyeColor)?currentChar.eyeColor:"");
@@ -1905,6 +1884,25 @@ function loadCharIntoBuilder() {
   updateCharPreview();
   updateCharSummary();
   if (typeof applyStudioIconLock === 'function') applyStudioIconLock();
+}
+
+// Simple-view "Typical Setting" / "Signature Style" write to the same
+// icon fields as the advanced view's cb-setting / cb-style inputs. Keep
+// both rendered inputs in sync so switching between simple and advanced
+// never shows stale content.
+function syncSimpleCharField(field, val) {
+  if (typeof updateIconField === 'function') updateIconField(field, val);
+  if (field === 'setting') setVal('cb-setting', val);
+  else if (field === 'style') setVal('cb-style', val);
+}
+
+function toggleCharAdvanced() {
+  const adv = document.getElementById('cb-advanced');
+  const chev = document.getElementById('cb-adv-chevron');
+  if (!adv) return;
+  const isOpen = adv.style.display === 'flex';
+  adv.style.display = isOpen ? 'none' : 'flex';
+  if (chev) chev.textContent = isOpen ? '▼' : '▲';
 }
 
 function updateChar(field, val) {
@@ -2845,7 +2843,6 @@ function switchTab(tab) {
   });
   if(tab==="icons") renderIconsGrid();
   if(tab==="queue") renderQueue();
-  if(tab==="schedule") renderSchedule();
   if(tab==="library") renderLibrary();
 }
 
@@ -3245,15 +3242,11 @@ function init() {
   loadFilterLibrary();  // seed from defaults synchronously
   renderFilters();       // render with defaults so UI has content immediately
   loadCharIntoBuilder();
-  loadMoodboardForIcon();
   loadPersonaForIcon();
   loadWardrobeForIcon();
   refreshPrompt();
-  // Start moodboard collapsed
-  const mb=$("moodboard"); if(mb) mb.classList.add("collapsed");
   renderLibrary();
   updateLibCount();
-  renderSchedule();
   // Start char builder and persona collapsed
   const cb=$("char-builder");
   if(cb) cb.classList.add("collapsed");
@@ -3263,6 +3256,12 @@ function init() {
   // with whatever's in the studio_filters table as soon as it resolves.
   if (typeof fetchFilterLibraryFromSupabase === 'function') {
     fetchFilterLibraryFromSupabase();
+  }
+  // Auto-select the default icon so the UI is never blank on load.
+  // selectIcon triggers all the per-icon render hooks (card, params,
+  // filters, wardrobe, persona, etc.) so nothing stays empty.
+  if (selectedIcon && typeof selectIcon === 'function') {
+    selectIcon(selectedIcon.id);
   }
 }
 
@@ -3878,6 +3877,14 @@ var MG=window.MG={
     var el=document.getElementById('wardrobe-chips');if(!el)return;
     var icon=typeof selectedIcon!=='undefined'?selectedIcon:null;
     var items=icon?MG.getItems(icon.id,MG.tab):(MG.WARDROBE[MG.tab]||[]);
+    // Cap to 6 options per tab — keeps the UI scannable. Anything past 6
+    // is accessible after the user removes something. Prefers selected
+    // items first so the user's active picks always render.
+    if (items.length > 6) {
+      var selectedItems = items.filter(function(i){ return MG.selected.has(i.id); });
+      var rest = items.filter(function(i){ return !MG.selected.has(i.id); });
+      items = selectedItems.concat(rest).slice(0, 6);
+    }
     el.innerHTML=items.map(function(item){
       var sel=MG.selected.has(item.id);
       var rm=item.custom?'<span onclick="event.stopPropagation();MG.removeItem(\'' +item.id+'\');" style="opacity:.5;font-size:9px;cursor:pointer;margin-left:3px">x</span>':'';
