@@ -482,6 +482,15 @@ tbody tr:hover td { background: var(--bg); }
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
+    .sloanchat-img {
+      display: block;
+      max-width: 100%;
+      max-height: 420px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      background: rgba(246,234,234,0.04);
+    }
+    .sloanchat-msg .sloanchat-text:empty { display: none; }
     .sloanchat-loading {
       align-self: flex-start;
       color: rgba(246,234,234,0.45);
@@ -3595,14 +3604,56 @@ async function loadSloanChat() {
   }
 }
 
-function appendSloanChatMessage(who, text) {
+// Sniff a Supabase storage URL out of message text. Used for history
+// items that embed image URLs inline, and as a fallback when the API
+// returns a reply without an explicit mediaUrl field.
+function sloanChatExtractImageUrl(text) {
+  if (!text) return null;
+  const m = text.match(/https:\/\/[^\s]*\.supabase\.co\/storage\/[^\s)\]"']+/i);
+  return m ? m[0] : null;
+}
+
+function appendSloanChatMessage(who, text, explicitImageUrl) {
   const msgs = document.getElementById('sloanchat-messages');
   if (!msgs) return null;
   const empty = msgs.querySelector('.sloanchat-empty');
   if (empty) empty.remove();
   const el = document.createElement('div');
   el.className = 'sloanchat-msg ' + who;
-  el.textContent = text;
+
+  // Resolve image URL: explicit argument (from mediaUrl / imageUrl fields
+  // in the response) wins. Otherwise sniff the message text itself —
+  // historical messages in icon_chats sometimes embed a Supabase URL
+  // directly in the assistant turn.
+  let imageUrl = explicitImageUrl || null;
+  let displayText = text || '';
+  if (!imageUrl && displayText) {
+    const sniffed = sloanChatExtractImageUrl(displayText);
+    if (sniffed) {
+      imageUrl = sniffed;
+      displayText = displayText.replace(sniffed, '').replace(/\s{2,}/g, ' ').trim();
+    }
+  }
+
+  if (imageUrl) {
+    const img = document.createElement('img');
+    img.className = 'sloanchat-img';
+    img.src = imageUrl;
+    img.alt = 'image';
+    img.loading = 'lazy';
+    img.addEventListener('load', function() {
+      msgs.scrollTop = msgs.scrollHeight;
+    });
+    el.appendChild(img);
+  }
+
+  if (displayText) {
+    const textEl = document.createElement('div');
+    textEl.className = 'sloanchat-text';
+    textEl.textContent = displayText;
+    el.appendChild(textEl);
+  }
+
   msgs.appendChild(el);
   msgs.scrollTop = msgs.scrollHeight;
   return el;
@@ -3647,17 +3698,21 @@ async function sloanChatSend() {
     loading.remove();
 
     let reply;
+    let mediaUrl = null;
     try {
       const data = JSON.parse(rawBody);
       if (!r.ok || data.error) {
         reply = 'error: ' + (data.error || ('HTTP ' + r.status));
       } else {
         reply = data.reply || '(empty reply)';
+        // Honor either mediaUrl or imageUrl — the proxy will add one of
+        // these once admin chat starts generating images.
+        mediaUrl = data.mediaUrl || data.imageUrl || null;
       }
     } catch (_) {
       reply = 'non-JSON response (HTTP ' + r.status + '): ' + rawBody.slice(0, 300);
     }
-    appendSloanChatMessage('sloan', reply);
+    appendSloanChatMessage('sloan', reply, mediaUrl);
   } catch (e) {
     const stillThere = document.querySelector('.sloanchat-loading');
     if (stillThere) stillThere.remove();
