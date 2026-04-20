@@ -395,6 +395,45 @@ tbody tr:hover td { background: var(--bg); }
     #icon-grid .icon-card:hover,
     #persona-list-grid .icon-card:hover { border-color: var(--border-strong); background: var(--bg); }
 
+    /* Tech Reference — Supabase-backed inline edit affordance. The .tr-row
+       grid stays 220px 1fr as declared higher up; edit button floats via
+       absolute positioning so it never affects non-admin layout. */
+    .tr-row { position: relative; }
+    .tr-row.tr-status-pending { border-left: 2px solid rgba(212,167,85,0.6); padding-left: 16px; }
+    .tr-row.tr-status-dead { border-left: 2px solid rgba(201,98,47,0.6); opacity: 0.55; padding-left: 16px; }
+    .tr-edit-btn {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      background: transparent; border: 1px solid var(--border); color: var(--ink-dim);
+      font-size: 12px; width: 24px; height: 24px; border-radius: 3px;
+      cursor: pointer; opacity: 0; transition: opacity 0.15s, color 0.15s, border-color 0.15s;
+      display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0;
+    }
+    .tr-row:hover .tr-edit-btn { opacity: 1; }
+    .tr-edit-btn:hover { color: var(--ink); border-color: var(--ink-dim); }
+    .tr-row.tr-row-editing { display: block; padding: 16px 18px; }
+    .tr-edit-form { display: grid; gap: 8px; grid-template-columns: 1fr; }
+    .tr-edit-form-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-mid); margin-bottom: 4px; }
+    .tr-edit-form input, .tr-edit-form select, .tr-edit-form textarea {
+      background: var(--surface); border: 1px solid var(--border); color: var(--ink);
+      padding: 6px 10px; font-size: 12px; font-family: inherit; border-radius: 2px;
+    }
+    .tr-edit-form textarea { min-height: 44px; resize: vertical; }
+    .tr-edit-form input:focus, .tr-edit-form select:focus, .tr-edit-form textarea:focus {
+      border-color: var(--accent); outline: none;
+    }
+    .tr-edit-form .tr-edit-grid2 { display: grid; grid-template-columns: 1fr 140px; gap: 8px; }
+    .tr-edit-actions { display: flex; gap: 8px; margin-top: 4px; }
+    .tr-edit-save, .tr-edit-cancel {
+      background: var(--surface); border: 1px solid var(--border); color: var(--ink);
+      padding: 6px 14px; font-family: inherit; font-size: 11px;
+      letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; border-radius: 2px;
+    }
+    .tr-edit-save { border-color: var(--accent); color: var(--accent); }
+    .tr-edit-save:hover { background: rgba(201,98,47,0.1); }
+    .tr-edit-cancel:hover { border-color: var(--ink-dim); }
+    .tr-edit-status-msg { font-size: 11px; color: var(--ink-dim); min-height: 14px; }
+    .tr-edit-status-msg.tr-edit-err { color: rgba(232,120,100,0.85); }
+
   </style>
 </head>
 <body>
@@ -1057,130 +1096,20 @@ tbody tr:hover td { background: var(--bg); }
         </div>
       </div>
 
-      <!-- TECH REFERENCE PANE -->
+      <!-- TECH REFERENCE PANE — content rendered dynamically from
+           public.system_config (Supabase) by loadTechReference() in the
+           init block. Schema + seed: admin/system-config-schema.sql.
+           Admin users get an inline edit affordance per row. -->
       <div class="pane" id="pane-techref">
         <div class="page-header">
           <div>
             <div class="page-title">Tech Reference</div>
             <div class="page-sub">URLs, repos, credentials, routes — the full infra sheet</div>
           </div>
+          <div id="tr-updated" style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(246,234,234,0.4)"></div>
         </div>
-
-        <div class="pd-section">
-          <div class="pd-section-head">
-            <div class="pd-section-title">Live URLs</div>
-            <div class="pd-section-count">6 endpoints</div>
-          </div>
-          <div class="tr-kv">
-            <div class="tr-row"><span class="tr-k">Studio</span><a class="tr-v tr-link" href="https://mirage-pwa.vercel.app/studio" target="_blank">mirage-pwa.vercel.app/studio</a></div>
-            <div class="tr-row"><span class="tr-k">Admin</span><span class="tr-v">mirage-pwa.vercel.app/admin · <span class="tr-dim">nate / MirageAdmin2026!</span></span></div>
-            <div class="tr-row"><span class="tr-k">Domain</span><a class="tr-v tr-link" href="https://www.mirageicons.com" target="_blank">www.mirageicons.com</a></div>
-            <div class="tr-row"><span class="tr-k">Railway Proxy</span><a class="tr-v tr-link" href="https://mirage-proxy-production.up.railway.app" target="_blank">mirage-proxy-production.up.railway.app</a></div>
-            <div class="tr-row"><span class="tr-k">Proxy health</span><a class="tr-v tr-link" href="https://mirage-proxy-production.up.railway.app/health" target="_blank">.../health</a></div>
-            <div class="tr-row"><span class="tr-k">SMS test image</span><a class="tr-v tr-link" href="https://mirage-proxy-production.up.railway.app/sms/test-image" target="_blank">.../sms/test-image</a></div>
-          </div>
-        </div>
-
-        <div class="pd-section">
-          <div class="pd-section-head">
-            <div class="pd-section-title">Repos &amp; Files</div>
-            <div class="pd-section-count">Local + remote</div>
-          </div>
-          <div class="tr-kv">
-            <div class="tr-row"><span class="tr-k">PWA repo</span><a class="tr-v tr-link" href="https://github.com/natescott12/mirage-pwa" target="_blank">github.com/natescott12/mirage-pwa</a></div>
-            <div class="tr-row"><span class="tr-k">Proxy repo</span><a class="tr-v tr-link" href="https://github.com/natescott12/mirage-proxy" target="_blank">github.com/natescott12/mirage-proxy</a></div>
-            <div class="tr-row"><span class="tr-k">Local PWA</span><code class="tr-v tr-code">~/Documents/Claude/Projects/Mirage/mirage-pwa</code></div>
-            <div class="tr-row"><span class="tr-k">Local proxy</span><code class="tr-v tr-code">~/Documents/Claude/Projects/Mirage/mirage-proxy</code></div>
-            <div class="tr-row"><span class="tr-k">Sloan persona</span><code class="tr-v tr-code">mirage-proxy/personas/sloan.js</code></div>
-            <div class="tr-row"><span class="tr-k">Claude Code (PWA)</span><code class="tr-v tr-code">cd ~/Documents/Claude/Projects/Mirage/mirage-pwa &amp;&amp; claude</code></div>
-            <div class="tr-row"><span class="tr-k">Claude Code (Proxy)</span><code class="tr-v tr-code">cd ~/Documents/Claude/Projects/Mirage/mirage-proxy &amp;&amp; claude</code></div>
-          </div>
-        </div>
-
-        <div class="pd-section">
-          <div class="pd-section-head">
-            <div class="pd-section-title">Credentials</div>
-            <div class="pd-section-count">⚠ sensitive — do not share</div>
-          </div>
-          <div class="tr-kv">
-            <div class="tr-row"><span class="tr-k">GitHub token</span><span class="tr-v tr-dim">stored in macOS Keychain (osxkeychain helper) — not committed</span></div>
-            <div class="tr-row"><span class="tr-k">Anthropic account</span><span class="tr-v">platform.claude.com · <span class="tr-dim">Mirage Proxy workspace · mirage-proxy-v3 key active · fresh monthly counter</span></span></div>
-            <div class="tr-row"><span class="tr-k">Anthropic proxy key</span><span class="tr-v tr-dim">mirage-proxy-v3 (updated Apr 20 2026) — set in Railway as ANTHROPIC_API_KEY</span></div>
-            <div class="tr-row"><span class="tr-k">Replicate account</span><span class="tr-v">natescott12 · <span class="tr-dim">$20 loaded</span></span></div>
-            <div class="tr-row"><span class="tr-k">Replicate token</span><span class="tr-v tr-dim">set in Railway as REPLICATE_API_TOKEN — not committed</span></div>
-            <div class="tr-row"><span class="tr-k">Sloan LoRA model</span><code class="tr-v tr-code">natescott12/mirage-sloan-lora</code></div>
-            <div class="tr-row"><span class="tr-k">Sloan LoRA training ID</span><code class="tr-v tr-code">z27jjwyp8drm0cxhhht0s53pm</code></div>
-            <div class="tr-row"><span class="tr-k">BFL Flux API</span><span class="tr-v">api.bfl.ai · <span class="tr-dim">key in Railway as FLUX_API_KEY</span></span></div>
-            <div class="tr-row"><span class="tr-k">Supabase URL</span><a class="tr-v tr-link" href="https://gmyenvnfuailickepvax.supabase.co" target="_blank">gmyenvnfuailickepvax.supabase.co</a></div>
-            <div class="tr-row"><span class="tr-k">Supabase publishable key</span><code class="tr-v tr-code">sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D</code></div>
-            <div class="tr-row"><span class="tr-k">Twilio Account SID</span><span class="tr-v tr-dim">set in Railway as TWILIO_ACCOUNT_SID — not committed</span></div>
-            <div class="tr-row"><span class="tr-k">Twilio Auth Token</span><span class="tr-v tr-dim">set in Railway as TWILIO_AUTH_TOKEN — not committed</span></div>
-            <div class="tr-row"><span class="tr-k">Twilio auth code</span><span class="tr-v tr-dim">see 1Password — not committed</span></div>
-            <div class="tr-row"><span class="tr-k">Twilio WhatsApp sandbox</span><span class="tr-v">+1 415 523 8886 · <span class="tr-dim">join code: join air-poet</span></span></div>
-            <div class="tr-row"><span class="tr-k">Sloan toll-free</span><span class="tr-v">+1 855 533 0518 · <span class="tr-dim">verification pending</span></span></div>
-            <div class="tr-row"><span class="tr-k">Vercel account</span><span class="tr-v">mirage-pwa.vercel.app</span></div>
-            <div class="tr-row"><span class="tr-k">Railway project</span><span class="tr-v">perpetual-patience</span></div>
-            <div class="tr-row"><span class="tr-k">Namecheap</span><span class="tr-v">domain registrar for mirageicons.com</span></div>
-            <div class="tr-row"><span class="tr-k">Anna (collaborator)</span><span class="tr-v">anna@wearecurrent.net</span></div>
-          </div>
-        </div>
-
-        <div class="pd-section">
-          <div class="pd-section-head">
-            <div class="pd-section-title">Railway Env Vars</div>
-            <div class="pd-section-count">set in Railway dashboard</div>
-          </div>
-          <div class="tr-kv">
-            <div class="tr-row"><span class="tr-k">ANTHROPIC_API_KEY</span><span class="tr-v tr-dim">set in Railway</span></div>
-            <div class="tr-row"><span class="tr-k">FLUX_API_KEY</span><span class="tr-v tr-dim">set in Railway</span></div>
-            <div class="tr-row"><span class="tr-k">REPLICATE_API_TOKEN</span><span class="tr-v tr-dim">set in Railway</span></div>
-            <div class="tr-row"><span class="tr-k">TWILIO_ACCOUNT_SID</span><span class="tr-v tr-dim">set in Railway</span></div>
-            <div class="tr-row"><span class="tr-k">TWILIO_AUTH_TOKEN</span><span class="tr-v tr-dim">set in Railway</span></div>
-            <div class="tr-row"><span class="tr-k">SLOAN_PHONE_NUMBER</span><code class="tr-v tr-code">+18555330518</code></div>
-          </div>
-        </div>
-
-        <div class="pd-section">
-          <div class="pd-section-head">
-            <div class="pd-section-title">Supabase Tables</div>
-            <div class="pd-section-count">2 tables</div>
-          </div>
-          <div class="tr-kv">
-            <div class="tr-row"><span class="tr-k">icon_briefs</span><span class="tr-v"><code class="tr-code">icon_id</code> text PK · scene, wardrobe, shot, light, updated_by, updated_at</span></div>
-            <div class="tr-row"><span class="tr-k">icon_chats</span><span class="tr-v"><code class="tr-code">icon_id</code> text PK · messages jsonb, updated_by, updated_at</span></div>
-          </div>
-          <div class="tr-block-title">Clear Sloan SMS history</div>
-          <pre class="tr-sql">DELETE FROM icon_chats WHERE icon_id = 'sms_whatsapp:+13233093096';</pre>
-        </div>
-
-        <div class="pd-section">
-          <div class="pd-section-head">
-            <div class="pd-section-title">Proxy Routes</div>
-            <div class="pd-section-count">v3.3.0</div>
-          </div>
-          <div class="tr-kv">
-            <div class="tr-row"><span class="tr-k"><span class="tr-method get">GET</span> /health</span><span class="tr-v">status check</span></div>
-            <div class="tr-row"><span class="tr-k"><span class="tr-method post">POST</span> /flux/generate</span><span class="tr-v">Flux Pro 1.1 text-to-image</span></div>
-            <div class="tr-row"><span class="tr-k"><span class="tr-method post">POST</span> /flux/generate-with-lora</span><span class="tr-v">Flux Kontext Pro with LoRA</span></div>
-            <div class="tr-row"><span class="tr-k"><span class="tr-method post">POST</span> /claude/chat</span><span class="tr-v">Claude API with image support</span></div>
-            <div class="tr-row"><span class="tr-k"><span class="tr-method post">POST</span> /sms/incoming</span><span class="tr-v">Twilio SMS/WhatsApp webhook (Sloan agent)</span></div>
-            <div class="tr-row"><span class="tr-k"><span class="tr-method post">POST</span> /voice/incoming</span><span class="tr-v">Twilio voice (redirects to SMS)</span></div>
-            <div class="tr-row"><span class="tr-k"><span class="tr-method get">GET</span> /sms/test</span><span class="tr-v">SMS config check</span></div>
-            <div class="tr-row"><span class="tr-k"><span class="tr-method get">GET</span> /sms/test-image</span><span class="tr-v">Fire test image to Nate's WhatsApp</span></div>
-          </div>
-        </div>
-
-        <div class="pd-section">
-          <div class="pd-section-head">
-            <div class="pd-section-title">Deploy Workflow</div>
-            <div class="pd-section-count">auto on push</div>
-          </div>
-          <div class="tr-kv">
-            <div class="tr-row"><span class="tr-k">Vercel (PWA)</span><span class="tr-v">git push <code class="tr-code">natescott12/mirage-pwa</code> → auto deploys ~60s</span></div>
-            <div class="tr-row"><span class="tr-k">Railway (Proxy)</span><span class="tr-v">git push <code class="tr-code">natescott12/mirage-proxy</code> → auto deploys ~2 min</span></div>
-            <div class="tr-row"><span class="tr-k">Hard refresh</span><code class="tr-v tr-code">Cmd + Shift + R</code></div>
-            <div class="tr-row"><span class="tr-k">Check version</span><span class="tr-v">hit <code class="tr-code">/health</code> endpoint</span></div>
-          </div>
+        <div id="tr-container">
+          <div style="padding:20px;color:rgba(246,234,234,0.5);font-size:12px">Loading tech reference…</div>
         </div>
       </div>
 
@@ -3485,10 +3414,218 @@ function updatePnl() {
   }).join('');
 }
 
+// ── TECH REFERENCE (Supabase-backed) ─────────────────────────────────────────
+// Rows live in public.system_config. Schema + seed in admin/system-config-schema.sql.
+// Anon key reads; admin-gated UI shows inline edit, PATCHes back to Supabase.
+const TR_SECTIONS = [
+  { key: 'live_urls',    title: 'Live URLs' },
+  { key: 'repos',        title: 'Repos & Files' },
+  { key: 'credentials',  title: 'Credentials', subtitle: 'sensitive — do not share' },
+  { key: 'proxy_routes', title: 'Proxy Routes' },
+  { key: 'system_state', title: 'System State' }
+];
+
+function trEsc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+    return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c];
+  });
+}
+
+async function loadTechReference() {
+  const container = document.getElementById('tr-container');
+  if (!container) return;
+  try {
+    const r = await fetch(SUPABASE_URL + '/rest/v1/system_config?select=*&order=section.asc,sort_order.asc,label.asc', {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status + ' loading system_config');
+    const rows = await r.json();
+    renderTechReference(container, rows);
+    const latest = rows.reduce(function(m, x) { return (!m || (x.updated_at && x.updated_at > m)) ? x.updated_at : m; }, null);
+    const updatedEl = document.getElementById('tr-updated');
+    if (updatedEl && latest) updatedEl.textContent = 'Updated ' + new Date(latest).toISOString().slice(0, 10);
+  } catch (e) {
+    console.error('[tech-ref] load failed:', e.message);
+    container.innerHTML =
+      '<div style="padding:20px;color:rgba(232,120,100,0.85);font-size:12px">Failed to load tech reference: ' +
+      trEsc(e.message) +
+      '</div><div style="padding:0 20px 20px;color:rgba(246,234,234,0.5);font-size:11px">Run admin/system-config-schema.sql against the Mirage Supabase project to create the table and seed data.</div>';
+  }
+}
+
+function renderTechReference(container, rows) {
+  const isAdmin = (typeof getAdminUser === 'function') ? !!getAdminUser() : false;
+  container.innerHTML = '';
+  const bySection = {};
+  rows.forEach(function(r) { (bySection[r.section] = bySection[r.section] || []).push(r); });
+  TR_SECTIONS.forEach(function(sec) {
+    const items = bySection[sec.key] || [];
+    if (!items.length) return;
+    container.appendChild(renderTrSection(sec.title, items, sec.subtitle, isAdmin));
+  });
+}
+
+function renderTrSection(title, items, subtitle, isAdmin) {
+  const section = document.createElement('div');
+  section.className = 'pd-section';
+  const head = document.createElement('div');
+  head.className = 'pd-section-head';
+  head.innerHTML =
+    '<div class="pd-section-title">' + trEsc(title) + '</div>' +
+    '<div class="pd-section-count">' + trEsc(subtitle || items.length + ' item' + (items.length !== 1 ? 's' : '')) + '</div>';
+  section.appendChild(head);
+  const kv = document.createElement('div');
+  kv.className = 'tr-kv';
+  items.forEach(function(it) { kv.appendChild(renderTrRow(it, isAdmin)); });
+  section.appendChild(kv);
+  return section;
+}
+
+function renderTrRow(item, isAdmin) {
+  const row = document.createElement('div');
+  row.className = 'tr-row tr-status-' + (item.status || 'info');
+  row.dataset.id = item.id;
+  // Label
+  const k = document.createElement('span');
+  k.className = 'tr-k';
+  if (item.method) {
+    const badge = document.createElement('span');
+    badge.className = 'tr-method ' + item.method.toLowerCase();
+    badge.textContent = item.method;
+    k.appendChild(badge);
+    k.appendChild(document.createTextNode(' ' + (item.label || '')));
+  } else {
+    k.textContent = item.label || '';
+  }
+  row.appendChild(k);
+  // Value
+  row.appendChild(renderTrValue(item));
+  // Edit button (admin only)
+  if (isAdmin) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'tr-edit-btn';
+    btn.title = 'Edit';
+    btn.textContent = '\u270E';
+    btn.addEventListener('click', function() { beginEditRow(row, item); });
+    row.appendChild(btn);
+  }
+  return row;
+}
+
+function renderTrValue(item) {
+  if (item.url) {
+    const link = document.createElement('a');
+    link.className = 'tr-link';
+    link.href = item.url;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = item.value || item.url;
+    if (item.note) {
+      const wrap = document.createElement('span');
+      wrap.className = 'tr-v';
+      wrap.appendChild(link);
+      wrap.appendChild(document.createTextNode(' \u00B7 '));
+      const dim = document.createElement('span');
+      dim.className = 'tr-dim';
+      dim.textContent = item.note;
+      wrap.appendChild(dim);
+      return wrap;
+    }
+    link.className = 'tr-v tr-link';
+    return link;
+  }
+  if (item.is_code) {
+    const code = document.createElement('code');
+    code.className = 'tr-v tr-code';
+    code.textContent = item.value || '';
+    return code;
+  }
+  if (!item.value && item.note) {
+    const span = document.createElement('span');
+    span.className = 'tr-v tr-dim';
+    span.textContent = item.note;
+    return span;
+  }
+  const span = document.createElement('span');
+  span.className = 'tr-v';
+  if (item.value) span.appendChild(document.createTextNode(item.value));
+  if (item.note) {
+    if (item.value) span.appendChild(document.createTextNode(' \u00B7 '));
+    const dim = document.createElement('span');
+    dim.className = 'tr-dim';
+    dim.textContent = item.note;
+    span.appendChild(dim);
+  }
+  return span;
+}
+
+function beginEditRow(rowEl, item) {
+  rowEl.classList.add('tr-row-editing');
+  rowEl.innerHTML = '';
+  const form = document.createElement('div');
+  form.className = 'tr-edit-form';
+  form.innerHTML =
+    '<div class="tr-edit-form-label">' + trEsc(item.label) + ' <span style="opacity:0.5">(' + trEsc(item.section) + ')</span></div>' +
+    '<input type="text" class="tr-edit-value" placeholder="value" value="' + trEsc(item.value || '') + '"/>' +
+    '<textarea class="tr-edit-note" placeholder="note">' + trEsc(item.note || '') + '</textarea>' +
+    '<div class="tr-edit-grid2">' +
+      '<input type="text" class="tr-edit-url" placeholder="url (optional)" value="' + trEsc(item.url || '') + '"/>' +
+      '<select class="tr-edit-status">' +
+        '<option value="active">active</option>' +
+        '<option value="pending">pending</option>' +
+        '<option value="dead">dead</option>' +
+        '<option value="info">info</option>' +
+      '</select>' +
+    '</div>' +
+    '<div class="tr-edit-actions">' +
+      '<button type="button" class="tr-edit-save">Save</button>' +
+      '<button type="button" class="tr-edit-cancel">Cancel</button>' +
+    '</div>' +
+    '<div class="tr-edit-status-msg"></div>';
+  rowEl.appendChild(form);
+  form.querySelector('.tr-edit-status').value = item.status || 'active';
+
+  form.querySelector('.tr-edit-cancel').addEventListener('click', loadTechReference);
+  form.querySelector('.tr-edit-save').addEventListener('click', async function() {
+    const msg = form.querySelector('.tr-edit-status-msg');
+    msg.className = 'tr-edit-status-msg';
+    msg.textContent = 'Saving\u2026';
+    const patch = {
+      value: form.querySelector('.tr-edit-value').value || null,
+      note: form.querySelector('.tr-edit-note').value || null,
+      url: form.querySelector('.tr-edit-url').value || null,
+      status: form.querySelector('.tr-edit-status').value
+    };
+    try {
+      const r = await fetch(SUPABASE_URL + '/rest/v1/system_config?id=eq.' + encodeURIComponent(item.id), {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(patch)
+      });
+      if (!r.ok) {
+        const body = await r.text().catch(function() { return ''; });
+        throw new Error('HTTP ' + r.status + ' ' + body);
+      }
+      await loadTechReference();
+    } catch (e) {
+      console.error('[tech-ref] save failed:', e.message);
+      msg.className = 'tr-edit-status-msg tr-edit-err';
+      msg.textContent = 'Save failed: ' + e.message;
+    }
+  });
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 window.addEventListener('load', () => {
   mergeLocalPersonas();
   document.getElementById('login-user').focus();
+  loadTechReference();
 });
 </script>
 </body>
