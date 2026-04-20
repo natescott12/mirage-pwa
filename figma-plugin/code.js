@@ -39,15 +39,12 @@ async function goToPage(name) {
   }
 }
 
-// Decide which sandbox page based on task content keywords.
-function pageForTask(task) {
-  var t = (task || '').toLowerCase();
-  if (/\b(type|typography|grid|font)\b/.test(t)) return '02';
-  if (/\b(color|colour|palette|swatch)\b/.test(t)) return '03';
-  if (/\b(layout|screen|interface|ui)\b/.test(t)) return '04';
-  if (/\b(audit|image|review|library)\b/.test(t)) return '01';
-  if (/\b(mood|reference|moodboard)\b/.test(t)) return '06';
-  return '05';
+// All generated work goes to '00 — Sloan's Workshop'. Nate reviews there
+// and moves approved pieces to the appropriate destination page himself.
+// Matches the CRITICAL rule in the /sloan/figma generator prompt, so the
+// plugin and the model agree on the target page.
+function pageForTask(_task) {
+  return '00';
 }
 
 // Split code into executable statements. Respects braces so we do not
