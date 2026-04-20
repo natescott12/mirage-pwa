@@ -595,6 +595,28 @@ tbody tr:hover td { background: var(--bg); }
       color: var(--ink-dim);
       letter-spacing: 0.05em;
     }
+    /* PDF variant of the preview thumb — icon instead of <img>. */
+    .sloanchat-preview-thumb.doc {
+      background: rgba(246,234,234,0.06);
+      color: var(--ink-dim);
+      display: flex; align-items: center; justify-content: center;
+    }
+    /* Doc chip inside a chat bubble — small, compact, muted. */
+    .sloanchat-doc-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 10px;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(246,234,234,0.08);
+      border-radius: 6px;
+      font-size: 12px;
+      color: rgba(246,234,234,0.85);
+      margin-bottom: 6px;
+      max-width: 100%;
+    }
+    .sloanchat-doc-chip svg { flex-shrink: 0; opacity: 0.7; }
+    .sloanchat-doc-chip span {
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
 
   </style>
 </head>
@@ -1291,7 +1313,7 @@ tbody tr:hover td { background: var(--bg); }
         <div class="sloanchat-wrap">
           <div id="sloanchat-messages" class="sloanchat-messages"></div>
           <div id="sloanchat-preview" class="sloanchat-preview" style="display:none"></div>
-          <input type="file" id="sloanchat-file-input" accept="image/*" style="display:none" onchange="sloanChatOnFilePick(event)" />
+          <input type="file" id="sloanchat-file-input" accept="image/*,application/pdf" style="display:none" onchange="sloanChatOnFilePick(event)" />
           <div class="sloanchat-input-row">
             <textarea
               id="sloanchat-input"
@@ -3666,7 +3688,7 @@ function sloanChatExtractImageUrl(text) {
   return m ? m[0] : null;
 }
 
-function appendSloanChatMessage(who, text, explicitImageUrl) {
+function appendSloanChatMessage(who, text, explicitImageUrl, docName) {
   const msgs = document.getElementById('sloanchat-messages');
   if (!msgs) return null;
   const empty = msgs.querySelector('.sloanchat-empty');
@@ -3700,6 +3722,16 @@ function appendSloanChatMessage(who, text, explicitImageUrl) {
     el.appendChild(img);
   }
 
+  if (docName) {
+    const chip = document.createElement('div');
+    chip.className = 'sloanchat-doc-chip';
+    chip.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+    const name = document.createElement('span');
+    name.textContent = docName;
+    chip.appendChild(name);
+    el.appendChild(chip);
+  }
+
   if (displayText) {
     const textEl = document.createElement('div');
     textEl.className = 'sloanchat-text';
@@ -3712,15 +3744,18 @@ function appendSloanChatMessage(who, text, explicitImageUrl) {
   return el;
 }
 
-// Single-image attachment state. Cleared after each successful send.
+// Single-attachment state (image or PDF). Cleared after each successful send.
 let sloanChatAttachment = null;
 
 function sloanChatOnFilePick(ev) {
   const files = ev.target.files;
   if (!files || !files.length) return;
   const file = files[0];
-  if ((file.type || '').indexOf('image/') !== 0) {
-    console.warn('[sloanchat] ignored non-image file:', file.type);
+  const ft = (file.type || '').toLowerCase();
+  const isImage = ft.indexOf('image/') === 0;
+  const isPdf = ft === 'application/pdf';
+  if (!isImage && !isPdf) {
+    console.warn('[sloanchat] ignored unsupported file type:', ft);
     ev.target.value = '';
     return;
   }
@@ -3728,8 +3763,13 @@ function sloanChatOnFilePick(ev) {
   reader.onload = function(e) {
     const dataUrl = e.target.result;
     const headerMatch = (dataUrl || '').match(/^data:([^;]+);base64,/);
-    const mediaType = (headerMatch && headerMatch[1]) || file.type || 'image/jpeg';
-    sloanChatAttachment = { dataUrl: dataUrl, mediaType: mediaType, name: file.name || 'image' };
+    const mediaType = (headerMatch && headerMatch[1]) || file.type || (isPdf ? 'application/pdf' : 'image/jpeg');
+    sloanChatAttachment = {
+      dataUrl: dataUrl,
+      mediaType: mediaType,
+      name: file.name || (isPdf ? 'document.pdf' : 'image'),
+      kind: isPdf ? 'document' : 'image',
+    };
     sloanChatRenderPreview();
   };
   reader.readAsDataURL(file);
@@ -3747,11 +3787,16 @@ function sloanChatRenderPreview() {
   box.style.display = 'flex';
   box.innerHTML = '';
   const thumb = document.createElement('div');
-  thumb.className = 'sloanchat-preview-thumb';
-  const img = document.createElement('img');
-  img.src = sloanChatAttachment.dataUrl;
-  img.alt = sloanChatAttachment.name;
-  thumb.appendChild(img);
+  thumb.className = 'sloanchat-preview-thumb' + (sloanChatAttachment.kind === 'document' ? ' doc' : '');
+  if (sloanChatAttachment.kind === 'document') {
+    // File-icon chip for PDFs — they can't preview as <img>.
+    thumb.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>';
+  } else {
+    const img = document.createElement('img');
+    img.src = sloanChatAttachment.dataUrl;
+    img.alt = sloanChatAttachment.name;
+    thumb.appendChild(img);
+  }
   const remove = document.createElement('button');
   remove.type = 'button';
   remove.className = 'sloanchat-preview-remove';
@@ -3762,7 +3807,8 @@ function sloanChatRenderPreview() {
   box.appendChild(thumb);
   const label = document.createElement('div');
   label.className = 'sloanchat-preview-label';
-  label.textContent = 'Ready to send · ' + sloanChatAttachment.name;
+  const prefix = sloanChatAttachment.kind === 'document' ? 'PDF · ' : 'Ready to send · ';
+  label.textContent = prefix + sloanChatAttachment.name;
   box.appendChild(label);
 }
 
@@ -3782,8 +3828,10 @@ async function sloanChatSend() {
   if (!text && !attachment) return;
   const user = (typeof getAdminUser === 'function' && getAdminUser()) || 'nate';
 
-  // Show Nate's bubble with the attached image (if any) and/or text.
-  appendSloanChatMessage('nate', text, attachment ? attachment.dataUrl : null);
+  // Show Nate's bubble with the attached image or doc chip (if any) plus text.
+  const attachedImageUrl = attachment && attachment.kind === 'image' ? attachment.dataUrl : null;
+  const attachedDocName = attachment && attachment.kind === 'document' ? attachment.name : null;
+  appendSloanChatMessage('nate', text, attachedImageUrl, attachedDocName);
   input.value = '';
   sloanChatClearAttachment();
   btn.disabled = true;
