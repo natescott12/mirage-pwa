@@ -156,6 +156,14 @@
 </div>
 
 <script>
+// All network I/O lives here. Figma plugins block fetches from the main
+// thread; the UI runs in an iframe with its own network scope. code.js
+// executes Figma API calls only and coordinates with us via postMessage.
+
+var PROXY = 'https://mirage-proxy-production.up.railway.app';
+var POLL_MS = 3000;
+var MIRAGE_KEY = 'mirage-int-2026';
+
 var theatreMode = true;
 
 function toggleTheatre() {
@@ -187,16 +195,82 @@ function setErrorDetail(text) {
   el.classList.toggle('visible', !!text);
 }
 
+function toCodeJs(obj) { parent.postMessage({ pluginMessage: obj }, '*'); }
+
+// PATCH a task's state on the proxy. Called when code.js sends a
+// {type:'patch'} message; the terminal statuses (complete|failed)
+// additionally trigger the next poll, so there is always exactly one
+// task in flight.
+async function patchTaskReq(id, status, result) {
+  try {
+    var r = await fetch(PROXY + '/sloan/figma/' + id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'x-mirage-key': MIRAGE_KEY },
+      body: JSON.stringify({ status: status, result: result || null }),
+    });
+    if (!r.ok) {
+      var body = await r.text().catch(function(){ return ''; });
+      console.warn('[sloan-live/ui] patch failed:', r.status, body);
+    }
+  } catch (e) {
+    console.warn('[sloan-live/ui] patch error:', e && e.message);
+  }
+}
+
+// One polling pass. On no-task or error paths, schedule the next poll
+// directly. On a real task, hand it off to code.js and stop scheduling
+// — the terminal patch handler below will resume polling once the
+// task finishes.
+async function poll() {
+  try {
+    var r = await fetch(PROXY + '/sloan/figma/pending', { headers: { 'x-mirage-key': MIRAGE_KEY } });
+    if (!r.ok) {
+      setStatus('Error — check console', false);
+      setErrorDetail('HTTP ' + r.status + ' from /sloan/figma/pending');
+      setProgress(0);
+      setTimeout(poll, POLL_MS);
+      return;
+    }
+    var task = await r.json();
+    if (!task || !task.id) {
+      setStatus('Queue empty', false);
+      setErrorDetail('');
+      setProgress(0);
+      setTimeout(poll, POLL_MS);
+      return;
+    }
+    setErrorDetail('');
+    toCodeJs({ type: 'task', task: task });
+  } catch (e) {
+    console.warn('[sloan-live/ui] poll error:', e && e.message);
+    setStatus('Error — check console', false);
+    setErrorDetail((e && e.message) || 'unknown');
+    setProgress(0);
+    setTimeout(poll, POLL_MS);
+  }
+}
+
 window.onmessage = function(e) {
   var msg = e.data.pluginMessage;
   if (!msg) return;
-  if (msg.type === 'watching') { setStatus('Watching...', true); setProgress(0); setErrorDetail(''); }
+  if (msg.type === 'ready')    { setStatus('Watching...', true); setProgress(0); setErrorDetail(''); }
   if (msg.type === 'working')  { setStatus('Sloan is working...', true); setProgress(2); setErrorDetail(''); }
   if (msg.type === 'progress') { setProgress(msg.percent || 0); }
   if (msg.type === 'complete') { setStatus('Ready for review', false); setProgress(100); setTimeout(function(){ setProgress(0); }, 1500); setLastTask(msg.task); setErrorDetail(''); }
   if (msg.type === 'empty')    { setStatus('Queue empty', false); setProgress(0); setErrorDetail(''); }
   if (msg.type === 'error')    { setStatus('Error — check console', false); setProgress(0); setErrorDetail(msg.message || 'unknown'); }
+  if (msg.type === 'patch') {
+    patchTaskReq(msg.id, msg.status, msg.result);
+    if (msg.status === 'complete' || msg.status === 'failed') {
+      setTimeout(poll, POLL_MS);
+    }
+  }
 };
+
+// Kick off the loop on load. code.js will post {type:'ready'} shortly;
+// if our first poll runs before that message arrives and finds no
+// task, we just continue polling until one appears.
+poll();
 </script>
 
 </body>

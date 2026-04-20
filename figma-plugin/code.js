@@ -1,23 +1,32 @@
-// Sloan Live — Figma plugin that polls for design tasks from the Mirage
-// proxy, navigates to the correct sandbox page, and executes generated
-// Figma Plugin API code. Theatre mode steps through statements with a
-// natural delay so you can watch Sloan work.
-
-const PROXY = 'https://mirage-proxy-production.up.railway.app';
-const POLL_MS = 3000;
+// Sloan Live — Figma plugin main thread. Executes design tasks in the
+// current file: navigates to the right sandbox page and runs the
+// generated Figma Plugin API code (with optional theatre-mode stepping
+// through statements on a delay).
+//
+// Architecture: this file has no network access. All fetches happen in
+// ui.html. The UI polls the proxy for pending tasks, hands them off
+// here via postMessage, and translates our lifecycle messages back
+// into PATCH calls. The 'complete'/'failed' patch is the UI's signal
+// to resume polling, so there is always exactly one task in flight.
 
 let theatreMode = true;
-let polling = true;
 
 figma.showUI(__html__, { width: 280, height: 180, themeColors: true });
 
 figma.ui.onmessage = function (msg) {
-  if (msg.type === 'theatre') theatreMode = msg.value;
+  if (!msg || !msg.type) return;
+  if (msg.type === 'theatre') { theatreMode = msg.value; return; }
+  if (msg.type === 'task') {
+    runTask(msg.task).catch(function (e) {
+      console.error('[sloan-live] runTask unhandled error:', e && e.message);
+    });
+  }
 };
 
 function uiMsg(obj) { figma.ui.postMessage(obj); }
 
-// Navigate to a named page in the current file.
+// Navigate to a named page in the current file. Uses the async setter
+// so plugins with pageLoad: false in the manifest work correctly.
 async function goToPage(name) {
   const page = figma.root.children.find(function (p) {
     return p.name.toLowerCase().indexOf(name.toLowerCase()) !== -1;
@@ -30,7 +39,7 @@ async function goToPage(name) {
   }
 }
 
-// Decide which page based on task content keywords.
+// Decide which sandbox page based on task content keywords.
 function pageForTask(task) {
   var t = (task || '').toLowerCase();
   if (/\b(type|typography|grid|font)\b/.test(t)) return '02';
@@ -41,8 +50,8 @@ function pageForTask(task) {
   return '05';
 }
 
-// Split code into executable statements. Tries to respect braces and
-// avoid cutting inside object literals or function bodies.
+// Split code into executable statements. Respects braces so we do not
+// cut inside object literals or function bodies.
 function splitStatements(code) {
   var lines = code.split('\n');
   var stmts = [];
@@ -73,32 +82,15 @@ function sleep(ms) {
   return new Promise(function (resolve) { setTimeout(resolve, ms); });
 }
 
-async function patchTask(id, status, result) {
-  try {
-    await fetch(PROXY + '/sloan/figma/' + id, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'x-mirage-key': 'mirage-int-2026' },
-      body: JSON.stringify({ status: status, result: result || null }),
-    });
-  } catch (e) {
-    console.warn('[sloan-live] patch error:', e.message);
-  }
-}
-
-async function executeCode(code, taskName) {
+async function executeCode(code) {
   if (!theatreMode) {
-    // Direct execution
-    try {
-      var fn = new Function('figma', code);
-      fn(figma);
-      uiMsg({ type: 'progress', percent: 100 });
-    } catch (e) {
-      throw e;
-    }
+    var fn = new Function('figma', code);
+    fn(figma);
+    uiMsg({ type: 'progress', percent: 100 });
     return;
   }
 
-  // Theatre mode — step through statements with delays
+  // Theatre mode — step through statements with delays so you can watch.
   var stmts = splitStatements(code);
   for (var i = 0; i < stmts.length; i++) {
     try {
@@ -113,58 +105,43 @@ async function executeCode(code, taskName) {
   }
 }
 
-async function pollOnce() {
+// Execute one task delivered by the UI. Every lifecycle state emits a
+// {type:'patch'} message — the UI turns those into PATCH /sloan/figma/:id
+// calls and uses the terminal patch (complete|failed) to resume polling.
+async function runTask(task) {
+  if (!task || !task.id) return;
+  var taskName = (task.task || '').slice(0, 80);
+  console.log('[sloan-live] task received:', task.id, taskName);
+
+  uiMsg({ type: 'working', task: taskName });
+  uiMsg({ type: 'patch', id: task.id, status: 'running' });
+
+  var page = pageForTask(task.task || '');
+  await goToPage(page);
+
+  var code = task.figma_code || '';
+  if (!code.trim()) {
+    console.log('[sloan-live] no figma_code, marking complete');
+    uiMsg({ type: 'patch', id: task.id, status: 'complete', result: 'No code to execute \u2014 brief only.' });
+    uiMsg({ type: 'complete', task: taskName });
+    figma.notify('\u2713 Sloan \u2014 Brief posted (no code)', { timeout: 4000 });
+    return;
+  }
+
   try {
-    var r = await fetch(PROXY + '/sloan/figma/pending', { headers: { 'x-mirage-key': 'mirage-int-2026' } });
-    if (!r.ok) { uiMsg({ type: 'error', message: 'HTTP ' + r.status + ' from /sloan/figma/pending' }); return; }
-    var task = await r.json();
-    if (!task || !task.id) { uiMsg({ type: 'empty' }); return; }
-
-    var taskName = (task.task || '').slice(0, 80);
-    console.log('[sloan-live] task found:', task.id, taskName);
-    uiMsg({ type: 'working', task: taskName });
-
-    // Mark as running
-    await patchTask(task.id, 'running');
-
-    // Navigate to the right page
-    var page = pageForTask(task.task || '');
-    await goToPage(page);
-
-    // Execute
-    var code = task.figma_code || '';
-    if (!code.trim()) {
-      console.log('[sloan-live] no figma_code, marking complete');
-      await patchTask(task.id, 'complete', 'No code to execute — brief only.');
-      uiMsg({ type: 'complete', task: taskName });
-      figma.notify('\u2713 Sloan \u2014 Brief posted (no code)', { timeout: 4000 });
-      return;
-    }
-
-    try {
-      await executeCode(code, taskName);
-      await patchTask(task.id, 'complete', 'Executed successfully');
-      uiMsg({ type: 'complete', task: taskName });
-      figma.notify('\u2713 Sloan \u2014 Ready for review', { timeout: 4000 });
-    } catch (e) {
-      console.error('[sloan-live] execution error:', e.message);
-      await patchTask(task.id, 'failed', 'Execution error: ' + e.message);
-      uiMsg({ type: 'error', message: e.message || 'unknown' });
-      figma.notify('Sloan \u2014 Task failed: ' + e.message, { timeout: 6000, error: true });
-    }
+    await executeCode(code);
+    uiMsg({ type: 'patch', id: task.id, status: 'complete', result: 'Executed successfully' });
+    uiMsg({ type: 'complete', task: taskName });
+    figma.notify('\u2713 Sloan \u2014 Ready for review', { timeout: 4000 });
   } catch (e) {
-    console.warn('[sloan-live] poll error:', e.message);
+    console.error('[sloan-live] execution error:', e.message);
+    uiMsg({ type: 'patch', id: task.id, status: 'failed', result: 'Execution error: ' + e.message });
     uiMsg({ type: 'error', message: e.message || 'unknown' });
+    figma.notify('Sloan \u2014 Task failed: ' + e.message, { timeout: 6000, error: true });
   }
 }
 
-// Main loop
-async function loop() {
-  uiMsg({ type: 'watching' });
-  while (polling) {
-    await pollOnce();
-    await sleep(POLL_MS);
-  }
-}
-
-loop();
+// Signal to the UI that the main thread is ready for tasks. The UI
+// starts polling on load regardless, but this gives it a confirmation
+// beat so the initial status pulse lines up with actual readiness.
+uiMsg({ type: 'ready' });
