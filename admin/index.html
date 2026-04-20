@@ -3824,6 +3824,7 @@ async function sloanChatSend() {
 
     let reply;
     let mediaUrl = null;
+    let figmaQueued = false;
     try {
       const data = JSON.parse(rawBody);
       if (!r.ok || data.error) {
@@ -3831,11 +3832,15 @@ async function sloanChatSend() {
       } else {
         reply = data.reply || '(empty reply)';
         mediaUrl = data.mediaUrl || data.imageUrl || null;
+        figmaQueued = !!data.figmaQueued;
       }
     } catch (_) {
       reply = 'non-JSON response (HTTP ' + r.status + '): ' + rawBody.slice(0, 300);
     }
     appendSloanChatMessage('sloan', reply, mediaUrl);
+    if (figmaQueued) {
+      appendSloanChatMessage('system', '✦ Sloan queued a Figma task');
+    }
   } catch (e) {
     const stillThere = document.querySelector('.sloanchat-loading');
     if (stillThere) stillThere.remove();
