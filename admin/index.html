@@ -547,6 +547,54 @@ tbody tr:hover td { background: var(--bg); }
     .sloanchat-send-btn:hover { filter: brightness(1.1); }
     .sloanchat-send-btn:active { filter: brightness(0.95); }
     .sloanchat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: none; }
+    .sloanchat-attach-btn {
+      flex-shrink: 0;
+      width: 40px; height: 40px;
+      background: var(--surface);
+      color: var(--ink-dim);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .sloanchat-attach-btn:hover { color: var(--ink); border-color: var(--ink-dim); }
+    .sloanchat-attach-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .sloanchat-preview {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px;
+      border-top: 1px solid rgba(246,234,234,0.06);
+      background: rgba(0,0,0,0.25);
+    }
+    .sloanchat-preview-thumb {
+      position: relative;
+      width: 56px; height: 56px;
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .sloanchat-preview-thumb img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .sloanchat-preview-remove {
+      position: absolute; top: 2px; right: 2px;
+      width: 18px; height: 18px;
+      background: rgba(0,0,0,0.75);
+      color: #f6eaea;
+      border: none;
+      border-radius: 50%;
+      font-size: 11px;
+      line-height: 16px;
+      padding: 0;
+      cursor: pointer;
+    }
+    .sloanchat-preview-label {
+      font-size: 11px;
+      color: var(--ink-dim);
+      letter-spacing: 0.05em;
+    }
 
   </style>
 </head>
@@ -1242,6 +1290,8 @@ tbody tr:hover td { background: var(--bg); }
         </div>
         <div class="sloanchat-wrap">
           <div id="sloanchat-messages" class="sloanchat-messages"></div>
+          <div id="sloanchat-preview" class="sloanchat-preview" style="display:none"></div>
+          <input type="file" id="sloanchat-file-input" accept="image/*" style="display:none" onchange="sloanChatOnFilePick(event)" />
           <div class="sloanchat-input-row">
             <textarea
               id="sloanchat-input"
@@ -1251,6 +1301,9 @@ tbody tr:hover td { background: var(--bg); }
               rows="3"
               onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sloanChatSend();}"
             ></textarea>
+            <button type="button" class="sloanchat-attach-btn" id="sloanchat-attach-btn" title="Attach image" onclick="document.getElementById('sloanchat-file-input').click()" aria-label="Attach image">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"></path></svg>
+            </button>
             <button type="button" class="sloanchat-send-btn" id="sloanchat-send-btn" onclick="sloanChatSend()">Send</button>
           </div>
         </div>
@@ -3659,16 +3712,80 @@ function appendSloanChatMessage(who, text, explicitImageUrl) {
   return el;
 }
 
+// Single-image attachment state. Cleared after each successful send.
+let sloanChatAttachment = null;
+
+function sloanChatOnFilePick(ev) {
+  const files = ev.target.files;
+  if (!files || !files.length) return;
+  const file = files[0];
+  if ((file.type || '').indexOf('image/') !== 0) {
+    console.warn('[sloanchat] ignored non-image file:', file.type);
+    ev.target.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const dataUrl = e.target.result;
+    const headerMatch = (dataUrl || '').match(/^data:([^;]+);base64,/);
+    const mediaType = (headerMatch && headerMatch[1]) || file.type || 'image/jpeg';
+    sloanChatAttachment = { dataUrl: dataUrl, mediaType: mediaType, name: file.name || 'image' };
+    sloanChatRenderPreview();
+  };
+  reader.readAsDataURL(file);
+  ev.target.value = '';
+}
+
+function sloanChatRenderPreview() {
+  const box = document.getElementById('sloanchat-preview');
+  if (!box) return;
+  if (!sloanChatAttachment) {
+    box.style.display = 'none';
+    box.innerHTML = '';
+    return;
+  }
+  box.style.display = 'flex';
+  box.innerHTML = '';
+  const thumb = document.createElement('div');
+  thumb.className = 'sloanchat-preview-thumb';
+  const img = document.createElement('img');
+  img.src = sloanChatAttachment.dataUrl;
+  img.alt = sloanChatAttachment.name;
+  thumb.appendChild(img);
+  const remove = document.createElement('button');
+  remove.type = 'button';
+  remove.className = 'sloanchat-preview-remove';
+  remove.textContent = '×';
+  remove.setAttribute('aria-label', 'Remove attachment');
+  remove.addEventListener('click', sloanChatClearAttachment);
+  thumb.appendChild(remove);
+  box.appendChild(thumb);
+  const label = document.createElement('div');
+  label.className = 'sloanchat-preview-label';
+  label.textContent = 'Ready to send · ' + sloanChatAttachment.name;
+  box.appendChild(label);
+}
+
+function sloanChatClearAttachment() {
+  sloanChatAttachment = null;
+  sloanChatRenderPreview();
+}
+
 async function sloanChatSend() {
   const input = document.getElementById('sloanchat-input');
   const btn = document.getElementById('sloanchat-send-btn');
   if (!input || !btn) return;
   const text = input.value.trim();
-  if (!text) return;
+  const attachment = sloanChatAttachment;
+  // Allow send when there's an image even if text is empty — the image
+  // itself is the message. Block send only when both are empty.
+  if (!text && !attachment) return;
   const user = (typeof getAdminUser === 'function' && getAdminUser()) || 'nate';
 
-  appendSloanChatMessage('nate', text);
+  // Show Nate's bubble with the attached image (if any) and/or text.
+  appendSloanChatMessage('nate', text, attachment ? attachment.dataUrl : null);
   input.value = '';
+  sloanChatClearAttachment();
   btn.disabled = true;
   btn.textContent = 'Sending';
 
@@ -3680,12 +3797,20 @@ async function sloanChatSend() {
   msgs.scrollTop = msgs.scrollHeight;
 
   try {
-    const formBody =
-      'From=' + encodeURIComponent(user) +
-      '&To=' + encodeURIComponent('admin') +
-      '&Body=' + encodeURIComponent(text) +
-      '&NumMedia=0' +
-      '&channel=admin';
+    const parts = [
+      'From=' + encodeURIComponent(user),
+      'To=' + encodeURIComponent('admin'),
+      'Body=' + encodeURIComponent(text || ''),
+      'channel=admin',
+    ];
+    if (attachment) {
+      parts.push('NumMedia=1');
+      parts.push('MediaUrl0=' + encodeURIComponent(attachment.dataUrl));
+    } else {
+      parts.push('NumMedia=0');
+    }
+    const formBody = parts.join('&');
+
     const r = await fetch(SLOAN_CHAT_PROXY + '/sms/incoming', {
       method: 'POST',
       headers: {
@@ -3705,8 +3830,6 @@ async function sloanChatSend() {
         reply = 'error: ' + (data.error || ('HTTP ' + r.status));
       } else {
         reply = data.reply || '(empty reply)';
-        // Honor either mediaUrl or imageUrl — the proxy will add one of
-        // these once admin chat starts generating images.
         mediaUrl = data.mediaUrl || data.imageUrl || null;
       }
     } catch (_) {
