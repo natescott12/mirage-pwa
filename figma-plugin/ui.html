@@ -53,6 +53,19 @@
     color: rgba(246,234,234,0.65);
   }
 
+  .error-detail {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 10px;
+    line-height: 1.4;
+    color: rgba(201,98,47,0.75);
+    margin-top: -6px;
+    margin-bottom: 12px;
+    word-break: break-word;
+    min-height: 0;
+    display: none;
+  }
+  .error-detail.visible { display: block; }
+
   .progress-wrap {
     height: 2px;
     background: rgba(246,234,234,0.06);
@@ -127,6 +140,8 @@
   <div class="status-text" id="status">Watching...</div>
 </div>
 
+<div class="error-detail" id="errorDetail"></div>
+
 <div class="progress-wrap" id="progressWrap">
   <div class="progress-bar" id="progressBar"></div>
 </div>
@@ -166,15 +181,21 @@ function setLastTask(name) {
   document.getElementById('lastTask').textContent = name ? 'Last: ' + name : '';
 }
 
+function setErrorDetail(text) {
+  var el = document.getElementById('errorDetail');
+  el.textContent = text || '';
+  el.classList.toggle('visible', !!text);
+}
+
 window.onmessage = function(e) {
   var msg = e.data.pluginMessage;
   if (!msg) return;
-  if (msg.type === 'watching') { setStatus('Watching...', true); setProgress(0); }
-  if (msg.type === 'working')  { setStatus('Sloan is working...', true); setProgress(2); }
+  if (msg.type === 'watching') { setStatus('Watching...', true); setProgress(0); setErrorDetail(''); }
+  if (msg.type === 'working')  { setStatus('Sloan is working...', true); setProgress(2); setErrorDetail(''); }
   if (msg.type === 'progress') { setProgress(msg.percent || 0); }
-  if (msg.type === 'complete') { setStatus('Ready for review', false); setProgress(100); setTimeout(function(){ setProgress(0); }, 1500); setLastTask(msg.task); }
-  if (msg.type === 'empty')    { setStatus('Queue empty', false); setProgress(0); }
-  if (msg.type === 'error')    { setStatus('Error — check console', false); setProgress(0); }
+  if (msg.type === 'complete') { setStatus('Ready for review', false); setProgress(100); setTimeout(function(){ setProgress(0); }, 1500); setLastTask(msg.task); setErrorDetail(''); }
+  if (msg.type === 'empty')    { setStatus('Queue empty', false); setProgress(0); setErrorDetail(''); }
+  if (msg.type === 'error')    { setStatus('Error — check console', false); setProgress(0); setErrorDetail(msg.message || 'unknown'); }
 };
 </script>
 

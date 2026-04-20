@@ -116,7 +116,7 @@ async function executeCode(code, taskName) {
 async function pollOnce() {
   try {
     var r = await fetch(PROXY + '/sloan/figma/pending', { headers: { 'x-mirage-key': 'mirage-int-2026' } });
-    if (!r.ok) { uiMsg({ type: 'error' }); return; }
+    if (!r.ok) { uiMsg({ type: 'error', message: 'HTTP ' + r.status + ' from /sloan/figma/pending' }); return; }
     var task = await r.json();
     if (!task || !task.id) { uiMsg({ type: 'empty' }); return; }
 
@@ -149,12 +149,12 @@ async function pollOnce() {
     } catch (e) {
       console.error('[sloan-live] execution error:', e.message);
       await patchTask(task.id, 'failed', 'Execution error: ' + e.message);
-      uiMsg({ type: 'error' });
+      uiMsg({ type: 'error', message: e.message || 'unknown' });
       figma.notify('Sloan \u2014 Task failed: ' + e.message, { timeout: 6000, error: true });
     }
   } catch (e) {
     console.warn('[sloan-live] poll error:', e.message);
-    uiMsg({ type: 'error' });
+    uiMsg({ type: 'error', message: e.message || 'unknown' });
   }
 }
 
