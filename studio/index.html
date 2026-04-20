@@ -104,6 +104,66 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   .scene-opt { padding: 6px 12px; border-radius: 2px; font-size: 11px; cursor: pointer; border: 1px solid var(--border); transition: all 0.15s; color: var(--muted); font-family: 'DM Sans', sans-serif; }
   .scene-opt.active { background: rgba(26,23,20,0.07); border-color: var(--border-strong); color: var(--text); }
   .param-opt { padding: 6px 10px; border-radius: 2px; font-size: 11px; cursor: pointer; border: 1px solid var(--border); transition: all 0.12s; color: var(--muted); font-family: 'DM Sans', sans-serif; }
+  /* Filters — post-generation CSS looks applied to output images. */
+  .filter-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .filter-card {
+    padding: 7px 8px 8px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--bg2);
+    cursor: pointer;
+    transition: border-color 0.12s, background 0.12s;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .filter-card:hover { border-color: var(--border-md); }
+  .filter-card.active { border-color: var(--text); background: var(--bg3); }
+  .filter-swatch {
+    width: 100%; height: 26px;
+    border-radius: 2px;
+    border: 1px solid rgba(0,0,0,0.4);
+  }
+  .filter-name {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--dim);
+    font-family: 'DM Sans', sans-serif;
+  }
+  .filter-card.active .filter-name { color: var(--text); }
+  .filter-intensity-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 10px;
+  }
+  .filter-intensity-label {
+    font-size: 9px; letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    flex-shrink: 0;
+  }
+  .filter-intensity-slider {
+    flex: 1;
+    -webkit-appearance: none; appearance: none;
+    height: 2px; background: var(--border-md);
+    outline: none; border-radius: 1px;
+  }
+  .filter-intensity-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--text); cursor: pointer;
+    border: none;
+  }
+  .filter-intensity-slider::-moz-range-thumb {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--text); cursor: pointer;
+    border: none;
+  }
+  .filter-intensity-value {
+    font-size: 10px; color: var(--dim);
+    font-family: 'DM Sans', sans-serif;
+    font-variant-numeric: tabular-nums;
+    min-width: 36px; text-align: right;
+  }
   .param-opt.active { background: rgba(26,23,20,0.07); border-color: var(--border-strong); color: var(--text); }
   #prompt-sections .ps-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px solid rgba(26,23,20,0.06); }
   #prompt-sections .ps-row:last-child { border-bottom: none; }
@@ -788,7 +848,19 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
       </div>
       <div style="margin-bottom:20px">
         <div class="section-label">Style Parameters</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="params-grid"></div>
+        <div style="display:grid;grid-template-columns:1fr;gap:16px" id="params-grid"></div>
+      </div>
+      <div style="margin-bottom:20px">
+        <div class="section-label" style="display:flex;align-items:baseline;gap:10px">
+          <span>Filters</span>
+          <span style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-weight:normal">Post-generation look · per icon</span>
+        </div>
+        <div class="filter-grid" id="filter-grid"></div>
+        <div class="filter-intensity-row">
+          <span class="filter-intensity-label">Intensity</span>
+          <input type="range" id="filter-intensity" class="filter-intensity-slider" min="0" max="100" step="1" value="100" oninput="setFilterIntensity(this.value)" />
+          <span class="filter-intensity-value" id="filter-intensity-value">100%</span>
+        </div>
       </div>
       <div style="margin-bottom:20px">
         
@@ -1053,10 +1125,22 @@ const SCENES = {
   night:["neon sign, wet street","club bathroom mirror","taxi backseat, city blur","rooftop, city lights below"],
 };
 const PARAMS = {
-  grain:["heavy 35mm grain","medium film grain","light grain overlay"],
-  color:["desaturated 40%","desaturated 25%","warm tone shift","cool muted tones"],
   light:["overcast window","golden hour side light","harsh overhead","low ambient only"],
 };
+// Post-generation CSS filter presets, applied to output images in the UI
+// (not baked into the Flux prompt). Each has CSS numeric values at "full"
+// intensity; setFilterIntensity interpolates between 1/0 neutral and these
+// values so 0% is a no-op and 100% is the preset as defined. `grain` is
+// the opacity of the existing grain-overlay <div> on each output card.
+const FILTERS = {
+  A6:       { brightness:1.02, contrast:0.95, saturate:0.70, sepia:0.05, grain:0.15, swatch:'linear-gradient(135deg,#d8c9a8 0%,#a08860 100%)' },
+  Film:     { brightness:0.95, contrast:1.10, saturate:0.60, sepia:0.12, grain:0.25, swatch:'linear-gradient(135deg,#b8a890 0%,#5a4c3c 100%)' },
+  Overcast: { brightness:1.05, contrast:0.90, saturate:0.65, sepia:0.00, grain:0.10, swatch:'linear-gradient(135deg,#d0d0d0 0%,#7a7a7a 100%)' },
+  Flash:    { brightness:1.10, contrast:1.05, saturate:0.85, sepia:0.00, grain:0.08, swatch:'linear-gradient(135deg,#f2eee4 0%,#b4afa2 100%)' },
+  Dusk:     { brightness:0.95, contrast:1.05, saturate:0.75, sepia:0.08, grain:0.18, swatch:'linear-gradient(135deg,#8a7668 0%,#3a2c24 100%)' },
+  Raw:      { brightness:1.00, contrast:1.00, saturate:1.00, sepia:0.00, grain:0.00, swatch:'linear-gradient(135deg,#bfbfbf 0%,#8f8f8f 100%)' },
+};
+const FILTER_NAMES = Object.keys(FILTERS);
 const SKIN_TONES = [
   {label:"Fair porcelain",hex:"#f5e6d8",prompt:"fair porcelain skin"},
   {label:"Light",hex:"#f0d5b8",prompt:"light skin"},
@@ -1770,6 +1854,7 @@ function renderOutput() {
   setText("output-count", generatedContent.length);
   if(!generatedContent.length){
     el.innerHTML=`<div style="padding:70px 20px;text-align:center"><div class="serif" style="font-size:20px;color:rgba(26,23,20,0.18);margin-bottom:8px">No drops yet</div><div style="font-size:11px;color:rgba(26,23,20,0.28);line-height:1.8">Select an icon and generate<br>your first drop</div></div>`;
+    if (typeof applyFiltersToOutput === 'function') applyFiltersToOutput();
     return;
   }
   el.innerHTML=generatedContent.map(item=>`
@@ -1799,6 +1884,8 @@ function renderOutput() {
         </div>
       </div>
     </div>`).join("");
+  // Apply the selected filter + grain overlay to the newly-rendered cards.
+  if (typeof applyFiltersToOutput === 'function') applyFiltersToOutput();
 }
 
 function renderLibrary() {
@@ -1963,6 +2050,7 @@ function selectIcon(id) {
   renderIconCard();
   renderSceneTabs();
   renderParams();
+  renderFilters();
   refreshPrompt();
   loadCharIntoBuilder();
   loadMoodboardForIcon();
@@ -2108,6 +2196,100 @@ function setParam(el) {
   if(container) container.querySelectorAll(".param-opt").forEach(e=>e.classList.remove("active"));
   el.classList.add("active");
   refreshPrompt();
+}
+
+// Per-icon filter state. Persists to localStorage keyed by icon id.
+// Default: 'Raw' at 100% (no visible effect — matches prior behavior).
+function getIconFilterState(iconId) {
+  try {
+    const raw = localStorage.getItem('studio.filters.' + iconId);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && FILTERS[parsed.filter]) return parsed;
+    }
+  } catch (_) {}
+  return { filter: 'Raw', intensity: 100 };
+}
+function saveIconFilterState(iconId, state) {
+  try { localStorage.setItem('studio.filters.' + iconId, JSON.stringify(state)); } catch (_) {}
+}
+function currentIconFilterState() {
+  if (!selectedIcon) return { filter: 'Raw', intensity: 100 };
+  return getIconFilterState(selectedIcon.id);
+}
+
+// CSS filter string for a given preset at a given intensity (0-1). Each
+// channel interpolates between its neutral value (1 for brightness /
+// contrast / saturate, 0 for sepia) and the preset's full-strength value.
+function buildFilterCss(name, intensity01) {
+  const f = FILTERS[name];
+  if (!f) return '';
+  const t = intensity01;
+  const mix = (val, neutral) => neutral + (val - neutral) * t;
+  const b = mix(f.brightness, 1).toFixed(3);
+  const c = mix(f.contrast,   1).toFixed(3);
+  const s = mix(f.saturate,   1).toFixed(3);
+  const sep = mix(f.sepia,    0).toFixed(3);
+  return 'brightness(' + b + ') contrast(' + c + ') saturate(' + s + ') sepia(' + sep + ')';
+}
+function buildFilterGrainOpacity(name, intensity01) {
+  const f = FILTERS[name];
+  if (!f) return 0;
+  return Math.max(0, Math.min(1, f.grain * intensity01));
+}
+
+// Re-render the filter cards and slider for the currently selected icon.
+function renderFilters() {
+  const grid = document.getElementById('filter-grid');
+  if (!grid) return;
+  const state = currentIconFilterState();
+  grid.innerHTML = FILTER_NAMES.map(function(name) {
+    const f = FILTERS[name];
+    const active = name === state.filter;
+    return '<div class="filter-card' + (active ? ' active' : '') + '" onclick="setStyleFilter(\'' + name + '\')">' +
+           '<div class="filter-swatch" style="background:' + f.swatch + '"></div>' +
+           '<div class="filter-name">' + name + '</div>' +
+           '</div>';
+  }).join('');
+  const slider = document.getElementById('filter-intensity');
+  const valEl = document.getElementById('filter-intensity-value');
+  if (slider) slider.value = state.intensity;
+  if (valEl) valEl.textContent = state.intensity + '%';
+  applyFiltersToOutput();
+}
+
+function setStyleFilter(name) {
+  if (!selectedIcon || !FILTERS[name]) return;
+  const state = currentIconFilterState();
+  state.filter = name;
+  saveIconFilterState(selectedIcon.id, state);
+  renderFilters();
+}
+
+function setFilterIntensity(val) {
+  if (!selectedIcon) return;
+  const num = Math.max(0, Math.min(100, parseInt(val, 10) || 0));
+  const state = currentIconFilterState();
+  state.intensity = num;
+  saveIconFilterState(selectedIcon.id, state);
+  const valEl = document.getElementById('filter-intensity-value');
+  if (valEl) valEl.textContent = num + '%';
+  applyFiltersToOutput();
+}
+
+// Apply the current icon's filter + grain opacity to every visible
+// output image. Runs after each filter state change and after every
+// renderOutput() call (the new cards need the CSS too).
+function applyFiltersToOutput() {
+  const state = currentIconFilterState();
+  const css = buildFilterCss(state.filter, state.intensity / 100);
+  const grainOpacity = buildFilterGrainOpacity(state.filter, state.intensity / 100);
+  document.querySelectorAll('.output-img').forEach(function(img) {
+    img.style.filter = css;
+  });
+  document.querySelectorAll('.output-card .grain-overlay').forEach(function(g) {
+    g.style.opacity = grainOpacity;
+  });
 }
 function filterIcons(v) { renderIconList(v); }
 function filterIconsGrid(v) { renderIconsGrid(v); }
