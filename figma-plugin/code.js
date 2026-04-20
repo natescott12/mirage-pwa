@@ -18,12 +18,12 @@ figma.ui.onmessage = function (msg) {
 function uiMsg(obj) { figma.ui.postMessage(obj); }
 
 // Navigate to a named page in the current file.
-function goToPage(name) {
+async function goToPage(name) {
   const page = figma.root.children.find(function (p) {
     return p.name.toLowerCase().indexOf(name.toLowerCase()) !== -1;
   });
   if (page) {
-    figma.currentPage = page;
+    await figma.setCurrentPageAsync(page);
     console.log('[sloan-live] switched to page:', page.name);
   } else {
     console.warn('[sloan-live] page not found:', name);
@@ -129,7 +129,7 @@ async function pollOnce() {
 
     // Navigate to the right page
     var page = pageForTask(task.task || '');
-    goToPage(page);
+    await goToPage(page);
 
     // Execute
     var code = task.figma_code || '';
