@@ -197,19 +197,18 @@ function setErrorDetail(text) {
 
 function toCodeJs(obj) { parent.postMessage({ pluginMessage: obj }, '*'); }
 
-// PATCH a task's state on the proxy. Called when code.js sends a
-// {type:'patch'} message; the terminal statuses (complete|failed)
-// additionally trigger the next poll, so there is always exactly one
-// task in flight.
+// PATCH a task's state on the proxy. Returns true iff the server
+// responded with 2xx, false on every other outcome (network error,
+// non-ok response). Callers that need to know whether the patch
+// actually landed must check the return value.
 //
-// All non-'running' statuses are collapsed to 'complete' before the
-// PATCH — a 'failed' task being left in the DB is a risk for retry
-// loops and stuck state. Once the plugin has picked up a task, it
-// never goes back to 'pending' or remains in a lingering terminal
-// state. The incoming failure signal is preserved in `result` so you
-// can still see why it failed, just not in `status`.
+// Status collapse rule: 'failed' becomes 'complete' so a failed task
+// cannot be left sitting in a lingering non-terminal state. All other
+// statuses pass through unchanged — this is important for the new
+// 'in_progress' claim step in poll(), which must not be collapsed.
+// The incoming failure signal is preserved in `result`.
 async function patchTaskReq(id, status, result) {
-  var finalStatus = (status === 'running') ? 'running' : 'complete';
+  var finalStatus = (status === 'failed') ? 'complete' : status;
   var payload = { status: finalStatus, result: result || null };
   try {
     var r = await fetch(PROXY + '/sloan/figma/' + id, {
@@ -220,18 +219,23 @@ async function patchTaskReq(id, status, result) {
     var body = await r.text().catch(function(){ return ''; });
     if (r.ok) {
       console.log('[sloan-live/ui] patch OK —', id, 'requested:', status, '→ sent:', finalStatus, '→ HTTP', r.status, body || '(empty body)');
-    } else {
-      console.warn('[sloan-live/ui] patch FAIL —', id, 'requested:', status, '→ sent:', finalStatus, '→ HTTP', r.status, body);
+      return true;
     }
+    console.warn('[sloan-live/ui] patch FAIL —', id, 'requested:', status, '→ sent:', finalStatus, '→ HTTP', r.status, body);
+    return false;
   } catch (e) {
     console.warn('[sloan-live/ui] patch exception —', id, 'requested:', status, '→ sent:', finalStatus, '→', e && e.message);
+    return false;
   }
 }
 
 // One polling pass. On no-task or error paths, schedule the next poll
-// directly. On a real task, hand it off to code.js and stop scheduling
-// — the terminal patch handler below will resume polling once the
-// task finishes.
+// directly. On a real task, claim it immediately with an 'in_progress'
+// PATCH before handing it off to code.js — that closes the race where
+// a second poll cycle could see the same pending row and deliver it
+// twice. If the claim PATCH fails, abandon the task and schedule
+// another poll so the loop cannot stall out waiting for code.js to
+// send a terminal patch for a task it never received.
 async function poll() {
   try {
     var r = await fetch(PROXY + '/sloan/figma/pending', { headers: { 'x-mirage-key': MIRAGE_KEY } });
@@ -251,6 +255,20 @@ async function poll() {
       return;
     }
     setErrorDetail('');
+
+    // Claim before handoff. Any non-2xx or network error means we
+    // cannot guarantee the task is off the pending queue — abandon and
+    // keep the loop alive.
+    var claimed = await patchTaskReq(task.id, 'in_progress', null);
+    if (!claimed) {
+      console.warn('[sloan-live/ui] claim PATCH failed — abandoning task', task.id, 'and continuing poll loop');
+      setStatus('Error — check console', false);
+      setErrorDetail('claim PATCH failed for task ' + task.id + ' — next poll scheduled');
+      setProgress(0);
+      setTimeout(poll, POLL_MS);
+      return;
+    }
+
     toCodeJs({ type: 'task', task: task });
   } catch (e) {
     console.warn('[sloan-live/ui] poll error:', e && e.message);
