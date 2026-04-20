@@ -118,6 +118,11 @@ async function runTask(task) {
 
   var page = pageForTask(task.task || '');
   await goToPage(page);
+  // Figma's setCurrentPageAsync resolves before the page is fully
+  // ready for create calls on a newly-loaded page. A small settle
+  // delay before executing task code prevents "page not current" or
+  // stale-root errors on the first figma.createX call.
+  await new Promise(resolve => setTimeout(resolve, 500));
 
   var code = task.figma_code || '';
   if (!code.trim()) {
