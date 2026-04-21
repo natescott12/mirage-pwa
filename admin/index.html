@@ -4107,10 +4107,25 @@ function renderTechReference(container, rows) {
   container.innerHTML = '';
   const bySection = {};
   rows.forEach(function(r) { (bySection[r.section] = bySection[r.section] || []).push(r); });
+  // Stable ordering inside each section so the page doesn't shuffle on reload.
+  Object.keys(bySection).forEach(function(k) {
+    bySection[k].sort(function(a, b) { return (a.label || '').localeCompare(b.label || ''); });
+  });
+  // Render curated sections in their defined order first.
+  const seen = {};
   TR_SECTIONS.forEach(function(sec) {
+    seen[sec.key] = true;
     const items = bySection[sec.key] || [];
     if (!items.length) return;
     container.appendChild(renderTrSection(sec.title, items, sec.subtitle, isAdmin));
+  });
+  // Then render any remaining sections from the data, alphabetically, so a
+  // new section added in Supabase shows up without an admin-side code change.
+  Object.keys(bySection).filter(function(k) { return !seen[k]; }).sort().forEach(function(k) {
+    const items = bySection[k];
+    if (!items.length) return;
+    const title = k.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+    container.appendChild(renderTrSection(title, items, null, isAdmin));
   });
 }
 
