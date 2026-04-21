@@ -88,7 +88,7 @@
   .nav-tab {
     padding: 6px 14px; border-radius: 2px;
     font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
-    cursor: pointer; border: 1px solid transparent; transition: all 0.15s;
+    cursor: pointer; border: 1px solid var(--border-md); transition: all 0.15s;
     background: transparent; color: var(--text);
     text-decoration: none; display: inline-block;
     font-family: inherit;
@@ -617,7 +617,7 @@
     <button class="nav-tab" data-mode="converse" onclick="switchMode('converse')">Converse</button>
     <span class="nav-divider" aria-hidden="true"></span>
     <button class="nav-tab" onclick="jumpToLibrary()">Library<span class="badge" id="lib-count">0</span></button>
-    <a href="/admin#library" class="nav-tab">Cloud Library</a>
+    <a href="/admin#content" class="nav-tab">Cloud Library</a>
     <a href="/admin#personas" class="nav-tab">Persona Builder</a>
     <a href="/admin#icons" class="nav-tab">Icons</a>
     <button class="nav-tab" onclick="showQueue()">Queue<span class="badge" id="queue-count">0</span></button>
