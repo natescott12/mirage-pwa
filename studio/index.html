@@ -60,14 +60,31 @@
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
   button { font-family: inherit; }
 
-  /* HEADER (preserved) */
+  /* HEADER */
   #header {
     height: 60px; background: var(--bg);
     border-bottom: 1px solid var(--border-md);
-    display: flex; align-items: center; justify-content: space-between;
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+    gap: 24px;
     padding: 0 28px; flex-shrink: 0; z-index: 50;
   }
-  .logo { font-family: 'Afacad', sans-serif; font-size: 24px; }
+  .header-left {
+    display: flex; align-items: center; gap: 14px;
+    min-width: 0;
+  }
+  .header-right {
+    display: flex; align-items: center; gap: 14px;
+    justify-content: flex-end;
+    min-width: 0;
+  }
+  .header-divider {
+    width: 1px; height: 20px; background: var(--border-md);
+  }
+  .header-sub {
+    font-size: 10px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .logo { font-family: 'Afacad', sans-serif; font-size: 24px; line-height: 1; }
   .nav-tab {
     padding: 6px 14px; border-radius: 2px;
     font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
@@ -93,6 +110,7 @@
   .proxy-status { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--muted); cursor: pointer; }
   .proxy-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
   .proxy-dot.ok { background: var(--green); }
+  .proxy-dot.warn { background: var(--gold); }
   .proxy-dot.err { background: var(--red); }
 
   /* NOTIFICATION */
@@ -520,22 +538,27 @@
 </head>
 <body>
 
-<!-- HEADER (preserved structure) -->
+<!-- HEADER -->
 <div id="header">
-  <div style="display:flex; align-items:center; gap:24px;">
-    <div class="logo">Mirage <span style="color:var(--muted); font-size:11px; margin-left:8px; letter-spacing:0.14em; text-transform:uppercase;">· Icon Studio</span></div>
-    <div class="proxy-status" id="proxy-status" onclick="checkProxy()">
-      <span class="proxy-dot" id="proxy-dot"></span>
-      <span id="proxy-label">Checking…</span>
-    </div>
+  <div class="header-left">
+    <div class="logo">Mirage</div>
+    <span class="header-divider" aria-hidden="true"></span>
+    <span class="header-sub">Icon Studio</span>
+    <span class="header-divider" aria-hidden="true"></span>
+    <a href="/admin" class="crossnav">← Admin</a>
+    <a href="/admin#personas" class="crossnav">Persona Builder</a>
   </div>
-  <div style="display:flex; align-items:center; gap:14px;">
+  <div class="proxy-status" id="proxy-status" onclick="checkProxy()" title="Click to recheck">
+    <span class="proxy-dot" id="proxy-dot"></span>
+    <span id="proxy-label">Checking…</span>
+  </div>
+  <div class="header-right">
     <button class="nav-tab active" data-mode="generate" onclick="switchMode('generate')">Generate</button>
     <button class="nav-tab" data-mode="converse" onclick="switchMode('converse')">Converse</button>
     <span class="nav-divider" aria-hidden="true"></span>
     <button class="nav-tab" onclick="jumpToLibrary()">Library<span class="badge" id="lib-count">0</span></button>
-    <a href="/admin#personas" class="crossnav">Persona Builder</a>
     <a href="/admin#icons" class="crossnav">Icons</a>
+    <button class="nav-tab" onclick="showQueue()">Queue<span class="badge" id="queue-count">0</span></button>
   </div>
 </div>
 
@@ -846,8 +869,18 @@ function checkProxy() {
   if (dot) dot.className = 'proxy-dot';
   fetch(PROXY + '/health', { cache: 'no-store' })
     .then(r => r.ok ? r.json() : Promise.reject(new Error('http ' + r.status)))
-    .then(() => { if (dot) dot.className = 'proxy-dot ok'; if (lbl) lbl.textContent = 'Proxy OK'; })
-    .catch(() => { if (dot) dot.className = 'proxy-dot err'; if (lbl) lbl.textContent = 'Proxy down'; });
+    .then(d => {
+      const proxyOk = (d && d.status === 'ok');
+      const fluxOk = !!(d && d.flux);
+      if (dot) dot.className = 'proxy-dot ' + (proxyOk && fluxOk ? 'ok' : 'warn');
+      if (lbl) lbl.textContent =
+        (proxyOk ? 'Proxy connected' : 'Proxy degraded') + ' · ' +
+        (fluxOk ? 'Flux ready' : 'Flux down');
+    })
+    .catch(() => {
+      if (dot) dot.className = 'proxy-dot err';
+      if (lbl) lbl.textContent = 'Proxy down · Flux unknown';
+    });
 }
 
 // ─── LOAD ICON ROSTER ────────────────────────────────────────────────────────
@@ -1644,6 +1677,11 @@ function editFilterFromLibrary(rowId) {
   notify('Image loaded — adjust filter and Approve to re-save');
 }
 
+// ─── QUEUE (placeholder — see MIRAGE_STATE pending) ──────────────────────────
+function showQueue() {
+  notify('Queue is empty — nothing in flight.');
+}
+
 // ─── LIBRARY JUMP ────────────────────────────────────────────────────────────
 function jumpToLibrary() {
   if (mode !== 'generate') switchMode('generate');
@@ -1722,6 +1760,7 @@ window.selectFilter = selectFilter;
 window.setIntensity = setIntensity;
 window.editFilterFromLibrary = editFilterFromLibrary;
 window.jumpToLibrary = jumpToLibrary;
+window.showQueue = showQueue;
 </script>
 
 <!-- ─── CONVERSE IIFE (preserved from prior build, lightly trimmed) ─────── -->
