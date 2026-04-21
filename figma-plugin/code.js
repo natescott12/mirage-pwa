@@ -50,6 +50,31 @@ function shortenUrlForLabel(url) {
 // page's existing children for the max (x + width), drop the new
 // image 80px to the right of that, with a Helvetica Neue Regular
 // 12px label below it showing the shortened source URL.
+// Find the first FRAME on the page whose name starts with 'img_' and
+// has no IMAGE-type fill yet (still the grey placeholder). Iterates
+// page.children in their natural order so a designer-arranged grid
+// fills top-to-bottom / left-to-right the way the file was authored.
+// Returns null when nothing matches — caller falls back to right-edge
+// placement.
+function findEmptyMoodboardSlot(page) {
+  for (var i = 0; i < page.children.length; i++) {
+    var node = page.children[i];
+    if (!node || node.type !== 'FRAME') continue;
+    if (!node.name || node.name.indexOf('img_') !== 0) continue;
+    var fills = node.fills;
+    // figma.mixed is a Symbol sentinel — skip rather than guess.
+    if (fills === figma.mixed) continue;
+    if (!Array.isArray(fills)) continue;
+    var hasImage = false;
+    for (var j = 0; j < fills.length; j++) {
+      var f = fills[j];
+      if (f && f.type === 'IMAGE' && f.visible !== false) { hasImage = true; break; }
+    }
+    if (!hasImage) return node;
+  }
+  return null;
+}
+
 async function placeImageOnWorkshop(bytesArr, url) {
   await goToPage('00');
   await new Promise(function (r) { setTimeout(r, 200); });
@@ -58,6 +83,24 @@ async function placeImageOnWorkshop(bytesArr, url) {
   var bytes = new Uint8Array(bytesArr || []);
   var image = figma.createImage(bytes);
 
+  // Preferred path — fill the next empty img_* placeholder frame in
+  // the moodboard grid. Preserves the frame's existing dimensions
+  // and position; only the fill changes (grey placeholder → IMAGE
+  // with scaleMode FILL). No label is added — the moodboard's
+  // layout speaks for itself and a caption below would break the
+  // grid. Labels only appear on the right-edge fallback path below.
+  var slot = findEmptyMoodboardSlot(page);
+  if (slot) {
+    slot.fills = [{ type: 'IMAGE', scaleMode: 'FILL', imageHash: image.hash }];
+    figma.viewport.scrollAndZoomIntoView([slot]);
+    figma.notify('✓ Sloan — Filled ' + slot.name, { timeout: 3000 });
+    console.log('[sloan-live] filled moodboard slot:', slot.name, 'with', shortenUrlForLabel(url));
+    return;
+  }
+
+  // Fallback — no empty placeholder frames on the page, so drop a
+  // fresh rect at the right edge with a label. Matches the original
+  // behavior from 153762a.
   var size;
   try {
     size = await image.getSizeAsync();
