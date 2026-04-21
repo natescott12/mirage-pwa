@@ -86,6 +86,10 @@
     color: var(--muted); text-decoration: none; transition: color 0.15s;
   }
   .crossnav:hover { color: var(--text); }
+  .nav-divider {
+    width: 1px; height: 18px; background: var(--border-md);
+    margin: 0 4px;
+  }
   .proxy-status { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--muted); cursor: pointer; }
   .proxy-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
   .proxy-dot.ok { background: var(--green); }
@@ -528,7 +532,10 @@
   <div style="display:flex; align-items:center; gap:14px;">
     <button class="nav-tab active" data-mode="generate" onclick="switchMode('generate')">Generate</button>
     <button class="nav-tab" data-mode="converse" onclick="switchMode('converse')">Converse</button>
-    <a href="/admin" class="crossnav" style="margin-left:14px;">← Admin</a>
+    <span class="nav-divider" aria-hidden="true"></span>
+    <button class="nav-tab" onclick="jumpToLibrary()">Library<span class="badge" id="lib-count">0</span></button>
+    <a href="/admin#personas" class="crossnav">Persona Builder</a>
+    <a href="/admin#icons" class="crossnav">Icons</a>
   </div>
 </div>
 
@@ -1583,6 +1590,8 @@ function loadLibraryForIcon(iconId) {
 
 function renderLibrary() {
   const el = document.getElementById('library');
+  const counter = document.getElementById('lib-count');
+  if (counter) counter.textContent = library.length;
   if (!el) return;
   if (!library.length) {
     el.innerHTML = '<div class="lib-empty">No approved images for this Icon yet.</div>';
@@ -1633,6 +1642,16 @@ function editFilterFromLibrary(rowId) {
   // Scroll filters/output into view
   document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'start' });
   notify('Image loaded — adjust filter and Approve to re-save');
+}
+
+// ─── LIBRARY JUMP ────────────────────────────────────────────────────────────
+function jumpToLibrary() {
+  if (mode !== 'generate') switchMode('generate');
+  // Defer the scroll until after the layout reflows from the mode swap.
+  setTimeout(function() {
+    const el = document.getElementById('library');
+    if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 30);
 }
 
 // ─── MODE TOGGLE ─────────────────────────────────────────────────────────────
@@ -1702,6 +1721,7 @@ window.approveImage = approveImage;
 window.selectFilter = selectFilter;
 window.setIntensity = setIntensity;
 window.editFilterFromLibrary = editFilterFromLibrary;
+window.jumpToLibrary = jumpToLibrary;
 </script>
 
 <!-- ─── CONVERSE IIFE (preserved from prior build, lightly trimmed) ─────── -->
