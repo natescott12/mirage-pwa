@@ -4041,6 +4041,20 @@ function sloanChatExtractImageUrl(text) {
 function appendSloanChatMessage(who, text, explicitImageUrl, docName) {
   const msgs = document.getElementById('sloanchat-messages');
   if (!msgs) return null;
+
+  // Skip rendering entirely when there's nothing to show. Reply '' or
+  // null with no image/doc attachment happens on the hallucinated-URL
+  // path in handleAdminChat (server deliberately withholds the turn);
+  // rendering a '...' placeholder there just looked like a bug.
+  const hasText = typeof text === 'string' && text.trim().length > 0;
+  if (!hasText && !explicitImageUrl && !docName) return null;
+
+  // Persisted '[system correction: ...]' turns exist in icon_chats
+  // purely for Claude's next-turn context — they should never surface
+  // as a user-visible bubble on reload. Matches the opening-bracket
+  // prefix so future correction variants stay hidden too.
+  if (hasText && text.trim().indexOf('[system correction:') === 0) return null;
+
   const empty = msgs.querySelector('.sloanchat-empty');
   if (empty) empty.remove();
   const el = document.createElement('div');
