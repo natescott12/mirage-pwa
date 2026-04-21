@@ -639,7 +639,30 @@
       <div class="section">
         <div class="section-label">Flux Prompt</div>
         <div id="prompt-rows" class="prompt-rows">
-          <div class="prompt-empty">Select shot controls or wardrobe — your prompt builds itself here.</div>
+          <div class="prompt-row">
+            <span class="prompt-label">Character</span>
+            <input id="ps-character" class="prompt-input" type="text" readonly placeholder="—" />
+          </div>
+          <div class="prompt-row">
+            <span class="prompt-label">Scene</span>
+            <input id="ps-scene" class="prompt-input" type="text" placeholder="—" oninput="onPromptInput('scene', this.value)" />
+          </div>
+          <div class="prompt-row">
+            <span class="prompt-label">Wardrobe</span>
+            <input id="ps-wardrobe" class="prompt-input" type="text" placeholder="—" oninput="onPromptInput('wardrobe', this.value)" />
+          </div>
+          <div class="prompt-row">
+            <span class="prompt-label">Shot</span>
+            <input id="ps-shot" class="prompt-input" type="text" placeholder="—" oninput="onPromptInput('shot', this.value)" />
+          </div>
+          <div class="prompt-row">
+            <span class="prompt-label">Light</span>
+            <input id="ps-light" class="prompt-input" type="text" placeholder="—" oninput="onPromptInput('light', this.value)" />
+          </div>
+          <div class="prompt-row">
+            <span class="prompt-label">Style</span>
+            <input id="ps-style" class="prompt-input" type="text" readonly placeholder="—" />
+          </div>
         </div>
         <div class="prompt-controls">
           <button class="prompt-btn" onclick="rewritePrompt()">↺ Rewrite</button>
@@ -939,8 +962,8 @@ function selectIcon(id) {
   // Reset chip + wardrobe state per-icon
   chipState = { scene: null, framing: null, angle: null, perspective: null, base: null };
   wardrobeSelected = new Set();
-  promptOverrides = { character: false, scene: false, wardrobe: false, shot: false, style: false };
-  promptParts = { character: '', scene: '', wardrobe: '', shot: '', style: '' };
+  promptOverrides = { character: false, scene: false, wardrobe: false, shot: false, light: false, style: false };
+  promptParts = { character: '', scene: '', wardrobe: '', shot: '', light: '', style: '' };
   loadWardrobeFromStorage();
   // Reset output
   generated = null;
@@ -1151,21 +1174,22 @@ function addCustomWardrobe() {
 }
 
 // ─── PROMPT ASSEMBLY (categorized rows) ──────────────────────────────────────
-const PROMPT_CATEGORIES = ['character', 'scene', 'wardrobe', 'shot', 'style'];
+const PROMPT_CATEGORIES = ['character', 'scene', 'wardrobe', 'shot', 'light', 'style'];
 const PROMPT_LABELS = {
   character: 'Character',
   scene:     'Scene',
   wardrobe:  'Wardrobe',
   shot:      'Shot',
+  light:     'Light',
   style:     'Style'
 };
-let promptParts = { character: '', scene: '', wardrobe: '', shot: '', style: '' };
-let promptOverrides = { character: false, scene: false, wardrobe: false, shot: false, style: false };
+let promptParts = { character: '', scene: '', wardrobe: '', shot: '', light: '', style: '' };
+let promptOverrides = { character: false, scene: false, wardrobe: false, shot: false, light: false, style: false };
 
 // Compute the auto-built value for each category based on the current chip,
 // wardrobe, and persona state. Empty string means the category is empty.
 function buildAutoParts() {
-  const parts = { character: '', scene: '', wardrobe: '', shot: '', style: '' };
+  const parts = { character: '', scene: '', wardrobe: '', shot: '', light: '', style: '' };
 
   // CHARACTER — identity + appearance
   const idBits = [];
@@ -1177,11 +1201,8 @@ function buildAutoParts() {
   if (charDesc) idBits.push(charDesc);
   parts.character = idBits.join(', ');
 
-  // SCENE — selected scene chip + icon's setting
-  const sceneBits = [];
-  if (chipState.scene && SHOT_PROMPT.scene[chipState.scene]) sceneBits.push(SHOT_PROMPT.scene[chipState.scene]);
-  if (selectedIcon && selectedIcon.setting) sceneBits.push(selectedIcon.setting);
-  parts.scene = sceneBits.join(', ');
+  // SCENE — icon's setting (location/world). Lighting goes on its own row.
+  if (selectedIcon && selectedIcon.setting) parts.scene = selectedIcon.setting;
 
   // WARDROBE
   if (wardrobeSelected.size) parts.wardrobe = 'wearing ' + Array.from(wardrobeSelected).join(', ');
@@ -1194,6 +1215,9 @@ function buildAutoParts() {
   });
   parts.shot = shotBits.join(', ');
 
+  // LIGHT — scene chip drives lighting (Morning/Day/Evening/Night)
+  if (chipState.scene && SHOT_PROMPT.scene[chipState.scene]) parts.light = SHOT_PROMPT.scene[chipState.scene];
+
   // STYLE — base style chip + icon's aesthetic
   const styleBits = [];
   if (chipState.base && SHOT_PROMPT.base[chipState.base]) styleBits.push(SHOT_PROMPT.base[chipState.base]);
@@ -1204,7 +1228,7 @@ function buildAutoParts() {
 }
 
 // Refresh: pull auto values into any category the user hasn't manually
-// overridden, then re-render the row UI.
+// overridden, then update the row inputs in place.
 function refreshPrompt() {
   if (!promptLocked) {
     const auto = buildAutoParts();
@@ -1216,29 +1240,28 @@ function refreshPrompt() {
   updatePromptCount();
 }
 
+// Update each row's input value in place — only writes when the value
+// actually changes, and skips the field the user is currently typing in,
+// so the caret never gets blown away mid-edit.
+function setRow(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (document.activeElement === el) return;
+  if (el.value !== (val || '')) el.value = val || '';
+}
+
 function renderPromptRows() {
-  const wrap = document.getElementById('prompt-rows');
-  if (!wrap) return;
-  const visible = PROMPT_CATEGORIES.filter(function(k) { return (promptParts[k] || '').trim().length > 0; });
-  if (!visible.length) {
-    wrap.innerHTML = '<div class="prompt-empty">Select shot controls or wardrobe — your prompt builds itself here.</div>';
-    return;
-  }
-  wrap.innerHTML = visible.map(function(k) {
-    const overridden = promptOverrides[k] ? ' overridden' : '';
-    const val = (promptParts[k] || '').replace(/"/g, '&quot;');
-    return '<div class="prompt-row">' +
-      '<span class="prompt-label">' + PROMPT_LABELS[k] + '</span>' +
-      '<input class="prompt-input' + overridden + '" data-cat="' + k + '" value="' + val + '" oninput="onPromptInput(\'' + k + '\', this.value)" />' +
-    '</div>';
-  }).join('');
+  PROMPT_CATEGORIES.forEach(function(k) {
+    setRow('ps-' + k, promptParts[k]);
+    const el = document.getElementById('ps-' + k);
+    if (el) el.classList.toggle('overridden', !!promptOverrides[k]);
+  });
 }
 
 function onPromptInput(cat, val) {
   promptParts[cat] = val;
   promptOverrides[cat] = true;
-  // Re-mark the input as overridden without re-rendering (preserves caret).
-  const input = document.querySelector('.prompt-input[data-cat="' + cat + '"]');
+  const input = document.getElementById('ps-' + cat);
   if (input) input.classList.add('overridden');
   updatePromptCount();
 }
@@ -1298,7 +1321,7 @@ function rewritePrompt() {
       promptLocked = true;
       const btn = document.getElementById('lock-btn');
       if (btn) { btn.textContent = '🔒 Locked'; btn.classList.add('locked'); }
-      promptParts = { character: text, scene: '', wardrobe: '', shot: '', style: '' };
+      promptParts = { character: text, scene: '', wardrobe: '', shot: '', light: '', style: '' };
       PROMPT_CATEGORIES.forEach(function(k) { promptOverrides[k] = true; });
       renderPromptRows();
       updatePromptCount();
