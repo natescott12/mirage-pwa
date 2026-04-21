@@ -3852,7 +3852,7 @@ async function loadSloanChat() {
 // returns a reply without an explicit mediaUrl field.
 function sloanChatExtractImageUrl(text) {
   if (!text) return null;
-  const m = text.match(/https:\/\/[^\s]*\.supabase\.co\/storage\/[^\s)\]"']+/i);
+  const m = text.match(/https:\/\/gmyenvnfuailickepvax\.supabase\.co\/storage\/[^\s)\]"']+/i);
   return m ? m[0] : null;
 }
 
@@ -3880,7 +3880,7 @@ function appendSloanChatMessage(who, text, explicitImageUrl, docName) {
 
   if (imageUrl) {
     const img = document.createElement('img');
-    img.className = 'sloanchat-img';
+    img.style.cssText = 'max-width:100%;border-radius:4px;margin-top:8px;';
     img.src = imageUrl;
     img.alt = 'image';
     img.loading = 'lazy';
