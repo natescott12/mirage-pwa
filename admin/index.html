@@ -4084,7 +4084,7 @@ async function loadTechReference() {
   const container = document.getElementById('tr-container');
   if (!container) return;
   try {
-    const r = await fetch(SUPABASE_URL + '/rest/v1/system_config?select=*&order=section.asc,sort_order.asc,label.asc', {
+    const r = await fetch(SUPABASE_URL + '/rest/v1/system_config?select=*&order=section.asc', {
       headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
     });
     if (!r.ok) throw new Error('HTTP ' + r.status + ' loading system_config');
