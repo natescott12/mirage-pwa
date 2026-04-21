@@ -3418,10 +3418,15 @@ function andieRender(opts) {
   const items = andieMessages.map(m => {
     const role = m.role === 'user' ? 'user' : 'assistant';
     const avatar = role === 'user' ? (currentUser ? currentUser[0].toUpperCase() : 'U') : 'A';
+    const raw = String(m.content || '');
+    const imgMatch = raw.match(/https:\/\/gmyenvnfuailickepvax\.supabase\.co\/storage\/[^\s)\]"']+/i);
+    const imgUrl = imgMatch ? imgMatch[0] : null;
+    const textPart = imgUrl ? raw.replace(imgUrl, '').trim() : raw;
+    const imgTag = imgUrl ? `<img src="${andieEscape(imgUrl)}" style="max-width:100%;border-radius:4px;margin-top:8px;" />` : '';
     return `
       <div class="andie-msg ${role}">
         <div class="andie-avatar">${andieEscape(avatar)}</div>
-        <div class="andie-bubble">${andieEscape(m.content)}</div>
+        <div class="andie-bubble">${andieEscape(textPart)}${imgTag}</div>
       </div>`;
   });
   if (opts && opts.typing) items.push('<div class="andie-typing">Andie is thinking...</div>');
