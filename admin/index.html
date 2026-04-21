@@ -18,7 +18,7 @@
   --ink: #ffffff;
   --ink-mid: rgba(255,255,255,0.55);
   --ink-dim: rgba(255,255,255,0.35);
-  --accent: #c9622f;
+  --accent: #77cc6e;
   --sidebar: 240px;
 }
 
@@ -359,7 +359,7 @@ tbody tr:hover td { background: var(--bg); }
       padding: 3px 7px;
       border-radius: 3px;
     }
-    .icon-status-badge.in-progress { background: rgba(201,98,47,0.2); color: var(--accent); }
+    .icon-status-badge.in-progress { background: rgba(119,204,110,0.2); color: var(--accent); }
     .icon-status-badge.draft { background: rgba(255,255,255,0.08); color: var(--ink-mid); }
     .icon-status-badge.live { background: var(--green); color: #fff; }
     .icon-card {
@@ -400,7 +400,7 @@ tbody tr:hover td { background: var(--bg); }
        absolute positioning so it never affects non-admin layout. */
     .tr-row { position: relative; }
     .tr-row.tr-status-pending { border-left: 2px solid rgba(212,167,85,0.6); padding-left: 16px; }
-    .tr-row.tr-status-dead { border-left: 2px solid rgba(201,98,47,0.6); opacity: 0.55; padding-left: 16px; }
+    .tr-row.tr-status-dead { border-left: 2px solid rgba(119,204,110,0.6); opacity: 0.55; padding-left: 16px; }
     .tr-edit-btn {
       position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
       background: transparent; border: 1px solid var(--border); color: var(--ink-dim);
@@ -429,7 +429,7 @@ tbody tr:hover td { background: var(--bg); }
       letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; border-radius: 2px;
     }
     .tr-edit-save { border-color: var(--accent); color: var(--accent); }
-    .tr-edit-save:hover { background: rgba(201,98,47,0.1); }
+    .tr-edit-save:hover { background: rgba(119,204,110,0.1); }
     .tr-edit-cancel:hover { border-color: var(--ink-dim); }
     .tr-edit-status-msg { font-size: 11px; color: var(--ink-dim); min-height: 14px; }
     .tr-edit-status-msg.tr-edit-err { color: rgba(232,120,100,0.85); }
@@ -1314,7 +1314,7 @@ tbody tr:hover td { background: var(--bg); }
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px">
             <div style="background:var(--bg);border:1px solid var(--border);padding:16px"><div style="font-size:12px;font-weight:600">--bg</div><div style="font-size:11px;color:var(--ink-dim)">#0f0e0d · Page bg</div></div>
             <div style="background:var(--surface);border:1px solid var(--border);padding:16px"><div style="font-size:12px;font-weight:600">--surface</div><div style="font-size:11px;color:var(--ink-dim)">#1a1814 · Cards</div></div>
-            <div style="background:var(--accent);border:1px solid var(--border);padding:16px;color:#fff"><div style="font-size:12px;font-weight:600">--accent</div><div style="font-size:11px;opacity:0.8">#c9622f · CTA</div></div>
+            <div style="background:var(--accent);border:1px solid var(--border);padding:16px;color:#fff"><div style="font-size:12px;font-weight:600">--accent</div><div style="font-size:11px;opacity:0.8">#77cc6e · CTA</div></div>
             <div style="background:var(--ink);border:1px solid var(--border);padding:16px;color:var(--bg)"><div style="font-size:12px;font-weight:600">--ink</div><div style="font-size:11px;opacity:0.6">#fff · Text</div></div>
             <div style="border:1px solid var(--border);padding:16px"><div style="font-size:12px;font-weight:600;color:var(--ink-mid)">--ink-mid</div><div style="font-size:11px;color:var(--ink-dim)">55% white</div></div>
             <div style="border:1px solid var(--border);padding:16px"><div style="font-size:12px;font-weight:600;color:var(--ink-dim)">--ink-dim</div><div style="font-size:11px;color:var(--ink-dim)">35% white</div></div>
@@ -1326,8 +1326,7 @@ tbody tr:hover td { background: var(--bg); }
         <div style="margin-bottom:40px">
           <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:16px">Typography</div>
           <div style="background:var(--surface);border:1px solid var(--border);padding:24px;display:grid;gap:16px">
-            <div><div style="font-family:'Afacad',sans-serif;font-size:28px;font-weight:600">Afacad — Primary UI</div><div style="font-size:11px;color:var(--ink-dim)">All admin, studio, labels, buttons, nav. No Playfair in admin/studio.</div></div>
-            <div><div style="font-family:'DM Sans',sans-serif;font-size:16px;font-weight:300">DM Sans Light — Secondary</div><div style="font-size:11px;color:var(--ink-dim)">Body copy, descriptions</div></div>
+            <div><div style="font-family:'Afacad',sans-serif;font-size:28px;font-weight:600">Afacad — Primary UI</div><div style="font-size:11px;color:var(--ink-dim)">All admin, studio, labels, buttons, nav.</div></div>
             <div style="border-top:1px solid var(--border);padding-top:16px;display:grid;gap:8px">
               <div style="display:flex;gap:16px;align-items:baseline"><span style="font-size:22px;font-weight:600">22/600</span><span style="font-size:11px;color:var(--ink-dim)">Pane titles</span></div>
               <div style="display:flex;gap:16px;align-items:baseline"><span style="font-size:16px;font-weight:500">16/500</span><span style="font-size:11px;color:var(--ink-dim)">Section headers</span></div>
