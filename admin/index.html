@@ -3495,7 +3495,7 @@ function andieRender(opts) {
     const imgMatch = rawText.match(/https:\/\/gmyenvnfuailickepvax\.supabase\.co\/storage\/[^\s)\]"']+/i);
     const imgUrl = imgMatch ? imgMatch[0] : null;
     const textPart = imgUrl ? rawText.replace(imgUrl, '').trim() : rawText;
-    const trailingImg = imgUrl ? `<img src="${andieEscape(imgUrl)}" style="max-width:100%;border-radius:4px;margin-top:8px;" />` : '';
+    const trailingImg = imgUrl ? `<img src="${andieEscape(proxifyImageUrl(imgUrl))}" style="max-width:100%;border-radius:4px;margin-top:8px;" />` : '';
     const userImg = attachedImg ? `<img src="${andieEscape(attachedImg)}" style="max-width:100%;border-radius:4px;margin-bottom:8px;display:block;" />` : '';
     const docChip = attachedDoc ? `<div style="font-size:11px;color:var(--ink-dim);margin-bottom:6px;">📄 PDF attached</div>` : '';
 
@@ -4017,6 +4017,18 @@ async function loadSloanChat() {
   }
 }
 
+// Route Supabase storage URLs through the mirage-proxy /proxy-image route
+// so the admin's <img> requests don't get blocked by whatever origin check
+// the direct Supabase URL is failing on for this host. Non-Supabase URLs
+// and data: URLs are returned unchanged so user-attached previews and
+// third-party assets still render directly.
+function proxifyImageUrl(url) {
+  if (!url || typeof url !== 'string') return url;
+  if (url.indexOf('data:') === 0) return url;
+  if (!/^https:\/\/[\w.-]+\.supabase\.co\/storage\//i.test(url)) return url;
+  return 'https://mirage-proxy-production.up.railway.app/proxy-image?url=' + encodeURIComponent(url);
+}
+
 // Sniff a Supabase storage URL out of message text. Used for history
 // items that embed image URLs inline, and as a fallback when the API
 // returns a reply without an explicit mediaUrl field.
@@ -4049,10 +4061,11 @@ function appendSloanChatMessage(who, text, explicitImageUrl, docName) {
   }
 
   if (imageUrl) {
-    console.log('[sloanchat] rendering img for url:', imageUrl);
+    const finalSrc = proxifyImageUrl(imageUrl);
+    console.log('[sloanchat] rendering img — original:', imageUrl, '→ via:', finalSrc);
     const img = document.createElement('img');
     img.style.cssText = 'max-width:100%;border-radius:4px;margin-top:8px;';
-    img.src = imageUrl;
+    img.src = finalSrc;
     img.alt = 'image';
     img.loading = 'lazy';
     img.addEventListener('load', function() {
