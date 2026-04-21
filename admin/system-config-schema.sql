@@ -68,7 +68,7 @@ insert into public.system_config (section, label, value, note, status, url, meth
   -- live_urls
   ('live_urls', 'Studio', 'mirage-pwa.vercel.app/studio', null, 'active', 'https://mirage-pwa.vercel.app/studio', null, false, 10),
   ('live_urls', 'Admin', 'mirage-pwa.vercel.app/admin', 'nate / MirageAdmin2026!', 'active', 'https://mirage-pwa.vercel.app/admin', null, false, 20),
-  ('live_urls', 'Domain', 'www.mirageicons.com', null, 'active', 'https://www.mirageicons.com', null, false, 30),
+  ('live_urls', 'Domain', 'mirage.is', null, 'active', 'https://mirage.is', null, false, 30),
   ('live_urls', 'Railway Proxy', 'mirage-proxy-production.up.railway.app', null, 'active', 'https://mirage-proxy-production.up.railway.app', null, false, 40),
   ('live_urls', 'Proxy health', '.../health', null, 'active', 'https://mirage-proxy-production.up.railway.app/health', null, false, 50),
   ('live_urls', 'SMS test image', '.../sms/test-image', null, 'info', 'https://mirage-proxy-production.up.railway.app/sms/test-image', null, false, 60),

@@ -25,3 +25,15 @@ _Last updated: 2026-04-20_
 - Manual synthesis trigger for Sloan (`POST /sloan/synthesize-now`)
 - Andie build (not started)
 - Supabase `service_role` legacy key migration (rotate the key that was hardcoded in the pre-rebuild Studio file; new file uses publishable key only)
+
+## Live URLs
+
+| Label         | Value                                           | URL                                                      |
+| ------------- | ----------------------------------------------- | -------------------------------------------------------- |
+| Domain        | mirage.is                                       | https://mirage.is                                        |
+| Studio        | mirage-pwa.vercel.app/studio                    | https://mirage-pwa.vercel.app/studio                     |
+| Admin         | mirage-pwa.vercel.app/admin                     | https://mirage-pwa.vercel.app/admin                      |
+| Railway Proxy | mirage-proxy-production.up.railway.app          | https://mirage-proxy-production.up.railway.app           |
+| Proxy health  | .../health                                      | https://mirage-proxy-production.up.railway.app/health    |
+
+_Primary domain is `mirage.is`; `www.mirageicons.com` now redirects to it._
