@@ -21,7 +21,87 @@ figma.ui.onmessage = function (msg) {
       console.error('[sloan-live] runTask unhandled error:', e && e.message);
     });
   }
+  if (msg.type === 'place-image') {
+    placeImageOnWorkshop(msg.bytes, msg.url).catch(function (e) {
+      console.error('[sloan-live] place-image error:', e && e.message);
+    });
+  }
 };
+
+// Shorten a URL for the text label below a placed image. Returns
+// host + path, truncated with an ellipsis past ~52 chars so labels
+// stay readable when Sloan drops longer paths into the workshop.
+function shortenUrlForLabel(url) {
+  try {
+    var parsed = new URL(url);
+    var path = parsed.pathname || '';
+    var host = parsed.host || '';
+    var combined = host + path;
+    if (combined.length > 52) combined = combined.slice(0, 49) + '…';
+    return combined;
+  } catch (_) {
+    var s = String(url || '');
+    return s.length > 52 ? s.slice(0, 49) + '…' : s;
+  }
+}
+
+// Place an image dropped in by the [FIGMA_IMAGE: url] directive onto
+// page 00 — Sloan's Workshop. Uses right-edge placement: scan the
+// page's existing children for the max (x + width), drop the new
+// image 80px to the right of that, with a Helvetica Neue Regular
+// 12px label below it showing the shortened source URL.
+async function placeImageOnWorkshop(bytesArr, url) {
+  await goToPage('00');
+  await new Promise(function (r) { setTimeout(r, 200); });
+
+  var page = figma.currentPage;
+  var bytes = new Uint8Array(bytesArr || []);
+  var image = figma.createImage(bytes);
+
+  var size;
+  try {
+    size = await image.getSizeAsync();
+  } catch (_) {
+    size = { width: 800, height: 800 };
+  }
+  // Cap the long edge at 800 so one huge image can't blow up the workshop.
+  var scale = Math.min(1, 800 / Math.max(size.width, size.height));
+  var w = Math.max(64, size.width * scale);
+  var h = Math.max(64, size.height * scale);
+
+  var rect = figma.createRectangle();
+  rect.resize(w, h);
+  rect.fills = [{ type: 'IMAGE', scaleMode: 'FILL', imageHash: image.hash }];
+  rect.name = 'Web image — ' + shortenUrlForLabel(url);
+
+  // Right-edge placement — find the rightmost bound of existing
+  // children on this page and offset the new rect 80px past it.
+  var maxX = 0;
+  for (var i = 0; i < page.children.length; i++) {
+    var node = page.children[i];
+    if (typeof node.x === 'number' && typeof node.width === 'number') {
+      var right = node.x + node.width;
+      if (right > maxX) maxX = right;
+    }
+  }
+  rect.x = maxX + 80;
+  rect.y = 0;
+  page.appendChild(rect);
+
+  // Label below, Helvetica Neue Regular 12px — matches the font rules
+  // the /sloan/figma code generator uses for any text in the workshop.
+  await figma.loadFontAsync({ family: 'Helvetica Neue', style: 'Regular' });
+  var text = figma.createText();
+  text.fontName = { family: 'Helvetica Neue', style: 'Regular' };
+  text.fontSize = 12;
+  text.characters = shortenUrlForLabel(url);
+  text.x = rect.x;
+  text.y = rect.y + rect.height + 12;
+  page.appendChild(text);
+
+  figma.viewport.scrollAndZoomIntoView([rect, text]);
+  figma.notify('✓ Sloan — Image placed in Workshop', { timeout: 3000 });
+}
 
 function uiMsg(obj) { figma.ui.postMessage(obj); }
 
