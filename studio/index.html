@@ -1476,9 +1476,15 @@ function getGrainCanvas() {
   const ctx = c.getContext('2d');
   const img = ctx.createImageData(SIZE, SIZE);
   for (let i = 0; i < img.data.length; i += 4) {
-    // Random gray, full alpha. Mix-blend-mode: overlay turns this into
-    // film-grain bumps on the underlying image.
-    const v = (Math.random() * 255) | 0;
+    // Higher-contrast monochrome noise. Uniform-random grey averages out
+    // to near-neutral under mix-blend-mode:overlay and washes out at low
+    // opacity, so we bias values toward 0 / 255 with an S-curve. The
+    // mean stays at 128 (so the overall image brightness is preserved)
+    // but more pixels land in the dark / bright extremes that overlay
+    // actually pushes through visibly.
+    const r = Math.random();
+    const sharper = r < 0.5 ? 2 * r * r : 1 - 2 * (1 - r) * (1 - r);
+    const v = (sharper * 255) | 0;
     img.data[i] = v;
     img.data[i+1] = v;
     img.data[i+2] = v;
