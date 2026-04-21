@@ -4049,6 +4049,7 @@ function appendSloanChatMessage(who, text, explicitImageUrl, docName) {
   }
 
   if (imageUrl) {
+    console.log('[sloanchat] rendering img for url:', imageUrl);
     const img = document.createElement('img');
     img.style.cssText = 'max-width:100%;border-radius:4px;margin-top:8px;';
     img.src = imageUrl;
@@ -4057,6 +4058,10 @@ function appendSloanChatMessage(who, text, explicitImageUrl, docName) {
     img.addEventListener('load', function() {
       msgs.scrollTop = msgs.scrollHeight;
     });
+    img.onerror = function() {
+      this.style.border = '2px solid red';
+      console.warn('[sloanchat] img failed to load:', this.src);
+    };
     el.appendChild(img);
   }
 
