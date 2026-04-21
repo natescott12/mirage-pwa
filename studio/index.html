@@ -90,6 +90,8 @@
     font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
     cursor: pointer; border: 1px solid transparent; transition: all 0.15s;
     background: transparent; color: var(--text);
+    text-decoration: none; display: inline-block;
+    font-family: inherit;
   }
   .nav-tab:hover { border-color: var(--border-md); }
   .nav-tab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
@@ -506,10 +508,24 @@
     transition: border-color 0.12s;
   }
   .lib-card:hover { border-color: var(--border-strong); }
+  .lib-img-wrap { position: relative; }
   .lib-img {
     width: 100%; aspect-ratio: 3/4;
     object-fit: cover; display: block;
+    cursor: pointer;
   }
+  .lib-img:hover { opacity: 0.92; }
+  .lib-zoom {
+    position: absolute; top: 6px; right: 6px;
+    width: 24px; height: 24px;
+    background: rgba(26,23,20,0.65); color: var(--bg);
+    border: none; border-radius: 2px;
+    font-size: 13px; line-height: 1; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.12s;
+  }
+  .lib-card:hover .lib-zoom { opacity: 1; }
+  .lib-zoom:hover { background: rgba(26,23,20,0.9); }
   .lib-meta {
     padding: 6px 10px;
     display: flex; justify-content: space-between; align-items: center;
@@ -532,6 +548,51 @@
     border-radius: 2px;
   }
 
+  /* LIGHTBOX */
+  #lightbox {
+    position: fixed; inset: 0; z-index: 10000;
+    background: rgba(26,23,20,0.92);
+    display: none; align-items: center; justify-content: center;
+    animation: fadeIn 0.18s ease;
+  }
+  #lightbox.open { display: flex; }
+  .lb-shell {
+    display: flex; flex-direction: column;
+    max-width: 820px; max-height: 90vh;
+    width: 90vw; gap: 14px;
+  }
+  .lb-img-wrap {
+    flex: 1; min-height: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #111; border-radius: 2px; overflow: hidden;
+  }
+  .lb-img-wrap img {
+    max-width: 100%; max-height: 80vh;
+    object-fit: contain; display: block;
+  }
+  .lb-actions {
+    display: flex; gap: 8px; justify-content: center;
+  }
+  .lb-btn {
+    padding: 10px 18px; border-radius: 2px;
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    cursor: pointer; font-family: inherit;
+    border: 1px solid var(--border-md);
+    background: transparent; color: var(--bg);
+  }
+  .lb-btn:hover { border-color: var(--bg); }
+  .lb-btn.primary { background: var(--accent); color: #0f0e0d; border-color: var(--accent); }
+  .lb-btn.danger  { color: #ff7a6e; border-color: rgba(255,122,110,0.4); }
+  .lb-btn.danger:hover { color: #fff; background: rgba(208,64,53,0.25); border-color: #ff7a6e; }
+  .lb-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 34px; height: 34px;
+    background: rgba(26,23,20,0.6); color: var(--bg);
+    border: none; border-radius: 50%;
+    font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+
   /* CONVERSE TAB (kept compatible with existing IIFE) */
   #tab-converse .conv-wrap { max-width: 760px; margin: 0 auto; padding: 8px 0 40px; }
 </style>
@@ -546,7 +607,6 @@
     <span class="header-sub">Icon Studio</span>
     <span class="header-divider" aria-hidden="true"></span>
     <a href="/admin" class="crossnav">← Admin</a>
-    <a href="/admin#personas" class="crossnav">Persona Builder</a>
   </div>
   <div class="proxy-status" id="proxy-status" onclick="checkProxy()" title="Click to recheck">
     <span class="proxy-dot" id="proxy-dot"></span>
@@ -557,12 +617,26 @@
     <button class="nav-tab" data-mode="converse" onclick="switchMode('converse')">Converse</button>
     <span class="nav-divider" aria-hidden="true"></span>
     <button class="nav-tab" onclick="jumpToLibrary()">Library<span class="badge" id="lib-count">0</span></button>
-    <a href="/admin#icons" class="crossnav">Icons</a>
+    <a href="/admin#personas" class="nav-tab">Persona Builder</a>
+    <a href="/admin#icons" class="nav-tab">Icons</a>
     <button class="nav-tab" onclick="showQueue()">Queue<span class="badge" id="queue-count">0</span></button>
   </div>
 </div>
 
 <div id="notification"></div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" onclick="lbBackdropClick(event)">
+  <button class="lb-close" onclick="closeLightbox()" aria-label="Close">✕</button>
+  <div class="lb-shell">
+    <div class="lb-img-wrap"><img id="lb-img" src="" alt="" /></div>
+    <div class="lb-actions">
+      <button class="lb-btn primary" onclick="lbEditFilter()">Edit Filter</button>
+      <button class="lb-btn danger" onclick="lbDelete()">Delete</button>
+      <button class="lb-btn" onclick="closeLightbox()">Close</button>
+    </div>
+  </div>
+</div>
 
 <div id="app">
 
@@ -681,18 +755,20 @@
         <div id="output">
           <div class="output-empty">No image yet. Configure shot controls and hit Generate.</div>
         </div>
-        <div id="filters-section" style="display:none">
+        <div id="filters-section">
           <div class="section-label" style="margin-top:22px;">Filters</div>
           <div class="filter-grid" id="filter-grid"></div>
-          <div class="intensity-row">
-            <label>Intensity</label>
-            <input type="range" id="intensity" min="0" max="100" value="100" oninput="setIntensity(this.value)" />
-            <span class="intensity-val" id="intensity-val">100%</span>
-          </div>
-          <div class="action-row">
-            <button class="action-btn approve" onclick="approveImage()">Approve → Library</button>
-            <button class="action-btn discard" onclick="discardImage()">Discard</button>
-            <button class="action-btn regen" onclick="regenerateImage()">Regenerate</button>
+          <div id="filter-actions" style="display:none">
+            <div class="intensity-row">
+              <label>Intensity</label>
+              <input type="range" id="intensity" min="0" max="100" value="100" oninput="setIntensity(this.value)" />
+              <span class="intensity-val" id="intensity-val">100%</span>
+            </div>
+            <div class="action-row">
+              <button class="action-btn approve" onclick="approveImage()">Approve → Library</button>
+              <button class="action-btn discard" onclick="discardImage()">Discard</button>
+              <button class="action-btn regen" onclick="regenerateImage()">Regenerate</button>
+            </div>
           </div>
         </div>
       </div>
@@ -974,6 +1050,7 @@ function selectIcon(id) {
   renderShotChips();
   renderWardrobeChips();
   renderOutput();
+  renderFilters();
   refreshPrompt();
   loadCharForIcon(found);
   loadLibraryForIcon(found.id);
@@ -1070,7 +1147,7 @@ function renderShotChips() {
     if (!row) return;
     row.innerHTML = SHOT_CHIPS[group].map(function(label) {
       const active = chipState[group] === label ? ' active' : '';
-      return '<button class="chip' + active + '" onclick="toggleChip(\'' + group + '\', ' + JSON.stringify(label) + ', this)">' + escapeHTML(label) + '</button>';
+      return '<button class="chip' + active + '" onclick="toggleChip(\'' + group + '\', ' + attrJS(label) + ', this)">' + escapeHTML(label) + '</button>';
     }).join('');
   });
 }
@@ -1131,7 +1208,7 @@ function renderWardrobeChips() {
   const options = getWardrobeOptions();
   row.innerHTML = options.map(function(opt) {
     const active = wardrobeSelected.has(opt) ? ' active' : '';
-    return '<button class="chip' + active + '" onclick="toggleWardrobe(' + JSON.stringify(opt) + ', this)">' + escapeHTML(opt) + '</button>';
+    return '<button class="chip' + active + '" onclick="toggleWardrobe(' + attrJS(opt) + ', this)">' + escapeHTML(opt) + '</button>';
   }).join('');
   if (!options.length) {
     row.innerHTML = '<div style="font-size:11px; color:var(--muted);">No items yet. Add custom below.</div>';
@@ -1340,7 +1417,8 @@ function generateImage() {
   const btn = document.getElementById('generate-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
   showOutputLoading();
-  document.getElementById('filters-section').style.display = 'none';
+  const actionsEl = document.getElementById('filter-actions');
+  if (actionsEl) actionsEl.style.display = 'none';
 
   fetch(PROXY + '/flux/generate', {
     method: 'POST',
@@ -1373,7 +1451,8 @@ function generateImage() {
       filterIntensity = 100;
       renderOutput();
       renderFilters();
-      document.getElementById('filters-section').style.display = 'block';
+      const a = document.getElementById('filter-actions');
+      if (a) a.style.display = 'block';
       notify('Image ready');
     })
     .catch(function(e) {
@@ -1394,7 +1473,9 @@ function discardImage() {
   currentFilterId = null;
   filterIntensity = 100;
   renderOutput();
-  document.getElementById('filters-section').style.display = 'none';
+  const a = document.getElementById('filter-actions');
+  if (a) a.style.display = 'none';
+  renderFilters();
 }
 
 function showOutputLoading() {
@@ -1517,20 +1598,25 @@ function grainOverlayHTML(filter, intensityPct) {
 function renderFilters() {
   const grid = document.getElementById('filter-grid');
   if (!grid) return;
-  if (!generated) { grid.innerHTML = ''; return; }
   if (!filtersLib.length) { grid.innerHTML = '<div style="grid-column:1/-1; padding:18px; color:var(--muted); font-size:11px; text-align:center;">No filters loaded.</div>'; return; }
   // Pre-init the grain canvas so the data URL is available for the thumbs.
   getGrainCanvas();
+  // Before a real image is generated, show a warm skin-to-shadow gradient so
+  // each filter's look is still visible in its card.
+  const swatchBg = 'linear-gradient(135deg,#ead6ba 0%,#c49a72 35%,#8a6145 65%,#2f2118 100%)';
   grid.innerHTML = filtersLib.map(function(f) {
     const sel = currentFilterId === f.id ? ' active' : '';
     const css = cssFilterFor(f, 100);
     const grain = grainOverlayHTML(f, 100);
+    const bg = generated && generated.url
+      ? 'url(\'' + generated.url + '\')'
+      : swatchBg;
     const thumb =
       '<div class="filter-thumb-wrap">' +
-        '<div class="filter-thumb" style="background-image:url(\'' + generated.url + '\'); filter:' + css + '"></div>' +
+        '<div class="filter-thumb" style="background-image:' + bg + '; filter:' + css + '"></div>' +
         grain +
       '</div>';
-    return '<div class="filter-card' + sel + '" onclick="selectFilter(' + JSON.stringify(f.id) + ')">' +
+    return '<div class="filter-card' + sel + '" onclick="selectFilter(' + attrJS(f.id) + ')">' +
       thumb +
       '<div class="filter-name">' + escapeHTML(f.name) + '</div>' +
     '</div>';
@@ -1663,10 +1749,14 @@ function renderLibrary() {
     const tags = Array.isArray(row.tags) ? row.tags : [];
     const filterTag = tags.find(function(t){ return typeof t === 'string' && t.indexOf('filter:') === 0; });
     const filterLabel = filterTag ? escapeHTML(filterTag.slice(7).split(' @')[0]) : 'no filter';
+    const idAttr = attrJS(row.id);
     return '<div class="lib-card">' +
-      '<img class="lib-img" src="' + row.image_url + '" alt="" loading="lazy" />' +
+      '<div class="lib-img-wrap">' +
+        '<img class="lib-img" src="' + row.image_url + '" alt="" loading="lazy" onclick="editFilterFromLibrary(' + idAttr + ')" />' +
+        '<button class="lib-zoom" title="View / delete" onclick="openLibraryLightbox(' + idAttr + ')">⤢</button>' +
+      '</div>' +
       '<div class="lib-meta"><span>' + filterLabel + '</span></div>' +
-      '<button class="lib-edit" onclick="editFilterFromLibrary(' + JSON.stringify(row.id) + ')">Edit Filter</button>' +
+      '<button class="lib-edit" onclick="editFilterFromLibrary(' + idAttr + ')">Edit Filter</button>' +
     '</div>';
   }).join('') + '</div>';
 }
@@ -1700,7 +1790,8 @@ function editFilterFromLibrary(rowId) {
   if (intVal) intVal.textContent = filterIntensity + '%';
   renderOutput();
   renderFilters();
-  document.getElementById('filters-section').style.display = 'block';
+  const a = document.getElementById('filter-actions');
+  if (a) a.style.display = 'block';
   // Scroll filters/output into view
   document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'start' });
   notify('Image loaded — adjust filter and Approve to re-save');
@@ -1747,13 +1838,78 @@ function escapeHTML(s) {
     .replace(/"/g, '&quot;');
 }
 
+// JSON-encode a value AND entity-escape it for safe use inside a double-quoted
+// HTML attribute (e.g. `onclick="foo(<attrJS(x)>)"`). JSON.stringify alone
+// produces unescaped double quotes that collide with the attribute's quoting
+// and silently break the handler.
+function attrJS(v) {
+  return JSON.stringify(v)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 // (per-row inputs call onPromptInput directly; no global input listener needed)
+
+// ─── LIGHTBOX ────────────────────────────────────────────────────────────────
+let lbRowId = null;
+
+function openLibraryLightbox(rowId) {
+  const row = library.find(function(r) { return r.id === rowId; });
+  if (!row) return;
+  lbRowId = rowId;
+  const img = document.getElementById('lb-img');
+  if (img) img.src = row.image_url;
+  const lb = document.getElementById('lightbox');
+  if (lb) lb.classList.add('open');
+  document.addEventListener('keydown', lbKeyHandler);
+}
+
+function closeLightbox() {
+  const lb = document.getElementById('lightbox');
+  if (lb) lb.classList.remove('open');
+  lbRowId = null;
+  document.removeEventListener('keydown', lbKeyHandler);
+}
+
+function lbBackdropClick(e) {
+  if (e.target && e.target.id === 'lightbox') closeLightbox();
+}
+
+function lbKeyHandler(e) {
+  if (e.key === 'Escape') closeLightbox();
+}
+
+function lbEditFilter() {
+  if (lbRowId == null) return;
+  const id = lbRowId;
+  closeLightbox();
+  editFilterFromLibrary(id);
+}
+
+function lbDelete() {
+  if (lbRowId == null) return;
+  if (!window.sbStudio) { notify('Supabase not ready', 'error'); return; }
+  if (!confirm('Delete this image from the library? This cannot be undone.')) return;
+  const id = lbRowId;
+  const iconId = selectedIcon ? selectedIcon.id : null;
+  window.sbStudio.from('content').delete().eq('id', id)
+    .then(function(r) {
+      if (r && r.error) throw new Error(r.error.message || 'delete failed');
+      notify('Deleted');
+      closeLightbox();
+      if (iconId) loadLibraryForIcon(iconId);
+    })
+    .catch(function(e) { notify('Delete failed: ' + (e && e.message || e), 'error'); });
+}
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 function init() {
   checkProxy();
   Promise.all([loadIcons(), loadFilters()]).then(function() {
     renderSidebar();
+    renderFilters();
     // Auto-select Sloan
     const sloan = icons.find(function(i) { return (i.name || '').toLowerCase() === 'sloan'; });
     if (sloan) selectIcon(sloan.id);
@@ -1790,6 +1946,11 @@ window.setIntensity = setIntensity;
 window.editFilterFromLibrary = editFilterFromLibrary;
 window.jumpToLibrary = jumpToLibrary;
 window.showQueue = showQueue;
+window.openLibraryLightbox = openLibraryLightbox;
+window.closeLightbox = closeLightbox;
+window.lbBackdropClick = lbBackdropClick;
+window.lbEditFilter = lbEditFilter;
+window.lbDelete = lbDelete;
 </script>
 
 <!-- ─── CONVERSE IIFE (preserved from prior build, lightly trimmed) ─────── -->
