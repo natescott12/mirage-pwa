@@ -275,14 +275,45 @@
   .wardrobe-add button:hover { border-color: var(--border-strong); }
 
   /* PROMPT */
-  .prompt-box {
-    width: 100%; min-height: 130px;
+  .prompt-rows {
     background: var(--bg2); border: 1px solid var(--border);
-    color: var(--text); font-size: 13px; line-height: 1.55;
-    padding: 14px 16px; border-radius: 2px; outline: none;
-    font-family: inherit; resize: vertical;
+    border-radius: 2px;
+    padding: 6px 0;
+    min-height: 56px;
   }
-  .prompt-box:focus { border-color: var(--border-strong); }
+  .prompt-row {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 6px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .prompt-row:last-child { border-bottom: none; }
+  .prompt-label {
+    font-size: 9px; letter-spacing: 0.18em;
+    color: var(--muted); text-transform: uppercase;
+    font-family: inherit;
+    padding-top: 2px;
+  }
+  .prompt-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 13px; line-height: 1.5;
+    padding: 5px 0; outline: none;
+    font-family: inherit;
+    resize: none;
+  }
+  .prompt-input.overridden { color: var(--gold); }
+  .prompt-empty {
+    padding: 18px 16px;
+    color: var(--muted);
+    font-size: 12px;
+    font-style: italic;
+    text-align: center;
+  }
   .prompt-controls {
     display: flex; gap: 8px; margin-top: 8px;
     align-items: center;
@@ -327,10 +358,20 @@
     border-radius: 2px; padding: 14px;
     display: flex; flex-direction: column; align-items: center;
   }
+  .output-img-frame {
+    position: relative; display: inline-block; line-height: 0;
+    max-width: 100%; max-height: 640px;
+  }
   .output-img {
     max-width: 100%; max-height: 640px;
     width: auto; height: auto;
     display: block; border-radius: 2px;
+  }
+  .grain-overlay {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    background-repeat: repeat;
   }
   .output-loading {
     display: flex; align-items: center; justify-content: center;
@@ -363,8 +404,13 @@
   }
   .filter-card:hover { border-color: var(--border-strong); }
   .filter-card.active { border-color: var(--accent); }
+  .filter-thumb-wrap {
+    position: relative; width: 100%; aspect-ratio: 1;
+    overflow: hidden;
+    line-height: 0;
+  }
   .filter-thumb {
-    width: 100%; aspect-ratio: 1;
+    width: 100%; height: 100%;
     background-size: cover;
     background-position: center;
     display: block;
@@ -562,7 +608,9 @@
       <!-- 4. FLUX PROMPT -->
       <div class="section">
         <div class="section-label">Flux Prompt</div>
-        <textarea id="prompt-box" class="prompt-box" placeholder="Live prompt — built from selected chips…"></textarea>
+        <div id="prompt-rows" class="prompt-rows">
+          <div class="prompt-empty">Select shot controls or wardrobe — your prompt builds itself here.</div>
+        </div>
         <div class="prompt-controls">
           <button class="prompt-btn" onclick="rewritePrompt()">↺ Rewrite</button>
           <button class="prompt-btn" id="lock-btn" onclick="togglePromptLock()">🔓 Auto</button>
@@ -851,6 +899,8 @@ function selectIcon(id) {
   // Reset chip + wardrobe state per-icon
   chipState = { scene: null, framing: null, angle: null, perspective: null, base: null };
   wardrobeSelected = new Set();
+  promptOverrides = { character: false, scene: false, wardrobe: false, shot: false, style: false };
+  promptParts = { character: '', scene: '', wardrobe: '', shot: '', style: '' };
   loadWardrobeFromStorage();
   // Reset output
   generated = null;
@@ -1060,46 +1110,110 @@ function addCustomWardrobe() {
   refreshPrompt();
 }
 
-// ─── PROMPT ASSEMBLY ─────────────────────────────────────────────────────────
-function assemblePrompt() {
-  const parts = [];
-  // Identity
+// ─── PROMPT ASSEMBLY (categorized rows) ──────────────────────────────────────
+const PROMPT_CATEGORIES = ['character', 'scene', 'wardrobe', 'shot', 'style'];
+const PROMPT_LABELS = {
+  character: 'Character',
+  scene:     'Scene',
+  wardrobe:  'Wardrobe',
+  shot:      'Shot',
+  style:     'Style'
+};
+let promptParts = { character: '', scene: '', wardrobe: '', shot: '', style: '' };
+let promptOverrides = { character: false, scene: false, wardrobe: false, shot: false, style: false };
+
+// Compute the auto-built value for each category based on the current chip,
+// wardrobe, and persona state. Empty string means the category is empty.
+function buildAutoParts() {
+  const parts = { character: '', scene: '', wardrobe: '', shot: '', style: '' };
+
+  // CHARACTER — identity + appearance
+  const idBits = [];
   if (selectedIcon) {
-    parts.push(selectedIcon.name + ', ' + (selectedIcon.archetype || ''));
+    if (selectedIcon.name) idBits.push(selectedIcon.name);
+    if (selectedIcon.archetype) idBits.push(selectedIcon.archetype);
   }
-  // Character appearance
   const charDesc = buildCharDesc();
-  if (charDesc) parts.push(charDesc);
-  // Selected shot chips
-  ['scene','framing','angle','perspective','base'].forEach(function(group) {
-    const v = chipState[group];
-    if (v && SHOT_PROMPT[group] && SHOT_PROMPT[group][v]) {
-      parts.push(SHOT_PROMPT[group][v]);
-    }
+  if (charDesc) idBits.push(charDesc);
+  parts.character = idBits.join(', ');
+
+  // SCENE — selected scene chip + icon's setting
+  const sceneBits = [];
+  if (chipState.scene && SHOT_PROMPT.scene[chipState.scene]) sceneBits.push(SHOT_PROMPT.scene[chipState.scene]);
+  if (selectedIcon && selectedIcon.setting) sceneBits.push(selectedIcon.setting);
+  parts.scene = sceneBits.join(', ');
+
+  // WARDROBE
+  if (wardrobeSelected.size) parts.wardrobe = 'wearing ' + Array.from(wardrobeSelected).join(', ');
+
+  // SHOT — framing + angle + perspective
+  const shotBits = [];
+  ['framing', 'angle', 'perspective'].forEach(function(g) {
+    const v = chipState[g];
+    if (v && SHOT_PROMPT[g] && SHOT_PROMPT[g][v]) shotBits.push(SHOT_PROMPT[g][v]);
   });
-  // Wardrobe
-  if (wardrobeSelected.size) {
-    parts.push('wearing ' + Array.from(wardrobeSelected).join(', '));
-  }
-  // Setting / aesthetic from icon
-  if (selectedIcon && selectedIcon.setting) parts.push(selectedIcon.setting);
-  if (selectedIcon && selectedIcon.aesthetic) parts.push(selectedIcon.aesthetic);
-  return parts.filter(Boolean).join(', ');
+  parts.shot = shotBits.join(', ');
+
+  // STYLE — base style chip + icon's aesthetic
+  const styleBits = [];
+  if (chipState.base && SHOT_PROMPT.base[chipState.base]) styleBits.push(SHOT_PROMPT.base[chipState.base]);
+  if (selectedIcon && selectedIcon.aesthetic) styleBits.push(selectedIcon.aesthetic);
+  parts.style = styleBits.join(', ');
+
+  return parts;
 }
 
+// Refresh: pull auto values into any category the user hasn't manually
+// overridden, then re-render the row UI.
 function refreshPrompt() {
-  const box = document.getElementById('prompt-box');
-  if (!box) return;
   if (!promptLocked) {
-    box.value = assemblePrompt();
+    const auto = buildAutoParts();
+    PROMPT_CATEGORIES.forEach(function(k) {
+      if (!promptOverrides[k]) promptParts[k] = auto[k];
+    });
   }
+  renderPromptRows();
   updatePromptCount();
 }
 
+function renderPromptRows() {
+  const wrap = document.getElementById('prompt-rows');
+  if (!wrap) return;
+  const visible = PROMPT_CATEGORIES.filter(function(k) { return (promptParts[k] || '').trim().length > 0; });
+  if (!visible.length) {
+    wrap.innerHTML = '<div class="prompt-empty">Select shot controls or wardrobe — your prompt builds itself here.</div>';
+    return;
+  }
+  wrap.innerHTML = visible.map(function(k) {
+    const overridden = promptOverrides[k] ? ' overridden' : '';
+    const val = (promptParts[k] || '').replace(/"/g, '&quot;');
+    return '<div class="prompt-row">' +
+      '<span class="prompt-label">' + PROMPT_LABELS[k] + '</span>' +
+      '<input class="prompt-input' + overridden + '" data-cat="' + k + '" value="' + val + '" oninput="onPromptInput(\'' + k + '\', this.value)" />' +
+    '</div>';
+  }).join('');
+}
+
+function onPromptInput(cat, val) {
+  promptParts[cat] = val;
+  promptOverrides[cat] = true;
+  // Re-mark the input as overridden without re-rendering (preserves caret).
+  const input = document.querySelector('.prompt-input[data-cat="' + cat + '"]');
+  if (input) input.classList.add('overridden');
+  updatePromptCount();
+}
+
+// Final string sent to Flux — categories joined by ", "
+function assembleFinalPrompt() {
+  return PROMPT_CATEGORIES
+    .map(function(k) { return (promptParts[k] || '').trim(); })
+    .filter(Boolean)
+    .join(', ');
+}
+
 function updatePromptCount() {
-  const box = document.getElementById('prompt-box');
   const ctr = document.getElementById('prompt-count');
-  if (box && ctr) ctr.textContent = (box.value || '').length + ' chars';
+  if (ctr) ctr.textContent = assembleFinalPrompt().length + ' chars';
 }
 
 function togglePromptLock() {
@@ -1109,21 +1223,21 @@ function togglePromptLock() {
     btn.textContent = promptLocked ? '🔒 Locked' : '🔓 Auto';
     btn.classList.toggle('locked', promptLocked);
   }
-  if (!promptLocked) refreshPrompt();
+  if (!promptLocked) {
+    // Unlocking clears all manual overrides so chips drive the prompt again.
+    PROMPT_CATEGORIES.forEach(function(k) { promptOverrides[k] = false; });
+    refreshPrompt();
+  }
 }
 
 function copyPrompt() {
-  const box = document.getElementById('prompt-box');
-  if (!box) return;
-  navigator.clipboard.writeText(box.value || '')
+  navigator.clipboard.writeText(assembleFinalPrompt())
     .then(function(){ notify('Prompt copied'); })
     .catch(function(){ notify('Copy failed', 'error'); });
 }
 
 function rewritePrompt() {
-  const box = document.getElementById('prompt-box');
-  if (!box) return;
-  const original = box.value || '';
+  const original = assembleFinalPrompt();
   if (!original.trim()) { notify('Nothing to rewrite', 'error'); return; }
   notify('Rewriting…');
   fetch(PROXY + '/claude/chat', {
@@ -1140,10 +1254,13 @@ function rewritePrompt() {
     .then(function(d) {
       const text = (d && d.text || '').trim().replace(/^["']|["']$/g, '');
       if (!text) throw new Error('Empty response');
+      // Stuff the rewritten prose into CHARACTER and lock; clear other rows.
       promptLocked = true;
       const btn = document.getElementById('lock-btn');
       if (btn) { btn.textContent = '🔒 Locked'; btn.classList.add('locked'); }
-      box.value = text;
+      promptParts = { character: text, scene: '', wardrobe: '', shot: '', style: '' };
+      PROMPT_CATEGORIES.forEach(function(k) { promptOverrides[k] = true; });
+      renderPromptRows();
       updatePromptCount();
       notify('Prompt rewritten — locked');
     })
@@ -1154,7 +1271,7 @@ function rewritePrompt() {
 function generateImage() {
   if (busy) return;
   if (!selectedIcon) { notify('Select an icon first', 'error'); return; }
-  const prompt = (document.getElementById('prompt-box') || {}).value || '';
+  const prompt = assembleFinalPrompt();
   if (!prompt.trim()) { notify('Prompt is empty', 'error'); return; }
   busy = true;
   const btn = document.getElementById('generate-btn');
@@ -1230,7 +1347,13 @@ function renderOutput() {
     out.innerHTML = '<div class="output-empty">No image yet. Configure shot controls and hit Generate.</div>';
     return;
   }
-  out.innerHTML = '<div class="output-img-wrap"><img id="output-img" class="output-img" src="' + generated.url + '" alt="generated" /></div>';
+  out.innerHTML =
+    '<div class="output-img-wrap">' +
+      '<div class="output-img-frame">' +
+        '<img id="output-img" class="output-img" src="' + generated.url + '" alt="generated" />' +
+        '<div id="output-grain" class="grain-overlay" style="opacity:0; background-image:url(\'' + getGrainDataUrl() + '\');"></div>' +
+      '</div>' +
+    '</div>';
   applyFilterToOutput();
 }
 
@@ -1259,7 +1382,7 @@ function loadFilters() {
 
 // Build a CSS filter string for a given Supabase filter row + intensity (0-100).
 // brightness/contrast/saturation come in as multipliers (1.0 = neutral), sepia
-// 0-1, haze in pixels, warm_shift mapped onto hue-rotate degrees.
+// 0-1, haze in pixels, warm_shift in degrees of hue-rotate (1:1).
 function cssFilterFor(filter, intensityPct) {
   if (!filter) return '';
   const t = Math.max(0, Math.min(100, intensityPct)) / 100;
@@ -1272,7 +1395,54 @@ function cssFilterFor(filter, intensityPct) {
   const warm = lerp(0, filter.warm_shift);
   return 'brightness(' + b.toFixed(3) + ') contrast(' + c.toFixed(3) + ') saturate(' + s.toFixed(3) + ') sepia(' + sep.toFixed(3) + ')' +
          (haze > 0.001 ? ' blur(' + haze.toFixed(2) + 'px)' : '') +
-         (Math.abs(warm) > 0.01 ? ' hue-rotate(' + (warm * 0.6).toFixed(1) + 'deg)' : '');
+         (Math.abs(warm) > 0.01 ? ' hue-rotate(' + warm.toFixed(1) + 'deg)' : '');
+}
+
+// ─── GRAIN ───────────────────────────────────────────────────────────────────
+// Procedurally-generated monochrome noise texture, generated once and reused
+// for live previews (CSS) and bake-to-canvas (Approve). The actual visual
+// strength comes from the grain_opacity slider on the overlay div, so this
+// canvas is full-strength and we tune opacity downstream.
+let _grainCanvas = null;
+let _grainDataUrl = null;
+function getGrainCanvas() {
+  if (_grainCanvas) return _grainCanvas;
+  const SIZE = 220;
+  const c = document.createElement('canvas');
+  c.width = SIZE; c.height = SIZE;
+  const ctx = c.getContext('2d');
+  const img = ctx.createImageData(SIZE, SIZE);
+  for (let i = 0; i < img.data.length; i += 4) {
+    // Random gray, full alpha. Mix-blend-mode: overlay turns this into
+    // film-grain bumps on the underlying image.
+    const v = (Math.random() * 255) | 0;
+    img.data[i] = v;
+    img.data[i+1] = v;
+    img.data[i+2] = v;
+    img.data[i+3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  _grainCanvas = c;
+  _grainDataUrl = c.toDataURL('image/png');
+  return c;
+}
+function getGrainDataUrl() {
+  if (!_grainDataUrl) getGrainCanvas();
+  return _grainDataUrl;
+}
+// Turn a filter's grain_opacity (0-100) + the current intensity into the
+// opacity we apply to the overlay div (0-1). Linear scaling — a filter at
+// grain 25 with intensity 100% renders at 0.25 opacity overlay.
+function grainOpacityFor(filter, intensityPct) {
+  if (!filter || !filter.grain_opacity) return 0;
+  const t = Math.max(0, Math.min(100, intensityPct)) / 100;
+  return (filter.grain_opacity / 100) * t;
+}
+function grainOverlayHTML(filter, intensityPct) {
+  const op = grainOpacityFor(filter, intensityPct);
+  if (op < 0.005) return '';
+  return '<div class="grain-overlay" style="opacity:' + op.toFixed(3) +
+    '; background-image:url(\'' + getGrainDataUrl() + '\');"></div>';
 }
 
 function renderFilters() {
@@ -1280,10 +1450,17 @@ function renderFilters() {
   if (!grid) return;
   if (!generated) { grid.innerHTML = ''; return; }
   if (!filtersLib.length) { grid.innerHTML = '<div style="grid-column:1/-1; padding:18px; color:var(--muted); font-size:11px; text-align:center;">No filters loaded.</div>'; return; }
+  // Pre-init the grain canvas so the data URL is available for the thumbs.
+  getGrainCanvas();
   grid.innerHTML = filtersLib.map(function(f) {
     const sel = currentFilterId === f.id ? ' active' : '';
     const css = cssFilterFor(f, 100);
-    const thumb = '<div class="filter-thumb" style="background-image:url(\'' + generated.url + '\'); filter:' + css + '"></div>';
+    const grain = grainOverlayHTML(f, 100);
+    const thumb =
+      '<div class="filter-thumb-wrap">' +
+        '<div class="filter-thumb" style="background-image:url(\'' + generated.url + '\'); filter:' + css + '"></div>' +
+        grain +
+      '</div>';
     return '<div class="filter-card' + sel + '" onclick="selectFilter(' + JSON.stringify(f.id) + ')">' +
       thumb +
       '<div class="filter-name">' + escapeHTML(f.name) + '</div>' +
@@ -1306,11 +1483,16 @@ function setIntensity(val) {
 
 function applyFilterToOutput() {
   const img = document.getElementById('output-img');
+  const grainEl = document.getElementById('output-grain');
   if (!img) return;
-  if (!currentFilterId) { img.style.filter = ''; return; }
-  const f = filtersLib.find(function(x) { return x.id === currentFilterId; });
-  if (!f) { img.style.filter = ''; return; }
+  const f = currentFilterId ? filtersLib.find(function(x) { return x.id === currentFilterId; }) : null;
+  if (!f) {
+    img.style.filter = '';
+    if (grainEl) grainEl.style.opacity = '0';
+    return;
+  }
   img.style.filter = cssFilterFor(f, filterIntensity);
+  if (grainEl) grainEl.style.opacity = grainOpacityFor(f, filterIntensity).toFixed(3);
 }
 
 // ─── APPROVE → LIBRARY ───────────────────────────────────────────────────────
@@ -1346,7 +1528,8 @@ function approveImage() {
     .catch(function(e) { notify(String(e && e.message || e), 'error'); });
 }
 
-// Bake the current CSS filter to a PNG data URL via canvas. Returns data URL.
+// Bake the current CSS filter + grain into a JPEG data URL via canvas.
+// Returns data URL.
 function bakeFilteredImage(srcUrl) {
   return new Promise(function(resolve, reject) {
     const img = new Image();
@@ -1357,8 +1540,22 @@ function bakeFilteredImage(srcUrl) {
       canvas.height = img.naturalHeight;
       const ctx = canvas.getContext('2d');
       const f = currentFilterId ? filtersLib.find(function(x){return x.id===currentFilterId;}) : null;
+      // 1. base image with CSS filter applied
       ctx.filter = f ? cssFilterFor(f, filterIntensity) : 'none';
       ctx.drawImage(img, 0, 0);
+      // 2. tiled grain overlay at the same opacity used in preview
+      const op = grainOpacityFor(f, filterIntensity);
+      if (op > 0.005) {
+        ctx.filter = 'none';
+        ctx.globalCompositeOperation = 'overlay';
+        ctx.globalAlpha = op;
+        const gc = getGrainCanvas();
+        const pat = ctx.createPattern(gc, 'repeat');
+        ctx.fillStyle = pat;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'source-over';
+      }
       try { resolve(canvas.toDataURL('image/jpeg', 0.92)); }
       catch (e) { reject(e); }
     };
@@ -1464,10 +1661,7 @@ function escapeHTML(s) {
     .replace(/"/g, '&quot;');
 }
 
-// Update prompt count when user types in the box
-document.addEventListener('input', function(e) {
-  if (e.target && e.target.id === 'prompt-box') updatePromptCount();
-});
+// (per-row inputs call onPromptInput directly; no global input listener needed)
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 function init() {
@@ -1497,6 +1691,8 @@ window.toggleWardrobe = toggleWardrobe;
 window.switchWardrobeTab = switchWardrobeTab;
 window.addCustomWardrobe = addCustomWardrobe;
 window.togglePromptLock = togglePromptLock;
+window.onPromptInput = onPromptInput;
+window.refreshPrompt = refreshPrompt;
 window.copyPrompt = copyPrompt;
 window.rewritePrompt = rewritePrompt;
 window.generateImage = generateImage;
@@ -1724,16 +1920,18 @@ window.editFilterFromLibrary = editFilterFromLibrary;
   };
 
   window.convSendToStudio=function(){
-    // Push converse brief into the prompt box and switch back to generate
-    var parts=[];
-    ['scene','wardrobe','shot','light'].forEach(function(k){
-      var v=(document.getElementById('cs-'+k)||{}).value||'';
-      if(v)parts.push(v);
-    });
-    var prompt=parts.join(', ');
-    if(!prompt){return;}
-    var box=document.getElementById('prompt-box');
-    if(box){box.value=prompt;}
+    // Push the converse brief into the categorized prompt rows. cs-light
+    // folds into the scene row since "light" isn't its own category in the
+    // generate UI.
+    function val(id){return (document.getElementById(id)||{}).value||'';}
+    var sceneText=[val('cs-scene'),val('cs-light')].filter(Boolean).join(', ');
+    if(typeof window.onPromptInput==='function'){
+      if(sceneText)window.onPromptInput('scene',sceneText);
+      if(val('cs-wardrobe'))window.onPromptInput('wardrobe',val('cs-wardrobe'));
+      if(val('cs-shot'))window.onPromptInput('shot',val('cs-shot'));
+      // Re-render so newly-overridden rows appear.
+      if(typeof window.refreshPrompt==='function')window.refreshPrompt();
+    }
     if(typeof window.switchMode==='function')window.switchMode('generate');
   };
   window.convSaveBrief=function(){convSaveChat();var s=document.getElementById('conv-status');if(s){s.textContent='saved';setTimeout(function(){s.textContent='';},1200);}};
