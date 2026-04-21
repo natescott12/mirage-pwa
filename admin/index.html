@@ -4248,7 +4248,7 @@ async function sloanChatSend() {
       if (!r.ok || data.error) {
         reply = 'error: ' + (data.error || ('HTTP ' + r.status));
       } else {
-        reply = data.reply || '(empty reply)';
+        reply = data.reply || '';
         mediaUrl = data.mediaUrl || data.imageUrl || null;
         figmaQueued = !!data.figmaQueued;
       }
