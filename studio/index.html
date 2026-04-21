@@ -104,176 +104,6 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   .scene-opt { padding: 6px 12px; border-radius: 2px; font-size: 11px; cursor: pointer; border: 1px solid var(--border); transition: all 0.15s; color: var(--muted); font-family: 'DM Sans', sans-serif; }
   .scene-opt.active { background: rgba(26,23,20,0.07); border-color: var(--border-strong); color: var(--text); }
   .param-opt { padding: 6px 10px; border-radius: 2px; font-size: 11px; cursor: pointer; border: 1px solid var(--border); transition: all 0.12s; color: var(--muted); font-family: 'DM Sans', sans-serif; }
-  /* Filters — post-generation CSS looks applied to output images. */
-  .filter-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  @media (min-width: 1400px) { .filter-grid { grid-template-columns: repeat(4, 1fr); } }
-  .filter-card-add .filter-swatch-add {
-    background: var(--bg3);
-    border: 1px dashed var(--border-md);
-    color: var(--muted);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px; line-height: 1; font-weight: 300;
-  }
-  .filter-card-add:hover .filter-swatch-add { color: var(--text); border-color: var(--border-strong); }
-  .filter-swatch {
-    background-size: cover !important;
-    background-position: center !important;
-  }
-  /* Filter editor modal */
-  .filter-editor-backdrop {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.75);
-    display: none; align-items: center; justify-content: center;
-    z-index: 1000;
-  }
-  .filter-editor-box {
-    background: var(--bg2);
-    border: 1px solid var(--border-md);
-    border-radius: 4px;
-    width: 480px; max-width: calc(100vw - 40px);
-    max-height: calc(100vh - 80px);
-    overflow-y: auto;
-    padding: 20px 22px 18px;
-    font-family: 'DM Sans', sans-serif;
-    color: var(--text);
-  }
-  .filter-editor-head {
-    display: flex; align-items: baseline; justify-content: space-between;
-    margin-bottom: 14px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-  }
-  .filter-editor-head h3 {
-    margin: 0; font-family: inherit; font-size: 13px; font-weight: 500;
-    letter-spacing: 0.12em; text-transform: uppercase;
-  }
-  .filter-editor-head .close {
-    background: transparent; border: none; color: var(--muted);
-    font-size: 18px; cursor: pointer; padding: 0 4px; line-height: 1;
-  }
-  .filter-editor-head .close:hover { color: var(--text); }
-  .fe-name-row {
-    display: flex; gap: 10px; margin-bottom: 14px; align-items: center;
-  }
-  .fe-name-row label {
-    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--muted); min-width: 48px;
-  }
-  .fe-name-row input {
-    flex: 1; background: var(--bg); border: 1px solid var(--border);
-    color: var(--text); padding: 7px 10px; font-size: 13px;
-    font-family: inherit; border-radius: 2px;
-  }
-  .fe-name-row input:focus { border-color: var(--border-strong); outline: none; }
-  .fe-name-row input[readonly] { opacity: 0.7; cursor: not-allowed; }
-  .fe-preview {
-    width: 100%; height: 70px; border-radius: 3px;
-    border: 1px solid var(--border);
-    margin-bottom: 14px;
-  }
-  .fe-sliders { display: grid; grid-template-columns: 1fr; gap: 10px; }
-  .fe-slider-row {
-    display: grid; grid-template-columns: 100px 1fr 48px; gap: 10px;
-    align-items: center;
-  }
-  .fe-slider-row label {
-    font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--muted);
-  }
-  .fe-slider-row input[type=range] {
-    -webkit-appearance: none; appearance: none;
-    width: 100%; height: 2px; background: var(--border-md);
-    outline: none; border-radius: 1px;
-  }
-  .fe-slider-row input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none; appearance: none;
-    width: 12px; height: 12px; border-radius: 50%;
-    background: var(--text); cursor: pointer; border: none;
-  }
-  .fe-slider-row input[type=range]::-moz-range-thumb {
-    width: 12px; height: 12px; border-radius: 50%;
-    background: var(--text); cursor: pointer; border: none;
-  }
-  .fe-slider-row .fe-val {
-    font-size: 11px; color: var(--dim); text-align: right;
-    font-variant-numeric: tabular-nums;
-  }
-  .fe-actions {
-    display: flex; gap: 8px; justify-content: flex-end;
-    margin-top: 18px; padding-top: 14px;
-    border-top: 1px solid var(--border);
-  }
-  .fe-btn {
-    padding: 7px 16px; border-radius: 2px; cursor: pointer;
-    font-family: inherit; font-size: 10px;
-    letter-spacing: 0.12em; text-transform: uppercase;
-    border: 1px solid var(--border-md);
-    background: transparent; color: var(--text);
-    transition: border-color 0.12s, background 0.12s;
-  }
-  .fe-btn:hover { border-color: var(--border-strong); }
-  .fe-btn.fe-save { background: var(--text); color: var(--bg); border-color: var(--text); }
-  .fe-btn.fe-save:hover { filter: brightness(0.9); }
-  .fe-btn.fe-delete { color: #d47070; border-color: rgba(212,112,112,0.4); margin-right: auto; }
-  .fe-btn.fe-delete:hover { background: rgba(212,112,112,0.1); border-color: #d47070; }
-  .filter-card {
-    padding: 7px 8px 8px;
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    background: var(--bg2);
-    cursor: pointer;
-    transition: border-color 0.12s, background 0.12s;
-    display: flex; flex-direction: column; gap: 6px;
-  }
-  .filter-card:hover { border-color: var(--border-md); }
-  .filter-card.active { border-color: var(--text); background: var(--bg3); }
-  .filter-swatch {
-    width: 100%; height: 26px;
-    border-radius: 2px;
-    border: 1px solid rgba(0,0,0,0.4);
-  }
-  .filter-name {
-    font-size: 10px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--dim);
-    font-family: 'DM Sans', sans-serif;
-  }
-  .filter-card.active .filter-name { color: var(--text); }
-  .filter-intensity-row {
-    display: flex; align-items: center; gap: 10px;
-    margin-top: 10px;
-  }
-  .filter-intensity-label {
-    font-size: 9px; letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    font-family: 'DM Sans', sans-serif;
-    flex-shrink: 0;
-  }
-  .filter-intensity-slider {
-    flex: 1;
-    -webkit-appearance: none; appearance: none;
-    height: 2px; background: var(--border-md);
-    outline: none; border-radius: 1px;
-  }
-  .filter-intensity-slider::-webkit-slider-thumb {
-    -webkit-appearance: none; appearance: none;
-    width: 12px; height: 12px; border-radius: 50%;
-    background: var(--text); cursor: pointer;
-    border: none;
-  }
-  .filter-intensity-slider::-moz-range-thumb {
-    width: 12px; height: 12px; border-radius: 50%;
-    background: var(--text); cursor: pointer;
-    border: none;
-  }
-  .filter-intensity-value {
-    font-size: 10px; color: var(--dim);
-    font-family: 'DM Sans', sans-serif;
-    font-variant-numeric: tabular-nums;
-    min-width: 36px; text-align: right;
-  }
   .param-opt.active { background: rgba(26,23,20,0.07); border-color: var(--border-strong); color: var(--text); }
   #prompt-sections .ps-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px solid rgba(26,23,20,0.06); }
   #prompt-sections .ps-row:last-child { border-bottom: none; }
@@ -612,63 +442,6 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
 
 <div id="notification"></div>
 
-<!-- FILTER EDITOR MODAL -->
-<div id="filter-editor" class="filter-editor-backdrop" onclick="if(event.target===this)closeFilterEditor()">
-  <div class="filter-editor-box">
-    <div class="filter-editor-head">
-      <h3 id="filter-editor-title">Edit Filter</h3>
-      <button type="button" class="close" onclick="closeFilterEditor()" aria-label="Close">×</button>
-    </div>
-    <div class="fe-name-row">
-      <label for="filter-editor-name">Name</label>
-      <input type="text" id="filter-editor-name" placeholder="Custom filter name" />
-    </div>
-    <div class="fe-preview" id="filter-editor-preview"></div>
-    <div class="fe-sliders">
-      <div class="fe-slider-row">
-        <label for="fe-brightness">Brightness</label>
-        <input type="range" id="fe-brightness" min="0" max="200" step="1" />
-        <div class="fe-val" id="fe-brightness-val">100</div>
-      </div>
-      <div class="fe-slider-row">
-        <label for="fe-contrast">Contrast</label>
-        <input type="range" id="fe-contrast" min="0" max="200" step="1" />
-        <div class="fe-val" id="fe-contrast-val">100</div>
-      </div>
-      <div class="fe-slider-row">
-        <label for="fe-saturation">Saturation</label>
-        <input type="range" id="fe-saturation" min="0" max="200" step="1" />
-        <div class="fe-val" id="fe-saturation-val">100</div>
-      </div>
-      <div class="fe-slider-row">
-        <label for="fe-sepia">Sepia</label>
-        <input type="range" id="fe-sepia" min="0" max="100" step="1" />
-        <div class="fe-val" id="fe-sepia-val">0</div>
-      </div>
-      <div class="fe-slider-row">
-        <label for="fe-haze">Haze</label>
-        <input type="range" id="fe-haze" min="80" max="200" step="1" />
-        <div class="fe-val" id="fe-haze-val">100</div>
-      </div>
-      <div class="fe-slider-row">
-        <label for="fe-warm_cool">Warm · Cool</label>
-        <input type="range" id="fe-warm_cool" min="-100" max="100" step="1" />
-        <div class="fe-val" id="fe-warm_cool-val">0</div>
-      </div>
-      <div class="fe-slider-row">
-        <label for="fe-grain">Grain</label>
-        <input type="range" id="fe-grain" min="0" max="100" step="1" />
-        <div class="fe-val" id="fe-grain-val">0</div>
-      </div>
-    </div>
-    <div class="fe-actions">
-      <button type="button" class="fe-btn fe-delete" id="filter-editor-delete" onclick="deleteFilterFromLib()" style="display:none">Delete</button>
-      <button type="button" class="fe-btn" onclick="closeFilterEditor()">Cancel</button>
-      <button type="button" class="fe-btn fe-save" onclick="saveFilterEdit()">Save</button>
-    </div>
-  </div>
-</div>
-
 <!-- LIGHTBOX -->
 <div id="lightbox">
   <button class="lb-close" onclick="cloudCloseLb()">✕</button>
@@ -715,12 +488,14 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     <a href="/admin#personas" class="studio-crossnav" title="Open Persona Builder in admin">Persona Builder</a>
   </div>
   <div style="display:flex;align-items:center;gap:20px">
-    <div id="proxy-status" style="font-size:10px;letter-spacing:0.1em;cursor:pointer;color:var(--muted)" onclick="checkProxy()"><span style="display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:var(--muted);display:inline-block"></span>Checking proxy...</span></div>
+    <div id="proxy-status" style="font-size:10px;letter-spacing:0.1em;cursor:pointer" onclick="checkProxy()">Checking...</div>
     <div style="display:flex;gap:4px">
       <div class="nav-tab active" data-tab="generate" onclick="switchTab('generate')">Generate</div>
       <div class="nav-tab active" data-tab="generate" onclick="switchTab('converse')">Converse</div>
       <div class="nav-tab" data-tab="library" onclick="switchTab('library')">Library <span class="badge" id="lib-total">0</span></div>
       <div class="nav-tab" data-tab="icons" onclick="switchTab('icons')">Icons</div>
+      <div class="nav-tab" data-tab="queue" onclick="switchTab('queue')">Queue <span class="badge" id="queue-count">0</span></div>
+      <div class="nav-tab" data-tab="schedule" onclick="switchTab('schedule')">Schedule</div>
     </div>
   </div>
 </div>
@@ -752,9 +527,260 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
           <span style="font-size:10px;color:var(--muted)" id="card-lib-count">0 images</span>
         </div>
 
+        <!-- LoRA Training Panel -->
+        <div id="lora-panel" style="margin-top:8px;padding:10px 12px;background:rgba(201,169,110,0.06);border:1px solid rgba(201,169,110,0.2);border-radius:2px;display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <span style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)">LoRA Training</span>
+            <span id="lora-status-badge" style="font-size:9px;padding:2px 8px;border-radius:2px;background:rgba(255,255,255,.06);color:var(--dim)">Untrained</span>
+          </div>
+          <div id="lora-untrained" style="display:block">
+            <div style="font-size:10px;color:var(--dim);margin-bottom:8px;line-height:1.5">Train a custom model on this icon's library images for consistent character output.</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <span style="font-size:10px;color:var(--dim)">Images to use:</span>
+              <select id="lora-image-count" style="font-size:10px;padding:3px 6px;background:var(--card);border:1px solid var(--border-md);color:var(--text);border-radius:2px;font-family:'DM Sans',sans-serif">
+                <option value="5">5 (min)</option>
+                <option value="10" selected>10</option>
+                <option value="15">15</option>
+                <option value="20">20 (max)</option>
+              </select>
+              <select id="lora-mode" style="font-size:10px;padding:3px 6px;background:var(--card);border:1px solid var(--border-md);color:var(--text);border-radius:2px;font-family:'DM Sans',sans-serif">
+                <option value="character" selected>Character</option>
+                <option value="style">Style</option>
+                <option value="general">General</option>
+              </select>
+            </div>
+            <button onclick="startLoraTraining()" style="width:100%;padding:8px;background:var(--gold);color:#1a1714;border:none;border-radius:2px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.06em">
+              ✦ Train Icon Model
+            </button>
+          </div>
+          <div id="lora-training" style="display:none">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <span class="spinner" style="width:10px;height:10px;border:1px solid rgba(201,169,110,.3);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite"></span>
+              <span style="font-size:10px;color:var(--dim)">Training in progress...</span>
+            </div>
+            <div style="font-size:9px;color:var(--muted)" id="lora-training-msg">This takes 20-30 minutes. You can close this and come back.</div>
+            <button onclick="checkLoraStatus()" style="margin-top:8px;padding:5px 12px;background:transparent;border:1px solid var(--border-md);color:var(--dim);border-radius:2px;font-size:9px;cursor:pointer;font-family:'DM Sans',sans-serif">Check Status</button>
+          </div>
+          <div id="lora-ready" style="display:none">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+              <span style="color:var(--gold);font-size:12px">✦</span>
+              <span style="font-size:10px;color:var(--text)">LoRA Ready — all generations use this model</span>
+            </div>
+            <div style="font-size:9px;color:var(--muted)" id="lora-model-id"></div>
+            <button onclick="startLoraTraining()" style="margin-top:8px;padding:5px 12px;background:transparent;border:1px solid var(--border-md);color:var(--dim);border-radius:2px;font-size:9px;cursor:pointer;font-family:'DM Sans',sans-serif">Retrain</button>
+          </div>
+        </div>
       </div>
 
+      <!-- Moodboard -->
+      <div class="moodboard" id="moodboard">
+        <div class="moodboard-header" onclick="toggleMoodboard()">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="char-builder-title">Moodboard</div>
+            <div style="font-size:9px;color:var(--muted);background:var(--bg3);padding:2px 8px;border-radius:999px" id="mb-count">0 references</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="font-size:10px;color:var(--muted)" id="mb-summary">Visual references for generation</div>
+            <div id="mb-chevron" style="font-size:10px;color:var(--muted)">▼</div>
+          </div>
+        </div>
+        <div class="moodboard-body" id="moodboard-body">
 
+          <!-- Drop zone -->
+          <div class="moodboard-dropzone" id="mb-dropzone"
+            onclick="document.getElementById('mb-file-input').click()"
+            ondragover="mbDragOver(event)"
+            ondragleave="mbDragLeave(event)"
+            ondrop="mbDrop(event)">
+            <div class="moodboard-dropzone-icon">⊕</div>
+            <div class="moodboard-dropzone-text"><strong>Drop images here</strong> or click to upload<br>Editorial refs · lighting · color · face</div>
+          </div>
+          <input type="file" id="mb-file-input" accept="image/*" multiple style="display:none" onchange="mbFilePicked(event)" />
+
+          <!-- Image grid -->
+          <div class="moodboard-grid" id="mb-grid"></div>
+
+          <!-- Extract button -->
+          <button class="mb-extract-btn" id="mb-extract-btn" onclick="extractMoodboard()" style="display:none">
+            <span id="mb-extract-spinner" style="display:none;width:11px;height:11px;border-width:1.5px;border-color:rgba(26,23,20,0.2);border-top-color:var(--text)" class="spinner"></span>
+            ✦ Extract aesthetic from moodboard
+          </button>
+
+          <!-- Extracted description -->
+          <div class="mb-extracted" id="mb-extracted"></div>
+
+        </div>
+      </div>
+
+      <!-- Character Builder -->
+      <div class="char-builder" id="char-builder">
+        <div class="char-builder-header" onclick="toggleCharBuilder()">
+          <div class="char-builder-title">Character Builder</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="font-size:10px;color:var(--muted)" id="char-summary">Click to expand</div>
+            <div id="char-chevron" style="font-size:10px;color:var(--muted)">▼</div>
+          </div>
+        </div>
+        <div class="char-builder-body" id="char-builder-body">
+
+          <!-- Ethnicity / Heritage -->
+          <div class="char-field">
+            <div class="char-section-label">Ethnicity / Heritage</div>
+            <input id="cb-ethnicity" class="char-input" placeholder="e.g. East Asian, Afro-Caribbean, Southern European..." oninput="updateChar('ethnicity',this.value)" />
+          </div>
+
+          <!-- Skin tone -->
+          <div class="char-field">
+            <div class="char-section-label">Skin Tone</div>
+            <div class="skin-swatches" id="skin-swatches"></div>
+            <input id="cb-skin" class="char-input" style="margin-top:6px" placeholder="or describe e.g. warm olive, cool porcelain..." oninput="updateChar('skinTone',this.value)" />
+          </div>
+
+          <!-- Skin texture -->
+          <div class="char-field">
+            <div class="char-section-label">Skin Texture</div>
+            <div class="char-chips" id="chips-skinTexture"></div>
+          </div>
+
+          <!-- Skin texture -->
+          <div class="char-field">
+            <div class="char-section-label">Skin Texture</div>
+            <div class="char-chips" id="chips-skinTexture"></div>
+          </div>
+
+          <!-- Eyes -->
+          <div class="char-grid">
+            <div class="char-field">
+              <div class="char-section-label">Eye Color</div>
+              <div class="char-chips" id="chips-eyeColor"></div>
+              <input id="cb-eye-color-custom" class="char-input" style="margin-top:5px" placeholder="custom..." oninput="updateChar('eyeColor',this.value)" />
+            </div>
+            <div class="char-field">
+              <div class="char-section-label">Eye Shape</div>
+              <div class="char-chips" id="chips-eyeShape"></div>
+            </div>
+          </div>
+
+          <!-- Hair -->
+          <div class="char-field">
+            <div class="char-section-label">Hair Color</div>
+            <div class="char-chips" id="chips-hairColor"></div>
+            <input id="cb-hair-color-custom" class="char-input" style="margin-top:5px" placeholder="custom e.g. strawberry blonde, ash brown..." oninput="updateChar('hairColor',this.value)" />
+          </div>
+          <div class="char-grid">
+            <div class="char-field">
+              <div class="char-section-label">Hair Length</div>
+              <div class="char-chips" id="chips-hairLength"></div>
+            </div>
+            <div class="char-field">
+              <div class="char-section-label">Hair Texture</div>
+              <div class="char-chips" id="chips-hairTexture"></div>
+            </div>
+          </div>
+          <div class="char-field">
+            <div class="char-section-label">Hair Style</div>
+            <input id="cb-hair-style" class="char-input" placeholder="e.g. loose waves, messy bun, blunt cut, slicked back..." oninput="updateChar('hairStyle',this.value)" />
+          </div>
+
+          <!-- Face details -->
+          <div class="char-grid">
+            <div class="char-field">
+              <div class="char-section-label">Freckles</div>
+              <div class="char-chips" id="chips-freckles"></div>
+            </div>
+            <div class="char-field">
+              <div class="char-section-label">Makeup</div>
+              <div class="char-chips" id="chips-makeup"></div>
+            </div>
+          </div>
+
+          <!-- Body -->
+          <div class="char-grid">
+            <div class="char-field">
+              <div class="char-section-label">Build</div>
+              <div class="char-chips" id="chips-build"></div>
+            </div>
+            <div class="char-field">
+              <div class="char-section-label">Age Range</div>
+              <div class="char-chips" id="chips-age"></div>
+            </div>
+          </div>
+
+          <!-- Distinguishing features -->
+          <div class="char-field">
+            <div class="char-section-label">Distinguishing Features</div>
+            <input id="cb-features" class="char-input" placeholder="e.g. small scar on chin, gap teeth, birthmark on neck, nose ring..." oninput="updateChar('features',this.value)" />
+          </div>
+
+          <!-- Tattoos -->
+          <div class="char-field">
+            <div class="char-section-label">Tattoos / Piercings</div>
+            <input id="cb-tattoos" class="char-input" placeholder="e.g. fine line tattoo on forearm, double ear piercings..." oninput="updateChar('tattoos',this.value)" />
+          </div>
+
+          <!-- Setting -->
+          <div class="char-field">
+            <div class="char-section-label">Typical Setting</div>
+            <input id="cb-setting" class="char-input" placeholder="e.g. Lower East Side apartment, bookshelf walls..." oninput="updateIconField('setting',this.value)" />
+          </div>
+
+          <!-- Style -->
+          <div class="char-field">
+            <div class="char-section-label">Signature Style</div>
+            <input id="cb-style" class="char-input" placeholder="e.g. turtleneck pulled low, vintage Levi's, no jewelry..." oninput="updateIconField('style',this.value)" />
+          </div>
+
+          <!-- Character prompt preview -->
+          <div>
+            <div class="char-section-label" style="margin-bottom:6px">Character Description (injected into every prompt)</div>
+            <div class="char-prompt-preview" id="char-prompt-preview">Fill in the fields above to build the character description...</div>
+          </div>
+
+          <button class="char-save-btn" onclick="saveCharacter()">Save Character Profile</button>
+        </div>
+      </div>
+
+      <!-- Persona Builder -->
+      <div class="persona-builder collapsed" id="persona-builder">
+        <div class="persona-builder-header" onclick="togglePersonaBuilder()">
+          <div class="char-builder-title">Persona · Voice & Identity</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="font-size:10px;color:var(--muted)" id="persona-summary">Click to expand</div>
+            <div id="persona-chevron" style="font-size:10px;color:var(--muted)">▼</div>
+          </div>
+        </div>
+        <div class="persona-builder-body">
+          <div class="char-field">
+            <div class="char-section-label">Brand Voice · 3 Signature Phrases</div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <div class="persona-phrase-row"><span class="persona-phrase-num">1</span><input class="persona-input" id="pv-phrase1" placeholder="e.g. can't sleep. you up?" oninput="updatePersona('phrase1',this.value)" /></div>
+              <div class="persona-phrase-row"><span class="persona-phrase-num">2</span><input class="persona-input" id="pv-phrase2" placeholder="e.g. fire escape. 3am. bring coffee." oninput="updatePersona('phrase2',this.value)" /></div>
+              <div class="persona-phrase-row"><span class="persona-phrase-num">3</span><input class="persona-input" id="pv-phrase3" placeholder="e.g. thought about you today. weird." oninput="updatePersona('phrase3',this.value)" /></div>
+            </div>
+          </div>
+          <div class="char-field">
+            <div class="char-section-label">SMS Character Description</div>
+            <textarea class="persona-textarea" id="pv-sms-desc" placeholder="How she texts. Voice rules. What she never says. What she always does. This feeds directly into Claude for in-character responses..." oninput="updatePersona('smsDesc',this.value)"></textarea>
+          </div>
+          <div class="char-field">
+            <div class="char-section-label">Content Pillars</div>
+            <div class="persona-chips" id="persona-pillar-chips"></div>
+          </div>
+          <div class="char-field">
+            <div class="char-section-label">Female Archetype</div>
+            <div class="persona-chips" id="persona-archetype-chips"></div>
+          </div>
+          <div class="char-field">
+            <div class="char-section-label">Cluster</div>
+            <div class="persona-cluster-chips" id="persona-cluster-chips"></div>
+          </div>
+          <div class="char-field">
+            <div class="char-section-label" style="display:flex;justify-content:space-between"><span>Claude System Prompt Preview</span><span style="color:var(--green);font-size:9px">Auto-generated ✦</span></div>
+            <div class="persona-system-preview" id="persona-system-preview">Fill in the fields above to generate the system prompt...</div>
+          </div>
+          <button class="persona-save-btn" onclick="savePersona()">Save Persona ✦</button>
+        </div>
+      </div>
       <div style="margin-bottom:20px">
         <div class="section-label">Scene · Time of Day</div>
         <div style="display:flex;gap:5px;margin-bottom:10px" id="time-tabs"></div>
@@ -762,19 +788,7 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
       </div>
       <div style="margin-bottom:20px">
         <div class="section-label">Style Parameters</div>
-        <div style="display:grid;grid-template-columns:1fr;gap:16px" id="params-grid"></div>
-      </div>
-      <div style="margin-bottom:20px">
-        <div class="section-label" style="display:flex;align-items:baseline;gap:10px">
-          <span>Filters</span>
-          <span style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-weight:normal">Post-generation look · per icon</span>
-        </div>
-        <div class="filter-grid" id="filter-grid"></div>
-        <div class="filter-intensity-row">
-          <span class="filter-intensity-label">Intensity</span>
-          <input type="range" id="filter-intensity" class="filter-intensity-slider" min="0" max="100" step="1" value="100" oninput="setFilterIntensity(this.value)" />
-          <span class="filter-intensity-value" id="filter-intensity-value">100%</span>
-        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="params-grid"></div>
       </div>
       <div style="margin-bottom:20px">
         
@@ -823,7 +837,7 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
         </div>
         <div class="shot-group-label">Base Style</div>
         <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px" id="shot-base">
-          <div class="shot-chip" onclick="MG.toggleShot(this,'base','35mm film natural light candid unposed organic')">Candid</div>
+          <div class="shot-chip active" onclick="MG.toggleShot(this,'base','35mm film natural light candid unposed organic')">Candid</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'base','editorial fashion photography American Apparel 2000s Corinne Day')">Editorial</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'base','phone camera snapshot lo-fi casual grain')">Phone snap</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'base','cinematic still movie frame soft focus atmospheric')">Cinematic</div>
@@ -834,6 +848,7 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
         <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
           <button class="wardrobe-tab-btn active" onclick="MG.switchTab('tops')" id="wtab-tops">Tops</button>
           <button class="wardrobe-tab-btn" onclick="MG.switchTab('bottoms')" id="wtab-bottoms">Bottoms</button>
+          <button class="wardrobe-tab-btn" onclick="MG.switchTab('accessories')" id="wtab-accessories">Accessories</button>
           <button class="wardrobe-tab-btn" onclick="MG.switchTab('look')" id="wtab-look">Full Look</button>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px" id="wardrobe-chips"></div>
@@ -964,7 +979,27 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     <div class="icons-grid" id="icons-grid"></div>
   </div>
 
+  <!-- QUEUE -->
+  <div id="tab-queue" class="tab-content">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px">
+      <div><div class="serif" style="font-size:32px;margin-bottom:4px">Drop Queue</div><div style="font-size:11px;color:var(--muted)" id="queue-sub">0 drops scheduled</div></div>
+      <button onclick="publishAll()" style="padding:10px 24px;background:var(--text);color:var(--bg);border:none;border-radius:2px;font-size:10px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif">Publish All → Mirage</button>
+    </div>
+    <div id="queue-list"><div style="padding:60px 32px;text-align:center;border:1px solid var(--border);border-radius:2px;background:var(--bg2)"><div class="serif" style="font-size:24px;color:rgba(26,23,20,0.18);margin-bottom:10px">Queue is empty</div><div style="font-size:12px;color:rgba(26,23,20,0.28)">Generate content and add drops to the queue</div></div></div>
+  </div>
 
+  <!-- SCHEDULE -->
+  <div id="tab-schedule" class="tab-content">
+    <div style="margin-bottom:24px"><div class="serif" style="font-size:32px;margin-bottom:4px">Daily Schedule</div><div style="font-size:11px;color:var(--muted)">Automated drop cadence · 4 drops per day per icon</div></div>
+    <div class="schedule-grid" id="schedule-grid"></div>
+    <div class="pipeline-card">
+      <div class="pipeline-head"><div class="eyebrow">Pipeline Status</div></div>
+      <div class="pipeline-item"><div class="pip-dot live"></div><div style="flex:1"><div style="font-size:13px;margin-bottom:2px">Flux Pro 1.1 · Image Generation</div><div style="font-size:11px;color:var(--muted)">Connected via local proxy · api.bfl.ai</div></div><div class="pip-status live">Live</div></div>
+      <div class="pipeline-item"><div class="pip-dot live"></div><div style="flex:1"><div style="font-size:13px;margin-bottom:2px">Image Library · localStorage</div><div style="font-size:11px;color:var(--muted)">Auto-saves all generations per icon · persists between sessions</div></div><div class="pip-status live">Live</div></div>
+      <div class="pipeline-item"><div class="pip-dot soon"></div><div style="flex:1"><div style="font-size:13px;margin-bottom:2px">Weavy Workflows · Icon Pipelines</div><div style="font-size:11px;color:var(--muted)">Node workflows per icon — launching soon</div></div><div class="pip-status soon">Soon</div></div>
+      <div class="pipeline-item"><div class="pip-dot soon"></div><div style="flex:1"><div style="font-size:13px;margin-bottom:2px">Mirage Platform · Auto-publish</div><div style="font-size:11px;color:var(--muted)">Connects queue to live platform</div></div><div class="pip-status soon">Soon</div></div>
+    </div>
+  </div>
 
 </div>
 
@@ -1018,104 +1053,10 @@ const SCENES = {
   night:["neon sign, wet street","club bathroom mirror","taxi backseat, city blur","rooftop, city lights below"],
 };
 const PARAMS = {
+  grain:["heavy 35mm grain","medium film grain","light grain overlay"],
+  color:["desaturated 40%","desaturated 25%","warm tone shift","cool muted tones"],
   light:["overcast window","golden hour side light","harsh overhead","low ambient only"],
 };
-// Filter library schema — 0-200 scale where 100 = neutral. Sliders map
-// 1:1 to these values. warm_cool is -100..+100 (0 = neutral, + = warm,
-// - = cool). grain is 0-100 opacity %. Each filter stored in
-// FILTERS_LIB, which persists to localStorage so custom filters and
-// edits to defaults survive reloads. FILTER_DEFAULTS is the seed set
-// used on first load or if localStorage is wiped.
-const FILTER_DEFAULTS = {
-  'A6 Standard': { brightness:102, contrast: 95, saturation: 70, sepia:  5, haze:110, grain:15, warm_cool: 10 },
-  'A6 Soft':     { brightness: 98, contrast: 88, saturation: 65, sepia:  8, haze:120, grain:20, warm_cool: 15 },
-  'A6 Bright':   { brightness:110, contrast:105, saturation: 75, sepia:  3, haze:100, grain:12, warm_cool:  5 },
-  'Film':        { brightness: 95, contrast:110, saturation: 60, sepia: 12, haze:115, grain:25, warm_cool: 20 },
-  'Overcast':    { brightness:105, contrast: 90, saturation: 65, sepia:  0, haze:115, grain:10, warm_cool:-10 },
-  'Flash':       { brightness:110, contrast:105, saturation: 85, sepia:  0, haze: 95, grain: 8, warm_cool: -5 },
-  'Dusk':        { brightness: 95, contrast:105, saturation: 75, sepia:  8, haze:110, grain:18, warm_cool: 25 },
-  'Raw':         { brightness:100, contrast:100, saturation:100, sepia:  0, haze:100, grain: 0, warm_cool:  0 },
-};
-const FILTER_PROP_RANGES = {
-  brightness: { min:   0, max: 200, neutral: 100, label: 'Brightness' },
-  contrast:   { min:   0, max: 200, neutral: 100, label: 'Contrast' },
-  saturation: { min:   0, max: 200, neutral: 100, label: 'Saturation' },
-  sepia:      { min:   0, max: 100, neutral:   0, label: 'Sepia' },
-  haze:       { min:  80, max: 200, neutral: 100, label: 'Haze' },
-  warm_cool:  { min:-100, max: 100, neutral:   0, label: 'Warm / Cool' },
-  grain:      { min:   0, max: 100, neutral:   0, label: 'Grain' },
-};
-let FILTERS_LIB = null; // loaded on first use; mutated by editor
-// Synchronous seed — fallback when Supabase hasn't responded yet or is
-// unavailable. Async fetchFilterLibraryFromSupabase() overwrites this
-// with the live DB contents shortly after page load.
-function loadFilterLibrary() {
-  FILTERS_LIB = {};
-  Object.entries(FILTER_DEFAULTS).forEach(function(e) { FILTERS_LIB[e[0]] = Object.assign({}, e[1]); });
-}
-// DB row → library entry. The table columns use `grain_opacity` and
-// `warm_shift`; the UI uses `grain` and `warm_cool`. Translate here.
-function filterFromDbRow(row) {
-  return {
-    brightness: +row.brightness,
-    contrast:   +row.contrast,
-    saturation: +row.saturation,
-    sepia:      +row.sepia,
-    haze:       +row.haze,
-    grain:      +row.grain_opacity,
-    warm_cool:  +row.warm_shift,
-    _id: row.id,
-  };
-}
-// Library entry → DB payload.
-function filterToDbPayload(name, values) {
-  return {
-    name: name,
-    brightness:    values.brightness,
-    contrast:      values.contrast,
-    saturation:    values.saturation,
-    sepia:         values.sepia,
-    haze:          values.haze,
-    grain_opacity: values.grain,
-    warm_shift:    values.warm_cool,
-    created_by:    (typeof studioCurrentUser === 'function' ? studioCurrentUser() : null) || 'unknown',
-  };
-}
-async function fetchFilterLibraryFromSupabase() {
-  if (!window.sbStudio) return;
-  try {
-    const { data, error } = await window.sbStudio.from('studio_filters').select('*').order('created_at');
-    if (error) throw error;
-    if (data && data.length) {
-      const lib = {};
-      data.forEach(function(row) { lib[row.name] = filterFromDbRow(row); });
-      FILTERS_LIB = lib;
-    }
-    renderFilters();
-  } catch (e) {
-    console.warn('[studio/filters] supabase fetch failed — using defaults:', e && e.message);
-  }
-}
-async function upsertFilterToSupabase(name, values, originalName) {
-  if (!window.sbStudio) throw new Error('supabase client unavailable');
-  const payload = filterToDbPayload(name, values);
-  // If the name changed, delete the old row so we don't leak orphans.
-  if (originalName && originalName !== name) {
-    await window.sbStudio.from('studio_filters').delete().eq('name', originalName);
-  }
-  const { data, error } = await window.sbStudio
-    .from('studio_filters')
-    .upsert(payload, { onConflict: 'name' })
-    .select();
-  if (error) throw error;
-  return (data && data[0]) || null;
-}
-async function deleteFilterRowFromSupabase(name) {
-  if (!window.sbStudio) throw new Error('supabase client unavailable');
-  const { error } = await window.sbStudio.from('studio_filters').delete().eq('name', name);
-  if (error) throw error;
-}
-function isDefaultFilter(name) { return FILTER_DEFAULTS.hasOwnProperty(name); }
 const SKIN_TONES = [
   {label:"Fair porcelain",hex:"#f5e6d8",prompt:"fair porcelain skin"},
   {label:"Light",hex:"#f0d5b8",prompt:"light skin"},
@@ -1157,16 +1098,8 @@ try {
   }
 } catch (_) {}
 let selectedIcon = __defaultIcon; window.selectedIcon = selectedIcon;
-// No default scene — time-of-day chips start unselected and toggle.
-let scene = "", scenePrompt = "";
-// grain and color were removed from PARAMS when the Filters panel took
-// over those concerns post-generation; keep params.light only and tolerate
-// PARAMS gaining/losing keys in the future.
-let params = {};
-Object.keys(PARAMS || {}).forEach(function(k) {
-  var opts = PARAMS[k];
-  if (opts && opts.length) params[k] = opts[0];
-});
+let scene = "morning", scenePrompt = SCENES.morning[0];
+let params = {grain:PARAMS.grain[0],color:PARAMS.color[0],light:PARAMS.light[0]};
 let generating = false, generatedContent = [], queue = [];
 let libIconId = "all", libFilter = "all", libSelected = new Set();
 let lbImages = [], lbIdx = 0;
@@ -1430,14 +1363,10 @@ const LOCAL_PROXY  = "http://localhost:3579";
 const PROXY = HOSTED_PROXY; // Switch to LOCAL_PROXY if running locally
 let proxyOk = false;
 async function checkProxy() {
-  try {
-    const r = await fetch(PROXY + "/health", { signal: AbortSignal.timeout(1500) });
-    const j = await r.json();
-    proxyOk = j && j.status === "ok";
-  } catch (_) { proxyOk = false; }
-  const el = $("proxy-status");
-  if (!el) return;
-  el.style.color = proxyOk ? "var(--green)" : "var(--gold)";
+  try { const r=await fetch(PROXY+"/health",{signal:AbortSignal.timeout(3000)}); proxyOk=(await r.json()).status==="ok"; }
+  catch { proxyOk=false; }
+  const el=$("proxy-status"); if(!el) return;
+  el.style.color = proxyOk?"var(--green)":"var(--gold)";
   el.innerHTML = proxyOk
     ? `<span style="display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>Proxy connected · Flux ready</span>`
     : `<span style="display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s ease infinite;display:inline-block"></span>Proxy offline — run node server.js</span>`;
@@ -1624,12 +1553,7 @@ function copyFullPrompt() {
 // ── CHARACTER BUILDER ─────────────────────────────────────────────────────────
 function loadCharIntoBuilder() {
   currentChar = {...getChar(selectedIcon.id)};
-  // Simple-view fields — populated alongside the advanced view so they
-  // always reflect the current icon.
-  setVal("cb-appearance-simple", currentChar.appearanceNotes || "");
-  setVal("cb-setting-simple", selectedIcon.setting || "");
-  setVal("cb-style-simple", selectedIcon.style || "");
-  // Advanced text fields — all null-safe
+  // Text fields — all null-safe
   setVal("cb-ethnicity", currentChar.ethnicity||"");
   setVal("cb-skin", currentChar.skinTone||"");
   setVal("cb-eye-color-custom", currentChar.eyeColor&&!CHIPS.eyeColor.includes(currentChar.eyeColor)?currentChar.eyeColor:"");
@@ -1648,25 +1572,6 @@ function loadCharIntoBuilder() {
   updateCharPreview();
   updateCharSummary();
   if (typeof applyStudioIconLock === 'function') applyStudioIconLock();
-}
-
-// Simple-view "Typical Setting" / "Signature Style" write to the same
-// icon fields as the advanced view's cb-setting / cb-style inputs. Keep
-// both rendered inputs in sync so switching between simple and advanced
-// never shows stale content.
-function syncSimpleCharField(field, val) {
-  if (typeof updateIconField === 'function') updateIconField(field, val);
-  if (field === 'setting') setVal('cb-setting', val);
-  else if (field === 'style') setVal('cb-style', val);
-}
-
-function toggleCharAdvanced() {
-  const adv = document.getElementById('cb-advanced');
-  const chev = document.getElementById('cb-adv-chevron');
-  if (!adv) return;
-  const isOpen = adv.style.display === 'flex';
-  adv.style.display = isOpen ? 'none' : 'flex';
-  if (chev) chev.textContent = isOpen ? '▼' : '▲';
 }
 
 function updateChar(field, val) {
@@ -1865,7 +1770,6 @@ function renderOutput() {
   setText("output-count", generatedContent.length);
   if(!generatedContent.length){
     el.innerHTML=`<div style="padding:70px 20px;text-align:center"><div class="serif" style="font-size:20px;color:rgba(26,23,20,0.18);margin-bottom:8px">No drops yet</div><div style="font-size:11px;color:rgba(26,23,20,0.28);line-height:1.8">Select an icon and generate<br>your first drop</div></div>`;
-    if (typeof applyFiltersToOutput === 'function') applyFiltersToOutput();
     return;
   }
   el.innerHTML=generatedContent.map(item=>`
@@ -1892,12 +1796,9 @@ function renderOutput() {
         <div class="output-actions">
           ${item.status==="queued"?`<button class="btn-primary queued">✓ In Queue</button>`:`<button class="btn-primary" onclick="addToQueue(${item.id})">Add to Queue</button>`}
           <button class="btn-secondary" onclick="copyPrompt(${item.id})">Copy Prompt</button>
-          ${item.imageUrl?`<button class="btn-secondary" onclick="saveOutputWithFilter(${item.id}, this)">Save with Filter</button>`:''}
         </div>
       </div>
     </div>`).join("");
-  // Apply the selected filter + grain overlay to the newly-rendered cards.
-  if (typeof applyFiltersToOutput === 'function') applyFiltersToOutput();
 }
 
 function renderLibrary() {
@@ -2062,7 +1963,6 @@ function selectIcon(id) {
   renderIconCard();
   renderSceneTabs();
   renderParams();
-  renderFilters();
   refreshPrompt();
   loadCharIntoBuilder();
   loadMoodboardForIcon();
@@ -2193,9 +2093,9 @@ function loadPersonaIntoStudio(iconId) {
 }
 
 function setScene(t) {
-  // Toggle — clicking the same tab a second time deselects it.
-  if (scene === t) { scene = ''; scenePrompt = ''; }
-  else { scene = t; scenePrompt = (SCENES[t] && SCENES[t][0]) || ''; }
+  scene=t;
+  // Use the first scene prompt for consistency, moodboard handles the visual direction
+  scenePrompt=SCENES[t][0];
   renderSceneTabs();
   refreshPrompt();
 }
@@ -2208,359 +2108,6 @@ function setParam(el) {
   if(container) container.querySelectorAll(".param-opt").forEach(e=>e.classList.remove("active"));
   el.classList.add("active");
   refreshPrompt();
-}
-
-// Per-icon filter selection — { filter: '<libraryName>', intensity: 0-100 }.
-// Falls back to 'Raw' when the referenced filter has been deleted from
-// the library or when no state has been saved yet.
-function getIconFilterState(iconId) {
-  if (!FILTERS_LIB) loadFilterLibrary();
-  try {
-    const raw = localStorage.getItem('studio.filters.' + iconId);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && FILTERS_LIB[parsed.filter]) return parsed;
-    }
-  } catch (_) {}
-  return { filter: FILTERS_LIB['Raw'] ? 'Raw' : Object.keys(FILTERS_LIB)[0], intensity: 100 };
-}
-function saveIconFilterState(iconId, state) {
-  try { localStorage.setItem('studio.filters.' + iconId, JSON.stringify(state)); } catch (_) {}
-}
-function currentIconFilterState() {
-  if (!selectedIcon) return { filter: 'Raw', intensity: 100 };
-  return getIconFilterState(selectedIcon.id);
-}
-
-// Build the CSS filter string from a library entry at a given intensity
-// (0-1). Properties on the 0-200 scale (100 = neutral) are mapped to CSS
-// values by dividing by 100 — so 50 → 0.5x, 150 → 1.5x, 200 → 2x. Sepia
-// is on a 0-100 scale (0 = none, 100 = full). Haze maps to CSS blur()
-// with values under 100 contributing no blur (CSS blur can't go
-// negative). warm_cool maps to hue-rotate: positive = warmer shift,
-// negative = cooler. Each channel interpolates from its neutral value
-// toward the preset value based on intensity.
-function buildFilterCss(filterObj, intensity01) {
-  if (!filterObj) return '';
-  const t = Math.max(0, Math.min(1, intensity01));
-  const mix = (val, neutral) => neutral + (val - neutral) * t;
-  const bright = mix(filterObj.brightness || 100, 100) / 100;
-  const cont   = mix(filterObj.contrast   || 100, 100) / 100;
-  const sat    = mix(filterObj.saturation || 100, 100) / 100;
-  const sep    = Math.max(0, mix(filterObj.sepia || 0, 0)) / 100;
-  const haze   = mix(filterObj.haze || 100, 100);
-  const blurPx = haze > 100 ? ((haze - 100) / 50).toFixed(2) : '0';
-  const wc     = mix(filterObj.warm_cool || 0, 0);
-  // +100 warm_cool → +15deg hue-rotate (toward orange); -100 → -15deg.
-  const hue    = (wc * 0.15).toFixed(2);
-  return 'brightness(' + bright.toFixed(3) + ')' +
-         ' contrast(' + cont.toFixed(3) + ')' +
-         ' saturate(' + sat.toFixed(3) + ')' +
-         ' sepia(' + sep.toFixed(3) + ')' +
-         ' hue-rotate(' + hue + 'deg)' +
-         ' blur(' + blurPx + 'px)';
-}
-function buildFilterGrainOpacity(filterObj, intensity01) {
-  if (!filterObj) return 0;
-  const t = Math.max(0, Math.min(1, intensity01));
-  return Math.max(0, Math.min(1, ((filterObj.grain || 0) / 100) * t));
-}
-
-// Preview swatch CSS — generate a small image-like gradient and apply
-// the filter to it so the swatch shows what the filter actually does.
-function renderFilterSwatchCss(filterObj) {
-  const css = buildFilterCss(filterObj, 1);
-  return 'background: linear-gradient(135deg, #f5e6d3 0%, #c9a880 35%, #6a4a38 70%, #1a0f0a 100%); filter: ' + css + ';';
-}
-
-// Re-render the filter cards and slider for the currently selected icon.
-function renderFilters() {
-  if (!FILTERS_LIB) loadFilterLibrary();
-  const grid = document.getElementById('filter-grid');
-  if (!grid) return;
-  const state = currentIconFilterState();
-  const names = Object.keys(FILTERS_LIB);
-  const cards = names.map(function(name) {
-    const f = FILTERS_LIB[name];
-    const active = name === state.filter;
-    const safeName = name.replace(/'/g, '&#39;');
-    return '<div class="filter-card' + (active ? ' active' : '') + '"' +
-           ' onclick="setStyleFilter(\'' + safeName + '\')"' +
-           ' ondblclick="openFilterEditor(\'' + safeName + '\')"' +
-           ' title="Double-click to edit">' +
-           '<div class="filter-swatch" style="' + renderFilterSwatchCss(f) + '"></div>' +
-           '<div class="filter-name">' + name + '</div>' +
-           '</div>';
-  }).join('');
-  const addCard =
-    '<div class="filter-card filter-card-add" onclick="openFilterEditor(null)" title="Add a custom filter">' +
-    '<div class="filter-swatch filter-swatch-add">+</div>' +
-    '<div class="filter-name">Add Filter</div>' +
-    '</div>';
-  grid.innerHTML = cards + addCard;
-  const slider = document.getElementById('filter-intensity');
-  const valEl = document.getElementById('filter-intensity-value');
-  if (slider) slider.value = state.intensity;
-  if (valEl) valEl.textContent = state.intensity + '%';
-  applyFiltersToOutput();
-}
-
-function setStyleFilter(name) {
-  if (!selectedIcon || !FILTERS_LIB[name]) return;
-  const state = currentIconFilterState();
-  state.filter = name;
-  saveIconFilterState(selectedIcon.id, state);
-  renderFilters();
-}
-
-function setFilterIntensity(val) {
-  if (!selectedIcon) return;
-  const num = Math.max(0, Math.min(100, parseInt(val, 10) || 0));
-  const state = currentIconFilterState();
-  state.intensity = num;
-  saveIconFilterState(selectedIcon.id, state);
-  const valEl = document.getElementById('filter-intensity-value');
-  if (valEl) valEl.textContent = num + '%';
-  applyFiltersToOutput();
-}
-
-// Apply the current icon's filter + grain opacity to every visible
-// output image. Runs after each filter state change and after every
-// renderOutput() call (new cards need the CSS too).
-function applyFiltersToOutput() {
-  if (!FILTERS_LIB) loadFilterLibrary();
-  const state = currentIconFilterState();
-  const f = FILTERS_LIB[state.filter];
-  const css = buildFilterCss(f, state.intensity / 100);
-  const grainOpacity = buildFilterGrainOpacity(f, state.intensity / 100);
-  document.querySelectorAll('.output-img').forEach(function(img) {
-    img.style.filter = css;
-  });
-  document.querySelectorAll('.output-card .grain-overlay').forEach(function(g) {
-    g.style.opacity = grainOpacity;
-  });
-}
-
-// Bake the currently selected filter into a canvas — applies the CSS
-// filter via ctx.filter + a noise-grain overlay at the configured
-// opacity — then hand the baked JPEG to the proxy for upload + content
-// table insert. The resulting image is independent of CSS; the filter
-// lives in the pixels.
-async function saveOutputWithFilter(outputId, btn) {
-  const item = generatedContent.find(function(c) { return c.id === outputId; });
-  if (!item || !item.imageUrl) return;
-  if (!FILTERS_LIB) loadFilterLibrary();
-  const state = currentIconFilterState();
-  const filterObj = FILTERS_LIB[state.filter] || FILTERS_LIB['Raw'];
-  const intensity01 = state.intensity / 100;
-  const originalLabel = btn ? btn.textContent : '';
-  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
-
-  try {
-    // Load the source image with CORS so we can read pixels.
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    await new Promise(function(resolve, reject) {
-      img.onload = resolve;
-      img.onerror = function() { reject(new Error('image load failed — CORS or missing asset')); };
-      img.src = item.imageUrl;
-    });
-
-    const canvas = document.createElement('canvas');
-    canvas.width = img.naturalWidth || img.width;
-    canvas.height = img.naturalHeight || img.height;
-    const ctx = canvas.getContext('2d');
-
-    // Apply CSS filter while drawing the image. Works across modern
-    // browsers for brightness/contrast/saturate/sepia/hue-rotate/blur.
-    ctx.filter = buildFilterCss(filterObj, intensity01);
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    ctx.filter = 'none';
-
-    // Composite grain. Generate monochrome noise into an offscreen
-    // canvas then composite with 'overlay' at the configured opacity.
-    const grainOpacity = buildFilterGrainOpacity(filterObj, intensity01);
-    if (grainOpacity > 0) {
-      const noise = document.createElement('canvas');
-      noise.width = canvas.width;
-      noise.height = canvas.height;
-      const nctx = noise.getContext('2d');
-      const imgData = nctx.createImageData(canvas.width, canvas.height);
-      const d = imgData.data;
-      for (let i = 0; i < d.length; i += 4) {
-        const v = (Math.random() * 256) | 0;
-        d[i] = v; d[i+1] = v; d[i+2] = v; d[i+3] = 255;
-      }
-      nctx.putImageData(imgData, 0, 0);
-      ctx.globalCompositeOperation = 'overlay';
-      ctx.globalAlpha = grainOpacity;
-      ctx.drawImage(noise, 0, 0);
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.globalAlpha = 1;
-    }
-
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-
-    const payload = {
-      base64: dataUrl,
-      iconName: item.icon.name,
-      iconId: (item.icon.id != null ? String(item.icon.id) : item.icon.name.toLowerCase()),
-      filterName: state.filter,
-      scene: item.caption || ''
-    };
-    const resp = await fetch((typeof PROXY !== 'undefined' ? PROXY : '') + '/studio/upload-filtered', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const txt = await resp.text();
-    let json = null;
-    try { json = JSON.parse(txt); } catch (_) {}
-    if (!resp.ok || !json || !json.ok) {
-      throw new Error((json && json.error) || ('HTTP ' + resp.status + ' ' + txt.slice(0, 140)));
-    }
-    item.savedToLib = true;
-    item.filteredUrl = json.url;
-    renderOutput();
-    notify('Saved to library · ' + state.filter);
-  } catch (e) {
-    console.warn('[studio/save-filter]', e);
-    notify('Save failed: ' + (e && e.message), 'error');
-    if (btn) { btn.disabled = false; btn.textContent = originalLabel || 'Save with Filter'; }
-  }
-}
-
-// ── FILTER EDITOR ─────────────────────────────────────────────────────────────
-// Modal for editing an existing library entry (name passed) or adding a
-// new one (name = null). Saving writes to FILTERS_LIB + localStorage and
-// re-renders the filter cards. Deleting is allowed for non-default
-// filters only — defaults can be re-edited but not removed.
-let _editingFilterOriginalName = null;
-
-function openFilterEditor(name) {
-  const modal = document.getElementById('filter-editor');
-  if (!modal) return;
-  if (!FILTERS_LIB) loadFilterLibrary();
-  _editingFilterOriginalName = name;
-  const source = name && FILTERS_LIB[name] ? FILTERS_LIB[name] : {
-    brightness: 100, contrast: 100, saturation: 100, sepia: 0, haze: 100, grain: 0, warm_cool: 0,
-  };
-  const nameInput = document.getElementById('filter-editor-name');
-  nameInput.value = name || '';
-  nameInput.readOnly = !!(name && isDefaultFilter(name));
-  nameInput.title = nameInput.readOnly ? 'Default filter name cannot be changed' : 'Filter name';
-  Object.keys(FILTER_PROP_RANGES).forEach(function(prop) {
-    const slider = document.getElementById('fe-' + prop);
-    const valEl = document.getElementById('fe-' + prop + '-val');
-    if (slider) {
-      slider.value = (source[prop] != null) ? source[prop] : FILTER_PROP_RANGES[prop].neutral;
-      slider.oninput = function() { valEl.textContent = slider.value; updateFilterEditorPreview(); };
-    }
-    if (valEl) valEl.textContent = slider ? slider.value : '';
-  });
-  document.getElementById('filter-editor-delete').style.display =
-    (name && !isDefaultFilter(name)) ? 'inline-block' : 'none';
-  document.getElementById('filter-editor-title').textContent = name ? 'Edit · ' + name : 'New Filter';
-  modal.style.display = 'flex';
-  updateFilterEditorPreview();
-}
-
-function updateFilterEditorPreview() {
-  const preview = document.getElementById('filter-editor-preview');
-  if (!preview) return;
-  const obj = collectFilterEditorValues();
-  preview.style.cssText = 'background:' +
-    'linear-gradient(135deg, #f5e6d3 0%, #c9a880 35%, #6a4a38 70%, #1a0f0a 100%);' +
-    'filter:' + buildFilterCss(obj, 1) + ';';
-}
-
-function collectFilterEditorValues() {
-  const obj = {};
-  Object.keys(FILTER_PROP_RANGES).forEach(function(prop) {
-    const slider = document.getElementById('fe-' + prop);
-    if (slider) obj[prop] = parseInt(slider.value, 10) || FILTER_PROP_RANGES[prop].neutral;
-  });
-  return obj;
-}
-
-function closeFilterEditor() {
-  const modal = document.getElementById('filter-editor');
-  if (modal) modal.style.display = 'none';
-  _editingFilterOriginalName = null;
-}
-
-async function saveFilterEdit() {
-  const nameInput = document.getElementById('filter-editor-name');
-  const rawName = (nameInput.value || '').trim();
-  if (!rawName) {
-    notify('Filter name required', 'error');
-    return;
-  }
-  const values = collectFilterEditorValues();
-  const originalName = _editingFilterOriginalName;
-  const isRename = originalName && originalName !== rawName;
-  if (isRename && isDefaultFilter(originalName)) {
-    notify('Default filter names cannot be changed', 'error');
-    return;
-  }
-  if (isRename && FILTERS_LIB[rawName]) {
-    notify('A filter named "' + rawName + '" already exists', 'error');
-    return;
-  }
-
-  // Write to Supabase first — if it fails we haven't corrupted local state.
-  try {
-    const row = await upsertFilterToSupabase(rawName, values, isRename ? originalName : null);
-    if (row) values._id = row.id;
-  } catch (e) {
-    console.warn('[studio/filters] supabase save failed:', e && e.message);
-    notify('Save failed: ' + (e && e.message), 'error');
-    return;
-  }
-
-  if (isRename) delete FILTERS_LIB[originalName];
-  FILTERS_LIB[rawName] = values;
-
-  if (selectedIcon) {
-    const state = currentIconFilterState();
-    if (isRename && state.filter === originalName) {
-      state.filter = rawName;
-      saveIconFilterState(selectedIcon.id, state);
-    }
-    if (!originalName) {
-      state.filter = rawName;
-      saveIconFilterState(selectedIcon.id, state);
-    }
-  }
-  closeFilterEditor();
-  renderFilters();
-  notify((originalName ? 'Updated' : 'Created') + ' · ' + rawName);
-}
-
-async function deleteFilterFromLib() {
-  const name = _editingFilterOriginalName;
-  if (!name || isDefaultFilter(name)) return;
-  if (!confirm('Delete filter "' + name + '"? This cannot be undone.')) return;
-
-  try {
-    await deleteFilterRowFromSupabase(name);
-  } catch (e) {
-    console.warn('[studio/filters] supabase delete failed:', e && e.message);
-    notify('Delete failed: ' + (e && e.message), 'error');
-    return;
-  }
-
-  delete FILTERS_LIB[name];
-  if (selectedIcon) {
-    const state = currentIconFilterState();
-    if (state.filter === name) {
-      state.filter = 'Raw';
-      saveIconFilterState(selectedIcon.id, state);
-    }
-  }
-  closeFilterEditor();
-  renderFilters();
-  notify('Deleted · ' + name);
 }
 function filterIcons(v) { renderIconList(v); }
 function filterIconsGrid(v) { renderIconsGrid(v); }
@@ -2607,6 +2154,7 @@ function switchTab(tab) {
   });
   if(tab==="icons") renderIconsGrid();
   if(tab==="queue") renderQueue();
+  if(tab==="schedule") renderSchedule();
   if(tab==="library") renderLibrary();
 }
 
@@ -3003,30 +2551,21 @@ function init() {
   renderIconCard();
   renderSceneTabs();
   renderParams();
-  loadFilterLibrary();  // seed from defaults synchronously
-  renderFilters();       // render with defaults so UI has content immediately
   loadCharIntoBuilder();
+  loadMoodboardForIcon();
   loadPersonaForIcon();
   loadWardrobeForIcon();
   refreshPrompt();
+  // Start moodboard collapsed
+  const mb=$("moodboard"); if(mb) mb.classList.add("collapsed");
   renderLibrary();
   updateLibCount();
+  renderSchedule();
   // Start char builder and persona collapsed
   const cb=$("char-builder");
   if(cb) cb.classList.add("collapsed");
   checkProxy();
   setInterval(checkProxy,15000);
-  // Kick off the async Supabase fetch — replaces the seeded defaults
-  // with whatever's in the studio_filters table as soon as it resolves.
-  if (typeof fetchFilterLibraryFromSupabase === 'function') {
-    fetchFilterLibraryFromSupabase();
-  }
-  // Auto-select the default icon so the UI is never blank on load.
-  // selectIcon triggers all the per-icon render hooks (card, params,
-  // filters, wardrobe, persona, etc.) so nothing stays empty.
-  if (selectedIcon && typeof selectIcon === 'function') {
-    selectIcon(selectedIcon.id);
-  }
 }
 
 
@@ -3641,14 +3180,6 @@ var MG=window.MG={
     var el=document.getElementById('wardrobe-chips');if(!el)return;
     var icon=typeof selectedIcon!=='undefined'?selectedIcon:null;
     var items=icon?MG.getItems(icon.id,MG.tab):(MG.WARDROBE[MG.tab]||[]);
-    // Cap to 6 options per tab — keeps the UI scannable. Anything past 6
-    // is accessible after the user removes something. Prefers selected
-    // items first so the user's active picks always render.
-    if (items.length > 6) {
-      var selectedItems = items.filter(function(i){ return MG.selected.has(i.id); });
-      var rest = items.filter(function(i){ return !MG.selected.has(i.id); });
-      items = selectedItems.concat(rest).slice(0, 6);
-    }
     el.innerHTML=items.map(function(item){
       var sel=MG.selected.has(item.id);
       var rm=item.custom?'<span onclick="event.stopPropagation();MG.removeItem(\'' +item.id+'\');" style="opacity:.5;font-size:9px;cursor:pointer;margin-left:3px">x</span>':'';
@@ -3757,10 +3288,7 @@ var MG=window.MG={
     var icon=typeof selectedIcon!=='undefined'?selectedIcon:null;
     if(!icon)return'';
 
-    // Nothing pre-selected — base is empty unless the user has picked a
-    // chip. The old behaviour forced a Candid-35mm default into every
-    // generation; now the prompt reflects exactly what's selected.
-    var base=MG.base.size?Array.from(MG.base).join(', '):'';
+    var base=MG.base.size?Array.from(MG.base).join(', '):'35mm film natural light candid unposed organic';
     var identity=icon.name.toLowerCase();
     var p=MG.parts();
 
