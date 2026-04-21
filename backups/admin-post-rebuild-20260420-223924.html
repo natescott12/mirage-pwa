@@ -2594,7 +2594,7 @@ function buildPersonaForm(p, icon) {
         </select>
       </div>
     </div>
-    <div class="field-row triple" style="display:none">
+    <div class="field-row triple">
       <div class="field"><label>Freckles</label>
         <select id="f-freckles">
           ${['','none','light','scattered','across nose & cheeks','heavy'].map(s =>
@@ -2611,11 +2611,11 @@ function buildPersonaForm(p, icon) {
       </div>
       <div class="field"><label>Signature Style</label><input id="f-signature-style" value="${p.signature_style || ''}" placeholder="e.g. minimalist black, vintage 70s, soft girly"></div>
     </div>
-    <div class="field-row" style="display:none">
+    <div class="field-row">
       <div class="field"><label>Distinguishing Features</label><textarea id="f-distinguishing-features" placeholder="Birthmarks, scars, dimples, gap teeth, anything that makes her recognizable…">${p.distinguishing_features || ''}</textarea></div>
       <div class="field"><label>Tattoos / Piercings</label><textarea id="f-tattoos-piercings" placeholder="Where, what, how visible. Leave blank if none.">${p.tattoos_piercings || ''}</textarea></div>
     </div>
-    <div class="field-row single" style="display:none">
+    <div class="field-row single">
       <div class="field"><label>Typical Setting</label><input id="f-typical-setting" value="${p.typical_setting || ''}" placeholder="e.g. dimly lit Brooklyn loft, sunny Topanga kitchen, hotel bathroom mirror"></div>
     </div>
     <div class="field-row single">
