@@ -517,15 +517,15 @@
   .lib-img:hover { opacity: 0.92; }
   .lib-zoom {
     position: absolute; top: 6px; right: 6px;
-    width: 24px; height: 24px;
-    background: rgba(26,23,20,0.65); color: var(--bg);
+    width: 26px; height: 26px;
+    background: rgba(26,23,20,0.78); color: var(--bg);
     border: none; border-radius: 2px;
-    font-size: 13px; line-height: 1; cursor: pointer;
+    font-size: 14px; line-height: 1; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    opacity: 0; transition: opacity 0.12s;
+    opacity: 0.92; transition: background 0.12s, opacity 0.12s;
+    z-index: 2;
   }
-  .lib-card:hover .lib-zoom { opacity: 1; }
-  .lib-zoom:hover { background: rgba(26,23,20,0.9); }
+  .lib-zoom:hover { background: #1a1714; opacity: 1; }
   .lib-meta {
     padding: 6px 10px;
     display: flex; justify-content: space-between; align-items: center;
@@ -617,6 +617,7 @@
     <button class="nav-tab" data-mode="converse" onclick="switchMode('converse')">Converse</button>
     <span class="nav-divider" aria-hidden="true"></span>
     <button class="nav-tab" onclick="jumpToLibrary()">Library<span class="badge" id="lib-count">0</span></button>
+    <a href="/admin#library" class="nav-tab">Cloud Library</a>
     <a href="/admin#personas" class="nav-tab">Persona Builder</a>
     <a href="/admin#icons" class="nav-tab">Icons</a>
     <button class="nav-tab" onclick="showQueue()">Queue<span class="badge" id="queue-count">0</span></button>
@@ -1147,7 +1148,7 @@ function renderShotChips() {
     if (!row) return;
     row.innerHTML = SHOT_CHIPS[group].map(function(label) {
       const active = chipState[group] === label ? ' active' : '';
-      return '<button class="chip' + active + '" onclick="toggleChip(\'' + group + '\', ' + attrJS(label) + ', this)">' + escapeHTML(label) + '</button>';
+      return '<button class="chip' + active + '" data-chip-group="' + group + '" data-chip-label="' + escapeHTML(label) + '">' + escapeHTML(label) + '</button>';
     }).join('');
   });
 }
@@ -1208,7 +1209,7 @@ function renderWardrobeChips() {
   const options = getWardrobeOptions();
   row.innerHTML = options.map(function(opt) {
     const active = wardrobeSelected.has(opt) ? ' active' : '';
-    return '<button class="chip' + active + '" onclick="toggleWardrobe(' + attrJS(opt) + ', this)">' + escapeHTML(opt) + '</button>';
+    return '<button class="chip' + active + '" data-wardrobe-opt="' + escapeHTML(opt) + '">' + escapeHTML(opt) + '</button>';
   }).join('');
   if (!options.length) {
     row.innerHTML = '<div style="font-size:11px; color:var(--muted);">No items yet. Add custom below.</div>';
@@ -1502,26 +1503,61 @@ function renderOutput() {
 }
 
 // ─── FILTERS ─────────────────────────────────────────────────────────────────
+// Built-in filter set — hand-tuned so each look is visibly distinct in the
+// filter swatches before any image is generated. The Supabase `studio_filters`
+// table can override these by name; DB rows with neutral / null values are
+// dropped so we never end up with a grid of identical-looking cards.
+const FILTERS_FALLBACK = [
+  { id: 'raw',     name: 'Raw',     brightness: 1.00, contrast: 1.00, saturation: 1.00, sepia: 0.00, haze: 0.0, grain_opacity: 0,  warm_shift: 0   },
+  { id: 'film',    name: 'Film',   brightness: 1.02, contrast: 1.18, saturation: 0.82, sepia: 0.14, haze: 0.4, grain_opacity: 28, warm_shift: 8   },
+  { id: 'kodak',   name: 'Kodak',  brightness: 1.05, contrast: 1.10, saturation: 1.14, sepia: 0.10, haze: 0.0, grain_opacity: 14, warm_shift: 14  },
+  { id: 'fuji',    name: 'Fuji',   brightness: 1.00, contrast: 1.06, saturation: 0.90, sepia: 0.00, haze: 0.0, grain_opacity: 10, warm_shift: -10 },
+  { id: 'bw',      name: 'B&W',    brightness: 1.06, contrast: 1.28, saturation: 0.00, sepia: 0.00, haze: 0.0, grain_opacity: 24, warm_shift: 0   },
+  { id: 'sepia',   name: 'Sepia',  brightness: 0.98, contrast: 1.06, saturation: 0.20, sepia: 0.80, haze: 0.0, grain_opacity: 12, warm_shift: 0   },
+  { id: 'vintage', name: 'Vintage',brightness: 0.94, contrast: 0.88, saturation: 0.72, sepia: 0.36, haze: 0.8, grain_opacity: 32, warm_shift: 16  },
+  { id: 'cool',    name: 'Cool',   brightness: 1.00, contrast: 1.08, saturation: 0.82, sepia: 0.00, haze: 0.0, grain_opacity: 6,  warm_shift: -22 },
+  { id: 'warm',    name: 'Warm',   brightness: 1.04, contrast: 1.02, saturation: 1.12, sepia: 0.06, haze: 0.0, grain_opacity: 6,  warm_shift: 22  },
+  { id: 'noir',    name: 'Noir',   brightness: 0.84, contrast: 1.38, saturation: 0.00, sepia: 0.00, haze: 0.0, grain_opacity: 36, warm_shift: 0   }
+];
+
+function _filterHasEffect(f) {
+  return Math.abs((f.brightness    || 1) - 1) > 0.01
+      || Math.abs((f.contrast      || 1) - 1) > 0.01
+      || Math.abs((f.saturation    || 1) - 1) > 0.01
+      || (f.sepia         || 0) > 0.01
+      || (f.haze          || 0) > 0.01
+      || (f.grain_opacity || 0) > 0.5
+      || Math.abs(f.warm_shift || 0) > 0.5;
+}
+
 function loadFilters() {
-  if (!window.sbStudio) return Promise.resolve();
+  if (!window.sbStudio) { filtersLib = FILTERS_FALLBACK.slice(); return Promise.resolve(); }
   return window.sbStudio.from('studio_filters').select('*').order('name')
     .then(function(r) {
-      if (r && r.error) { console.warn('[studio] filters load:', r.error.message); return; }
-      filtersLib = (r.data || []).map(function(row) {
+      if (r && r.error) { console.warn('[studio] filters load:', r.error.message); filtersLib = FILTERS_FALLBACK.slice(); return; }
+      const parseNum = function(v, def) { const n = parseFloat(v); return isFinite(n) ? n : def; };
+      const dbFilters = (r.data || []).map(function(row) {
         return {
           id: row.id,
           name: row.name,
-          brightness: parseFloat(row.brightness),
-          contrast: parseFloat(row.contrast),
-          saturation: parseFloat(row.saturation),
-          sepia: parseFloat(row.sepia),
-          haze: parseFloat(row.haze),
-          grain_opacity: parseFloat(row.grain_opacity),
-          warm_shift: parseFloat(row.warm_shift)
+          brightness: parseNum(row.brightness, 1),
+          contrast: parseNum(row.contrast, 1),
+          saturation: parseNum(row.saturation, 1),
+          sepia: parseNum(row.sepia, 0),
+          haze: parseNum(row.haze, 0),
+          grain_opacity: parseNum(row.grain_opacity, 0),
+          warm_shift: parseNum(row.warm_shift, 0)
         };
-      });
+      }).filter(_filterHasEffect);
+      const seenNames = new Set(dbFilters.map(function(f) { return String(f.name || '').toLowerCase(); }));
+      const missing = FILTERS_FALLBACK.filter(function(f) { return !seenNames.has(f.name.toLowerCase()); });
+      filtersLib = dbFilters.concat(missing);
+      if (!filtersLib.length) filtersLib = FILTERS_FALLBACK.slice();
     })
-    .catch(function(e) { console.warn('[studio] filters fetch failed:', e); });
+    .catch(function(e) {
+      console.warn('[studio] filters fetch failed:', e);
+      filtersLib = FILTERS_FALLBACK.slice();
+    });
 }
 
 // Build a CSS filter string for a given Supabase filter row + intensity (0-100).
@@ -1605,7 +1641,7 @@ function renderFilters() {
   // each filter's look is still visible in its card.
   const swatchBg = 'linear-gradient(135deg,#ead6ba 0%,#c49a72 35%,#8a6145 65%,#2f2118 100%)';
   grid.innerHTML = filtersLib.map(function(f) {
-    const sel = currentFilterId === f.id ? ' active' : '';
+    const sel = String(currentFilterId) === String(f.id) ? ' active' : '';
     const css = cssFilterFor(f, 100);
     const grain = grainOverlayHTML(f, 100);
     const bg = generated && generated.url
@@ -1616,7 +1652,7 @@ function renderFilters() {
         '<div class="filter-thumb" style="background-image:' + bg + '; filter:' + css + '"></div>' +
         grain +
       '</div>';
-    return '<div class="filter-card' + sel + '" onclick="selectFilter(' + attrJS(f.id) + ')">' +
+    return '<div class="filter-card' + sel + '" data-filter-id="' + escapeHTML(String(f.id)) + '">' +
       thumb +
       '<div class="filter-name">' + escapeHTML(f.name) + '</div>' +
     '</div>';
@@ -1640,7 +1676,7 @@ function applyFilterToOutput() {
   const img = document.getElementById('output-img');
   const grainEl = document.getElementById('output-grain');
   if (!img) return;
-  const f = currentFilterId ? filtersLib.find(function(x) { return x.id === currentFilterId; }) : null;
+  const f = currentFilterId ? filtersLib.find(function(x) { return String(x.id) === String(currentFilterId); }) : null;
   if (!f) {
     img.style.filter = '';
     if (grainEl) grainEl.style.opacity = '0';
@@ -1657,7 +1693,7 @@ function approveImage() {
   notify('Baking filter & uploading…');
   bakeFilteredImage(generated.url).then(function(dataUrl) {
     const filterName = currentFilterId
-      ? (filtersLib.find(function(x){return x.id===currentFilterId;}) || {}).name + ' @' + filterIntensity + '%'
+      ? (filtersLib.find(function(x){return String(x.id)===String(currentFilterId);}) || {}).name + ' @' + filterIntensity + '%'
       : '';
     return fetch(PROXY + '/studio/upload-filtered', {
       method: 'POST',
@@ -1694,7 +1730,7 @@ function bakeFilteredImage(srcUrl) {
       canvas.width = img.naturalWidth;
       canvas.height = img.naturalHeight;
       const ctx = canvas.getContext('2d');
-      const f = currentFilterId ? filtersLib.find(function(x){return x.id===currentFilterId;}) : null;
+      const f = currentFilterId ? filtersLib.find(function(x){return String(x.id)===String(currentFilterId);}) : null;
       // 1. base image with CSS filter applied
       ctx.filter = f ? cssFilterFor(f, filterIntensity) : 'none';
       ctx.drawImage(img, 0, 0);
@@ -1749,20 +1785,20 @@ function renderLibrary() {
     const tags = Array.isArray(row.tags) ? row.tags : [];
     const filterTag = tags.find(function(t){ return typeof t === 'string' && t.indexOf('filter:') === 0; });
     const filterLabel = filterTag ? escapeHTML(filterTag.slice(7).split(' @')[0]) : 'no filter';
-    const idAttr = attrJS(row.id);
+    const idAttr = escapeHTML(String(row.id));
     return '<div class="lib-card">' +
       '<div class="lib-img-wrap">' +
-        '<img class="lib-img" src="' + row.image_url + '" alt="" loading="lazy" onclick="editFilterFromLibrary(' + idAttr + ')" />' +
-        '<button class="lib-zoom" title="View / delete" onclick="openLibraryLightbox(' + idAttr + ')">⤢</button>' +
+        '<img class="lib-img" src="' + row.image_url + '" alt="" loading="lazy" data-lib-id="' + idAttr + '" data-lib-action="edit" />' +
+        '<button class="lib-zoom" title="View / delete" data-lib-id="' + idAttr + '" data-lib-action="zoom">⤢</button>' +
       '</div>' +
       '<div class="lib-meta"><span>' + filterLabel + '</span></div>' +
-      '<button class="lib-edit" onclick="editFilterFromLibrary(' + idAttr + ')">Edit Filter</button>' +
+      '<button class="lib-edit" data-lib-id="' + idAttr + '" data-lib-action="edit">Edit Filter</button>' +
     '</div>';
   }).join('') + '</div>';
 }
 
 function editFilterFromLibrary(rowId) {
-  const row = library.find(function(r) { return r.id === rowId; });
+  const row = library.find(function(r) { return String(r.id) === String(rowId); });
   if (!row) return;
   generated = {
     url: row.image_url,
@@ -1838,25 +1874,35 @@ function escapeHTML(s) {
     .replace(/"/g, '&quot;');
 }
 
-// JSON-encode a value AND entity-escape it for safe use inside a double-quoted
-// HTML attribute (e.g. `onclick="foo(<attrJS(x)>)"`). JSON.stringify alone
-// produces unescaped double quotes that collide with the attribute's quoting
-// and silently break the handler.
-function attrJS(v) {
-  return JSON.stringify(v)
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-}
-
 // (per-row inputs call onPromptInput directly; no global input listener needed)
+
+// ─── GLOBAL CLICK DELEGATION ─────────────────────────────────────────────────
+// Chips, wardrobe chips, filter cards, and library actions are all bound via
+// data-* attributes + this single delegated handler. Inline `onclick=` with
+// JSON-stringified values was fragile (attribute-quote collisions, entity
+// decoding edge cases) and kept silently breaking clicks. Data attributes
+// eliminate all escaping questions — the string is just a string.
+document.addEventListener('click', function(e) {
+  const chip = e.target && e.target.closest && e.target.closest('.chip[data-chip-group]');
+  if (chip) { toggleChip(chip.dataset.chipGroup, chip.dataset.chipLabel); return; }
+  const wchip = e.target && e.target.closest && e.target.closest('.chip[data-wardrobe-opt]');
+  if (wchip) { toggleWardrobe(wchip.dataset.wardrobeOpt); return; }
+  const fcard = e.target && e.target.closest && e.target.closest('.filter-card[data-filter-id]');
+  if (fcard) { selectFilter(fcard.dataset.filterId); return; }
+  const libEl = e.target && e.target.closest && e.target.closest('[data-lib-id][data-lib-action]');
+  if (libEl) {
+    const id = libEl.dataset.libId;
+    if (libEl.dataset.libAction === 'zoom') openLibraryLightbox(id);
+    else editFilterFromLibrary(id);
+    return;
+  }
+});
 
 // ─── LIGHTBOX ────────────────────────────────────────────────────────────────
 let lbRowId = null;
 
 function openLibraryLightbox(rowId) {
-  const row = library.find(function(r) { return r.id === rowId; });
+  const row = library.find(function(r) { return String(r.id) === String(rowId); });
   if (!row) return;
   lbRowId = rowId;
   const img = document.getElementById('lb-img');
