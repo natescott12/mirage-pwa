@@ -1522,6 +1522,10 @@ const SLOAN_FALLBACK = {
   hairTexture: "wavy",
   build: "curvy",
   makeupStyle: "minimal",
+  freckles: "across nose & cheeks",
+  ageRange: "early 30s",
+  distinguishingFeatures: "Faint scar through left eyebrow. Slightly crooked smile when amused.",
+  tattoosPiercings: "Small line tattoo on inside of right wrist. Single piercing each ear.",
   typicalSetting: "East LA apartment, concrete floors, white walls, overcast window light",
   signatureStyle: "black sweater, worn vintage pieces, grey tones, minimal, never overdressed"
 };
@@ -1551,6 +1555,10 @@ function mapSloanFallbackToPersonaData(f) {
     hair_texture: f.hairTexture,
     build: f.build,
     makeup: f.makeupStyle,
+    freckles: f.freckles,
+    age_range: f.ageRange,
+    distinguishing_features: f.distinguishingFeatures,
+    tattoos_piercings: f.tattoosPiercings,
     flux_notes: f.fluxNotes,
     sms_voice: f.howSheTexts,
     sms_opener: f.openingLine,
@@ -1594,6 +1602,12 @@ function restoreSloanFromFallback(iconId) {
   setF('f-hair-texture', p.hair_texture);
   setF('f-build', p.build);
   setF('f-makeup', p.makeup);
+  setF('f-freckles', p.freckles);
+  setF('f-age-range', p.age_range);
+  setF('f-signature-style', p.signature_style);
+  setF('f-distinguishing-features', p.distinguishing_features);
+  setF('f-tattoos-piercings', p.tattoos_piercings);
+  setF('f-typical-setting', p.typical_setting);
 
   // Trait chips — set selected state to the fallback traits (lowercase match).
   const traitsLower = p.traits.map(function(t){ return t.toLowerCase(); });
@@ -2352,6 +2366,12 @@ function loadPersonaForIcon(idx) {
       setF('f-hair-texture', sp.hair_texture);
       setF('f-build', sp.build);
       setF('f-makeup', sp.makeup);
+      setF('f-freckles', sp.freckles);
+      setF('f-age-range', sp.age_range);
+      setF('f-signature-style', sp.signature_style);
+      setF('f-distinguishing-features', sp.distinguishing_features);
+      setF('f-tattoos-piercings', sp.tattoos_piercings);
+      setF('f-typical-setting', sp.typical_setting);
 
       // Fallback: populate physical fields from character_data if persona_data fields empty
       var cd = r.data.character_data || {};
@@ -2364,6 +2384,9 @@ function loadPersonaForIcon(idx) {
       if (!sp.skin_texture && cd.skinTexture) setF('f-skin-texture', cd.skinTexture);
       if (!sp.build && cd.build) setF('f-build', cd.build);
       if (!sp.makeup && cd.makeup) setF('f-makeup', cd.makeup);
+      if (!sp.freckles && cd.freckles) setF('f-freckles', cd.freckles);
+      if (!sp.distinguishing_features && cd.features) setF('f-distinguishing-features', cd.features);
+      if (!sp.tattoos_piercings && cd.tattoos) setF('f-tattoos-piercings', cd.tattoos);
 
       // Traits chips
       if (sp.traits && sp.traits.length) {
@@ -2571,6 +2594,30 @@ function buildPersonaForm(p, icon) {
         </select>
       </div>
     </div>
+    <div class="field-row triple">
+      <div class="field"><label>Freckles</label>
+        <select id="f-freckles">
+          ${['','none','light','scattered','across nose & cheeks','heavy'].map(s =>
+            `<option${p.freckles===s?' selected':''}>${s}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Age Range</label>
+        <select id="f-age-range">
+          ${['','late teens','early 20s','mid 20s','late 20s','early 30s','mid 30s','late 30s','40s'].map(s =>
+            `<option${p.age_range===s?' selected':''}>${s}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Signature Style</label><input id="f-signature-style" value="${p.signature_style || ''}" placeholder="e.g. minimalist black, vintage 70s, soft girly"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Distinguishing Features</label><textarea id="f-distinguishing-features" placeholder="Birthmarks, scars, dimples, gap teeth, anything that makes her recognizable…">${p.distinguishing_features || ''}</textarea></div>
+      <div class="field"><label>Tattoos / Piercings</label><textarea id="f-tattoos-piercings" placeholder="Where, what, how visible. Leave blank if none.">${p.tattoos_piercings || ''}</textarea></div>
+    </div>
+    <div class="field-row single">
+      <div class="field"><label>Typical Setting</label><input id="f-typical-setting" value="${p.typical_setting || ''}" placeholder="e.g. dimly lit Brooklyn loft, sunny Topanga kitchen, hotel bathroom mirror"></div>
+    </div>
     <div class="field-row single">
       <div class="field"><label>Flux Prompt Notes</label><textarea id="f-flux-notes" placeholder="Any additional prompt language to maintain visual consistency across generations…">${p.flux_notes || ''}</textarea></div>
     </div>
@@ -2617,6 +2664,12 @@ function collectPersonaData() {
     build: document.getElementById('f-build')?.value || '',
     skin_texture: document.getElementById('f-skin-texture')?.value || '',
     makeup: document.getElementById('f-makeup')?.value || '',
+    freckles: document.getElementById('f-freckles')?.value || '',
+    age_range: document.getElementById('f-age-range')?.value || '',
+    signature_style: document.getElementById('f-signature-style')?.value || '',
+    distinguishing_features: document.getElementById('f-distinguishing-features')?.value || '',
+    tattoos_piercings: document.getElementById('f-tattoos-piercings')?.value || '',
+    typical_setting: document.getElementById('f-typical-setting')?.value || '',
     flux_notes: document.getElementById('f-flux-notes')?.value || '',
     sms_voice: document.getElementById('f-sms-voice')?.value || '',
     sms_opener: document.getElementById('f-sms-opener')?.value || '',
