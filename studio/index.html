@@ -253,6 +253,12 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     display: flex; gap: 24px; margin-top: 14px;
     border-top: 1px solid var(--border); padding-top: 14px;
   }
+  /* Converse tab strip sits at the top of its pane — drop the
+     border-top + pad that the icon-card variant needed. */
+  .conv-tab-row {
+    margin-top: 0; padding-top: 0;
+    border-top: none; margin-bottom: 24px;
+  }
   .nav-tab.ic-tab {
     padding: 4px 0; background: transparent; border: none;
     border-radius: 0;
@@ -3854,6 +3860,14 @@ function cloudTrainLora() {
 
 <div id="tab-converse" class="tab-content" style="display:none">
   <div class="conv-wrap">
+    <!-- Generate / Converse tab strip — duplicated at the top of the
+         Converse view so the user can always step back to Generate.
+         Shares the .nav-tab + .ic-tab classes so switchTab's active
+         sync and the underline treatment both apply. -->
+    <div class="ic-tab-row conv-tab-row">
+      <button type="button" class="nav-tab ic-tab" data-tab="generate" onclick="switchTab('generate')">Generate</button>
+      <button type="button" class="nav-tab ic-tab active" data-tab="converse" onclick="switchTab('converse')">Converse</button>
+    </div>
     <div class="conv-header">
       <div class="conv-title">Talk to the Studio</div>
       <div class="conv-sub">Describe a moment. Claude builds the brief. Flux generates it.</div>
