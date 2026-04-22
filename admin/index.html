@@ -1508,102 +1508,157 @@ button { color: inherit; }
     .cl-lightbox-nav.next { top: 50%; right: 24px; transform: translateY(-50%); }
 
     /* Edit mode */
+    /* Lightroom edit mode — token-driven two-pane layout. Left pane
+       is the stage (--bg), right pane is the controls rail
+       (--sidebar-bg with a --border hairline on the left). */
     .cl-edit-layout {
-      display: grid; grid-template-columns: 58% 42%; gap: 16px; align-items: stretch;
+      display: grid; grid-template-columns: 58% 42%; gap: 0; align-items: stretch;
       height: calc(100vh - 170px); min-height: 520px;
+      border: 1px solid var(--border); border-radius: 4px; overflow: hidden;
     }
     @media (max-width: 900px) { .cl-edit-layout { grid-template-columns: 1fr; height: auto; } }
     .cl-edit-left {
-      background: var(--surface); border: 1px solid var(--border);
+      background: var(--bg);
       display: flex; flex-direction: column; overflow: hidden;
     }
     .cl-edit-stage {
       flex: 1; display: flex; align-items: center; justify-content: center;
-      background: #0a0908; padding: 18px; min-height: 360px; overflow: hidden;
+      background: var(--bg); padding: 24px; min-height: 360px; overflow: hidden;
     }
     .cl-edit-stage img {
       max-width: 100%; max-height: 100%; display: block; object-fit: contain;
-      box-shadow: 0 0 0 1px rgba(255,255,255,0.04);
     }
     .cl-stage-bar {
       display: flex; align-items: center; gap: 24px;
-      padding: 12px 18px; border-top: 1px solid var(--border); background: var(--surface);
+      padding: 12px 20px; border-top: 1px solid var(--border);
+      background: var(--bg);
     }
-    .cl-origedit-toggle { display: flex; background: var(--bg); border: 1px solid var(--border); border-radius: 2px; overflow: hidden; }
+
+    /* Before / After toggle — two plain-text options, active underlined
+       in the accent. No button chrome. */
+    .cl-origedit-toggle {
+      display: inline-flex; gap: 20px;
+      background: transparent; border: none;
+    }
     .cl-origedit-toggle button {
-      padding: 6px 14px; background: transparent; border: none; color: var(--ink-mid);
-      font-family: var(--font); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
-      cursor: pointer; transition: background 0.12s, color 0.12s;
+      padding: 4px 0; background: transparent; border: none;
+      color: var(--ink-mid); font-family: var(--font);
+      font-size: var(--text-xs); letter-spacing: 0.08em; text-transform: uppercase;
+      cursor: pointer; position: relative;
+      transition: color 0.12s;
     }
-    .cl-origedit-toggle button.active { background: var(--ink); color: var(--bg); }
-    .cl-intensity-wrap { flex: 1; display: flex; align-items: center; gap: 10px; }
-    .cl-intensity-wrap label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); white-space: nowrap; }
-    .cl-intensity-wrap .cl-range-val { font-size: var(--text-xs); color: var(--ink-mid); min-width: 32px; text-align: right; font-variant-numeric: tabular-nums; }
+    .cl-origedit-toggle button:hover { color: var(--ink); }
+    .cl-origedit-toggle button.active { color: var(--ink); }
+    .cl-origedit-toggle button.active::after {
+      content: ""; position: absolute; left: 0; right: 0; bottom: -2px;
+      height: 2px; background: var(--accent);
+    }
+
+    .cl-intensity-wrap { flex: 1; display: flex; align-items: center; gap: 12px; }
+    .cl-intensity-wrap label {
+      font-size: var(--text-xs); letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--ink-dim); white-space: nowrap;
+    }
+    .cl-intensity-wrap .cl-range-val {
+      font-size: var(--text-xs); color: var(--ink-mid);
+      min-width: 36px; text-align: right; font-variant-numeric: tabular-nums;
+    }
 
     .cl-edit-right {
-      background: var(--surface); border: 1px solid var(--border);
+      background: var(--sidebar-bg);
+      border-left: 1px solid var(--border);
       display: flex; flex-direction: column; overflow: hidden;
     }
-    .cl-edit-scroll { flex: 1; overflow-y: auto; padding: 18px 20px 12px; }
-    .cl-section { margin-bottom: 22px; }
+    .cl-edit-scroll { flex: 1; overflow-y: auto; padding: 20px 22px 14px; }
+    .cl-section { margin-bottom: 24px; }
     .cl-section-title {
-      font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--ink-dim); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+      font-size: var(--text-xs); letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--ink-dim);
+      margin-bottom: 12px; padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      font-weight: var(--weight-regular);
     }
 
-    /* Filter strip */
-    .cl-filter-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: thin; }
+    /* Filter strip — square 4px thumbs on --surface, accent border
+       on the active one. No pill shapes. */
+    .cl-filter-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: thin; }
     .cl-filter-thumb {
-      flex: 0 0 auto; width: 72px; cursor: pointer; text-align: center;
+      flex: 0 0 auto; width: 76px; cursor: pointer; text-align: center;
     }
     .cl-filter-thumb-preview {
-      width: 72px; height: 90px;
-      border: 1px solid var(--border); border-radius: 2px; overflow: hidden;
-      background: #0a0908; transition: border-color 0.12s, box-shadow 0.12s;
+      width: 76px; height: 94px;
+      border: 1px solid var(--border); border-radius: 4px; overflow: hidden;
+      background: var(--surface);
+      transition: border-color 0.12s;
     }
     .cl-filter-thumb-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .cl-filter-thumb.active .cl-filter-thumb-preview {
-      border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink);
+      border-color: var(--accent);
     }
     .cl-filter-thumb-label {
-      margin-top: 6px; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--ink-mid);
+      margin-top: 8px; font-size: var(--text-xs);
+      letter-spacing: 0.04em;
+      color: var(--ink-dim);
     }
     .cl-filter-thumb.active .cl-filter-thumb-label { color: var(--ink); }
 
-    /* Sliders */
-    .cl-slider-row { display: grid; grid-template-columns: 96px 1fr 40px; gap: 10px; align-items: center; margin-bottom: 10px; }
-    .cl-slider-row label { font-size: var(--text-xs); color: var(--ink-mid); letter-spacing: 0.04em; }
+    /* Sliders — --border track, --accent fill (left of thumb), white
+       4px thumb. */
+    .cl-slider-row { display: grid; grid-template-columns: 96px 1fr 44px; gap: 12px; align-items: center; margin-bottom: 12px; }
+    .cl-slider-row label {
+      font-size: var(--text-sm); color: var(--ink-mid);
+      letter-spacing: 0;
+    }
     .cl-slider-row input[type=range] {
-      -webkit-appearance: none; appearance: none; width: 100%; height: 2px;
-      background: rgba(255,255,255,0.12); border-radius: 1px; outline: none;
+      -webkit-appearance: none; appearance: none; width: 100%; height: 4px;
+      background: var(--border); border-radius: 2px; outline: none; cursor: pointer;
+    }
+    .cl-slider-row input[type=range]::-webkit-slider-runnable-track {
+      height: 4px; background: var(--border); border-radius: 2px;
+    }
+    .cl-slider-row input[type=range]::-moz-range-track {
+      height: 4px; background: var(--border); border-radius: 2px;
+    }
+    .cl-slider-row input[type=range]::-moz-range-progress {
+      height: 4px; background: var(--accent); border-radius: 2px;
     }
     .cl-slider-row input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none; appearance: none; width: 12px; height: 12px;
-      border-radius: 50%; background: var(--ink); cursor: pointer;
+      -webkit-appearance: none; appearance: none;
+      width: 12px; height: 12px;
+      background: var(--ink); border: none; border-radius: 4px;
+      cursor: pointer; margin-top: -4px;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.25);
     }
     .cl-slider-row input[type=range]::-moz-range-thumb {
-      width: 12px; height: 12px; border-radius: 50%; background: var(--ink); cursor: pointer; border: none;
+      width: 12px; height: 12px; border-radius: 4px;
+      background: var(--ink); border: none; cursor: pointer;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.25);
     }
     .cl-slider-row .cl-slider-val {
-      font-size: 10px; color: var(--ink-dim); font-variant-numeric: tabular-nums; text-align: right;
+      font-size: var(--text-xs); color: var(--ink-dim);
+      font-variant-numeric: tabular-nums; text-align: right;
     }
 
-    /* Action bar */
+    /* Action bar — REVERT is ghost, SAVE is primary. */
     .cl-action-bar {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-      padding: 12px 16px; border-top: 1px solid var(--border); background: var(--bg);
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+      padding: 14px 20px; border-top: 1px solid var(--border);
+      background: var(--sidebar-bg);
     }
     .cl-action-btn {
-      padding: 10px 12px; font-family: var(--font);
-      font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
-      background: transparent; border: 1px solid rgba(255,255,255,0.22);
-      color: var(--ink); cursor: pointer; border-radius: 2px;
-      transition: background 0.12s, color 0.12s, border-color 0.12s;
+      padding: 9px 18px; font-family: var(--font);
+      font-size: var(--text-sm); font-weight: var(--weight-medium);
+      letter-spacing: 0.04em; text-transform: none;
+      background: transparent; border: 1px solid var(--border);
+      color: var(--ink-mid); cursor: pointer; border-radius: 4px;
+      transition: color 0.12s, border-color 0.12s, background 0.12s, opacity 0.15s;
+      display: inline-flex; align-items: center; justify-content: center;
     }
-    .cl-action-btn:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-    .cl-action-btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-    .cl-action-btn.primary:hover { background: transparent; color: var(--ink); }
+    .cl-action-btn:hover { color: var(--ink); border-color: rgba(255,255,255,0.25); }
+    .cl-action-btn.primary {
+      background: var(--ink); color: var(--bg); border-color: var(--ink);
+    }
+    .cl-action-btn.primary:hover { opacity: 0.85; background: var(--ink); color: var(--bg); border-color: var(--ink); }
     .cl-action-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
     .cl-edit-header {
@@ -1889,10 +1944,7 @@ button { color: inherit; }
               <div class="page-title">Content Library</div>
               <div class="page-sub" id="cl-browse-sub">All generated images</div>
             </div>
-            <div style="display:flex;gap:16px;align-items:center">
-              <span class="cl-cloud-indicator" id="cl-cloud-indicator" title="Images sourced from Supabase cloud storage">
-                <span class="cl-cloud-dot"></span>
-              </span>
+            <div style="display:flex;gap:8px;align-items:center">
               <button class="btn-ghost btn-sm" onclick="clReload()">Reload</button>
             </div>
           </div>
