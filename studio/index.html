@@ -270,9 +270,9 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   }
   .nav-tab.ic-tab:hover { color: var(--ink); background: transparent; border: none; }
   .nav-tab.ic-tab.active {
-    background: transparent; color: var(--ink); border: none;
+    background: transparent; color: var(--accent); border: none;
   }
-  .nav-tab.ic-tab.active:hover { opacity: 1; background: transparent; border: none; }
+  .nav-tab.ic-tab.active:hover { opacity: 1; background: transparent; border: none; color: var(--accent); }
 
   /* NOTIFICATION */
   #notification { position: fixed; top: 16px; right: 16px; z-index: 9999; padding: 11px 18px; border-radius: 2px; font-size: var(--text-xs); letter-spacing: 0.1em; display: none; animation: fadeIn 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
@@ -668,6 +668,10 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     cursor: pointer; transition: color 0.15s;
   }
   .conv-reset-link:hover { color: var(--ink); }
+
+  /* Generate-from-brief CTA — full-width primary button at the
+     bottom of the Converse brief section. */
+  .conv-generate-btn { width: 100%; justify-content: center; padding: 14px 18px; }
 
   /* Converse chat bubbles — assistant on --surface with --border;
      user on accent-tinted rgba(119,204,110,0.12) + accent border. */
@@ -3933,10 +3937,7 @@ function cloudTrainLora() {
     </div>
 
     <div id="conv-generate-wrap" style="display:none">
-      <div style="display:flex;gap:8px;margin-bottom:8px">
-        <button onclick="convSendToStudio()" id="conv-send-btn" style="flex:1;padding:14px;background:var(--text);color:var(--bg);border:none;font-size: var(--text-xs);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px">→ Send to Studio</button>
-        <button onclick="convSaveBrief()" style="padding:14px 18px;background:var(--bg2);border:1px solid var(--border-md);font-size: var(--text-xs);color:var(--muted);cursor:pointer;border-radius:2px;letter-spacing:.06em" title="Save brief for this icon">Save Brief</button>
-      </div>
+      <button type="button" onclick="convSendToStudio()" id="conv-send-btn" class="btn-primary conv-generate-btn">Generate from Brief</button>
     </div>
   </div>
 </div>
@@ -4125,7 +4126,17 @@ function cloudTrainLora() {
       c.innerHTML='<div class="conv-empty">Describe a moment, attach reference images, and we will build a brief together.</div>';
       return;
     }
-    c.innerHTML=convMessages.map(function(m){
+    // Dedupe consecutive messages from the same role with identical text —
+    // covers replays from localStorage + Supabase both restoring the same
+    // trailing message on reload.
+    var seen=[];
+    var deduped=convMessages.filter(function(m){
+      var key=(m&&m.role||'')+'|'+msgText(m).trim();
+      if(seen.length && seen[seen.length-1]===key) return false;
+      seen.push(key);
+      return true;
+    });
+    c.innerHTML=deduped.map(function(m){
       var imgs=Array.isArray(m.content)?m.content.filter(function(b){return b&&b.type==='image';}):[];
       var text=msgText(m).replace(/<brief>[\s\S]*?<\/brief>/g,'').trim();
       if(!text&&!imgs.length)return '';
