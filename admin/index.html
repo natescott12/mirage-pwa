@@ -387,6 +387,98 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 }
 #pane-dashboard tbody tr:last-child td { border-bottom: none; }
 #pane-dashboard tbody tr:hover td { background: rgba(255,255,255,0.03); }
+
+/* Icons pane — roster view. Card renders avatar + name + archetype +
+   traffic-light status dot + persona completion bar + content count.
+   Clicking the card jumps to the Persona Builder for that icon. */
+#pane-icons .page-sub { margin-bottom: 6px; }
+#pane-icons .icon-summary-line {
+  font-size: 11px; color: rgba(255,255,255,0.5);
+  letter-spacing: 0.01em;
+}
+#pane-icons .icon-summary-dot {
+  display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  vertical-align: baseline; margin: 0 5px 0 12px; transform: translateY(-1px);
+}
+#pane-icons .icon-summary-dot.first { margin-left: 0; }
+#pane-icons .icon-summary-dot.active { background: #78cc6e; }
+#pane-icons .icon-summary-dot.in-progress { background: #f0c040; }
+#pane-icons .icon-summary-dot.inactive { background: #e05555; }
+
+#pane-icons .icon-filter-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px; margin-bottom: 20px;
+}
+#pane-icons #icon-search {
+  flex: 1; max-width: 320px;
+  padding: 8px 12px; background: transparent;
+  border: 1px solid #333333; border-radius: 4px;
+  font-family: 'Afacad', sans-serif; font-size: 13px;
+  color: var(--ink); outline: none; transition: border-color 0.15s;
+}
+#pane-icons #icon-search:focus { border-color: rgba(255,255,255,0.3); }
+#pane-icons .icon-filter-tabs { display: flex; gap: 20px; }
+#pane-icons .icon-filter-tab {
+  background: transparent; border: none; padding: 0;
+  font-family: 'Afacad', sans-serif; font-size: 12px;
+  color: rgba(255,255,255,0.4); letter-spacing: 0.01em;
+  cursor: pointer; transition: color 0.12s;
+}
+#pane-icons .icon-filter-tab:hover { color: rgba(255,255,255,0.75); }
+#pane-icons .icon-filter-tab.active { color: var(--ink); }
+
+#pane-icons #icon-grid { display: flex; flex-direction: column; gap: 8px; }
+#pane-icons .icons-pane-card {
+  display: flex; align-items: center; gap: 16px;
+  padding: 20px; background: #1f1f1f;
+  border: 1px solid #333333; border-radius: 4px;
+  cursor: pointer; transition: border-color 0.12s;
+}
+#pane-icons .icons-pane-card:hover { border-color: rgba(255,255,255,0.25); }
+#pane-icons .icons-pane-card .ipc-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  flex-shrink: 0;
+}
+#pane-icons .icons-pane-card .ipc-dot.active { background: #78cc6e; }
+#pane-icons .icons-pane-card .ipc-dot.in-progress { background: #f0c040; }
+#pane-icons .icons-pane-card .ipc-dot.inactive { background: #e05555; }
+#pane-icons .icons-pane-card .ipc-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Afacad', sans-serif; font-weight: 500; font-size: 15px;
+  background: #292929; color: #fff; flex-shrink: 0;
+}
+#pane-icons .icons-pane-card .ipc-info {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;
+}
+#pane-icons .icons-pane-card .ipc-name {
+  font-size: 14px; font-weight: 500; color: var(--ink);
+  letter-spacing: 0;
+}
+#pane-icons .icons-pane-card .ipc-archetype {
+  font-size: 11px; color: rgba(255,255,255,0.45);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+#pane-icons .icons-pane-card .ipc-progress {
+  width: 160px; flex-shrink: 0;
+  display: flex; flex-direction: column; gap: 5px;
+}
+#pane-icons .icons-pane-card .ipc-progress-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 10px; color: rgba(255,255,255,0.4);
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+#pane-icons .icons-pane-card .ipc-progress-track {
+  height: 3px; background: #333333; border-radius: 2px; overflow: hidden;
+}
+#pane-icons .icons-pane-card .ipc-progress-fill {
+  height: 100%; background: #78cc6e; transition: width 0.3s;
+}
+#pane-icons .icons-pane-card .ipc-content-count {
+  font-size: 11px; color: rgba(255,255,255,0.5);
+  letter-spacing: 0.01em; flex-shrink: 0;
+  min-width: 72px; text-align: right; font-variant-numeric: tabular-nums;
+}
 .stat-value { color: var(--ink) !important; font-family: 'Afacad', sans-serif !important; }
 .stat-label { color: var(--ink-dim) !important; }
 .priority-item { border-color: var(--border) !important; background: transparent !important; }
@@ -1206,25 +1298,26 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
         </div>
       </div>
 
-      <!-- ICONS LIST -->
+      <!-- ICONS LIST — roster at a glance, read-only. Edits happen
+           in the Persona Builder. -->
       <div class="pane" id="pane-icons">
         <div class="page-header">
           <div>
             <div class="page-title">Icons</div>
-            <div class="page-sub">All 100 character archetypes</div>
+            <div class="page-sub">100 character archetypes</div>
+            <div class="icon-summary-line" id="icon-summary-line"></div>
           </div>
-          <button style="background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:4px;font-family:Afacad,sans-serif;font-size:13px;font-weight:500;cursor:pointer;letter-spacing:0.05em;" onclick="showPane('personas')">+ Build Persona</button>
         </div>
-        <div class="filter-bar">
-          <input type="text" placeholder="Search icons…" id="icon-search" oninput="filterIcons()">
-          <select class="filter-select" id="icon-filter-status" onchange="filterIcons()">
-            <option value="">All Status</option>
-            <option value="complete">Complete</option>
-            <option value="partial">In Progress</option>
-            <option value="empty">Empty</option>
-          </select>
+        <div class="icon-filter-row">
+          <input type="text" placeholder="Search icons…" id="icon-search" oninput="renderIconsPane()">
+          <div class="icon-filter-tabs" role="tablist">
+            <button class="icon-filter-tab active" data-filter="" onclick="setIconFilter('')">All</button>
+            <button class="icon-filter-tab" data-filter="active" onclick="setIconFilter('active')">Active</button>
+            <button class="icon-filter-tab" data-filter="in-progress" onclick="setIconFilter('in-progress')">In Progress</button>
+            <button class="icon-filter-tab" data-filter="inactive" onclick="setIconFilter('inactive')">Inactive</button>
+          </div>
         </div>
-        <div class="icon-grid" id="icon-grid">
+        <div id="icon-grid">
           <div class="empty-state"><div class="empty-state-text">Loading icons…</div></div>
         </div>
       </div>
@@ -2333,27 +2426,111 @@ function _personaListFilterSorted(icons, filterStatus) {
 }
 
 function renderIconGrid(icons) {
-  // Icons pane
-  const iconFilter = document.getElementById('icon-filter-status')?.value || '';
-  renderIconCardsInto(_personaListFilterSorted(icons, iconFilter), 'icon-grid');
-  // Persona Builder list view — mirror the same icons so the two surfaces
-  // stay in sync on initial load. filterPersonaList() will re-render with
-  // the persona list's own search/filter when the user interacts.
+  // Icons pane uses the roster-at-a-glance renderer now. Persona Builder
+  // list view keeps the compact-card treatment from renderIconCardsInto.
+  renderIconsPane();
   const personaFilter = document.getElementById('persona-list-filter')?.value || '';
   renderIconCardsInto(_personaListFilterSorted(icons, personaFilter), 'persona-list-grid');
 }
 
-function filterIcons() {
-  const q = document.getElementById('icon-search').value.toLowerCase();
-  const s = document.getElementById('icon-filter-status').value;
-  const filtered = allIcons.filter(icon => {
-    const matchQ = !q || icon.name.toLowerCase().includes(q) || (icon.archetype||'').toLowerCase().includes(q);
-    const pct = getPersonaCompletion(icon);
-    const status = getStatusFromCompletion(pct);
-    const matchS = !s || status === s;
+// ── Icons pane ── roster renderer
+// Status taxonomy (different from the Dashboard's completion-based model):
+//   active      → icon.status is 'live' or 'active'
+//   in-progress → not active but persona completion > 20%
+//   inactive    → everything else (status 'inactive' or no persona data)
+// The user-facing filter tabs read from this taxonomy. Content counts
+// are pulled from the Supabase `content` table via loadIconContentCounts.
+let iconContentCounts = {};
+let currentIconPaneFilter = '';
+
+function iconPaneStatus(icon) {
+  const s = (icon && icon.status) || '';
+  if (s === 'live' || s === 'active') return 'active';
+  const pct = getPersonaCompletion(icon);
+  if (pct > 20) return 'in-progress';
+  return 'inactive';
+}
+
+function renderIconsSummary() {
+  const el = document.getElementById('icon-summary-line');
+  if (!el) return;
+  const counts = { active: 0, 'in-progress': 0, inactive: 0 };
+  (allIcons || []).forEach(function(i) { counts[iconPaneStatus(i)]++; });
+  el.innerHTML =
+    '<span class="icon-summary-dot active first"></span>' + counts.active + ' active ·' +
+    '<span class="icon-summary-dot in-progress"></span>' + counts['in-progress'] + ' in progress ·' +
+    '<span class="icon-summary-dot inactive"></span>' + counts.inactive + ' inactive';
+}
+
+function setIconFilter(filter) {
+  currentIconPaneFilter = filter || '';
+  document.querySelectorAll('#pane-icons .icon-filter-tab').forEach(function(tab) {
+    tab.classList.toggle('active', (tab.getAttribute('data-filter') || '') === currentIconPaneFilter);
+  });
+  renderIconsPane();
+}
+
+function renderIconsPane() {
+  const grid = document.getElementById('icon-grid');
+  if (!grid) return;
+  renderIconsSummary();
+  const q = (document.getElementById('icon-search')?.value || '').toLowerCase();
+  const filter = currentIconPaneFilter;
+  const sorted = [...(allIcons || [])].sort(function(a, b) {
+    return (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase());
+  });
+  const list = sorted.filter(function(icon) {
+    const matchQ = !q || (icon.name || '').toLowerCase().includes(q) || (icon.archetype || '').toLowerCase().includes(q);
+    const matchS = !filter || iconPaneStatus(icon) === filter;
     return matchQ && matchS;
   });
-  renderIconCardsInto(_personaListFilterSorted(filtered, s), 'icon-grid');
+  if (!list.length) {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-state-text">No icons found.</div></div>';
+    return;
+  }
+  grid.innerHTML = list.map(function(icon) {
+    const pct = getPersonaCompletion(icon);
+    const status = iconPaneStatus(icon);
+    const initial = ((icon.name || '?')[0] || '?').toUpperCase();
+    const count = iconContentCounts[icon.id] || 0;
+    const safeId = String(icon.id).replace(/\x27/g, "\\x27");
+    return '<div class="icons-pane-card" onclick="openPersona(\'' + safeId + '\')">' +
+      '<span class="ipc-dot ' + status + '" title="' + status + '"></span>' +
+      '<div class="ipc-avatar">' + initial + '</div>' +
+      '<div class="ipc-info">' +
+        '<div class="ipc-name">' + (icon.name || '') + '</div>' +
+        '<div class="ipc-archetype">' + (icon.archetype || '') + '</div>' +
+      '</div>' +
+      '<div class="ipc-progress">' +
+        '<div class="ipc-progress-row"><span>Persona</span><span>' + pct + '%</span></div>' +
+        '<div class="ipc-progress-track"><div class="ipc-progress-fill" style="width:' + pct + '%"></div></div>' +
+      '</div>' +
+      '<div class="ipc-content-count">' + count + ' ' + (count === 1 ? 'image' : 'images') + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function loadIconContentCounts() {
+  if (typeof sb === 'undefined' || !sb) return;
+  try {
+    const { data } = await sb.from('content').select('icon_id').limit(2000);
+    const counts = {};
+    (data || []).forEach(function(r) {
+      if (!r.icon_id) return;
+      counts[r.icon_id] = (counts[r.icon_id] || 0) + 1;
+    });
+    iconContentCounts = counts;
+    if (document.getElementById('pane-icons')?.classList.contains('active')) {
+      renderIconsPane();
+    }
+  } catch (_) {}
+}
+
+// Global filterIcons() is still referenced by legacy callers; route all
+// paths through the new renderer so nothing rebuilds against a stale
+// filter-select element that no longer exists in the DOM.
+function filterIcons() {
+  renderIconsPane();
 }
 
 // Persona Builder list-view search/filter. Same semantics as filterIcons
@@ -5714,6 +5891,15 @@ function clRevert() {
   window.showPane = function(name) {
     const out = origShowPane.apply(this, arguments);
     if (name === 'content' && !clItems.length) clLoadBrowse();
+    // Icons pane — (re)render the roster every time it becomes visible and
+    // kick off a per-icon content count fetch on first visit so the card
+    // image-count reflects Supabase reality.
+    if (name === 'icons') {
+      if (typeof renderIconsPane === 'function') renderIconsPane();
+      if (typeof loadIconContentCounts === 'function' && !Object.keys(iconContentCounts || {}).length) {
+        loadIconContentCounts();
+      }
+    }
     return out;
   };
 })();
