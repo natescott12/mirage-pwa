@@ -2456,6 +2456,18 @@ function showPane(id) {
     } catch (_) {}
   }
 
+  // Keep the URL hash in sync with the active pane. replaceState (not a
+  // plain hash assignment) avoids stacking history entries and avoids
+  // firing hashchange → applyPaneHash → showPane in a round-trip loop.
+  // Only touches the URL if the desired hash isn't already set, so
+  // deep-linked loads don't rewrite themselves.
+  try {
+    const desired = '#' + id;
+    if (window.location.hash !== desired) {
+      history.replaceState(null, '', desired);
+    }
+  } catch (_) {}
+
   // Stop Andie polling whenever we leave her pane. The id === 'andie'
   // branch below restarts it if that's where we're heading.
   if (id !== 'andie' && typeof andieStopPolling === 'function') andieStopPolling();
