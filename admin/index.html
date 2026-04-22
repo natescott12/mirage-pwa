@@ -189,30 +189,33 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 .save-status.saving { color: var(--ink-mid); }
 .save-status.error { color: #b03025; }
 
-/* Persona Builder sticky save bar — viewport-fixed, full width, dark
-   surface, wide button with Studio-style inverted hover. */
+/* Persona Builder sticky save bar — slim, spans only the main content
+   column (sidebar clear), transparent except for a hairline top border. */
 .persona-save-bar {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
-  background: var(--surface);
+  position: fixed; left: var(--sidebar); right: 0; bottom: 0; z-index: 50;
+  height: 56px;
+  padding: 0 32px;
+  background: var(--bg);
   border-top: 1px solid var(--border);
-  padding: 14px 32px;
-  display: flex; justify-content: center;
+  display: flex; align-items: center; justify-content: flex-end;
 }
 .persona-save-bar .persona-save-wide {
-  width: 100%; max-width: 520px;
-  padding: 13px 24px;
+  padding: 8px 22px;
   background: transparent;
-  border: 1px solid rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.22);
   color: var(--ink);
   font-family: 'Afacad', sans-serif;
-  font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+  font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
   cursor: pointer; border-radius: 2px;
-  transition: all 0.15s;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 .persona-save-bar .persona-save-wide:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .persona-save-bar .persona-save-wide:disabled { opacity: 0.3; cursor: not-allowed; }
 /* Leave room above the fixed bar so the last field isn't hidden. */
-#persona-form-view { padding-bottom: 84px; }
+#persona-form-view { padding-bottom: 72px; }
+@media (max-width: 768px) {
+  .persona-save-bar { left: 0; padding: 0 14px; }
+}
 
 /* ── STATS ── */
 .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
