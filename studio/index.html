@@ -615,7 +615,7 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
         </div>
         <div class="voice-preview-body">
           <div class="voice-msgs" id="voice-msgs">
-            <div class="voice-msg-icon" id="voice-welcome">Select an icon and fill out the Persona tab to test her voice...</div>
+            <div class="voice-msg-icon" id="voice-welcome">Loading persona…</div>
           </div>
           <div class="voice-input-row">
             <input class="voice-input" id="voice-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendVoiceMessage()" />
@@ -1365,6 +1365,7 @@ function loadPersonaIntoStudio(iconId) {
     if (typeof syncIconProfileInputs === 'function') syncIconProfileInputs();
     if (typeof loadPersonaForIcon === 'function') loadPersonaForIcon();
     if (typeof refreshPrompt === 'function') refreshPrompt();
+    if (typeof resetVoicePreview === 'function') resetVoicePreview();
     console.log('loadPersonaIntoStudio: loaded', iconName);
   }
 
@@ -1728,10 +1729,33 @@ function toggleVoicePreview() {
   if(ch) ch.textContent = el.classList.contains('collapsed') ? '▼ Test in-character SMS' : '▲ Collapse';
 }
 
+// Persona is considered "configured" if there's a Voice / Character
+// Description (admin: persona_data.voice → currentPersona.smsDesc) or at
+// least one signature phrase. Content pillars alone aren't enough to
+// roleplay a voice.
+function hasVoicePersona() {
+  const p = currentPersona || {};
+  if (p.smsDesc && String(p.smsDesc).trim()) return true;
+  if (p.phrase1 || p.phrase2 || p.phrase3) return true;
+  return false;
+}
+
 function resetVoicePreview() {
   voiceMessages = [];
-  const el=$('voice-msgs'); if(!el) return;
-  el.innerHTML = `<div class="voice-msg-icon" id="voice-welcome">${selectedIcon.name} is ready. Type a message to test her voice...</div>`;
+  const el = $('voice-msgs');
+  const inp = $('voice-input');
+  const btn = $('voice-send-btn');
+  if (!el) return;
+  const iconName = (selectedIcon && selectedIcon.name) || 'this icon';
+  if (hasVoicePersona()) {
+    el.innerHTML = '<div class="voice-msg-icon" id="voice-welcome">' + iconName + ' is ready. Type a message to test her voice…</div>';
+    if (inp) { inp.disabled = false; inp.placeholder = 'Type a message…'; }
+    if (btn) btn.disabled = false;
+  } else {
+    el.innerHTML = '<div class="voice-msg-icon" id="voice-welcome" style="opacity:0.6">No persona configured — set up in <strong>Persona Builder</strong>.</div>';
+    if (inp) { inp.disabled = true; inp.placeholder = 'Configure persona first…'; inp.value = ''; }
+    if (btn) btn.disabled = true;
+  }
 }
 
 async function sendVoiceMessage() {
@@ -1754,6 +1778,15 @@ async function sendVoiceMessage() {
 
   if(btn) btn.disabled=true;
 
+  if (!hasVoicePersona()) {
+    // Defensive: the input should already be disabled in this state.
+    const t = $('voice-thinking'); if (t) t.remove();
+    voiceMessages.pop();
+    renderVoiceMsgs();
+    if (btn) btn.disabled = false;
+    return;
+  }
+
   try {
     const systemPrompt = buildSystemPrompt();
     const response = await fetch(PROXY + '/claude/chat', {
@@ -1761,7 +1794,9 @@ async function sendVoiceMessage() {
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         system: systemPrompt,
-        messages: voiceMessages.map(m=>({role:m.role, content:m.content}))
+        messages: voiceMessages.map(m=>({role:m.role, content:m.content})),
+        channel: 'voice-preview',
+        icon: (selectedIcon && selectedIcon.name) || ''
       })
     });
     const data = await response.json();
