@@ -6241,12 +6241,13 @@ function clRenderGrid() {
     const iconName = it._iconName || '—';
     const safeId = String(it.id).replace(/'/g, "\\'");
     const checked = clSelected.has(String(it.id)) ? ' checked' : '';
+    const imgSrc = proxifyImageUrl(it.image_url || '');
     return (
       '<div class="cl-card" onclick="clOpenLightbox(\'' + safeId + '\')">' +
         '<input type="checkbox" class="cl-card-select" data-id="' + safeId + '"' + checked +
           ' onclick="event.stopPropagation();clToggleSelect(\'' + safeId + '\', this.checked)" aria-label="Select image">' +
         '<div class="cl-card-img-wrap">' +
-          '<img src="' + (it.image_url || '') + '" alt="' + iconName + '" loading="lazy" onerror="this.parentNode.style.opacity=0.3">' +
+          '<img src="' + imgSrc + '" alt="' + iconName + '" loading="lazy" crossorigin="anonymous" onerror="this.parentNode.style.opacity=0.3">' +
           '<button class="cl-card-edit-btn" onclick="event.stopPropagation();clOpenEdit(\'' + safeId + '\')">Edit</button>' +
         '</div>' +
         '<div class="cl-card-meta">' +
@@ -6301,7 +6302,7 @@ function clRenderLightbox() {
   const icon = document.getElementById('cl-lightbox-icon');
   const date = document.getElementById('cl-lightbox-date');
   const scene = document.getElementById('cl-lightbox-scene');
-  if (img) { img.src = it.image_url || ''; img.alt = it._iconName || ''; }
+  if (img) { img.src = proxifyImageUrl(it.image_url || ''); img.alt = it._iconName || ''; }
   if (icon) icon.textContent = it._iconName || '—';
   if (date) date.textContent = (it.created_at || '').slice(0, 10);
   if (scene) scene.textContent = it.scene || '';
@@ -6380,7 +6381,7 @@ async function clOpenEdit(id) {
   const img = document.getElementById('cl-stage-img');
   if (img) {
     img.crossOrigin = 'anonymous';
-    img.src = item.image_url || '';
+    img.src = proxifyImageUrl(item.image_url || '');
   }
   await clFetchPresetsOnce();
   clSeedPresetFilters();
@@ -6406,7 +6407,7 @@ function clSetCompare(which) {
 function clRenderFilterStrip() {
   const strip = document.getElementById('cl-filter-strip');
   if (!strip || !clCurrent) return;
-  const thumbSrc = clCurrent.image_url || '';
+  const thumbSrc = proxifyImageUrl(clCurrent.image_url || '');
   clSeedPresetFilters();
   strip.innerHTML = clPresets.map(function(p) {
     const filterRef = p.slug === 'none' ? 'none' : 'url(#cl-preset-' + p.slug + ')';
@@ -6485,7 +6486,7 @@ function clApplyFilters() {
 // works cross-browser (unlike ctx.filter = 'url(#...)', which is Chromium-only).
 async function clBakeToBlob() {
   if (!clCurrent || !clCurrent.image_url) throw new Error('No image loaded');
-  const resp = await fetch(clCurrent.image_url, { mode: 'cors' });
+  const resp = await fetch(proxifyImageUrl(clCurrent.image_url), { mode: 'cors' });
   if (!resp.ok) throw new Error('Fetch source failed (' + resp.status + ')');
   const srcBlob = await resp.blob();
   const srcDataUrl = await new Promise(function(resolve, reject){
