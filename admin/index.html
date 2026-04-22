@@ -1598,38 +1598,56 @@ button { color: inherit; }
     }
     .cl-filter-thumb.active .cl-filter-thumb-label { color: var(--accent); }
 
-    /* Sliders — --border track, --accent fill, white 10px round thumb.
-       accent-color handles track fill on Chrome/Safari/Edge/Firefox;
-       the explicit thumb rules keep the cap white regardless of
-       browser theme. */
+    /* Sliders — #333 track with an --accent fill left of the thumb,
+       --accent round thumb. WebKit has no ::slider-progress pseudo-
+       element, so we paint the fill with a linear-gradient driven by
+       a --fill-pct CSS variable that clLiveFill() updates on input.
+       Firefox uses its native ::-moz-range-progress. accent-color
+       stays as a belt-and-braces fallback. */
     .cl-slider-row { display: grid; grid-template-columns: 96px 1fr 44px; gap: 12px; align-items: center; margin-bottom: 12px; }
     .cl-slider-row label {
       font-size: var(--text-xs); color: var(--ink-mid);
       letter-spacing: 0;
     }
-    .cl-slider-row input[type=range] {
+    .cl-slider-row input[type=range],
+    .cl-intensity-wrap input[type=range] {
       -webkit-appearance: none; appearance: none; width: 100%; height: 4px;
-      background: var(--border); border-radius: 2px; outline: none; cursor: pointer;
+      border-radius: 2px; outline: none; cursor: pointer;
       accent-color: var(--accent);
+      background: linear-gradient(
+        to right,
+        var(--accent) 0%,
+        var(--accent) var(--fill-pct, 50%),
+        var(--border) var(--fill-pct, 50%),
+        var(--border) 100%
+      );
     }
-    .cl-slider-row input[type=range]::-webkit-slider-runnable-track {
+    .cl-slider-row input[type=range]::-webkit-slider-runnable-track,
+    .cl-intensity-wrap input[type=range]::-webkit-slider-runnable-track {
+      height: 4px; border-radius: 2px;
+      background: transparent; /* gradient already on the input itself */
+    }
+    .cl-slider-row input[type=range]::-moz-range-track,
+    .cl-intensity-wrap input[type=range]::-moz-range-track {
       height: 4px; background: var(--border); border-radius: 2px;
     }
-    .cl-slider-row input[type=range]::-moz-range-track {
-      height: 4px; background: var(--border); border-radius: 2px;
-    }
-    .cl-slider-row input[type=range]::-moz-range-progress {
+    .cl-slider-row input[type=range]::-moz-range-progress,
+    .cl-intensity-wrap input[type=range]::-moz-range-progress {
       height: 4px; background: var(--accent); border-radius: 2px;
     }
-    .cl-slider-row input[type=range]::-webkit-slider-thumb {
+    .cl-slider-row input[type=range]::-webkit-slider-thumb,
+    .cl-intensity-wrap input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none; appearance: none;
-      width: 10px; height: 10px;
-      background: var(--ink); border: none; border-radius: 50%;
-      cursor: pointer; margin-top: -3px;
+      width: 12px; height: 12px;
+      background: var(--accent); border: none; border-radius: 50%;
+      cursor: pointer; margin-top: -4px;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.25);
     }
-    .cl-slider-row input[type=range]::-moz-range-thumb {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: var(--ink); border: none; cursor: pointer;
+    .cl-slider-row input[type=range]::-moz-range-thumb,
+    .cl-intensity-wrap input[type=range]::-moz-range-thumb {
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--accent); border: none; cursor: pointer;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.25);
     }
     .cl-slider-row .cl-slider-val {
       font-size: var(--text-xs); color: var(--ink-dim);
@@ -1657,17 +1675,14 @@ button { color: inherit; }
     }
     .cl-origedit-toggle button {
       padding: 4px 0; background: transparent; border: none;
-      color: var(--ink-dim); font-family: var(--font);
+      color: rgba(255,255,255,0.4); font-family: var(--font);
       font-size: var(--text-xs); letter-spacing: 0.08em; text-transform: uppercase;
-      cursor: pointer; position: relative;
+      cursor: pointer;
       transition: color 0.12s;
     }
     .cl-origedit-toggle button:hover { color: var(--ink); }
-    .cl-origedit-toggle button.active { color: var(--ink); }
-    .cl-origedit-toggle button.active::after {
-      content: ""; position: absolute; left: 0; right: 0; bottom: -2px;
-      height: 2px; background: var(--accent);
-    }
+    .cl-origedit-toggle button.active { color: var(--accent); }
+    .cl-origedit-toggle button.active:hover { color: var(--accent); }
 
     .cl-intensity-wrap {
       flex: 1; display: flex; align-items: center; gap: 12px; min-width: 0;
@@ -1676,30 +1691,7 @@ button { color: inherit; }
       font-size: var(--text-xs); letter-spacing: 0.08em; text-transform: uppercase;
       color: var(--ink-dim); white-space: nowrap;
     }
-    .cl-intensity-wrap input[type=range] {
-      -webkit-appearance: none; appearance: none; flex: 1; height: 4px;
-      background: var(--border); border-radius: 2px; outline: none; cursor: pointer;
-      accent-color: var(--accent);
-    }
-    .cl-intensity-wrap input[type=range]::-webkit-slider-runnable-track {
-      height: 4px; background: var(--border); border-radius: 2px;
-    }
-    .cl-intensity-wrap input[type=range]::-moz-range-track {
-      height: 4px; background: var(--border); border-radius: 2px;
-    }
-    .cl-intensity-wrap input[type=range]::-moz-range-progress {
-      height: 4px; background: var(--accent); border-radius: 2px;
-    }
-    .cl-intensity-wrap input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none; appearance: none;
-      width: 10px; height: 10px;
-      background: var(--ink); border: none; border-radius: 50%;
-      cursor: pointer; margin-top: -3px;
-    }
-    .cl-intensity-wrap input[type=range]::-moz-range-thumb {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: var(--ink); border: none; cursor: pointer;
-    }
+    .cl-intensity-wrap input[type=range] { flex: 1; }
     .cl-intensity-wrap .cl-range-val {
       font-size: var(--text-xs); color: var(--ink-dim);
       min-width: 36px; text-align: right; font-variant-numeric: tabular-nums;
@@ -6524,6 +6516,7 @@ function clRenderAdjustments() {
       '</div>'
     );
   }).join('');
+  clSyncAllSliderFills();
 }
 function clRenderColorGrading() {
   const host = document.getElementById('cl-color-grading');
@@ -6538,17 +6531,40 @@ function clRenderColorGrading() {
       '</div>'
     );
   }).join('');
+  clSyncAllSliderFills();
 }
+/* Paint the --accent fill left of the thumb on a range input by
+   writing a --fill-pct CSS variable the gradient in the stylesheet
+   reads. Centered sliders (min < 0 < max) use 50% as the neutral
+   anchor and fill outward from centre; one-sided sliders (0..max)
+   fill from the left edge. */
+function clSyncSliderFill(el) {
+  if (!el) return;
+  const min = parseFloat(el.min);
+  const max = parseFloat(el.max);
+  const val = parseFloat(el.value);
+  if (!isFinite(min) || !isFinite(max) || max === min) return;
+  const pct = ((val - min) / (max - min)) * 100;
+  el.style.setProperty('--fill-pct', pct + '%');
+}
+function clSyncAllSliderFills() {
+  document.querySelectorAll('.cl-slider-row input[type=range], .cl-intensity-wrap input[type=range]')
+    .forEach(clSyncSliderFill);
+}
+
 function clOnSlider(key, val) {
   clAdjust[key] = parseFloat(val) || 0;
   const v = document.getElementById('cl-adj-val-' + key);
   if (v) v.textContent = clAdjust[key];
+  const slider = document.getElementById('cl-adj-' + key);
+  clSyncSliderFill(slider);
   clApplyFilters();
 }
 function clApplyFilters() {
   const img = document.getElementById('cl-stage-img');
   const intensityEl = document.getElementById('cl-intensity');
   const intensityVal = document.getElementById('cl-intensity-val');
+  if (intensityEl) clSyncSliderFill(intensityEl);
   if (!img) return;
   const pct = intensityEl ? parseFloat(intensityEl.value) : 100;
   if (intensityVal) intensityVal.textContent = Math.round(pct) + '%';
