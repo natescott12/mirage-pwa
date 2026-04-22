@@ -189,6 +189,31 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 .save-status.saving { color: var(--ink-mid); }
 .save-status.error { color: #b03025; }
 
+/* Persona Builder sticky save bar — viewport-fixed, full width, dark
+   surface, wide button with Studio-style inverted hover. */
+.persona-save-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 14px 32px;
+  display: flex; justify-content: center;
+}
+.persona-save-bar .persona-save-wide {
+  width: 100%; max-width: 520px;
+  padding: 13px 24px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.18);
+  color: var(--ink);
+  font-family: 'Afacad', sans-serif;
+  font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+  cursor: pointer; border-radius: 2px;
+  transition: all 0.15s;
+}
+.persona-save-bar .persona-save-wide:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.persona-save-bar .persona-save-wide:disabled { opacity: 0.3; cursor: not-allowed; }
+/* Leave room above the fixed bar so the last field isn't hidden. */
+#persona-form-view { padding-bottom: 84px; }
+
 /* ── STATS ── */
 .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
 .stat-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; }
@@ -950,7 +975,7 @@ tbody tr:hover td { background: var(--bg); }
             </div>
             <div style="display:flex;gap:12px;align-items:flex-start">
               <div id="persona-progress-label" style="font-size:12px;color:var(--ink-dim);padding-top:9px"></div>
-              <button id="save-btn" onclick="savePersona()" style="padding:9px 18px;background:var(--accent);color:#fff;border:none;font-family:'Afacad',sans-serif;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer">Save</button>
+              <a href="/studio" class="btn btn-outline btn-sm" style="font-size:11px;text-decoration:none">Icon Studio →</a>
             </div>
           </div>
 
@@ -973,6 +998,11 @@ tbody tr:hover td { background: var(--bg); }
               <div class="empty-state-icon">◎</div>
               <div class="empty-state-text">Loading persona…</div>
             </div>
+          </div>
+
+          <!-- Sticky save bar — full-width, fixed to viewport bottom. -->
+          <div class="persona-save-bar">
+            <button id="save-btn" class="persona-save-wide" onclick="savePersona()">Save Character Profile</button>
           </div>
         </div>
       </div>
