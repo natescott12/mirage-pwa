@@ -165,6 +165,18 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 .tag-chip:hover { border-color: var(--ink); color: var(--ink); }
 .tag-chip.selected { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 
+/* skin-tone swatches (Physical Description) */
+.skin-swatches { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.skin-swatch {
+  width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+  border: 2px solid transparent; transition: all 0.12s; flex-shrink: 0;
+}
+.skin-swatch:hover { transform: scale(1.08); }
+.skin-swatch.selected {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ink);
+}
+
 /* save bar */
 .save-bar {
   position: sticky; bottom: 0; background: var(--surface);
@@ -1641,21 +1653,32 @@ function restoreSloanFromFallback(iconId) {
   setF('f-sms-voice', p.sms_voice);
   setF('f-sms-opener', p.sms_opener);
   setF('f-sms-sample', p.sms_sample);
-  setF('f-eye-color', p.eye_color);
-  setF('f-eye-shape', p.eye_shape);
+  setF('f-ethnicity', p.ethnicity);
   setF('f-skin-tone', p.skin_tone);
-  setF('f-skin-texture', p.skin_texture);
-  setF('f-hair-color', p.hair_color);
-  setF('f-hair-length', p.hair_length);
-  setF('f-hair-texture', p.hair_texture);
-  setF('f-build', p.build);
-  setF('f-makeup', p.makeup);
-  setF('f-freckles', p.freckles);
-  setF('f-age-range', p.age_range);
+  setF('f-hair-style', p.hair_style);
   setF('f-signature-style', p.signature_style);
   setF('f-distinguishing-features', p.distinguishing_features);
   setF('f-tattoos-piercings', p.tattoos_piercings);
   setF('f-typical-setting', p.typical_setting);
+  if (typeof pbSetChip === 'function') {
+    pbSetChip('eye_color',    p.eye_color);
+    pbSetChip('eye_shape',    p.eye_shape);
+    pbSetChip('skin_texture', p.skin_texture);
+    pbSetChip('hair_length',  p.hair_length);
+    pbSetChip('hair_texture', p.hair_texture);
+    pbSetChip('build',        p.build);
+    pbSetChip('makeup',       p.makeup);
+    pbSetChip('freckles',     p.freckles);
+    pbSetChip('age_range',    p.age_range);
+    if (p.hair_color) {
+      const chipMatched = pbSetChip('hair_color', p.hair_color);
+      const custom = document.getElementById('f-hair-color-custom');
+      if (custom) custom.value = chipMatched ? '' : p.hair_color;
+    }
+    if (typeof pbSetSkinSwatch === 'function' && (p.skin_tone_prompt || p.skin_tone)) {
+      pbSetSkinSwatch(p.skin_tone_prompt || p.skin_tone);
+    }
+  }
 
   // Trait chips — set selected state to the fallback traits (lowercase match).
   const traitsLower = p.traits.map(function(t){ return t.toLowerCase(); });
@@ -2405,34 +2428,51 @@ function loadPersonaForIcon(idx) {
       setF('f-sms-voice', sp.sms_voice);
       setF('f-sms-opener', sp.sms_opener);
       setF('f-sms-sample', sp.sms_sample);
-      setF('f-eye-color', sp.eye_color);
-      setF('f-eye-shape', sp.eye_shape);
+      // Physical — chips (data-group) + free text fields
+      setF('f-ethnicity', sp.ethnicity);
       setF('f-skin-tone', sp.skin_tone);
-      setF('f-skin-texture', sp.skin_texture);
-      setF('f-hair-color', sp.hair_color);
-      setF('f-hair-length', sp.hair_length);
-      setF('f-hair-texture', sp.hair_texture);
-      setF('f-build', sp.build);
-      setF('f-makeup', sp.makeup);
-      setF('f-freckles', sp.freckles);
-      setF('f-age-range', sp.age_range);
+      setF('f-hair-style', sp.hair_style);
       setF('f-signature-style', sp.signature_style);
       setF('f-distinguishing-features', sp.distinguishing_features);
       setF('f-tattoos-piercings', sp.tattoos_piercings);
       setF('f-typical-setting', sp.typical_setting);
+      pbSetChip('eye_color',    sp.eye_color);
+      pbSetChip('eye_shape',    sp.eye_shape);
+      pbSetChip('skin_texture', sp.skin_texture);
+      pbSetChip('hair_length',  sp.hair_length);
+      pbSetChip('hair_texture', sp.hair_texture);
+      pbSetChip('build',        sp.build);
+      pbSetChip('makeup',       sp.makeup);
+      pbSetChip('freckles',     sp.freckles);
+      pbSetChip('age_range',    sp.age_range);
+      // hair_color may be chip or custom text
+      if (sp.hair_color) {
+        const chipMatched = pbSetChip('hair_color', sp.hair_color);
+        const custom = document.getElementById('f-hair-color-custom');
+        if (custom) custom.value = chipMatched ? '' : sp.hair_color;
+      }
+      if (sp.skin_tone_prompt || sp.skin_tone) pbSetSkinSwatch(sp.skin_tone_prompt || sp.skin_tone);
 
       // Fallback: populate physical fields from character_data if persona_data fields empty
       var cd = r.data.character_data || {};
-      if (!sp.eye_color && cd.eyeColor) setF('f-eye-color', cd.eyeColor);
-      if (!sp.eye_shape && cd.eyeShape) setF('f-eye-shape', cd.eyeShape);
-      if (!sp.hair_color && cd.hairColor) setF('f-hair-color', cd.hairColor);
-      if (!sp.hair_length && cd.hairLength) setF('f-hair-length', cd.hairLength);
-      if (!sp.hair_texture && cd.hairTexture) setF('f-hair-texture', cd.hairTexture);
+      if (!sp.ethnicity && cd.ethnicity) setF('f-ethnicity', cd.ethnicity);
+      if (!sp.hair_style && cd.hairStyle) setF('f-hair-style', cd.hairStyle);
       if (!sp.skin_tone && cd.skinTone) setF('f-skin-tone', cd.skinTone);
-      if (!sp.skin_texture && cd.skinTexture) setF('f-skin-texture', cd.skinTexture);
-      if (!sp.build && cd.build) setF('f-build', cd.build);
-      if (!sp.makeup && cd.makeup) setF('f-makeup', cd.makeup);
-      if (!sp.freckles && cd.freckles) setF('f-freckles', cd.freckles);
+      if (!sp.eye_color && cd.eyeColor) pbSetChip('eye_color', cd.eyeColor);
+      if (!sp.eye_shape && cd.eyeShape) pbSetChip('eye_shape', cd.eyeShape);
+      if (!sp.hair_length && cd.hairLength) pbSetChip('hair_length', cd.hairLength);
+      if (!sp.hair_texture && cd.hairTexture) pbSetChip('hair_texture', cd.hairTexture);
+      if (!sp.skin_texture && cd.skinTexture) pbSetChip('skin_texture', cd.skinTexture);
+      if (!sp.build && cd.build) pbSetChip('build', cd.build);
+      if (!sp.makeup && cd.makeup) pbSetChip('makeup', cd.makeup);
+      if (!sp.freckles && cd.freckles) pbSetChip('freckles', cd.freckles);
+      if (!sp.age_range && cd.age) pbSetChip('age_range', cd.age);
+      if (!sp.hair_color && cd.hairColor) {
+        const chipMatched = pbSetChip('hair_color', cd.hairColor);
+        const custom = document.getElementById('f-hair-color-custom');
+        if (custom && !chipMatched) custom.value = cd.hairColor;
+      }
+      if (!sp.skin_tone_prompt && cd.skinTonePrompt) pbSetSkinSwatch(cd.skinTonePrompt);
       if (!sp.distinguishing_features && cd.features) setF('f-distinguishing-features', cd.features);
       if (!sp.tattoos_piercings && cd.tattoos) setF('f-tattoos-piercings', cd.tattoos);
 
@@ -2489,6 +2529,82 @@ function toggleIconActivation(btn) {
   updateDashboard();
 }
 
+
+// ── Physical Description: chip + swatch options (ported from Studio) ──────────
+const PHYSICAL_CHIPS = {
+  skin_texture: ['clear smooth','light freckles','heavy freckles','textured','moles','sun-kissed'],
+  eye_color:    ['brown','dark brown','hazel','green','blue','grey','amber','black'],
+  eye_shape:    ['almond','round','hooded','monolid','upturned','wide-set','deep-set'],
+  hair_color:   ['black','dark brown','medium brown','light brown','dirty blonde','blonde','platinum','auburn','red','grey','white'],
+  hair_length:  ['buzzed','pixie','ear-length','chin-length','shoulder-length','mid-back','long','waist-length'],
+  hair_texture: ['straight','wavy','curly','coily','kinky'],
+  freckles:     ['none','light dusting','across nose','heavy','all over'],
+  makeup:       ['bare-faced','minimal','natural','editorial','bold','dark'],
+  build:        ['very lean','lean','slim','average','athletic','curvy','full-figured'],
+  age_range:    ['late teens','early 20s','mid 20s','late 20s','early 30s','mid 30s','late 30s','40s'],
+};
+const PHYSICAL_SKIN_TONES = [
+  { label:'Fair porcelain', hex:'#f5e6d8', prompt:'fair porcelain skin' },
+  { label:'Light',          hex:'#f0d5b8', prompt:'light skin' },
+  { label:'Light beige',    hex:'#e8c49a', prompt:'light beige skin, warm undertones' },
+  { label:'Warm beige',     hex:'#d4a574', prompt:'warm beige skin' },
+  { label:'Medium tan',     hex:'#c08050', prompt:'medium tan skin' },
+  { label:'Warm olive',     hex:'#a06840', prompt:'warm olive complexion' },
+  { label:'Medium brown',   hex:'#885030', prompt:'medium brown skin' },
+  { label:'Rich brown',     hex:'#6a3820', prompt:'rich brown skin' },
+  { label:'Deep brown',     hex:'#4a2010', prompt:'deep brown skin' },
+  { label:'Deep ebony',     hex:'#2a1008', prompt:'deep ebony skin' },
+];
+
+function pbToggleChip(el) {
+  const group = el.getAttribute('data-group');
+  const alreadySelected = el.classList.contains('selected');
+  document.querySelectorAll('.tag-chip[data-group="' + group + '"]').forEach(function(c) {
+    c.classList.toggle('selected', !alreadySelected && c === el);
+  });
+  if (group === 'hair_color' && !alreadySelected) {
+    const custom = document.getElementById('f-hair-color-custom');
+    if (custom) custom.value = '';
+  }
+}
+
+function pbSelectSwatch(el) {
+  const label = el.getAttribute('data-label') || '';
+  document.querySelectorAll('.skin-swatch').forEach(function(s) {
+    s.classList.toggle('selected', s === el);
+  });
+  const tone = document.getElementById('f-skin-tone');
+  if (tone) tone.value = label;
+}
+
+function pbGetChip(group) {
+  const el = document.querySelector('.tag-chip[data-group="' + group + '"].selected');
+  return el ? (el.getAttribute('data-val') || '') : '';
+}
+
+function pbSetChip(group, val) {
+  if (!val) return false;
+  let matched = false;
+  document.querySelectorAll('.tag-chip[data-group="' + group + '"]').forEach(function(c) {
+    const isMatch = c.getAttribute('data-val') === val;
+    c.classList.toggle('selected', isMatch);
+    if (isMatch) matched = true;
+  });
+  return matched;
+}
+
+function pbGetSkinPrompt() {
+  const sel = document.querySelector('.skin-swatch.selected');
+  return sel ? (sel.getAttribute('data-prompt') || '') : '';
+}
+
+function pbSetSkinSwatch(labelOrPrompt) {
+  if (!labelOrPrompt) return;
+  document.querySelectorAll('.skin-swatch').forEach(function(s) {
+    const m = s.getAttribute('data-label') === labelOrPrompt || s.getAttribute('data-prompt') === labelOrPrompt;
+    s.classList.toggle('selected', m);
+  });
+}
 
 function buildPersonaForm(p, icon) {
   return `
@@ -2573,98 +2689,137 @@ function buildPersonaForm(p, icon) {
 
   <div class="field-group">
     <div class="field-group-title">Physical Description (for Flux)</div>
-    <div class="field-row triple">
-      <div class="field"><label>Eye Color</label>
-        <select id="f-eye-color">
-          ${['','brown','dark brown','hazel','green','blue','grey','amber','black'].map(s =>
-            `<option${p.eye_color===s?' selected':''}>${s}</option>`
+
+    <div class="field-row single">
+      <div class="field"><label>Ethnicity / Heritage</label><input id="f-ethnicity" value="${p.ethnicity || ''}" placeholder="e.g. East Asian, Afro-Caribbean, Southern European..."></div>
+    </div>
+
+    <div class="field-row single">
+      <div class="field">
+        <label>Skin Tone</label>
+        <div class="skin-swatches" id="skin-swatches">
+          ${PHYSICAL_SKIN_TONES.map((t,i) =>
+            `<div class="skin-swatch${p.skin_tone_prompt===t.prompt||p.skin_tone===t.label?' selected':''}" style="background:${t.hex}" title="${t.label}" data-idx="${i}" data-label="${t.label}" data-prompt="${t.prompt}" onclick="pbSelectSwatch(this)"></div>`
           ).join('')}
-        </select>
-      </div>
-      <div class="field"><label>Eye Shape</label>
-        <select id="f-eye-shape">
-          ${['','almond','round','hooded','upturned','monolid','wide-set','deep-set'].map(s =>
-            `<option${p.eye_shape===s?' selected':''}>${s}</option>`
-          ).join('')}
-        </select>
-      </div>
-      <div class="field"><label>Skin Tone</label>
-        <select id="f-skin-tone">
-          ${['','fair','light','light-medium','medium','olive','medium-dark','dark','deep'].map(s =>
-            `<option${p.skin_tone===s?' selected':''}>${s}</option>`
-          ).join('')}
-        </select>
+        </div>
+        <input id="f-skin-tone" value="${p.skin_tone || ''}" placeholder="or describe e.g. warm olive, cool porcelain..." style="margin-top:8px">
       </div>
     </div>
-    <div class="field-row triple">
-      <div class="field"><label>Hair Color</label>
-        <select id="f-hair-color">
-          ${['','black','dark brown','medium brown','light brown','dirty blonde','blonde','platinum','auburn','red','grey','white'].map(s =>
-            `<option${p.hair_color===s?' selected':''}>${s}</option>`
+
+    <div class="field-row single">
+      <div class="field">
+        <label>Skin Texture</label>
+        <div class="tag-select">
+          ${PHYSICAL_CHIPS.skin_texture.map(v =>
+            `<button class="tag-chip${p.skin_texture===v?' selected':''}" data-group="skin_texture" data-val="${v}" onclick="pbToggleChip(this)">${v}</button>`
           ).join('')}
-        </select>
-      </div>
-      <div class="field"><label>Hair Length</label>
-        <select id="f-hair-length">
-          ${['','buzzed','pixie','ear-length','chin-length','shoulder-length','mid-back','long','waist-length'].map(s =>
-            `<option${p.hair_length===s?' selected':''}>${s}</option>`
-          ).join('')}
-        </select>
-      </div>
-      <div class="field"><label>Hair Texture</label>
-        <select id="f-hair-texture">
-          ${['','straight','wavy','curly','coily','kinky'].map(s =>
-            `<option${p.hair_texture===s?' selected':''}>${s}</option>`
-          ).join('')}
-        </select>
+        </div>
       </div>
     </div>
-    <div class="field-row triple">
-      <div class="field"><label>Build</label>
-        <select id="f-build">
-          ${['','very lean','lean','slim','average','athletic','curvy','full-figured'].map(s =>
-            `<option${p.build===s?' selected':''}>${s}</option>`
+
+    <div class="field-row">
+      <div class="field">
+        <label>Eye Color</label>
+        <div class="tag-select">
+          ${PHYSICAL_CHIPS.eye_color.map(v =>
+            `<button class="tag-chip${p.eye_color===v?' selected':''}" data-group="eye_color" data-val="${v}" onclick="pbToggleChip(this)">${v}</button>`
           ).join('')}
-        </select>
+        </div>
       </div>
-      <div class="field"><label>Skin Texture</label>
-        <select id="f-skin-texture">
-          ${['','clear smooth','light freckles','heavy freckles','textured','moles','sun-kissed'].map(s =>
-            `<option${p.skin_texture===s?' selected':''}>${s}</option>`
+      <div class="field">
+        <label>Eye Shape</label>
+        <div class="tag-select">
+          ${PHYSICAL_CHIPS.eye_shape.map(v =>
+            `<button class="tag-chip${p.eye_shape===v?' selected':''}" data-group="eye_shape" data-val="${v}" onclick="pbToggleChip(this)">${v}</button>`
           ).join('')}
-        </select>
-      </div>
-      <div class="field"><label>Makeup Style</label>
-        <select id="f-makeup">
-          ${['','bare-faced','minimal','natural','editorial','bold','dark'].map(s =>
-            `<option${p.makeup===s?' selected':''}>${s}</option>`
-          ).join('')}
-        </select>
+        </div>
       </div>
     </div>
-    <div class="field-row triple" style="display:none">
-      <div class="field"><label>Freckles</label>
-        <select id="f-freckles">
-          ${['','none','light','scattered','across nose & cheeks','heavy'].map(s =>
-            `<option${p.freckles===s?' selected':''}>${s}</option>`
+
+    <div class="field-row single">
+      <div class="field">
+        <label>Hair Color</label>
+        <div class="tag-select">
+          ${PHYSICAL_CHIPS.hair_color.map(v =>
+            `<button class="tag-chip${p.hair_color===v&&PHYSICAL_CHIPS.hair_color.includes(p.hair_color)?' selected':''}" data-group="hair_color" data-val="${v}" onclick="pbToggleChip(this)">${v}</button>`
           ).join('')}
-        </select>
+        </div>
+        <input id="f-hair-color-custom" value="${p.hair_color && !PHYSICAL_CHIPS.hair_color.includes(p.hair_color) ? p.hair_color : ''}" placeholder="custom e.g. strawberry blonde, ash brown..." style="margin-top:8px">
       </div>
-      <div class="field"><label>Age Range</label>
-        <select id="f-age-range">
-          ${['','late teens','early 20s','mid 20s','late 20s','early 30s','mid 30s','late 30s','40s'].map(s =>
-            `<option${p.age_range===s?' selected':''}>${s}</option>`
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Hair Length</label>
+        <div class="tag-select">
+          ${PHYSICAL_CHIPS.hair_length.map(v =>
+            `<button class="tag-chip${p.hair_length===v?' selected':''}" data-group="hair_length" data-val="${v}" onclick="pbToggleChip(this)">${v}</button>`
           ).join('')}
-        </select>
+        </div>
       </div>
-      <div class="field"><label>Signature Style</label><input id="f-signature-style" value="${p.signature_style || ''}" placeholder="e.g. minimalist black, vintage 70s, soft girly"></div>
+      <div class="field">
+        <label>Hair Texture</label>
+        <div class="tag-select">
+          ${PHYSICAL_CHIPS.hair_texture.map(v =>
+            `<button class="tag-chip${p.hair_texture===v?' selected':''}" data-group="hair_texture" data-val="${v}" onclick="pbToggleChip(this)">${v}</button>`
+          ).join('')}
+        </div>
+      </div>
     </div>
-    <div class="field-row" style="display:none">
-      <div class="field"><label>Distinguishing Features</label><textarea id="f-distinguishing-features" placeholder="Birthmarks, scars, dimples, gap teeth, anything that makes her recognizable…">${p.distinguishing_features || ''}</textarea></div>
-      <div class="field"><label>Tattoos / Piercings</label><textarea id="f-tattoos-piercings" placeholder="Where, what, how visible. Leave blank if none.">${p.tattoos_piercings || ''}</textarea></div>
+
+    <div class="field-row single">
+      <div class="field"><label>Hair Style</label><input id="f-hair-style" value="${p.hair_style || ''}" placeholder="e.g. loose waves, messy bun, blunt cut, slicked back..."></div>
     </div>
-    <div class="field-row single" style="display:none">
-      <div class="field"><label>Typical Setting</label><input id="f-typical-setting" value="${p.typical_setting || ''}" placeholder="e.g. dimly lit Brooklyn loft, sunny Topanga kitchen, hotel bathroom mirror"></div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Freckles</label>
+        <div class="tag-select">
+          ${PHYSICAL_CHIPS.freckles.map(v =>
+            `<button class="tag-chip${p.freckles===v?' selected':''}" data-group="freckles" data-val="${v}" onclick="pbToggleChip(this)">${v}</button>`
+          ).join('')}
+        </div>
+      </div>
+      <div class="field">
+        <label>Makeup</label>
+        <div class="tag-select">
+          ${PHYSICAL_CHIPS.makeup.map(v =>
+            `<button class="tag-chip${p.makeup===v?' selected':''}" data-group="makeup" data-val="${v}" onclick="pbToggleChip(this)">${v}</button>`
+          ).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Build</label>
+        <div class="tag-select">
+          ${PHYSICAL_CHIPS.build.map(v =>
+            `<button class="tag-chip${p.build===v?' selected':''}" data-group="build" data-val="${v}" onclick="pbToggleChip(this)">${v}</button>`
+          ).join('')}
+        </div>
+      </div>
+      <div class="field">
+        <label>Age Range</label>
+        <div class="tag-select">
+          ${PHYSICAL_CHIPS.age_range.map(v =>
+            `<button class="tag-chip${p.age_range===v?' selected':''}" data-group="age_range" data-val="${v}" onclick="pbToggleChip(this)">${v}</button>`
+          ).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="field-row single">
+      <div class="field"><label>Distinguishing Features</label><textarea id="f-distinguishing-features" placeholder="e.g. small scar on chin, gap teeth, birthmark on neck, nose ring...">${p.distinguishing_features || ''}</textarea></div>
+    </div>
+    <div class="field-row single">
+      <div class="field"><label>Tattoos / Piercings</label><textarea id="f-tattoos-piercings" placeholder="e.g. fine line tattoo on forearm, double ear piercings...">${p.tattoos_piercings || ''}</textarea></div>
+    </div>
+    <div class="field-row single">
+      <div class="field"><label>Typical Setting</label><input id="f-typical-setting" value="${p.typical_setting || ''}" placeholder="e.g. Lower East Side apartment, bookshelf walls..."></div>
+    </div>
+    <div class="field-row single">
+      <div class="field"><label>Signature Style</label><input id="f-signature-style" value="${p.signature_style || ''}" placeholder="e.g. turtleneck pulled low, vintage Levi's, no jewelry..."></div>
     </div>
     <div class="field-row single">
       <div class="field"><label>Flux Prompt Notes</label><textarea id="f-flux-notes" placeholder="Any additional prompt language to maintain visual consistency across generations…">${p.flux_notes || ''}</textarea></div>
@@ -2688,6 +2843,8 @@ function getSelectedChips(group) {
 }
 
 function collectPersonaData() {
+  const hairCustom = document.getElementById('f-hair-color-custom')?.value?.trim() || '';
+  const hairChip = pbGetChip('hair_color');
   return {
     tagline: document.getElementById('f-tagline')?.value || '',
     age: document.getElementById('f-age')?.value || '',
@@ -2703,17 +2860,20 @@ function collectPersonaData() {
     aesthetic: document.getElementById('f-aesthetic')?.value || '',
     interests: document.getElementById('f-interests')?.value || '',
     scene_tags: getSelectedChips('scene_tags'),
-    eye_color: document.getElementById('f-eye-color')?.value || '',
-    eye_shape: document.getElementById('f-eye-shape')?.value || '',
+    ethnicity: document.getElementById('f-ethnicity')?.value || '',
+    eye_color: pbGetChip('eye_color'),
+    eye_shape: pbGetChip('eye_shape'),
     skin_tone: document.getElementById('f-skin-tone')?.value || '',
-    hair_color: document.getElementById('f-hair-color')?.value || '',
-    hair_length: document.getElementById('f-hair-length')?.value || '',
-    hair_texture: document.getElementById('f-hair-texture')?.value || '',
-    build: document.getElementById('f-build')?.value || '',
-    skin_texture: document.getElementById('f-skin-texture')?.value || '',
-    makeup: document.getElementById('f-makeup')?.value || '',
-    freckles: document.getElementById('f-freckles')?.value || '',
-    age_range: document.getElementById('f-age-range')?.value || '',
+    skin_tone_prompt: pbGetSkinPrompt(),
+    hair_color: hairCustom || hairChip,
+    hair_length: pbGetChip('hair_length'),
+    hair_texture: pbGetChip('hair_texture'),
+    hair_style: document.getElementById('f-hair-style')?.value || '',
+    build: pbGetChip('build'),
+    skin_texture: pbGetChip('skin_texture'),
+    makeup: pbGetChip('makeup'),
+    freckles: pbGetChip('freckles'),
+    age_range: pbGetChip('age_range'),
     signature_style: document.getElementById('f-signature-style')?.value || '',
     distinguishing_features: document.getElementById('f-distinguishing-features')?.value || '',
     tattoos_piercings: document.getElementById('f-tattoos-piercings')?.value || '',
