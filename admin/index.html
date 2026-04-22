@@ -7,7 +7,20 @@
 <title>Mirage · Admin</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── HARD RESET ──
+   A batch token sweep accidentally rewrote `rgba(255,255,255,1.0)`
+   to `var(--ink)` inside the :root declarations themselves, producing
+   self-referential custom properties. Browsers resolved those to the
+   initial `color` value — which lands as black on a dark surface.
+   The fix has two parts: restore literal rgba values on the ink
+   tokens (below), and force every element to inherit colour off
+   html/body so no user-agent default can leak through. */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  color: inherit;
+}
 
 /* ── LOCKED DESIGN TOKENS ──────────────────────────────────────────────────
    Canonical design system for admin + studio. Every new element must
@@ -21,7 +34,9 @@
   /* Font — single stack system-wide. Do not introduce a second family. */
   --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
 
-  /* Colours */
+  /* Colours — keep literal rgba values here; do not rewrite these
+     right-hand sides to var() refs (that creates self-referential
+     fallbacks that browsers resolve to the initial colour). */
   --bg: #141414;
   --sidebar-bg: #1a1a1a;
   --surface: #1f1f1f;
@@ -29,9 +44,9 @@
   --border: #333333;
   --border-strong: rgba(255,255,255,0.22);
   --accent: #78cc6e;
-  --ink: var(--ink);
-  --ink-mid: var(--ink-mid);
-  --ink-dim: var(--ink-dim);
+  --ink: rgba(255,255,255,1.0);
+  --ink-mid: rgba(255,255,255,0.55);
+  --ink-dim: rgba(255,255,255,0.35);
 
   /* Typography — 3 sizes, 2 weights */
   --text-xs: 11px;    /* labels, section headers, metadata */
@@ -46,26 +61,29 @@
 }
 
 html, body {
-  height: 100%;
-  background: var(--bg);
-  font-family: var(--font);
-  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: #141414;
+  color: rgba(255,255,255,1.0);
   -webkit-font-smoothing: antialiased;
 }
+html, body { height: 100%; }
 
-/* ── COLOR RESET ──
-   Form controls (input/textarea/select/button) default to user-agent
-   colours on a white system palette, which renders as black text on
-   the dark surface. Structural elements inside tables inherit those
-   defaults too. Force every element to read from --ink unless a later
-   rule intentionally dims it. Covers controls, table cells, and the
-   common surface wrappers explicitly. */
+/* ── COLOUR FLOOR ──
+   Baseline colours for elements that historically had explicit values
+   tied to the old font stack. Explicit ink on form controls + tables
+   so user-agent defaults stop leaking through; labels at --ink-mid;
+   structural content inherits off the body. */
+td, th,
+input, textarea, select { color: rgba(255,255,255,0.85); }
 input, textarea, select, button {
-  color: var(--ink);
   background: transparent;
   font-family: var(--font);
 }
-table, thead, tbody, tr, th, td { color: var(--ink); }
+label { color: rgba(255,255,255,0.55); }
+h1, h2, h3, h4 { color: rgba(255,255,255,1.0); }
+p, span, div { color: inherit; }
+a { color: inherit; }
+button { color: inherit; }
 .card, .panel, .pane, .field-group, .editor-main { color: var(--ink); }
 
 /* ── LOGIN ── */

@@ -61,9 +61,12 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     --border: #333333;
     --border-strong: rgba(255,255,255,0.25);
     --accent: #78cc6e;
-    --ink: var(--ink);
-    --ink-mid: var(--ink-mid);
-    --ink-dim: var(--ink-dim);
+    /* Keep literal rgba values here; do not rewrite these right-hand
+       sides to var() refs — that creates self-referential fallbacks
+       that browsers resolve to the initial colour (black on dark). */
+    --ink: rgba(255,255,255,1.0);
+    --ink-mid: rgba(255,255,255,0.55);
+    --ink-dim: rgba(255,255,255,0.35);
 
     /* Typography — 3 sizes, 2 weights */
     --text-xs: 11px;
