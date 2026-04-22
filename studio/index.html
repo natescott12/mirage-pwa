@@ -102,8 +102,46 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   #notification.success { background: var(--text); color: var(--bg); }
   #notification.error { background: var(--red); color: #fff; }
 
+  /* SIDEBAR — mirrored from admin/index.html so the Studio lives under
+     the same nav shell. Hard-coded to the admin wireframe palette
+     (#1a1a1a rail on #141414 content, #333 borders, #78cc6e accent) so
+     the Studio's warmer body colours don't bleed into it. */
+  .studio-main-row { display: flex; flex: 1; overflow: hidden; min-height: 0; background: #141414; }
+  .studio-sidebar {
+    width: 220px; background: #1a1a1a;
+    border-right: 1px solid #333333; flex-shrink: 0;
+    display: flex; flex-direction: column; overflow-y: auto;
+  }
+  .studio-sidebar .sidebar-section {
+    padding: 0 20px; margin: 20px 0 4px;
+    font-size: 11px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: rgba(255,255,255,0.25); font-weight: 400;
+    font-family: 'Afacad', sans-serif;
+  }
+  .studio-sidebar .sidebar-section:first-child { margin-top: 16px; }
+  .studio-sidebar .sidebar-item {
+    display: flex; align-items: center;
+    padding: 6px 20px; font-size: 14px; color: rgba(255,255,255,0.55);
+    cursor: pointer; transition: color 0.12s, background 0.12s;
+    letter-spacing: 0; position: relative; box-sizing: border-box;
+    font-family: 'Afacad', sans-serif; text-decoration: none;
+  }
+  .studio-sidebar .sidebar-item::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 2px; background: transparent; transition: background 0.12s;
+  }
+  .studio-sidebar .sidebar-item:hover { color: rgba(255,255,255,0.85); }
+  .studio-sidebar .sidebar-item.active {
+    color: #ffffff; background: rgba(120,204,110,0.08); font-weight: 400;
+  }
+  .studio-sidebar .sidebar-item.active::before { background: #78cc6e; }
+  .studio-sidebar .sidebar-badge {
+    margin-left: auto; font-size: 10px; background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.55); padding: 1px 7px; border-radius: 20px; letter-spacing: 0;
+  }
+
   /* APP */
-  #app { flex: 1; overflow: hidden; }
+  #app { flex: 1; overflow: hidden; min-width: 0; }
   .tab-content { display: none; height: 100%; }
   .tab-content.active { display: block; }
   #tab-generate.tab-content.active { display: grid; grid-template-columns: 1fr 360px; }
@@ -444,12 +482,9 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     <div class="logo">Mirage</div>
     <div style="width:1px;height:18px;background:var(--border-md)"></div>
     <div class="eyebrow">Icon Studio</div>
-    <div style="width:1px;height:14px;background:var(--border-md);opacity:.6;margin-left:4px"></div>
-    <a href="/admin" class="studio-crossnav" title="Back to admin">← Admin</a>
     <a href="/admin#personas" class="studio-icon-pill" id="studio-icon-pill" title="Switch Icon in Persona Builder">
       <span class="pill-avatar" id="studio-pill-avatar"></span>
       <span class="pill-name" id="studio-pill-name">—</span>
-      <span class="pill-caret">Switch</span>
     </a>
   </div>
   <div style="display:flex;align-items:center;gap:20px">
@@ -464,6 +499,38 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     </div>
   </div>
 </div>
+
+<div class="studio-main-row">
+
+  <!-- Mirrors the admin left nav so every route is reachable from
+       here. Icon Studio stays active; every other item navigates to
+       /admin with a hash so admin's applyPaneHash opens the right
+       pane without a full context switch. -->
+  <nav class="studio-sidebar" aria-label="Main navigation">
+    <div class="sidebar-section">Main</div>
+    <a class="sidebar-item" href="/admin#dashboard">Dashboard</a>
+    <a class="sidebar-item" href="/admin#icons">Icons</a>
+
+    <div class="sidebar-section">Content</div>
+    <a class="sidebar-item" href="/admin#personas">Persona Builder</a>
+    <a class="sidebar-item active" href="/studio" aria-current="page">Icon Studio</a>
+    <a class="sidebar-item" href="/admin#content">Content Library</a>
+
+    <div class="sidebar-section">Sloan</div>
+    <a class="sidebar-item" href="/admin#sloanchat">Sloan Chat</a>
+    <a class="sidebar-item" href="/admin#sloanlog">Sloan Learning Log</a>
+
+    <div class="sidebar-section">Platform</div>
+    <a class="sidebar-item" href="/admin#subscribers">Subscribers</a>
+    <a class="sidebar-item" href="/admin#requests">Requests</a>
+
+    <div class="sidebar-section">Tools</div>
+    <a class="sidebar-item" href="/admin#checklist">Task Checklist</a>
+    <a class="sidebar-item" href="/admin#pnl">P&amp;L Dashboard</a>
+    <a class="sidebar-item" href="/admin#projdash">Project Dashboard</a>
+    <a class="sidebar-item" href="/admin#design">Design System</a>
+    <a class="sidebar-item" href="/admin#techref">Tech Reference</a>
+  </nav>
 
 <div id="app">
 
@@ -758,7 +825,9 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     </div>
   </div>
 
-</div>
+</div><!-- /#app -->
+
+</div><!-- /.studio-main-row -->
 
 <script>
 // ── SAFE DOM HELPERS ──────────────────────────────────────────────────────────
