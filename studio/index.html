@@ -302,6 +302,18 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   }
   .shot-group-label { margin-top: 10px; margin-bottom: 6px; }
 
+  /* Section badge — sits beside a section label as a small accent
+     eyebrow ("+ MULTI-SELECT", "✦ PROMPT LAYER" etc.). */
+  .section-badge {
+    font-size: var(--text-xs); letter-spacing: 0.08em;
+    color: var(--accent); text-transform: uppercase;
+    font-weight: var(--weight-regular);
+  }
+
+  /* Keep 16px of breathing room under the Style Parameters grid so
+     the next section (Shot Setup) doesn't collide with its sliders. */
+  #params-grid { margin-bottom: 16px; }
+
   /* All chip groups (scene, time-of-day, framing, angle, perspective,
      base style, params, wardrobe, tabs) derive from the canonical
      .chip treatment. Time-of-day gets the primary (white fill) active
@@ -1067,10 +1079,9 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="params-grid"></div>
       </div>
       <div style="margin-bottom:16px">
-        
-        <div style="margin-top:14px;margin-bottom:6px;display:flex;align-items:center;gap:8px">
-          <span style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)">Shot Setup</span>
-          <span style="font-size:9px;color:var(--gold)">+ Multi-select</span>
+        <div class="section-label" style="display:flex;align-items:center;gap:8px">
+          <span>Shot Setup</span>
+          <span class="section-badge">+ MULTI-SELECT</span>
         </div>
         <div class="shot-group-label">Framing</div>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px" id="shot-framing">
@@ -1120,7 +1131,7 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
           <div class="shot-chip" onclick="MG.toggleShot(this,'base','documentary photography real life gritty authentic')">Documentary</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'base','intimate private moment personal bedroom')">Intimate</div>
         </div>
-        <div class="section-label" style="display:flex;justify-content:space-between;align-items:center"><span>Wardrobe · Inject into Prompt</span><span style="font-size:9px;color:var(--gold)">✦ Prompt layer</span></div>
+        <div class="section-label" style="display:flex;justify-content:space-between;align-items:center"><span>Wardrobe · Inject into Prompt</span><span class="section-badge">✦ PROMPT LAYER</span></div>
         <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
           <button class="wardrobe-tab-btn active" onclick="MG.switchTab('tops')" id="wtab-tops">Tops</button>
           <button class="wardrobe-tab-btn" onclick="MG.switchTab('bottoms')" id="wtab-bottoms">Bottoms</button>
