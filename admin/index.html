@@ -491,13 +491,6 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 #persona-list-view .icons-pane-card .ipc-dot.in-progress { background: #f0c040; }
 #pane-icons .icons-pane-card .ipc-dot.inactive,
 #persona-list-view .icons-pane-card .ipc-dot.inactive { background: #e05555; }
-#pane-icons .icons-pane-card .ipc-avatar,
-#persona-list-view .icons-pane-card .ipc-avatar {
-  width: 36px; height: 36px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Afacad', sans-serif; font-weight: 500; font-size: 14px;
-  background: #292929; color: #fff; margin-bottom: 12px;
-}
 #pane-icons .icons-pane-card .ipc-name,
 #persona-list-view .icons-pane-card .ipc-name {
   font-size: 13px; font-weight: 500; color: var(--ink);
@@ -2501,12 +2494,10 @@ function renderIconsPane() {
   grid.innerHTML = list.map(function(icon) {
     const pct = getPersonaCompletion(icon);
     const status = iconPaneStatus(icon);
-    const initial = ((icon.name || '?')[0] || '?').toUpperCase();
     const count = iconContentCounts[icon.id] || 0;
     const safeId = String(icon.id).replace(/\x27/g, "\\x27");
     return '<div class="icons-pane-card" onclick="openPersona(\'' + safeId + '\')">' +
       '<span class="ipc-dot ' + status + '" title="' + status + '"></span>' +
-      '<div class="ipc-avatar">' + initial + '</div>' +
       '<div class="ipc-name">' + (icon.name || '') + '</div>' +
       '<div class="ipc-archetype">' + (icon.archetype || '') + '</div>' +
       '<div class="ipc-progress">' +
@@ -2576,12 +2567,10 @@ function renderPersonaList() {
   grid.innerHTML = list.map(function(icon) {
     const pct = getPersonaCompletion(icon);
     const status = iconPaneStatus(icon);
-    const initial = ((icon.name || '?')[0] || '?').toUpperCase();
     const count = iconContentCounts[icon.id] || 0;
     const safeId = String(icon.id).replace(/\x27/g, "\\x27");
     return '<div class="icons-pane-card" onclick="openPersona(\'' + safeId + '\')">' +
       '<span class="ipc-dot ' + status + '" title="' + status + '"></span>' +
-      '<div class="ipc-avatar">' + initial + '</div>' +
       '<div class="ipc-name">' + (icon.name || '') + '</div>' +
       '<div class="ipc-archetype">' + (icon.archetype || '') + '</div>' +
       '<div class="ipc-progress">' +
