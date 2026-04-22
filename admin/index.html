@@ -5230,7 +5230,16 @@ const CL_PRESETS_FALLBACK = [
 
 let clItems = [];
 let clActiveIcon = 'all';
-let clCurrent = null;          // { id, image_url, icon_name, created_at, ... }
+let clCurrent = null;          // { id, image_url, icon_id, scene, created_at, ... } + resolved _iconName
+
+// icon_id → display name via the already-loaded admin roster. Falls back to
+// the bare id string if the roster hasn't hydrated yet or the id is unknown.
+function clResolveIconName(iconId) {
+  if (!iconId) return '';
+  if (typeof allIcons === 'undefined' || !allIcons) return String(iconId);
+  const match = allIcons.find(function(i){ return String(i.id) === String(iconId); });
+  return (match && match.name) || String(iconId);
+}
 let clFilterId = 'none';
 let clAdjust = {};             // current live adjustment values (slider state)
 let clCompare = 'edited';      // 'original' | 'edited'
@@ -5428,11 +5437,19 @@ async function clLoadBrowse() {
   if (!grid) return;
   grid.innerHTML = '<div class="cl-empty">Loading…</div>';
   try {
-    const r = await fetch(CL_SUPA_URL + '/rest/v1/content?select=id,image_url,icon_name,scene,created_at,uploaded_at,is_published&order=created_at.desc&limit=500', {
+    const r = await fetch(CL_SUPA_URL + '/rest/v1/content?select=id,image_url,icon_id,scene,created_at,is_published,edited_from,edit_preset,edit_adjustments&order=created_at.desc&limit=500', {
       headers: { 'apikey': CL_SUPA_KEY, 'Authorization': 'Bearer ' + CL_SUPA_KEY }
     });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    clItems = await r.json();
+    if (!r.ok) {
+      const body = await r.text().catch(function(){ return ''; });
+      throw new Error('HTTP ' + r.status + (body ? ': ' + body.slice(0, 200) : ''));
+    }
+    const rows = await r.json();
+    // Resolve icon_id → display name once so downstream UI (filter tabs,
+    // card labels, edit title) can keep using a stable string.
+    clItems = rows.map(function(row){
+      return Object.assign({}, row, { _iconName: clResolveIconName(row.icon_id) });
+    });
   } catch (e) {
     grid.innerHTML = '<div class="cl-empty">Could not load content — ' + (e.message || 'unknown error') + '</div>';
     return;
@@ -5446,10 +5463,10 @@ function clRenderFilters() {
   const row = document.getElementById('cl-filter-row');
   if (!row) return;
   const names = ['all'];
-  clItems.forEach(function(x) { if (x.icon_name && names.indexOf(x.icon_name) < 0) names.push(x.icon_name); });
+  clItems.forEach(function(x) { if (x._iconName && names.indexOf(x._iconName) < 0) names.push(x._iconName); });
   if (names.indexOf(clActiveIcon) < 0) clActiveIcon = 'all';
   row.innerHTML = names.map(function(n) {
-    const count = n === 'all' ? clItems.length : clItems.filter(function(x){return x.icon_name===n;}).length;
+    const count = n === 'all' ? clItems.length : clItems.filter(function(x){return x._iconName===n;}).length;
     const cls = 'cl-filter-btn' + (clActiveIcon === n ? ' active' : '');
     const label = n === 'all' ? 'All' : n;
     return '<button class="' + cls + '" onclick="clSetIconFilter(\'' + n.replace(/'/g, "\\'") + '\')">' + label + '<span class="cl-filter-count">' + count + '</span></button>';
@@ -5464,12 +5481,12 @@ function clRenderGrid() {
   const grid = document.getElementById('cl-grid');
   const sub = document.getElementById('cl-browse-sub');
   if (!grid) return;
-  const list = clActiveIcon === 'all' ? clItems.slice() : clItems.filter(function(x){return x.icon_name===clActiveIcon;});
+  const list = clActiveIcon === 'all' ? clItems.slice() : clItems.filter(function(x){return x._iconName===clActiveIcon;});
   if (sub) sub.textContent = list.length + ' image' + (list.length===1?'':'s') + (clActiveIcon==='all'?'':' · ' + clActiveIcon);
   if (!list.length) { grid.innerHTML = '<div class="cl-empty">No images' + (clActiveIcon==='all'?'':' for ' + clActiveIcon) + '.</div>'; return; }
   grid.innerHTML = list.map(function(it, i) {
-    const date = (it.created_at || it.uploaded_at || '').slice(0, 10);
-    const iconName = it.icon_name || '—';
+    const date = (it.created_at || '').slice(0, 10);
+    const iconName = it._iconName || '—';
     const safeId = String(it.id).replace(/'/g, "\\'");
     return (
       '<div class="cl-card" onclick="clOpenEdit(\'' + safeId + '\')">' +
@@ -5498,7 +5515,7 @@ async function clOpenEdit(id) {
   document.getElementById('cl-view-edit').classList.add('active');
   const titleEl = document.getElementById('cl-edit-title');
   const subEl = document.getElementById('cl-edit-sub');
-  if (titleEl) titleEl.textContent = item.icon_name || 'Untitled';
+  if (titleEl) titleEl.textContent = item._iconName || clResolveIconName(item.icon_id) || 'Untitled';
   if (subEl) subEl.textContent = (item.scene || '') + (item.created_at ? ' · ' + item.created_at.slice(0,10) : '');
   const img = document.getElementById('cl-stage-img');
   if (img) {
@@ -5657,7 +5674,7 @@ async function clSaveEdited() {
   try {
     const blob = await clBakeToBlob();
     // Upload to the `content` storage bucket with a deterministic filename.
-    const iconSlug = (clCurrent.icon_name || 'icon').toLowerCase().replace(/\s+/g,'-');
+    const iconSlug = (clCurrent._iconName || 'icon').toLowerCase().replace(/\s+/g,'-');
     const filename = iconSlug + '_edited_' + Date.now() + '.jpg';
     const uploadRes = await fetch(CL_SUPA_URL + '/storage/v1/object/content/' + encodeURIComponent(filename), {
       method: 'POST',
@@ -5674,7 +5691,7 @@ async function clSaveEdited() {
     // Insert a new row alongside the original, linking via edited_from.
     const insertBody = {
       image_url: publicUrl,
-      icon_name: clCurrent.icon_name || null,
+      icon_id: clCurrent.icon_id || null,
       scene: clCurrent.scene || null,
       edited_from: clCurrent.id,
       edit_preset: clFilterId,
@@ -5697,7 +5714,7 @@ async function clSaveEdited() {
       // If the schema doesn't have edited_from/edit_preset/edit_adjustments yet,
       // retry with a minimal payload so at least the edited image lands.
       if (/edited_from|edit_preset|edit_adjustments|column/i.test(body)) {
-        const minimal = { image_url: publicUrl, icon_name: clCurrent.icon_name || null, scene: clCurrent.scene || null, is_published: false, created_at: new Date().toISOString() };
+        const minimal = { image_url: publicUrl, icon_id: clCurrent.icon_id || null, scene: clCurrent.scene || null, is_published: false, created_at: new Date().toISOString() };
         const retry = await fetch(CL_SUPA_URL + '/rest/v1/content', {
           method: 'POST',
           headers: {
@@ -5747,7 +5764,7 @@ async function clExport() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    const iconSlug = (clCurrent.icon_name || 'icon').toLowerCase().replace(/\s+/g,'-');
+    const iconSlug = (clCurrent._iconName || 'icon').toLowerCase().replace(/\s+/g,'-');
     a.download = iconSlug + '_' + clFilterId + '_' + Date.now() + '.jpg';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
