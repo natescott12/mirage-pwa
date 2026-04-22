@@ -57,107 +57,136 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 #app.visible { display: flex; }
 
 .topbar {
-  height: 40px; background: transparent; border-bottom: 1px solid var(--border);
+  height: 52px; background: transparent;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
   display: flex; align-items: center; padding: 0 24px;
   justify-content: space-between; flex-shrink: 0; z-index: 10;
 }
-.topbar-left { display: flex; align-items: center; gap: 14px; }
-.topbar-wordmark { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-dim); }
-.topbar-sep { width: 1px; height: 10px; background: var(--border); }
-.topbar-section { font-size: 12px; color: var(--ink); font-weight: 400; letter-spacing: 0.01em; }
+.topbar-left { display: flex; align-items: baseline; gap: 10px; }
+.topbar-wordmark { display: none; }
+.topbar-sep { display: none; }
+.topbar-section { font-size: 14px; color: var(--ink); font-weight: 500; letter-spacing: 0; }
 .topbar-right { display: flex; align-items: center; gap: 14px; }
-.topbar-user { font-size: 11px; color: var(--ink-dim); }
-.topbar-logout { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); cursor: pointer; border: none; background: none; font-family: 'Afacad', sans-serif; padding: 0; }
+.topbar-user { font-size: 11px; color: rgba(255,255,255,0.4); letter-spacing: 0; }
+.topbar-logout { font-size: 11px; color: rgba(255,255,255,0.4); cursor: pointer; border: none; background: none; font-family: 'Afacad', sans-serif; padding: 0; letter-spacing: 0; text-transform: none; }
 .topbar-logout:hover { color: var(--ink); }
 
 .main { display: flex; flex: 1; overflow: hidden; }
 
-/* ── SIDEBAR ── */
+/* ── SIDEBAR ──
+   Sidebar reads as a quiet rail: bg slightly darker than the content
+   column (so content feels "lifted" rather than the nav feeling
+   "heavy"), section labels nearly ghosted at 0.25 opacity, nav items
+   at 0.55 opacity until active. */
 .sidebar {
-  width: var(--sidebar); background: var(--surface);
-  border-right: 1px solid var(--border); flex-shrink: 0;
+  width: var(--sidebar); background: #0a0a0a;
+  border-right: 1px solid rgba(255,255,255,0.04); flex-shrink: 0;
   display: flex; flex-direction: column; overflow-y: auto;
 }
-.sidebar-section { padding: 22px 16px 8px; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); font-weight: 400; }
+.sidebar-section {
+  padding: 22px 18px 6px; font-size: 9px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: rgba(255,255,255,0.25); font-weight: 400;
+}
 .sidebar-item {
   display: flex; align-items: center; gap: 10px;
-  padding: 8px 16px; font-size: 13.5px; color: var(--ink-mid);
+  padding: 5px 18px; font-size: 11px; color: rgba(255,255,255,0.55);
   cursor: pointer; transition: color 0.12s, background 0.12s;
-  border-left: 2px solid transparent;
+  border-left: 2px solid transparent; letter-spacing: 0.01em;
 }
-.sidebar-item:hover { color: var(--ink); background: var(--bg); }
-.sidebar-item.active { color: var(--ink); border-left-color: var(--ink); background: var(--bg); font-weight: 500; }
-.sidebar-item .icon { font-size: 15px; width: 18px; text-align: center; }
-.sidebar-badge { margin-left: auto; font-size: 10px; background: var(--ink); color: var(--bg); padding: 1px 6px; border-radius: 20px; }
+.sidebar-item:hover { color: rgba(255,255,255,0.85); }
+.sidebar-item.active {
+  color: var(--ink); border-left-color: var(--accent);
+  background: rgba(255,255,255,0.03); font-weight: 400;
+}
+.sidebar-item .icon { font-size: 12px; width: 16px; text-align: center; opacity: 0.65; }
+.sidebar-item.active .icon { opacity: 1; }
+.sidebar-badge {
+  margin-left: auto; font-size: 9px; background: rgba(255,255,255,0.1);
+  color: var(--ink-mid); padding: 1px 6px; border-radius: 20px; letter-spacing: 0;
+}
 
 /* ── CONTENT ── */
 .content { flex: 1; overflow-y: auto; background: var(--bg); position: relative; }
-.pane { display: none; padding: 28px 32px 40px; min-width: 0; width: 100%; }
+.pane { display: none; padding: 24px; min-width: 0; width: 100%; }
 .pane.active { display: block; width: 100%; }
 
-/* ── PAGE HEADER ── */
-.page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
-.page-title { font-size: 22px; font-weight: 500; letter-spacing: -0.5px; line-height: 1.15; }
-.page-sub { font-size: 12px; color: var(--ink-dim); margin-top: 4px; letter-spacing: 0.01em; }
+/* ── PAGE HEADER ──
+   Publication-style header: small title + muted subtitle under it.
+   Sits inside the pane; the top-bar section label carries the
+   primary page identity. */
+.page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+.page-title { font-size: 15px; font-weight: 500; letter-spacing: 0; line-height: 1.2; color: var(--ink); }
+.page-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 3px; letter-spacing: 0.01em; }
 
 /* ── BUTTONS ──
-   Primary (.btn) is the only filled button. .btn-outline is a hairline
-   text-link with a subtle border. .btn-ghost reads as plain text with
-   a hover color shift, no border. Keep the .btn-danger / .btn-success
-   fills for destructive + success-state primaries. */
+   Only .btn (filled ink) reads as a primary action button. Every
+   secondary variant is reduced to plain text that changes opacity on
+   hover — no borders, no background, nothing that announces itself
+   as a button until you interact with it. */
 .btn {
   padding: 8px 16px; background: var(--ink); color: var(--bg);
   border: none; font-family: 'Afacad', sans-serif; font-size: 11px;
   letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer;
   transition: opacity 0.15s; display: inline-flex; align-items: center; gap: 7px;
+  border-radius: 4px;
 }
-.btn:hover { opacity: 0.82; }
-.btn-sm { padding: 5px 10px; font-size: 10px; letter-spacing: 0.12em; }
+.btn:hover { opacity: 0.85; }
+.btn-sm { padding: 6px 12px; font-size: 10px; letter-spacing: 0.12em; }
 .btn-outline {
-  background: transparent; color: var(--ink-mid);
-  border: 1px solid var(--border); padding: 5px 10px;
-  letter-spacing: 0.12em;
+  background: transparent; color: rgba(255,255,255,0.55);
+  border: none; padding: 4px 0;
+  letter-spacing: 0; text-transform: none; font-size: 11px;
 }
-.btn-outline:hover { color: var(--ink); border-color: var(--border-strong); opacity: 1; }
+.btn-outline:hover { color: var(--ink); opacity: 1; }
 .btn-ghost {
-  background: transparent; color: var(--ink-mid); border: none;
-  padding: 5px 0; letter-spacing: 0.12em;
+  background: transparent; color: rgba(255,255,255,0.55); border: none;
+  padding: 4px 0; letter-spacing: 0; text-transform: none; font-size: 11px;
 }
 .btn-ghost:hover { color: var(--ink); opacity: 1; }
-.btn-danger { background: #b03025; }
-.btn-success { background: #2a7a4a; }
+.btn-danger { background: #b03025; border-radius: 4px; }
+.btn-success { background: #2a7a4a; border-radius: 4px; }
 
 /* ── ICON GRID ──
-   Cards use the surface bg for grouping; no border needed. A hairline
-   divider appears on hover to signal interactivity without announcing
-   each card as a framed object. */
-.icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+   Publication-style cards: 4px radius, hairline border at 0.08 opacity,
+   no fill. The roster reads as a list of objects, not a row of framed
+   tiles. */
+.icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
 .icon-card {
-  background: var(--surface); border: 1px solid transparent;
-  padding: 16px; cursor: pointer; transition: border-color 0.15s; position: relative;
+  background: transparent; border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 4px; padding: 18px;
+  cursor: pointer; transition: border-color 0.15s, background 0.15s;
+  position: relative;
 }
-.icon-card:hover { border-color: var(--border); }
-.icon-card.selected { border-color: var(--border-strong); }
-.icon-card-name { font-size: 17px; font-weight: 500; letter-spacing: -0.4px; margin-bottom: 2px; }
-.icon-card-archetype { font-size: 10.5px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+.icon-card:hover { border-color: rgba(255,255,255,0.18); }
+.icon-card.selected { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.015); }
+.icon-card-name { font-size: 15px; font-weight: 500; letter-spacing: -0.2px; margin-bottom: 2px; }
+.icon-card-archetype { font-size: 10px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; font-weight: 400; }
 .icon-card-status { display: flex; align-items: center; gap: 6px; }
-.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-dim); }
+.status-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.25); }
 .status-dot.complete { background: #2a7a4a; }
 .status-dot.partial { background: #d4820a; }
-.status-dot.empty { background: var(--ink-dim); }
-.status-label { font-size: 11px; color: var(--ink-dim); letter-spacing: 0.02em; }
-.icon-card-progress { margin-top: 10px; height: 1px; background: var(--border); overflow: hidden; }
+.status-dot.empty { background: rgba(255,255,255,0.25); }
+.status-label { font-size: 10px; color: rgba(255,255,255,0.4); letter-spacing: 0.02em; }
+.icon-card-progress { margin-top: 10px; height: 1px; background: rgba(255,255,255,0.08); overflow: hidden; }
 .icon-card-progress-fill { height: 100%; background: var(--ink); transition: width 0.3s; }
 
 /* ── PERSONA EDITOR ──
-   More air between groups, less inside them. The surface bg delineates
-   each group; the old full border was redundant and got dropped. */
+   Field groups are light-bordered cards with 6px radius. 0.08 opacity
+   border is barely visible; it's grouping, not framing. */
 .editor-layout { display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start; }
-.editor-sidebar { background: var(--surface); padding: 20px; position: sticky; top: 0; }
-.editor-main { display: flex; flex-direction: column; gap: 20px; }
+.editor-sidebar { background: transparent; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 20px; position: sticky; top: 0; }
+.editor-main { display: flex; flex-direction: column; gap: 16px; }
 
-.field-group { background: var(--surface); padding: 20px; }
-.field-group-title { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); font-weight: 400; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.field-group {
+  background: transparent; border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px; padding: 22px;
+}
+.field-group-title {
+  font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: rgba(255,255,255,0.3); font-weight: 700;
+  margin-bottom: 14px; padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
 
 /* Accordion mode — only kicks in when wrapPersonaAccordion() has restructured
    the group. Title loses its bottom border/margin because the header owns the
@@ -191,29 +220,40 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 .field-row.triple { grid-template-columns: 1fr 1fr 1fr; }
 
 .field { display: flex; flex-direction: column; gap: 6px; }
-.field label { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); font-weight: 400; }
-.field input, .field select, .field textarea {
-  padding: 9px 0; background: transparent; border: none;
-  border-bottom: 1px solid var(--border);
-  font-family: 'Afacad', sans-serif; font-size: 14px; color: var(--ink);
-  outline: none; transition: border-color 0.15s; width: 100%;
-  border-radius: 0;
+.field label {
+  font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: rgba(255,255,255,0.3); font-weight: 700;
 }
-.field input:focus, .field select:focus, .field textarea:focus { border-bottom-color: var(--border-strong); }
-.field textarea { resize: vertical; min-height: 72px; line-height: 1.5; padding: 8px 0; }
-.field select { padding-right: 18px; }
+.field input, .field select, .field textarea {
+  padding: 8px 10px; background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  font-family: 'Afacad', sans-serif; font-size: 13px; color: var(--ink);
+  outline: none; transition: border-color 0.15s; width: 100%;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: rgba(255,255,255,0.3);
+}
+.field textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+.field select { padding-right: 28px; }
 
-/* tag-select chips — minimal pill, tight padding, consistent across Identity
-   traits, Physical chips, and Scene Tags. */
-.tag-select { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+/* tag-select chips — publication-style: almost invisible bg, thin
+   border, selected state uses the accent color at 0.15 opacity. */
+.tag-select { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
 .tag-chip {
-  padding: 3px 10px; border: 1px solid var(--border); font-size: 11px;
-  color: var(--ink-mid); cursor: pointer; transition: color 0.12s, border-color 0.12s, background 0.12s;
-  border-radius: 20px; background: transparent; font-family: 'Afacad', sans-serif;
+  padding: 4px 10px; font-size: 11px;
+  color: rgba(255,255,255,0.55); cursor: pointer;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.02);
+  border-radius: 20px; font-family: 'Afacad', sans-serif;
   letter-spacing: 0.01em;
 }
-.tag-chip:hover { border-color: var(--border-strong); color: var(--ink); }
-.tag-chip.selected { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.tag-chip:hover { color: var(--ink); border-color: rgba(255,255,255,0.2); }
+.tag-chip.selected {
+  background: rgba(119,204,110,0.15); color: var(--ink);
+  border-color: rgba(119,204,110,0.35);
+}
 
 /* skin-tone swatches (Physical Description) */
 .skin-swatches { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
@@ -244,23 +284,22 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 .persona-save-bar {
   position: fixed; left: var(--sidebar); right: 0; bottom: 0; z-index: 50;
   height: 52px;
-  padding: 0 32px;
+  padding: 0 24px;
   background: var(--bg);
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(255,255,255,0.08);
   display: flex; align-items: center;
 }
 .persona-save-bar .persona-save-wide {
   flex: 1;
-  padding: 9px 18px;
-  background: transparent;
+  padding: 10px 18px;
+  background: var(--ink); color: var(--bg);
   border: none;
-  color: var(--ink-mid);
   font-family: 'Afacad', sans-serif;
-  font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
-  cursor: pointer; border-radius: 0;
-  transition: background 0.15s, color 0.15s;
+  font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  cursor: pointer; border-radius: 4px;
+  transition: opacity 0.15s;
 }
-.persona-save-bar .persona-save-wide:hover { background: var(--ink); color: var(--bg); }
+.persona-save-bar .persona-save-wide:hover { opacity: 0.85; }
 .persona-save-bar .persona-save-wide:disabled { opacity: 0.3; cursor: not-allowed; }
 /* Leave room above the fixed bar so the last field isn't hidden. */
 #persona-form-view { padding-bottom: 68px; }
@@ -268,19 +307,21 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
   .persona-save-bar { left: 0; padding: 0 14px; }
 }
 
-/* ── STATS ── */
-.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 32px; }
-.stat-card { background: var(--surface); padding: 18px 20px; }
-.stat-value { font-size: 30px; font-weight: 500; letter-spacing: -0.6px; line-height: 1; margin-bottom: 5px; }
-.stat-label { font-size: 10px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 400; }
+/* ── STATS ──
+   Stats are typographic, not framed: big number + muted label, no
+   surface fill, no border. Feels like pull-quotes in a publication. */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom: 36px; }
+.stat-card { background: transparent; padding: 0; }
+.stat-value { font-size: 28px; font-weight: 500; letter-spacing: -0.4px; line-height: 1; margin-bottom: 6px; }
+.stat-label { font-size: 9px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
 
 /* ── TABLE ── */
-.table-wrap { background: var(--surface); overflow: hidden; }
+.table-wrap { background: transparent; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; overflow: hidden; }
 table { width: 100%; border-collapse: collapse; }
-thead th { padding: 11px 16px; text-align: left; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-dim); border-bottom: 1px solid var(--border); font-weight: 400; }
-tbody td { padding: 12px 16px; font-size: 13.5px; border-bottom: 1px solid var(--border); }
+thead th { padding: 10px 16px; text-align: left; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.3); border-bottom: 1px solid rgba(255,255,255,0.08); font-weight: 700; }
+tbody td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.04); }
 tbody tr:last-child td { border-bottom: none; }
-tbody tr:hover td { background: rgba(255,255,255,0.015); }
+tbody tr:hover td { background: rgba(255,255,255,0.02); }
 
 /* ── MISC ── */
 .empty-state { padding: 60px; text-align: center; color: var(--ink-dim); }
