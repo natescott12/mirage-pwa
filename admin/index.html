@@ -371,8 +371,19 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 
 /* Dashboard pane — wireframe palette scoped so other panes don't
    inherit the table + header treatment. */
-#pane-dashboard .page-title { font-size: 14px; font-weight: 500; color: var(--ink); letter-spacing: 0; }
-#pane-dashboard .page-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 3px; }
+/* Editorial page header — large title, sits quietly above a small
+   subtitle. Applied to Dashboard and Icons; reuse the selector list
+   when adding more editorial landing panes. */
+#pane-dashboard .page-title,
+#pane-icons .page-title {
+  font-size: 30px; font-weight: 500; color: var(--ink);
+  letter-spacing: -0.6px; line-height: 1.1;
+}
+#pane-dashboard .page-sub,
+#pane-icons .page-sub {
+  font-size: 12px; color: rgba(255,255,255,0.4);
+  margin-top: 6px; letter-spacing: 0.01em;
+}
 #pane-dashboard .table-wrap { background: transparent; border: 1px solid #333333; border-radius: 4px; overflow: hidden; }
 #pane-dashboard table { border-collapse: separate; border-spacing: 0; }
 #pane-dashboard thead tr { background: #1a1a1a; }
