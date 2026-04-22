@@ -111,6 +111,26 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   #prompt-sections .ps-input { flex: 1; background: transparent; border: none; outline: none; font-size: 11px; color: var(--text); font-family: 'Afacad', sans-serif; padding: 0; }
   #prompt-sections .ps-input[readonly] { color: var(--dim); opacity: .65; }
   #btn-generate { width: 100%; padding: 14px; background: var(--text); color: var(--bg); font-size: 11px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; border: none; border-radius: 2px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: opacity 0.15s; font-family: 'DM Sans', sans-serif; }
+
+  /* LoRA toggle — sits just above the Generate button. Green dot = ON
+     (LoRA forces the trained icon likeness into frame), grey = OFF
+     (payload drops LoRA fields so Flux generates a clean scene). */
+  .lora-toggle {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 5px 11px; font-size: 9px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted);
+    background: transparent; border: 1px solid var(--border-md);
+    border-radius: 2px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .lora-toggle:hover { color: var(--text); border-color: var(--border-strong); }
+  .lora-toggle.on { color: var(--text); border-color: var(--border-strong); }
+  .lora-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--muted); transition: background 0.15s;
+  }
+  .lora-toggle.on .lora-dot { background: var(--green); }
   #btn-generate:hover { opacity: 0.85; } #btn-generate:disabled { opacity: 0.4; cursor: default; }
   .spinner { width: 13px; height: 13px; border: 1.5px solid rgba(248,246,242,0.25); border-top-color: var(--bg); border-radius: 50%; animation: spin 0.8s linear infinite; }
   .panel-right { border-left: 1px solid var(--border); display: flex; flex-direction: column; background: var(--bg2); overflow: hidden; }
@@ -596,6 +616,11 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
           <button class="prompt-ctrl-btn" onclick="copyFullPrompt()" title="Copy prompt to clipboard">Copy</button>
           <span class="prompt-char-count" id="prompt-char-count">0 chars</span>
         </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+        <button class="lora-toggle on" id="lora-toggle" type="button" onclick="toggleLora()" title="Use the icon's trained LoRA when generating. Off = clean scene, no identity lock.">
+          <span class="lora-dot" aria-hidden="true"></span><span>LoRA</span>
+        </button>
       </div>
       <button id="btn-generate" onclick="handleGenerate()">Generate · <span id="btn-name">Sloan</span> · Flux Pro</button>
     </div>
@@ -1849,6 +1874,7 @@ function init() {
   renderLibrary();
   updateLibCount();
   renderSchedule();
+  if (typeof renderLoraToggle === 'function') renderLoraToggle();
   checkProxy();
   setInterval(checkProxy,15000);
 }
@@ -2901,6 +2927,51 @@ function saveLoraToSupabase(iconId, finetuneId, status) {
   }).catch(function(e) { console.log('Supabase LoRA save failed:', e); });
 }
 
+// ── LoRA toggle ──────────────────────────────────────────────────────────────
+// Per-icon on/off for whether the trained LoRA is applied on generate.
+// Default ON. Persisted to localStorage under LORA_ENABLED_KEY keyed by iconId.
+// Planned: will be auto-set by a future image-type selector (e.g. "scene only"
+// vs. "icon close-up"). For now this is a manual user toggle.
+const LORA_ENABLED_KEY = 'mirage_lora_enabled_v1';
+function _loraMap() {
+  try { return JSON.parse(localStorage.getItem(LORA_ENABLED_KEY) || '{}'); } catch (_) { return {}; }
+}
+function getLoraEnabled(iconId) {
+  if (iconId == null) return true;
+  const m = _loraMap();
+  return m[iconId] !== false; // default ON
+}
+function setLoraEnabled(iconId, enabled) {
+  if (iconId == null) return;
+  const m = _loraMap();
+  m[iconId] = !!enabled;
+  try { localStorage.setItem(LORA_ENABLED_KEY, JSON.stringify(m)); } catch (_) {}
+}
+function renderLoraToggle() {
+  const btn = document.getElementById('lora-toggle');
+  if (!btn) return;
+  const enabled = selectedIcon ? getLoraEnabled(selectedIcon.id) : true;
+  btn.classList.toggle('on', enabled);
+  btn.setAttribute('aria-pressed', enabled ? 'true' : 'false');
+}
+function toggleLora() {
+  if (!selectedIcon) return;
+  const next = !getLoraEnabled(selectedIcon.id);
+  setLoraEnabled(selectedIcon.id, next);
+  renderLoraToggle();
+  if (typeof notify === 'function') notify(next ? '✦ LoRA on — ' + selectedIcon.name + "'s likeness locked in" : 'LoRA off — clean scene');
+}
+// Keep the toggle visual in sync whenever the active icon changes.
+(function wireLoraToggleToSelect(){
+  var _orig = window.selectIcon;
+  if (typeof _orig !== 'function') return;
+  window.selectIcon = function() {
+    var out = _orig.apply(this, arguments);
+    renderLoraToggle();
+    return out;
+  };
+})();
+
 // Override generateFlux to use LoRA if available
 var _origGenerateFlux = window.generateFlux;
 window.generateFlux = function(prompt) {
@@ -2916,7 +2987,9 @@ window.generateFlux = function(prompt) {
       if (d.status === 'Ready') finetuneId = d.finetune_id;
     }
   }
-  if (false && finetuneId) { // LoRA generation via Replicate — coming soon
+  var loraEnabled = selectedIcon ? getLoraEnabled(selectedIcon.id) : true;
+  console.log('[generateFlux] lora toggle:', loraEnabled, '| finetuneId:', finetuneId || '(none)');
+  if (loraEnabled && finetuneId) {
     // Use LoRA generation
     if (typeof notify === 'function') notify('✦ Generating with LoRA model...');
     var loraBody = {prompt: prompt, finetuneId: finetuneId, width: 768, height: 1024, finetuneStrength: 1.1};
