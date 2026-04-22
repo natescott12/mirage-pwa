@@ -348,25 +348,32 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   #prompt-sections .ps-input[readonly] { color: var(--dim); opacity: .65; }
   #btn-generate { width: 100%; padding: 14px; background: var(--text); color: var(--bg); font-size: var(--text-xs); font-weight: var(--weight-medium); letter-spacing: 0.2em; text-transform: uppercase; border: none; border-radius: 2px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: opacity 0.15s; font-family: var(--font); }
 
-  /* LoRA toggle — clean on/off pill. Small dot + "LoRA" text. Green
-     dot = ON, grey = OFF. Chrome barely changes; the dot carries the
-     state. */
+  /* LoRA toggle — lives in the icon card header, inline with the icon
+     name. No pill, no border: 8px dot + "LoRA" label. Green dot / mid
+     text when ON, grey dot / dim text when OFF. Pure style; localStorage
+     persistence happens in toggleLora(). */
   .lora-toggle {
     display: inline-flex; align-items: center; gap: 7px;
-    padding: 5px 12px; font-size: var(--text-sm); letter-spacing: 0;
-    text-transform: none; color: var(--ink-mid);
-    background: transparent; border: 1px solid var(--border);
-    border-radius: 999px; cursor: pointer;
-    font-family: var(--font); font-weight: var(--weight-medium);
-    transition: color 0.15s, border-color 0.15s, background 0.15s;
+    padding: 4px 0; margin-top: 4px;
+    background: transparent; border: none;
+    font-family: var(--font);
+    font-size: var(--text-xs); font-weight: var(--weight-regular);
+    letter-spacing: 0.04em; text-transform: none;
+    cursor: pointer; flex-shrink: 0;
+    color: var(--ink-dim);
+    transition: color 0.15s;
   }
-  .lora-toggle:hover { color: var(--ink); border-color: var(--border-strong); }
-  .lora-toggle.on { color: var(--ink); }
+  .lora-toggle:hover { color: var(--ink); }
+  .lora-toggle.on { color: var(--ink-mid); }
   .lora-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: rgba(255,255,255,0.3); transition: background 0.15s, box-shadow 0.15s;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    transition: background 0.15s, box-shadow 0.15s;
   }
-  .lora-toggle.on .lora-dot { background: var(--accent); box-shadow: 0 0 0 3px rgba(119,204,110,0.18); }
+  .lora-toggle.on .lora-dot {
+    background: var(--accent);
+    box-shadow: 0 0 0 3px rgba(119,204,110,0.18);
+  }
 
   /* LoRA training — single-line row below the icon card fields. No
      panel fill; a thin top divider, a status dot, a label, and a
@@ -783,6 +790,9 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
             <input id="edit-arch" class="char-input" style="font-size: var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);background:transparent;border-color:transparent;padding:0;margin-bottom:6px" placeholder="Archetype" oninput="updateIconField('archetype',this.value)" />
             <input id="edit-vibe" class="char-input" style="font-size: var(--text-sm);color:var(--ink-mid);background:transparent;border-color:transparent;padding:0" placeholder="Vibe / personality..." oninput="updateIconField('vibe',this.value)" />
           </div>
+          <button class="lora-toggle on" id="lora-toggle" type="button" onclick="toggleLora()" title="Use the icon's trained LoRA when generating. Off = clean scene, no identity lock.">
+            <span class="lora-dot" aria-hidden="true"></span><span class="lora-label">LoRA</span>
+          </button>
         </div>
 
         <!-- LoRA training — single-line status + plain-text action. No
@@ -943,11 +953,6 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
           <button class="prompt-ctrl-btn" onclick="copyFullPrompt()" title="Copy prompt to clipboard">Copy</button>
           <span class="prompt-char-count" id="prompt-char-count">0 chars</span>
         </div>
-      </div>
-      <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
-        <button class="lora-toggle on" id="lora-toggle" type="button" onclick="toggleLora()" title="Use the icon's trained LoRA when generating. Off = clean scene, no identity lock.">
-          <span class="lora-dot" aria-hidden="true"></span><span>LoRA</span>
-        </button>
       </div>
       <button id="btn-generate" onclick="handleGenerate()">Generate · <span id="btn-name">Sloan</span> · Flux Pro</button>
     </div>
