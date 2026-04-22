@@ -2625,69 +2625,6 @@ function buildPersonaForm(p, icon) {
   </div>
 
   <div class="field-group">
-    <div class="field-group-title">Voice & Personality</div>
-    <div class="field-row single">
-      <div class="field"><label>Voice / Tone</label><textarea id="f-voice" placeholder="How she speaks, her texting style, what she says and doesn't say…">${p.voice || ''}</textarea></div>
-    </div>
-    <div class="field-row single">
-      <div class="field">
-        <label>Personality Traits</label>
-        <div class="tag-select">
-          ${['Mysterious','Intellectual','Warm','Bold','Vulnerable','Playful','Melancholy','Direct','Romantic','Detached','Fierce','Gentle','Witty','Quiet','Magnetic'].map(t =>
-            `<button class="tag-chip${(p.traits||[]).includes(t)?' selected':''}" data-group="traits" data-multi="true">${t}</button>`
-          ).join('')}
-        </div>
-      </div>
-    </div>
-    <div class="field-row">
-      <div class="field"><label>Communication Style</label>
-        <select id="f-comm-style">
-          ${['','Sparse and deliberate','Warm and verbose','Playful and teasing','Direct and blunt','Poetic and abstract','Casual and open'].map(s =>
-            `<option${p.communication_style===s?' selected':''}>${s}</option>`
-          ).join('')}
-        </select>
-      </div>
-      <div class="field"><label>Energy Level</label>
-        <select id="f-energy">
-          ${['','Low / still','Medium / balanced','High / electric'].map(s =>
-            `<option${p.energy===s?' selected':''}>${s}</option>`
-          ).join('')}
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <div class="field-group">
-    <div class="field-group-title">Backstory & World</div>
-    <div class="field-row single">
-      <div class="field"><label>Backstory</label><textarea id="f-backstory" style="min-height:120px" placeholder="Where she came from, what shaped her, the experiences she doesn't talk about…">${p.backstory || ''}</textarea></div>
-    </div>
-    <div class="field-row">
-      <div class="field"><label>Desires</label><textarea id="f-desires" placeholder="What she actually wants, even if she won't say it directly…">${p.desires || ''}</textarea></div>
-      <div class="field"><label>Fears</label><textarea id="f-fears" placeholder="What keeps her up at night, what she avoids…">${p.fears || ''}</textarea></div>
-    </div>
-  </div>
-
-  <div class="field-group">
-    <div class="field-group-title">Aesthetic & Interests</div>
-    <div class="field-row single">
-      <div class="field"><label>Aesthetic / Visual World</label><textarea id="f-aesthetic" placeholder="Film grain, natural light, specific colors, settings, objects, clothing, mood…">${p.aesthetic || ''}</textarea></div>
-    </div>
-    <div class="field-row single">
-      <div class="field"><label>Interests & References</label><textarea id="f-interests" placeholder="Music, books, places, brands, artists, films, subcultures she inhabits…">${p.interests || ''}</textarea></div>
-    </div>
-    <div class="field-row">
-      <div class="field"><label>Scene Tags</label>
-        <div class="tag-select">
-          ${['Coffee shops','Late nights','Hotel rooms','Art galleries','Outdoor markets','Rooftops','Studio apartments','Libraries','Beaches','Road trips'].map(t =>
-            `<button class="tag-chip${(p.scene_tags||[]).includes(t)?' selected':''}" data-group="scene_tags" data-multi="true">${t}</button>`
-          ).join('')}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="field-group">
     <div class="field-group-title">Physical Description (for Flux)</div>
 
     <div class="field-row single">
@@ -2823,6 +2760,69 @@ function buildPersonaForm(p, icon) {
     </div>
     <div class="field-row single">
       <div class="field"><label>Flux Prompt Notes</label><textarea id="f-flux-notes" placeholder="Any additional prompt language to maintain visual consistency across generations…">${p.flux_notes || ''}</textarea></div>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field-group-title">Voice & Personality</div>
+    <div class="field-row single">
+      <div class="field"><label>Voice / Tone</label><textarea id="f-voice" placeholder="How she speaks, her texting style, what she says and doesn't say…">${p.voice || ''}</textarea></div>
+    </div>
+    <div class="field-row single">
+      <div class="field">
+        <label>Personality Traits</label>
+        <div class="tag-select">
+          ${['Mysterious','Intellectual','Warm','Bold','Vulnerable','Playful','Melancholy','Direct','Romantic','Detached','Fierce','Gentle','Witty','Quiet','Magnetic'].map(t =>
+            `<button class="tag-chip${(p.traits||[]).includes(t)?' selected':''}" data-group="traits" data-multi="true">${t}</button>`
+          ).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Communication Style</label>
+        <select id="f-comm-style">
+          ${['','Sparse and deliberate','Warm and verbose','Playful and teasing','Direct and blunt','Poetic and abstract','Casual and open'].map(s =>
+            `<option${p.communication_style===s?' selected':''}>${s}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Energy Level</label>
+        <select id="f-energy">
+          ${['','Low / still','Medium / balanced','High / electric'].map(s =>
+            `<option${p.energy===s?' selected':''}>${s}</option>`
+          ).join('')}
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field-group-title">Backstory & World</div>
+    <div class="field-row single">
+      <div class="field"><label>Backstory</label><textarea id="f-backstory" style="min-height:120px" placeholder="Where she came from, what shaped her, the experiences she doesn't talk about…">${p.backstory || ''}</textarea></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Desires</label><textarea id="f-desires" placeholder="What she actually wants, even if she won't say it directly…">${p.desires || ''}</textarea></div>
+      <div class="field"><label>Fears</label><textarea id="f-fears" placeholder="What keeps her up at night, what she avoids…">${p.fears || ''}</textarea></div>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field-group-title">Aesthetic & Interests</div>
+    <div class="field-row single">
+      <div class="field"><label>Aesthetic / Visual World</label><textarea id="f-aesthetic" placeholder="Film grain, natural light, specific colors, settings, objects, clothing, mood…">${p.aesthetic || ''}</textarea></div>
+    </div>
+    <div class="field-row single">
+      <div class="field"><label>Interests & References</label><textarea id="f-interests" placeholder="Music, books, places, brands, artists, films, subcultures she inhabits…">${p.interests || ''}</textarea></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Scene Tags</label>
+        <div class="tag-select">
+          ${['Coffee shops','Late nights','Hotel rooms','Art galleries','Outdoor markets','Rooftops','Studio apartments','Libraries','Beaches','Road trips'].map(t =>
+            `<button class="tag-chip${(p.scene_tags||[]).includes(t)?' selected':''}" data-group="scene_tags" data-multi="true">${t}</button>`
+          ).join('')}
+        </div>
+      </div>
     </div>
   </div>
 
