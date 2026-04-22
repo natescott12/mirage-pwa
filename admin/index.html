@@ -1408,6 +1408,17 @@ button { color: inherit; }
     .cl-card-date { font-size: 10px; color: var(--ink-dim); letter-spacing: 0.04em; }
     .cl-empty { padding: 80px 0; text-align: center; color: var(--ink-dim); font-size: var(--text-sm); }
 
+    /* Cloud Library link — plain accent text, no chrome. Sits next to
+       the Reload button in the Content Library header. */
+    .cl-cloud-link {
+      font-family: var(--font);
+      font-size: var(--text-sm); font-weight: var(--weight-medium);
+      color: var(--accent); text-decoration: none;
+      letter-spacing: 0.02em;
+      transition: opacity 0.15s;
+    }
+    .cl-cloud-link:hover { opacity: 0.75; }
+
     /* Edit mode */
     .cl-edit-layout {
       display: grid; grid-template-columns: 58% 42%; gap: 16px; align-items: stretch;
@@ -1790,8 +1801,9 @@ button { color: inherit; }
               <div class="page-title">Content Library</div>
               <div class="page-sub" id="cl-browse-sub">All generated images</div>
             </div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <button class="btn btn-outline btn-sm" onclick="clReload()" style="font-size: var(--text-xs)">Reload</button>
+            <div style="display:flex;gap:16px;align-items:center">
+              <a href="#content" class="cl-cloud-link" onclick="clReload();return false;" title="Refresh from Supabase">Cloud Library</a>
+              <button class="btn-ghost btn-sm" onclick="clReload()">Reload</button>
             </div>
           </div>
           <div class="cl-filter-row" id="cl-filter-row"></div>
@@ -5990,28 +6002,37 @@ async function clLoadBrowse() {
   const grid = document.getElementById('cl-grid');
   if (!grid) return;
   grid.innerHTML = '<div class="cl-empty">Loading…</div>';
+  const url = CL_SUPA_URL + '/rest/v1/content?select=id,image_url,icon_id,scene,created_at,is_published,edited_from,edit_preset,edit_adjustments&order=created_at.desc&limit=500';
+  console.log('[content-library] fetch →', url);
   try {
-    const r = await fetch(CL_SUPA_URL + '/rest/v1/content?select=id,image_url,icon_id,scene,created_at,is_published,edited_from,edit_preset,edit_adjustments&order=created_at.desc&limit=500', {
+    const r = await fetch(url, {
       headers: { 'apikey': CL_SUPA_KEY, 'Authorization': 'Bearer ' + CL_SUPA_KEY }
     });
+    console.log('[content-library] response status', r.status);
     if (!r.ok) {
       const body = await r.text().catch(function(){ return ''; });
       throw new Error('HTTP ' + r.status + (body ? ': ' + body.slice(0, 200) : ''));
     }
     const rows = await r.json();
+    console.log('[content-library] got', (rows && rows.length) || 0, 'rows');
     // Resolve icon_id → display name once so downstream UI (filter tabs,
     // card labels, edit title) can keep using a stable string.
     clItems = rows.map(function(row){
       return Object.assign({}, row, { _iconName: clResolveIconName(row.icon_id) });
     });
   } catch (e) {
+    console.error('[content-library] load failed:', e);
     grid.innerHTML = '<div class="cl-empty">Could not load content — ' + (e.message || 'unknown error') + '</div>';
     return;
   }
   clRenderFilters();
   clRenderGrid();
 }
-function clReload() { clLoadBrowse(); }
+/* Reload button handler — force a fresh fetch regardless of cache state. */
+function clReload() {
+  clItems = [];
+  clLoadBrowse();
+}
 
 function clRenderFilters() {
   const row = document.getElementById('cl-filter-row');
