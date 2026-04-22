@@ -188,28 +188,38 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 .editor-main { display: flex; flex-direction: column; gap: 16px; }
 
 .field-group {
-  background: transparent; border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 6px; padding: 22px;
+  background: #1f1f1f; border: 1px solid #333333;
+  border-radius: 4px; padding: 22px;
 }
 .field-group-title {
-  font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
-  color: rgba(255,255,255,0.3); font-weight: 700;
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: rgba(255,255,255,0.35); font-weight: 700;
   margin-bottom: 14px; padding-bottom: 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid #333333;
 }
 
 /* Accordion mode — only kicks in when wrapPersonaAccordion() has restructured
    the group. Title loses its bottom border/margin because the header owns the
-   divider; body slides in/out via the .collapsed toggle. */
+   divider; body slides in/out via the .collapsed toggle. A summary line
+   appears to the right of the title when the section is collapsed so you can
+   see at a glance what's been filled in. */
 .field-group-header {
   display: flex; align-items: center; justify-content: space-between;
   cursor: pointer; padding: 12px 20px; margin: -20px -20px 0;
-  user-select: none;
+  user-select: none; gap: 16px;
   transition: background 0.12s;
 }
-.field-group-header:hover { background: rgba(255,255,255,0.015); }
-.field-group-header .field-group-title { margin: 0; padding: 0; border: none; }
-.field-group-status { display: flex; align-items: center; gap: 10px; }
+.field-group-header:hover { background: rgba(255,255,255,0.02); }
+.field-group-header .field-group-title { margin: 0; padding: 0; border: none; flex-shrink: 0; }
+.field-group-summary {
+  flex: 1; min-width: 0;
+  font-size: 11px; color: rgba(255,255,255,0.35);
+  letter-spacing: 0.01em;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  text-align: left; display: none;
+}
+.field-group.collapsed .field-group-summary { display: block; }
+.field-group-status { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .field-group-dot {
   width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
   opacity: 0; transition: opacity 0.2s;
@@ -221,7 +231,7 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
   line-height: 1;
 }
 .field-group.collapsed .field-group-chev { transform: rotate(0deg); }
-.field-group-body { padding-top: 16px; margin-top: 14px; border-top: 1px solid var(--border); }
+.field-group-body { padding-top: 16px; margin-top: 14px; border-top: 1px solid #333333; }
 .field-group.collapsed { padding-bottom: 12px; }
 .field-group.collapsed .field-group-body { display: none; }
 
@@ -231,38 +241,38 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field label {
-  font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
-  color: rgba(255,255,255,0.3); font-weight: 700;
+  font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase;
+  color: rgba(255,255,255,0.4); font-weight: 500;
 }
 .field input, .field select, .field textarea {
-  padding: 8px 10px; background: transparent;
-  border: 1px solid rgba(255,255,255,0.1);
+  padding: 10px 12px; background: #1f1f1f;
+  border: 1px solid #333333;
   border-radius: 4px;
-  font-family: 'Afacad', sans-serif; font-size: 13px; color: var(--ink);
+  font-family: 'Afacad', sans-serif; font-size: 14px; color: var(--ink);
   outline: none; transition: border-color 0.15s; width: 100%;
 }
 .field input:focus, .field select:focus, .field textarea:focus {
-  border-color: rgba(255,255,255,0.3);
+  border-color: rgba(255,255,255,0.2);
 }
-.field textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+.field textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
 .field select { padding-right: 28px; }
 
-/* tag-select chips — publication-style: almost invisible bg, thin
-   border, selected state uses the accent color at 0.15 opacity. */
+/* tag-select chips — flat #1f1f1f pill with #333 border. Selected
+   pill picks up the accent at 0.15 opacity + a solid accent border. */
 .tag-select { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
 .tag-chip {
-  padding: 4px 10px; font-size: 11px;
+  padding: 5px 12px; font-size: 12px;
   color: rgba(255,255,255,0.55); cursor: pointer;
   transition: color 0.12s, border-color 0.12s, background 0.12s;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.02);
+  border: 1px solid #333333;
+  background: #1f1f1f;
   border-radius: 20px; font-family: 'Afacad', sans-serif;
   letter-spacing: 0.01em;
 }
-.tag-chip:hover { color: var(--ink); border-color: rgba(255,255,255,0.2); }
+.tag-chip:hover { color: var(--ink); border-color: rgba(255,255,255,0.25); }
 .tag-chip.selected {
   background: rgba(120,204,110,0.15); color: var(--ink);
-  border-color: rgba(120,204,110,0.35);
+  border-color: #78cc6e;
 }
 
 /* skin-tone swatches (Physical Description) */
@@ -289,28 +299,40 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 .save-status.saving { color: var(--ink-mid); }
 .save-status.error { color: #b03025; }
 
-/* Persona Builder sticky save bar — hairline border-top only, no surface
-   fill. Button is full-width, transparent, clean inversion on hover. */
+/* Persona Builder sticky save bar — thin border-top, full-width black
+   button that inverts to white on hover. */
 .persona-save-bar {
   position: fixed; left: var(--sidebar); right: 0; bottom: 0; z-index: 50;
-  height: 52px;
+  height: 56px;
   padding: 0 24px;
   background: var(--bg);
-  border-top: 1px solid rgba(255,255,255,0.08);
+  border-top: 1px solid #333333;
   display: flex; align-items: center;
 }
 .persona-save-bar .persona-save-wide {
   flex: 1;
-  padding: 10px 18px;
-  background: var(--ink); color: var(--bg);
-  border: none;
+  padding: 11px 18px;
+  background: #0a0a0a; color: var(--ink);
+  border: 1px solid #333333;
   font-family: 'Afacad', sans-serif;
   font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
   cursor: pointer; border-radius: 4px;
-  transition: opacity 0.15s;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
-.persona-save-bar .persona-save-wide:hover { opacity: 0.85; }
+.persona-save-bar .persona-save-wide:hover {
+  background: var(--ink); color: #0a0a0a; border-color: var(--ink);
+}
 .persona-save-bar .persona-save-wide:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* Plain-text link used for the Icon Studio jump in the Persona Builder
+   header. Reads as editorial metadata, not a button. */
+.persona-studio-link {
+  font-family: 'Afacad', sans-serif; font-size: 12px;
+  color: rgba(255,255,255,0.4); text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: color 0.12s;
+}
+.persona-studio-link:hover { color: var(--ink); }
 /* Leave room above the fixed bar so the last field isn't hidden. */
 #persona-form-view { padding-bottom: 68px; }
 @media (max-width: 768px) {
@@ -1403,7 +1425,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
             </div>
             <div style="display:flex;gap:12px;align-items:flex-start">
               <div id="persona-progress-label" style="font-size:12px;color:var(--ink-dim);padding-top:9px"></div>
-              <a href="/studio" class="btn btn-outline btn-sm" style="font-size:11px;text-decoration:none">Icon Studio →</a>
+              <a href="/studio" class="persona-studio-link">Icon Studio →</a>
             </div>
           </div>
 
@@ -3055,7 +3077,11 @@ function pbToggleChipMulti(el) {
 
 // ── Persona Builder accordion ─────────────────────────────────────────────────
 // Wraps each .field-group rendered by buildPersonaForm with a clickable header
-// + collapsible body. Called immediately after innerHTML injection. Idempotent.
+// + collapsible body. Identity lands open on first render (always needs to be
+// visible); every other section defaults to collapsed and reveals a one-line
+// summary of what's filled in so you can scan without expanding.
+const PERSONA_ALWAYS_OPEN = ['identity'];
+
 function wrapPersonaAccordion() {
   const editor = document.getElementById('persona-editor');
   if (!editor) return;
@@ -3068,11 +3094,15 @@ function wrapPersonaAccordion() {
     header.className = 'field-group-header';
     header.addEventListener('click', function() { group.classList.toggle('collapsed'); });
 
+    const summary = document.createElement('div');
+    summary.className = 'field-group-summary';
+
     const status = document.createElement('div');
     status.className = 'field-group-status';
     status.innerHTML = '<span class="field-group-dot" aria-hidden="true"></span><span class="field-group-chev" aria-hidden="true">›</span>';
 
     header.appendChild(title); // title node moves into header
+    header.appendChild(summary);
     header.appendChild(status);
 
     const body = document.createElement('div');
@@ -3081,7 +3111,10 @@ function wrapPersonaAccordion() {
 
     group.appendChild(header);
     group.appendChild(body);
-    group.classList.add('collapsed');
+
+    // Default open/closed: Identity stays open, everything else collapses.
+    const key = (title.textContent || '').trim().toLowerCase().split(/[\s&/]+/)[0];
+    if (!PERSONA_ALWAYS_OPEN.includes(key)) group.classList.add('collapsed');
   });
 
   // One-time delegated input listener so the has-data dot reacts to typing.
@@ -3097,14 +3130,30 @@ function refreshFieldGroupIndicators() {
   const editor = document.getElementById('persona-editor');
   if (!editor) return;
   editor.querySelectorAll(':scope > .field-group').forEach(function(group) {
-    const hasText = Array.from(group.querySelectorAll('input, textarea')).some(function(el) {
-      return (el.value || '').trim() !== '';
+    const body = group.querySelector(':scope > .field-group-body') || group;
+    const filled = [];
+    body.querySelectorAll('input, textarea').forEach(function(el) {
+      const v = (el.value || '').trim();
+      if (v) filled.push(v);
     });
-    const hasSelect = Array.from(group.querySelectorAll('select')).some(function(el) {
-      return el.value && el.value.trim() !== '';
+    body.querySelectorAll('select').forEach(function(el) {
+      const v = (el.value || '').trim();
+      if (v) filled.push(v);
     });
-    const hasChip = !!group.querySelector('.tag-chip.selected, .skin-swatch.selected');
-    group.classList.toggle('has-data', hasText || hasSelect || hasChip);
+    body.querySelectorAll('.tag-chip.selected').forEach(function(el) {
+      const v = (el.getAttribute('data-val') || el.textContent || '').trim();
+      if (v) filled.push(v);
+    });
+    const hasData = filled.length > 0;
+    group.classList.toggle('has-data', hasData);
+
+    const summaryEl = group.querySelector(':scope > .field-group-header > .field-group-summary');
+    if (summaryEl) {
+      const summary = filled.slice(0, 4).map(function(s) {
+        return s.length > 28 ? s.slice(0, 28) + '…' : s;
+      }).join(' · ');
+      summaryEl.textContent = summary;
+    }
   });
 }
 
