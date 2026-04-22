@@ -11,15 +11,15 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #0f0e0d;
-  --surface: #1a1814;
-  --border: rgba(255,255,255,0.08);
+  --bg: #141414;
+  --surface: #1a1a1a;
+  --border: rgba(255,255,255,0.06);
   --border-strong: rgba(255,255,255,0.16);
   --ink: #ffffff;
   --ink-mid: rgba(255,255,255,0.55);
-  --ink-dim: rgba(255,255,255,0.35);
+  --ink-dim: rgba(255,255,255,0.4);
   --accent: #77cc6e;
-  --sidebar: 240px;
+  --sidebar: 220px;
 }
 
 html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
@@ -74,35 +74,38 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 .main { display: flex; flex: 1; overflow: hidden; }
 
 /* ── SIDEBAR ──
-   Sidebar reads as a quiet rail: bg slightly darker than the content
-   column (so content feels "lifted" rather than the nav feeling
-   "heavy"), section labels nearly ghosted at 0.25 opacity, nav items
-   at 0.55 opacity until active. */
+   Text-only nav, 220px wide, bg slightly darker than the content
+   column (#0f0f0f vs content #141414) so the content reads "lifted"
+   rather than the nav feeling "heavy". Active item gets a solid 2px
+   accent bar + a barely-there accent-tinted background; no fill. */
 .sidebar {
-  width: var(--sidebar); background: #0a0a0a;
-  border-right: 1px solid rgba(255,255,255,0.04); flex-shrink: 0;
+  width: var(--sidebar); background: #0f0f0f;
+  border-right: 1px solid rgba(255,255,255,0.08); flex-shrink: 0;
   display: flex; flex-direction: column; overflow-y: auto;
 }
 .sidebar-section {
-  padding: 22px 18px 6px; font-size: 9px; letter-spacing: 0.08em;
+  padding: 0 20px; margin: 20px 0 4px;
+  font-size: 9px; letter-spacing: 0.08em;
   text-transform: uppercase; color: rgba(255,255,255,0.25); font-weight: 400;
 }
+.sidebar-section:first-child { margin-top: 16px; }
 .sidebar-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 5px 18px; font-size: 11px; color: rgba(255,255,255,0.55);
+  display: flex; align-items: center;
+  padding: 6px 20px; font-size: 12px; color: rgba(255,255,255,0.55);
   cursor: pointer; transition: color 0.12s, background 0.12s;
-  border-left: 2px solid transparent; letter-spacing: 0.01em;
+  border-left: 2px solid transparent; letter-spacing: 0;
 }
 .sidebar-item:hover { color: rgba(255,255,255,0.85); }
 .sidebar-item.active {
   color: var(--ink); border-left-color: var(--accent);
-  background: rgba(255,255,255,0.03); font-weight: 400;
+  background: rgba(119,204,110,0.08); font-weight: 400;
 }
-.sidebar-item .icon { font-size: 12px; width: 16px; text-align: center; opacity: 0.65; }
-.sidebar-item.active .icon { opacity: 1; }
+/* Retired icon glyphs — the wireframe is text-only nav. Markup kept
+   so restoring them is a one-line CSS flip if we change direction. */
+.sidebar-item .icon { display: none; }
 .sidebar-badge {
-  margin-left: auto; font-size: 9px; background: rgba(255,255,255,0.1);
-  color: var(--ink-mid); padding: 1px 6px; border-radius: 20px; letter-spacing: 0;
+  margin-left: auto; font-size: 10px; background: rgba(255,255,255,0.08);
+  color: var(--ink-mid); padding: 1px 7px; border-radius: 20px; letter-spacing: 0;
 }
 
 /* ── CONTENT ── */
