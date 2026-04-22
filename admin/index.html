@@ -819,6 +819,163 @@ tbody tr:hover td { background: var(--bg); }
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
 
+    /* ── CONTENT LIBRARY (Lightroom) ───────────────────────────────────── */
+    .cl-view { display: none; }
+    .cl-view.active { display: block; }
+
+    /* Browse */
+    .cl-filter-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+    .cl-filter-btn {
+      padding: 5px 12px; border: 1px solid var(--border);
+      background: transparent; color: var(--ink-mid);
+      font-family: 'Afacad', sans-serif; font-size: 11px;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      cursor: pointer; border-radius: 2px; transition: color 0.12s, border-color 0.12s, background 0.12s;
+    }
+    .cl-filter-btn:hover { color: var(--ink); border-color: var(--border-strong); }
+    .cl-filter-btn.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+    .cl-filter-btn .cl-filter-count { opacity: 0.6; margin-left: 6px; }
+
+    .cl-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    @media (max-width: 1100px) { .cl-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 820px)  { .cl-grid { grid-template-columns: repeat(2, 1fr); } }
+    .cl-card {
+      background: var(--surface); border: 1px solid var(--border);
+      overflow: hidden; cursor: pointer; transition: border-color 0.12s;
+    }
+    .cl-card:hover { border-color: var(--border-strong); }
+    .cl-card-img-wrap { position: relative; aspect-ratio: 3/4; background: #0a0908; overflow: hidden; }
+    .cl-card-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .cl-card-edit-btn {
+      position: absolute; top: 8px; right: 8px;
+      padding: 5px 10px; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+      background: rgba(20,18,16,0.75); color: #fff;
+      border: 1px solid rgba(255,255,255,0.2); border-radius: 2px;
+      font-family: 'Afacad', sans-serif; cursor: pointer; opacity: 0; transition: opacity 0.15s;
+    }
+    .cl-card:hover .cl-card-edit-btn { opacity: 1; }
+    .cl-card-edit-btn:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+    .cl-card-meta {
+      padding: 10px 12px; display: flex; justify-content: space-between; align-items: center;
+      font-size: 11px; color: var(--ink-mid);
+    }
+    .cl-card-icon { color: var(--ink); font-family: 'Afacad', sans-serif; }
+    .cl-card-date { font-size: 10px; color: var(--ink-dim); }
+    .cl-empty { padding: 80px 0; text-align: center; color: var(--ink-dim); font-size: 13px; }
+
+    /* Edit mode */
+    .cl-edit-layout {
+      display: grid; grid-template-columns: 58% 42%; gap: 16px; align-items: stretch;
+      height: calc(100vh - 170px); min-height: 520px;
+    }
+    @media (max-width: 900px) { .cl-edit-layout { grid-template-columns: 1fr; height: auto; } }
+    .cl-edit-left {
+      background: var(--surface); border: 1px solid var(--border);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .cl-edit-stage {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      background: #0a0908; padding: 18px; min-height: 360px; overflow: hidden;
+    }
+    .cl-edit-stage img {
+      max-width: 100%; max-height: 100%; display: block; object-fit: contain;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.04);
+    }
+    .cl-stage-bar {
+      display: flex; align-items: center; gap: 24px;
+      padding: 12px 18px; border-top: 1px solid var(--border); background: var(--surface);
+    }
+    .cl-origedit-toggle { display: flex; background: var(--bg); border: 1px solid var(--border); border-radius: 2px; overflow: hidden; }
+    .cl-origedit-toggle button {
+      padding: 6px 14px; background: transparent; border: none; color: var(--ink-mid);
+      font-family: 'Afacad', sans-serif; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+      cursor: pointer; transition: background 0.12s, color 0.12s;
+    }
+    .cl-origedit-toggle button.active { background: var(--ink); color: var(--bg); }
+    .cl-intensity-wrap { flex: 1; display: flex; align-items: center; gap: 10px; }
+    .cl-intensity-wrap label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); white-space: nowrap; }
+    .cl-intensity-wrap .cl-range-val { font-size: 11px; color: var(--ink-mid); min-width: 32px; text-align: right; font-variant-numeric: tabular-nums; }
+
+    .cl-edit-right {
+      background: var(--surface); border: 1px solid var(--border);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .cl-edit-scroll { flex: 1; overflow-y: auto; padding: 18px 20px 12px; }
+    .cl-section { margin-bottom: 22px; }
+    .cl-section-title {
+      font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--ink-dim); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    }
+
+    /* Filter strip */
+    .cl-filter-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: thin; }
+    .cl-filter-thumb {
+      flex: 0 0 auto; width: 72px; cursor: pointer; text-align: center;
+    }
+    .cl-filter-thumb-preview {
+      width: 72px; height: 90px;
+      border: 1px solid var(--border); border-radius: 2px; overflow: hidden;
+      background: #0a0908; transition: border-color 0.12s, box-shadow 0.12s;
+    }
+    .cl-filter-thumb-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .cl-filter-thumb.active .cl-filter-thumb-preview {
+      border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink);
+    }
+    .cl-filter-thumb-label {
+      margin-top: 6px; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--ink-mid);
+    }
+    .cl-filter-thumb.active .cl-filter-thumb-label { color: var(--ink); }
+
+    /* Sliders */
+    .cl-slider-row { display: grid; grid-template-columns: 96px 1fr 40px; gap: 10px; align-items: center; margin-bottom: 10px; }
+    .cl-slider-row label { font-size: 11px; color: var(--ink-mid); letter-spacing: 0.04em; }
+    .cl-slider-row input[type=range] {
+      -webkit-appearance: none; appearance: none; width: 100%; height: 2px;
+      background: rgba(255,255,255,0.12); border-radius: 1px; outline: none;
+    }
+    .cl-slider-row input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none; width: 12px; height: 12px;
+      border-radius: 50%; background: var(--ink); cursor: pointer;
+    }
+    .cl-slider-row input[type=range]::-moz-range-thumb {
+      width: 12px; height: 12px; border-radius: 50%; background: var(--ink); cursor: pointer; border: none;
+    }
+    .cl-slider-row .cl-slider-val {
+      font-size: 10px; color: var(--ink-dim); font-variant-numeric: tabular-nums; text-align: right;
+    }
+
+    /* Action bar */
+    .cl-action-bar {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+      padding: 12px 16px; border-top: 1px solid var(--border); background: var(--bg);
+    }
+    .cl-action-btn {
+      padding: 10px 12px; font-family: 'Afacad', sans-serif;
+      font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+      background: transparent; border: 1px solid rgba(255,255,255,0.22);
+      color: var(--ink); cursor: pointer; border-radius: 2px;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+    }
+    .cl-action-btn:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+    .cl-action-btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+    .cl-action-btn.primary:hover { background: transparent; color: var(--ink); }
+    .cl-action-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .cl-edit-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .cl-back-btn {
+      padding: 6px 12px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      background: transparent; border: 1px solid var(--border-strong);
+      color: var(--ink); cursor: pointer; border-radius: 2px;
+      font-family: 'Afacad', sans-serif; transition: background 0.12s, color 0.12s;
+    }
+    .cl-back-btn:hover { background: var(--ink); color: var(--bg); }
+    .cl-edit-title { font-size: 13px; color: var(--ink); letter-spacing: 0.04em; }
+    .cl-edit-sub { font-size: 11px; color: var(--ink-dim); margin-top: 2px; }
+
   </style>
 </head>
 <body>
@@ -1075,16 +1232,81 @@ tbody tr:hover td { background: var(--bg); }
 
       <!-- CONTENT LIBRARY -->
       <div class="pane" id="pane-content">
-        <div class="page-header">
-          <div>
-            <div class="page-title">Content Library</div>
-            <div class="page-sub">All generated images and posts</div>
+
+        <!-- Browse view -->
+        <div class="cl-view active" id="cl-view-browse">
+          <div class="page-header">
+            <div>
+              <div class="page-title">Content Library</div>
+              <div class="page-sub" id="cl-browse-sub">All generated images</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="btn btn-outline btn-sm" onclick="clReload()" style="font-size:11px">Reload</button>
+            </div>
+          </div>
+          <div class="cl-filter-row" id="cl-filter-row"></div>
+          <div class="cl-grid" id="cl-grid">
+            <div class="cl-empty">Loading…</div>
           </div>
         </div>
-        <div class="empty-state">
-          <div class="empty-state-icon">▣</div>
-          <div class="empty-state-text">Content library coming soon. Generate content via Icon Studio.</div>
+
+        <!-- Edit view -->
+        <div class="cl-view" id="cl-view-edit">
+          <div class="cl-edit-header">
+            <button class="cl-back-btn" onclick="clBackToBrowse()">← Library</button>
+            <div style="text-align:right">
+              <div class="cl-edit-title" id="cl-edit-title">—</div>
+              <div class="cl-edit-sub" id="cl-edit-sub"></div>
+            </div>
+          </div>
+          <div class="cl-edit-layout">
+            <!-- Left: stage -->
+            <div class="cl-edit-left">
+              <div class="cl-edit-stage" id="cl-stage">
+                <img id="cl-stage-img" alt="preview">
+              </div>
+              <div class="cl-stage-bar">
+                <div class="cl-origedit-toggle" role="tablist" aria-label="Compare original and edited">
+                  <button type="button" id="cl-toggle-original" onclick="clSetCompare('original')">Original</button>
+                  <button type="button" id="cl-toggle-edited" class="active" onclick="clSetCompare('edited')">Edited</button>
+                </div>
+                <div class="cl-intensity-wrap">
+                  <label for="cl-intensity">Intensity</label>
+                  <input type="range" id="cl-intensity" min="0" max="150" value="100" oninput="clApplyFilters()">
+                  <span class="cl-range-val" id="cl-intensity-val">100%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: controls -->
+            <div class="cl-edit-right">
+              <div class="cl-edit-scroll">
+
+                <div class="cl-section">
+                  <div class="cl-section-title">Filters</div>
+                  <div class="cl-filter-strip" id="cl-filter-strip"></div>
+                </div>
+
+                <div class="cl-section">
+                  <div class="cl-section-title">Adjustments</div>
+                  <div id="cl-adjustments"></div>
+                </div>
+
+                <div class="cl-section">
+                  <div class="cl-section-title">Color Grading</div>
+                  <div id="cl-color-grading"></div>
+                </div>
+
+              </div>
+              <div class="cl-action-bar">
+                <button class="cl-action-btn" onclick="clSaveOriginal()" title="Revert to the untouched original on Supabase">Save Original</button>
+                <button class="cl-action-btn primary" onclick="clSaveEdited()" title="Bake adjustments onto the image and upload as a new version">Save Edited</button>
+                <button class="cl-action-btn" onclick="clExport()" title="Download baked JPEG to your machine">Export</button>
+              </div>
+            </div>
+          </div>
         </div>
+
       </div>
 
       <!-- SUBSCRIBERS -->
@@ -4874,6 +5096,405 @@ function beginEditRow(rowEl, item) {
     }
   });
 }
+
+// ── CONTENT LIBRARY (Lightroom) ───────────────────────────────────────────────
+// Browse + Edit modes inside #pane-content. Browse pulls from the Supabase
+// `content` table and grids 4-up. Edit mode wires CSS-filter sliders and
+// named presets against a live preview, then bakes to canvas on save/export.
+// Named filter presets — pure CSS filter values. Each is the 100%-intensity
+// flavor; the Intensity slider scales everything toward the 'none' baseline.
+const CL_FILTERS = [
+  { id:'none',      label:'None',       values:{ exposure:0, contrast:0, highlights:0, shadows:0, whites:0, blacks:0, saturation:0, vibrance:0, grain:0, temp:0, tint:0, hue:0 } },
+  { id:'portra400', label:'Portra 400', values:{ exposure:4, contrast:8, highlights:-6, shadows:6, whites:2, blacks:-4, saturation:-8, vibrance:10, grain:6, temp:6, tint:2, hue:0 } },
+  { id:'fuji400h',  label:'Fuji 400H',  values:{ exposure:2, contrast:-4, highlights:-8, shadows:4, whites:0, blacks:-2, saturation:-14, vibrance:6, grain:4, temp:-8, tint:-4, hue:-3 } },
+  { id:'overcast',  label:'Overcast',   values:{ exposure:-2, contrast:-10, highlights:-4, shadows:10, whites:0, blacks:4, saturation:-22, vibrance:-6, grain:2, temp:-4, tint:0, hue:0 } },
+  { id:'flash',     label:'Flash',      values:{ exposure:6, contrast:18, highlights:-10, shadows:-6, whites:8, blacks:-12, saturation:6, vibrance:8, grain:3, temp:-2, tint:-2, hue:0 } },
+  { id:'dusk',      label:'Dusk',       values:{ exposure:-4, contrast:6, highlights:-14, shadows:10, whites:-6, blacks:4, saturation:-6, vibrance:8, grain:5, temp:10, tint:8, hue:5 } },
+  { id:'filmscan',  label:'Film Scan',  values:{ exposure:0, contrast:-6, highlights:-4, shadows:8, whites:-4, blacks:2, saturation:-18, vibrance:4, grain:14, temp:4, tint:2, hue:0 } },
+];
+const CL_ADJUST_DEFS = [
+  { key:'exposure',    label:'Exposure',   min:-100, max:100 },
+  { key:'contrast',    label:'Contrast',   min:-100, max:100 },
+  { key:'highlights',  label:'Highlights', min:-100, max:100 },
+  { key:'shadows',     label:'Shadows',    min:-100, max:100 },
+  { key:'whites',      label:'Whites',     min:-100, max:100 },
+  { key:'blacks',      label:'Blacks',     min:-100, max:100 },
+  { key:'saturation',  label:'Saturation', min:-100, max:100 },
+  { key:'vibrance',    label:'Vibrance',   min:-100, max:100 },
+  { key:'grain',       label:'Grain',      min:0,    max:100 },
+];
+const CL_COLOR_DEFS = [
+  { key:'temp', label:'Temp', min:-100, max:100 },
+  { key:'tint', label:'Tint', min:-100, max:100 },
+  { key:'hue',  label:'Hue',  min:-100, max:100 },
+];
+
+const CL_SUPA_URL = (typeof SUPABASE_URL !== 'undefined') ? SUPABASE_URL : 'https://gmyenvnfuailickepvax.supabase.co';
+const CL_SUPA_KEY = (typeof SUPABASE_ANON_KEY !== 'undefined') ? SUPABASE_ANON_KEY : 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
+
+let clItems = [];
+let clActiveIcon = 'all';
+let clCurrent = null;          // { id, image_url, icon_name, created_at, ... }
+let clFilterId = 'none';
+let clAdjust = {};             // current live values (after preset + user tweaks, before intensity)
+let clCompare = 'edited';      // 'original' | 'edited'
+
+function clResetAdjust() {
+  clAdjust = {};
+  CL_ADJUST_DEFS.forEach(function(d){ clAdjust[d.key] = 0; });
+  CL_COLOR_DEFS.forEach(function(d){ clAdjust[d.key] = 0; });
+}
+clResetAdjust();
+
+// Build a CSS filter string from an adjustment map. Intensity is 0..1.5 (150%).
+function clBuildFilterCSS(adj, intensity) {
+  const i = typeof intensity === 'number' ? intensity : 1;
+  // Exposure → brightness: ±100 → 0.5..1.5
+  const brightness = 1 + (adj.exposure * 0.005 + adj.whites * 0.002 + adj.blacks * -0.002 + adj.highlights * 0.0015 + adj.shadows * -0.0015) * i;
+  // Contrast → contrast: ±100 → 0.6..1.4
+  const contrast = 1 + (adj.contrast * 0.004) * i;
+  // Saturation + Vibrance → saturate: ±100 → 0.3..1.6
+  const saturate = 1 + ((adj.saturation * 0.006) + (adj.vibrance * 0.004)) * i;
+  // Temp/Tint → sepia (warm) + hue-rotate for cool shift
+  const warm = Math.max(0, adj.temp) * 0.004 * i;      // 0..0.4
+  const cool = Math.max(0, -adj.temp) * 0.003 * i;     // hue shift offset via hue-rotate
+  const tintShift = adj.tint * 0.05 * i;               // degrees
+  const hueShift = adj.hue * 0.6 * i;                  // degrees
+  // Grain is painted separately as a pseudo; CSS filter alone can't do noise cleanly.
+  return [
+    'brightness(' + brightness.toFixed(3) + ')',
+    'contrast(' + contrast.toFixed(3) + ')',
+    'saturate(' + Math.max(0, saturate).toFixed(3) + ')',
+    warm > 0 ? 'sepia(' + warm.toFixed(3) + ')' : '',
+    'hue-rotate(' + (hueShift + tintShift - cool * 12).toFixed(2) + 'deg)'
+  ].filter(Boolean).join(' ');
+}
+
+// ── Browse view ──────────────────────────────────────────────────────────────
+async function clLoadBrowse() {
+  const grid = document.getElementById('cl-grid');
+  if (!grid) return;
+  grid.innerHTML = '<div class="cl-empty">Loading…</div>';
+  try {
+    const r = await fetch(CL_SUPA_URL + '/rest/v1/content?select=id,image_url,icon_name,scene,created_at,uploaded_at,is_published&order=created_at.desc&limit=500', {
+      headers: { 'apikey': CL_SUPA_KEY, 'Authorization': 'Bearer ' + CL_SUPA_KEY }
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    clItems = await r.json();
+  } catch (e) {
+    grid.innerHTML = '<div class="cl-empty">Could not load content — ' + (e.message || 'unknown error') + '</div>';
+    return;
+  }
+  clRenderFilters();
+  clRenderGrid();
+}
+function clReload() { clLoadBrowse(); }
+
+function clRenderFilters() {
+  const row = document.getElementById('cl-filter-row');
+  if (!row) return;
+  const names = ['all'];
+  clItems.forEach(function(x) { if (x.icon_name && names.indexOf(x.icon_name) < 0) names.push(x.icon_name); });
+  if (names.indexOf(clActiveIcon) < 0) clActiveIcon = 'all';
+  row.innerHTML = names.map(function(n) {
+    const count = n === 'all' ? clItems.length : clItems.filter(function(x){return x.icon_name===n;}).length;
+    const cls = 'cl-filter-btn' + (clActiveIcon === n ? ' active' : '');
+    const label = n === 'all' ? 'All' : n;
+    return '<button class="' + cls + '" onclick="clSetIconFilter(\'' + n.replace(/'/g, "\\'") + '\')">' + label + '<span class="cl-filter-count">' + count + '</span></button>';
+  }).join('');
+}
+function clSetIconFilter(name) {
+  clActiveIcon = name;
+  clRenderFilters();
+  clRenderGrid();
+}
+function clRenderGrid() {
+  const grid = document.getElementById('cl-grid');
+  const sub = document.getElementById('cl-browse-sub');
+  if (!grid) return;
+  const list = clActiveIcon === 'all' ? clItems.slice() : clItems.filter(function(x){return x.icon_name===clActiveIcon;});
+  if (sub) sub.textContent = list.length + ' image' + (list.length===1?'':'s') + (clActiveIcon==='all'?'':' · ' + clActiveIcon);
+  if (!list.length) { grid.innerHTML = '<div class="cl-empty">No images' + (clActiveIcon==='all'?'':' for ' + clActiveIcon) + '.</div>'; return; }
+  grid.innerHTML = list.map(function(it, i) {
+    const date = (it.created_at || it.uploaded_at || '').slice(0, 10);
+    const iconName = it.icon_name || '—';
+    const safeId = String(it.id).replace(/'/g, "\\'");
+    return (
+      '<div class="cl-card" onclick="clOpenEdit(\'' + safeId + '\')">' +
+        '<div class="cl-card-img-wrap">' +
+          '<img src="' + (it.image_url || '') + '" alt="' + iconName + '" loading="lazy" onerror="this.parentNode.style.opacity=0.3">' +
+          '<button class="cl-card-edit-btn" onclick="event.stopPropagation();clOpenEdit(\'' + safeId + '\')">Edit</button>' +
+        '</div>' +
+        '<div class="cl-card-meta">' +
+          '<span class="cl-card-icon">' + iconName + '</span>' +
+          '<span class="cl-card-date">' + date + '</span>' +
+        '</div>' +
+      '</div>'
+    );
+  }).join('');
+}
+
+// ── Edit view ────────────────────────────────────────────────────────────────
+function clOpenEdit(id) {
+  const item = clItems.find(function(x){ return String(x.id) === String(id); });
+  if (!item) return;
+  clCurrent = item;
+  clFilterId = 'none';
+  clResetAdjust();
+  clCompare = 'edited';
+  document.getElementById('cl-view-browse').classList.remove('active');
+  document.getElementById('cl-view-edit').classList.add('active');
+  const titleEl = document.getElementById('cl-edit-title');
+  const subEl = document.getElementById('cl-edit-sub');
+  if (titleEl) titleEl.textContent = item.icon_name || 'Untitled';
+  if (subEl) subEl.textContent = (item.scene || '') + (item.created_at ? ' · ' + item.created_at.slice(0,10) : '');
+  const img = document.getElementById('cl-stage-img');
+  if (img) {
+    img.crossOrigin = 'anonymous';
+    img.src = item.image_url || '';
+  }
+  clSetCompare('edited');
+  clRenderFilterStrip();
+  clRenderAdjustments();
+  clRenderColorGrading();
+  clApplyFilters();
+}
+function clBackToBrowse() {
+  document.getElementById('cl-view-edit').classList.remove('active');
+  document.getElementById('cl-view-browse').classList.add('active');
+  clCurrent = null;
+}
+function clSetCompare(which) {
+  clCompare = which;
+  const o = document.getElementById('cl-toggle-original');
+  const e = document.getElementById('cl-toggle-edited');
+  if (o) o.classList.toggle('active', which === 'original');
+  if (e) e.classList.toggle('active', which === 'edited');
+  clApplyFilters();
+}
+function clRenderFilterStrip() {
+  const strip = document.getElementById('cl-filter-strip');
+  if (!strip || !clCurrent) return;
+  const thumbSrc = clCurrent.image_url || '';
+  strip.innerHTML = CL_FILTERS.map(function(f) {
+    const filterCSS = f.id === 'none' ? 'none' : clBuildFilterCSS(f.values, 1);
+    const active = f.id === clFilterId ? ' active' : '';
+    return (
+      '<div class="cl-filter-thumb' + active + '" onclick="clApplyPreset(\'' + f.id + '\')">' +
+        '<div class="cl-filter-thumb-preview"><img src="' + thumbSrc + '" style="filter:' + filterCSS + '" alt="' + f.label + '"></div>' +
+        '<div class="cl-filter-thumb-label">' + f.label + '</div>' +
+      '</div>'
+    );
+  }).join('');
+}
+function clApplyPreset(id) {
+  const preset = CL_FILTERS.find(function(f){ return f.id === id; });
+  if (!preset) return;
+  clFilterId = id;
+  clResetAdjust();
+  Object.keys(preset.values).forEach(function(k){ clAdjust[k] = preset.values[k]; });
+  clRenderFilterStrip();
+  clRenderAdjustments();
+  clRenderColorGrading();
+  clApplyFilters();
+}
+function clRenderAdjustments() {
+  const host = document.getElementById('cl-adjustments');
+  if (!host) return;
+  host.innerHTML = CL_ADJUST_DEFS.map(function(d){
+    const v = clAdjust[d.key] || 0;
+    return (
+      '<div class="cl-slider-row">' +
+        '<label for="cl-adj-' + d.key + '">' + d.label + '</label>' +
+        '<input type="range" id="cl-adj-' + d.key + '" min="' + d.min + '" max="' + d.max + '" value="' + v + '" oninput="clOnSlider(\'' + d.key + '\',this.value)">' +
+        '<span class="cl-slider-val" id="cl-adj-val-' + d.key + '">' + v + '</span>' +
+      '</div>'
+    );
+  }).join('');
+}
+function clRenderColorGrading() {
+  const host = document.getElementById('cl-color-grading');
+  if (!host) return;
+  host.innerHTML = CL_COLOR_DEFS.map(function(d){
+    const v = clAdjust[d.key] || 0;
+    return (
+      '<div class="cl-slider-row">' +
+        '<label for="cl-adj-' + d.key + '">' + d.label + '</label>' +
+        '<input type="range" id="cl-adj-' + d.key + '" min="' + d.min + '" max="' + d.max + '" value="' + v + '" oninput="clOnSlider(\'' + d.key + '\',this.value)">' +
+        '<span class="cl-slider-val" id="cl-adj-val-' + d.key + '">' + v + '</span>' +
+      '</div>'
+    );
+  }).join('');
+}
+function clOnSlider(key, val) {
+  clAdjust[key] = parseFloat(val) || 0;
+  const v = document.getElementById('cl-adj-val-' + key);
+  if (v) v.textContent = clAdjust[key];
+  clApplyFilters();
+}
+function clApplyFilters() {
+  const img = document.getElementById('cl-stage-img');
+  const intensityEl = document.getElementById('cl-intensity');
+  const intensityVal = document.getElementById('cl-intensity-val');
+  if (!img) return;
+  const pct = intensityEl ? parseFloat(intensityEl.value) : 100;
+  if (intensityVal) intensityVal.textContent = Math.round(pct) + '%';
+  if (clCompare === 'original') { img.style.filter = 'none'; return; }
+  img.style.filter = clBuildFilterCSS(clAdjust, pct / 100);
+}
+
+// ── Save / Export ────────────────────────────────────────────────────────────
+async function clBakeToBlob() {
+  if (!clCurrent || !clCurrent.image_url) throw new Error('No image loaded');
+  // Re-fetch via fetch to get CORS-usable bytes even if <img> tainted the canvas.
+  const resp = await fetch(clCurrent.image_url, { mode: 'cors' });
+  if (!resp.ok) throw new Error('Fetch source failed (' + resp.status + ')');
+  const srcBlob = await resp.blob();
+  const bmp = await createImageBitmap(srcBlob);
+  const w = bmp.width, h = bmp.height;
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  const intensity = (parseFloat(document.getElementById('cl-intensity').value) || 100) / 100;
+  ctx.filter = clBuildFilterCSS(clAdjust, intensity);
+  ctx.drawImage(bmp, 0, 0, w, h);
+  // Grain overlay — simple additive noise proportional to adj.grain * intensity.
+  const grain = (clAdjust.grain || 0) * intensity;
+  if (grain > 0) {
+    const imgData = ctx.getImageData(0, 0, w, h);
+    const d = imgData.data;
+    const amp = grain * 0.6; // max ~60 on 255 scale at grain=100, intensity=1
+    for (let p = 0; p < d.length; p += 4) {
+      const n = (Math.random() - 0.5) * amp;
+      d[p]     = Math.max(0, Math.min(255, d[p]     + n));
+      d[p + 1] = Math.max(0, Math.min(255, d[p + 1] + n));
+      d[p + 2] = Math.max(0, Math.min(255, d[p + 2] + n));
+    }
+    ctx.putImageData(imgData, 0, 0);
+  }
+  return await new Promise(function(resolve, reject){
+    canvas.toBlob(function(b){ b ? resolve(b) : reject(new Error('toBlob failed')); }, 'image/jpeg', 0.92);
+  });
+}
+
+async function clSaveEdited() {
+  if (!clCurrent) return;
+  const btns = document.querySelectorAll('.cl-action-btn');
+  btns.forEach(function(b){ b.disabled = true; });
+  try {
+    const blob = await clBakeToBlob();
+    // Upload to the `content` storage bucket with a deterministic filename.
+    const iconSlug = (clCurrent.icon_name || 'icon').toLowerCase().replace(/\s+/g,'-');
+    const filename = iconSlug + '_edited_' + Date.now() + '.jpg';
+    const uploadRes = await fetch(CL_SUPA_URL + '/storage/v1/object/content/' + encodeURIComponent(filename), {
+      method: 'POST',
+      headers: {
+        'apikey': CL_SUPA_KEY,
+        'Authorization': 'Bearer ' + CL_SUPA_KEY,
+        'Content-Type': 'image/jpeg',
+        'x-upsert': 'true'
+      },
+      body: blob
+    });
+    if (!uploadRes.ok) throw new Error('Upload HTTP ' + uploadRes.status);
+    const publicUrl = CL_SUPA_URL + '/storage/v1/object/public/content/' + encodeURIComponent(filename);
+    // Insert a new row alongside the original, linking via edited_from.
+    const insertBody = {
+      image_url: publicUrl,
+      icon_name: clCurrent.icon_name || null,
+      scene: clCurrent.scene || null,
+      edited_from: clCurrent.id,
+      edit_preset: clFilterId,
+      edit_adjustments: clAdjust,
+      is_published: false,
+      created_at: new Date().toISOString()
+    };
+    const insertRes = await fetch(CL_SUPA_URL + '/rest/v1/content', {
+      method: 'POST',
+      headers: {
+        'apikey': CL_SUPA_KEY,
+        'Authorization': 'Bearer ' + CL_SUPA_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify(insertBody)
+    });
+    if (!insertRes.ok) {
+      const body = await insertRes.text();
+      // If the schema doesn't have edited_from/edit_preset/edit_adjustments yet,
+      // retry with a minimal payload so at least the edited image lands.
+      if (/edited_from|edit_preset|edit_adjustments|column/i.test(body)) {
+        const minimal = { image_url: publicUrl, icon_name: clCurrent.icon_name || null, scene: clCurrent.scene || null, is_published: false, created_at: new Date().toISOString() };
+        const retry = await fetch(CL_SUPA_URL + '/rest/v1/content', {
+          method: 'POST',
+          headers: {
+            'apikey': CL_SUPA_KEY,
+            'Authorization': 'Bearer ' + CL_SUPA_KEY,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
+          body: JSON.stringify(minimal)
+        });
+        if (!retry.ok) { throw new Error('Insert HTTP ' + retry.status + ': ' + (await retry.text()).slice(0,200)); }
+      } else {
+        throw new Error('Insert HTTP ' + insertRes.status + ': ' + body.slice(0,200));
+      }
+    }
+    if (typeof toast === 'function') toast('Edited version saved');
+    // Refresh library in the background so the new row shows up on next browse.
+    clLoadBrowse();
+  } catch (e) {
+    alert('Save failed: ' + (e && e.message || e));
+  } finally {
+    btns.forEach(function(b){ b.disabled = false; });
+  }
+}
+
+function clSaveOriginal() {
+  // The original row is untouched in Supabase; "Save Original" just discards
+  // unsaved edits in the editor and reverts the preview.
+  if (!clCurrent) return;
+  clFilterId = 'none';
+  clResetAdjust();
+  const intensityEl = document.getElementById('cl-intensity');
+  if (intensityEl) intensityEl.value = 100;
+  clRenderFilterStrip();
+  clRenderAdjustments();
+  clRenderColorGrading();
+  clSetCompare('original');
+  if (typeof toast === 'function') toast('Reverted to original');
+}
+
+async function clExport() {
+  if (!clCurrent) return;
+  const btns = document.querySelectorAll('.cl-action-btn');
+  btns.forEach(function(b){ b.disabled = true; });
+  try {
+    const blob = await clBakeToBlob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const iconSlug = (clCurrent.icon_name || 'icon').toLowerCase().replace(/\s+/g,'-');
+    a.download = iconSlug + '_' + clFilterId + '_' + Date.now() + '.jpg';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  } catch (e) {
+    alert('Export failed: ' + (e && e.message || e));
+  } finally {
+    btns.forEach(function(b){ b.disabled = false; });
+  }
+}
+
+// Trigger browse load when the Content Library pane becomes visible.
+(function wireClPaneActivation(){
+  const origShowPane = window.showPane;
+  if (typeof origShowPane !== 'function') return;
+  window.showPane = function(name) {
+    const out = origShowPane.apply(this, arguments);
+    if (name === 'content' && !clItems.length) clLoadBrowse();
+    return out;
+  };
+})();
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 window.addEventListener('load', () => {
