@@ -1596,7 +1596,9 @@ function loadPersonaIntoStudio(iconId) {
   function applyPersonaData(p, entryArchetype) {
     // ── Character Builder ──
     if (typeof currentChar !== 'undefined' && currentChar) {
-      // Normalize to lowercase to match Studio chip values
+      // Normalize chip-backed fields to lowercase to match Studio chip values.
+      // Free-text fields (ethnicity, features, tattoos, hairStyle, skinTonePrompt)
+      // pass through untouched so user casing / punctuation survives.
     if (p.eye_color)    currentChar.eyeColor    = p.eye_color.toLowerCase();
       if (p.eye_shape)    currentChar.eyeShape    = p.eye_shape.toLowerCase();
       if (p.hair_color)   currentChar.hairColor   = p.hair_color.toLowerCase();
@@ -1606,6 +1608,12 @@ function loadPersonaIntoStudio(iconId) {
       if (p.skin_texture) currentChar.skinTexture = p.skin_texture.toLowerCase();
       if (p.build)        currentChar.build       = p.build.toLowerCase();
       if (p.makeup)       currentChar.makeup      = p.makeup.toLowerCase();
+      if (p.freckles)     currentChar.freckles    = p.freckles.toLowerCase();
+      if (p.ethnicity)              currentChar.ethnicity      = p.ethnicity;
+      if (p.skin_tone_prompt)       currentChar.skinTonePrompt = p.skin_tone_prompt;
+      if (p.hair_style)             currentChar.hairStyle      = p.hair_style;
+      if (p.distinguishing_features) currentChar.features      = p.distinguishing_features;
+      if (p.tattoos_piercings)      currentChar.tattoos        = p.tattoos_piercings;
       if (p.age) {
         var ageNum = parseInt(p.age);
         if (!isNaN(ageNum)) {
@@ -2819,20 +2827,24 @@ var MG=window.MG={
     var icon=typeof selectedIcon!=='undefined'?selectedIcon:null;
     if(!icon)return{character:'',scene:'',wardrobe:'',shot:'',light:'',style:''};
 
-    // CHARACTER — slim phys desc (max 5 visual anchors, <12 words)
+    // CHARACTER — slim phys desc (max 5 visual anchors). Candidate pool is
+    // pulled in this priority order: ethnicity, skinTone, eyeColor, eyeShape,
+    // hairColor, hairLength, hairTexture, build, freckles, makeup. First 5
+    // populated entries make it into the prompt.
     var character='woman';
     if(typeof currentChar!=='undefined'&&currentChar){
       var cc=currentChar,pp=[];
-      if(cc.skinTonePrompt)pp.push(cc.skinTonePrompt);
-      else if(cc.skinTone)pp.push(cc.skinTone+' skin');
-      if(cc.eyeColor)pp.push(cc.eyeColor+' eyes');
-      var hairBits=[];
-      if(cc.hairLength)hairBits.push(cc.hairLength);
-      if(cc.hairColor)hairBits.push(cc.hairColor);
-      hairBits.push('hair');
-      if(hairBits.length>1)pp.push(hairBits.join(' '));
-      var feat=cc.features||(cc.freckles&&cc.freckles!=='none'?cc.freckles+' freckles':'')||cc.tattoos||'';
-      if(feat)pp.push(feat);
+      if(cc.ethnicity)                                  pp.push(cc.ethnicity+' heritage');
+      if(cc.skinTonePrompt)                             pp.push(cc.skinTonePrompt);
+      else if(cc.skinTone)                              pp.push(cc.skinTone+' skin');
+      if(cc.eyeColor)                                   pp.push(cc.eyeColor+' eyes');
+      if(cc.eyeShape)                                   pp.push(cc.eyeShape+' eye shape');
+      if(cc.hairColor)                                  pp.push(cc.hairColor+' hair');
+      if(cc.hairLength)                                 pp.push(cc.hairLength+' length');
+      if(cc.hairTexture)                                pp.push(cc.hairTexture);
+      if(cc.build)                                      pp.push(cc.build+' build');
+      if(cc.freckles&&cc.freckles!=='none')             pp.push(cc.freckles+' freckles');
+      if(cc.makeup&&cc.makeup!=='bare-faced')           pp.push(cc.makeup+' makeup');
       if(pp.length)character=pp.slice(0,5).join(', ');
     }
 
