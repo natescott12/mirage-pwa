@@ -4649,9 +4649,17 @@ function renderSloanChatMarkdown(raw) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
-  s = s.replace(/\*\*([^*\n]+?)\*\*/g, '<strong>$1</strong>');
+  // Headers — `## text` on its own line becomes a bold line. Handled
+  // before bold/italic so `##` markers don't leak as raw chars.
+  s = s.replace(/^[ \t]*#{1,6}[ \t]+(.+?)[ \t]*$/gm, '<strong>$1</strong>');
+  // Bold — multiline-safe so paragraphs wrapped in ** still render.
+  s = s.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>');
+  // Italic — single-* not preceded/followed by another *.
   s = s.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>');
   s = s.replace(/`([^`\n]+?)`/g, '<code>$1</code>');
+  // Bullet list markers at line start — convert to a middle-dot glyph so
+  // `- item` / `* item` / `• item` don't read as raw prefix chars.
+  s = s.replace(/^[ \t]*[\-*•][ \t]+(.+?)[ \t]*$/gm, '• $1');
   s = s.replace(/\r\n|\r|\n/g, '<br>');
   return s;
 }
