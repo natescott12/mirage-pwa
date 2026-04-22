@@ -947,7 +947,7 @@ tbody tr:hover td { background: var(--bg); }
 
     /* Action bar */
     .cl-action-bar {
-      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
       padding: 12px 16px; border-top: 1px solid var(--border); background: var(--bg);
     }
     .cl-action-btn {
@@ -1299,9 +1299,8 @@ tbody tr:hover td { background: var(--bg); }
 
               </div>
               <div class="cl-action-bar">
-                <button class="cl-action-btn" onclick="clSaveOriginal()" title="Revert to the untouched original on Supabase">Save Original</button>
-                <button class="cl-action-btn primary" onclick="clSaveEdited()" title="Bake adjustments onto the image and upload as a new version">Save Edited</button>
-                <button class="cl-action-btn" onclick="clExport()" title="Download baked JPEG to your machine">Export</button>
+                <button class="cl-action-btn" onclick="clRevert()" title="Clear adjustments and reset the filter to None">Revert</button>
+                <button class="cl-action-btn primary" onclick="clSaveEdited()" title="Bake adjustments and save the edited version to Supabase">Save</button>
               </div>
             </div>
           </div>
@@ -5163,7 +5162,22 @@ const CL_PRESETS_FALLBACK = [
     }
   },
   {
-    slug: 'portra400', label: 'Portra 400', sort_order: 1,
+    slug: 'bw', label: 'B&W', sort_order: 1,
+    definition: {
+      adjustments: { exposure:2, contrast:22, highlights:-4, shadows:6, whites:4, blacks:-10, saturation:0, vibrance:0, grain:18, temp:0, tint:0, hue:0 },
+      // Ilford HP5 — high-contrast B&W film. Rec.709 luminance matrix
+      // converts every channel to weighted grayscale so the look survives
+      // the saturation slider; tonal curve does the contrast + midtone lift.
+      colorMatrix: [
+        0.2126, 0.7152, 0.0722, 0, 0,
+        0.2126, 0.7152, 0.0722, 0, 0,
+        0.2126, 0.7152, 0.0722, 0, 0,
+        0,      0,      0,      1, 0
+      ]
+    }
+  },
+  {
+    slug: 'portra400', label: 'Portra 400', sort_order: 2,
     definition: {
       adjustments: { exposure:4, contrast:8, highlights:-6, shadows:6, whites:2, blacks:-4, saturation:-8, vibrance:10, grain:6, temp:6, tint:2, hue:0 },
       // Warm skin tones, lifted shadows, slight cyan in highlights, muted-rich.
@@ -5176,7 +5190,7 @@ const CL_PRESETS_FALLBACK = [
     }
   },
   {
-    slug: 'fuji400h', label: 'Fuji 400H', sort_order: 2,
+    slug: 'fuji400h', label: 'Fuji 400H', sort_order: 3,
     definition: {
       adjustments: { exposure:2, contrast:-4, highlights:-8, shadows:4, whites:0, blacks:-2, saturation:-14, vibrance:6, grain:4, temp:-8, tint:-4, hue:-3 },
       // Cooler overall, slight green midtones, compressed highlights, pastel.
@@ -5189,7 +5203,7 @@ const CL_PRESETS_FALLBACK = [
     }
   },
   {
-    slug: 'overcast', label: 'Overcast', sort_order: 3,
+    slug: 'overcast', label: 'Overcast', sort_order: 4,
     definition: {
       adjustments: { exposure:-2, contrast:-10, highlights:-4, shadows:10, whites:0, blacks:4, saturation:-22, vibrance:-6, grain:2, temp:-4, tint:0, hue:0 },
       // Desaturated, blue-grey cast, flat low contrast, lifted blacks.
@@ -5202,7 +5216,7 @@ const CL_PRESETS_FALLBACK = [
     }
   },
   {
-    slug: 'flash', label: 'Flash', sort_order: 4,
+    slug: 'flash', label: 'Flash', sort_order: 5,
     definition: {
       adjustments: { exposure:6, contrast:18, highlights:-10, shadows:-6, whites:8, blacks:-12, saturation:6, vibrance:8, grain:3, temp:-2, tint:-2, hue:0 },
       // High contrast, cool blue-white highlights, harsh direct feel.
@@ -5215,7 +5229,7 @@ const CL_PRESETS_FALLBACK = [
     }
   },
   {
-    slug: 'dusk', label: 'Dusk', sort_order: 5,
+    slug: 'dusk', label: 'Dusk', sort_order: 6,
     definition: {
       adjustments: { exposure:-4, contrast:6, highlights:-14, shadows:10, whites:-6, blacks:4, saturation:-6, vibrance:8, grain:5, temp:10, tint:8, hue:5 },
       // Warm orange-red shadows, deep blacks, slight magenta highlights.
@@ -5228,7 +5242,7 @@ const CL_PRESETS_FALLBACK = [
     }
   },
   {
-    slug: 'filmscan', label: 'Film Scan', sort_order: 6,
+    slug: 'filmscan', label: 'Film Scan', sort_order: 7,
     definition: {
       adjustments: { exposure:0, contrast:-6, highlights:-4, shadows:8, whites:-4, blacks:2, saturation:-18, vibrance:4, grain:14, temp:4, tint:2, hue:0 },
       // Faded lifted blacks, warm yellow-green cast, vintage, low saturation.
@@ -5248,11 +5262,16 @@ let clCurrent = null;          // { id, image_url, icon_id, scene, created_at, .
 
 // icon_id → display name via the already-loaded admin roster. Falls back to
 // the bare id string if the roster hasn't hydrated yet or the id is unknown.
+// Known-alias normalization: any id containing 'sloan' (case-insensitive)
+// collapses to 'Sloan' so admin-channel / legacy rows don't spawn a second
+// tab in the icon filter row.
 function clResolveIconName(iconId) {
   if (!iconId) return '';
-  if (typeof allIcons === 'undefined' || !allIcons) return String(iconId);
-  const match = allIcons.find(function(i){ return String(i.id) === String(iconId); });
-  return (match && match.name) || String(iconId);
+  const raw = String(iconId);
+  if (/sloan/i.test(raw)) return 'Sloan';
+  if (typeof allIcons === 'undefined' || !allIcons) return raw;
+  const match = allIcons.find(function(i){ return String(i.id) === raw; });
+  return (match && match.name) || raw;
 }
 let clFilterId = 'none';
 let clAdjust = {};             // current live adjustment values (slider state)
@@ -5754,9 +5773,9 @@ async function clSaveEdited() {
   }
 }
 
-function clSaveOriginal() {
-  // The original row is untouched in Supabase; "Save Original" just discards
-  // unsaved edits in the editor and reverts the preview.
+// Clear any in-editor adjustments and reset the preview to a clean 'None'
+// filter on the Edited view. The source row in Supabase is never touched.
+function clRevert() {
   if (!clCurrent) return;
   clFilterId = 'none';
   clResetAdjust();
@@ -5765,28 +5784,8 @@ function clSaveOriginal() {
   clRenderFilterStrip();
   clRenderAdjustments();
   clRenderColorGrading();
-  clSetCompare('original');
-  if (typeof toast === 'function') toast('Reverted to original');
-}
-
-async function clExport() {
-  if (!clCurrent) return;
-  const btns = document.querySelectorAll('.cl-action-btn');
-  btns.forEach(function(b){ b.disabled = true; });
-  try {
-    const blob = await clBakeToBlob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    const iconSlug = (clCurrent._iconName || 'icon').toLowerCase().replace(/\s+/g,'-');
-    a.download = iconSlug + '_' + clFilterId + '_' + Date.now() + '.jpg';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
-  } catch (e) {
-    alert('Export failed: ' + (e && e.message || e));
-  } finally {
-    btns.forEach(function(b){ b.disabled = false; });
-  }
+  clSetCompare('edited');
+  if (typeof toast === 'function') toast('Reverted');
 }
 
 // Trigger browse load when the Content Library pane becomes visible.
