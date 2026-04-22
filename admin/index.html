@@ -4198,6 +4198,26 @@ function sloanChatExtractImageUrl(text) {
   return m ? m[0] : null;
 }
 
+// Minimal markdown → HTML renderer for Sloan chat bubbles. HTML-escapes
+// input first, then converts **bold**, *italic*, `code`, and newlines.
+// No links/lists/tables — intentional: the model produces short replies
+// and anything richer should be treated as a design decision, not a
+// silent upgrade.
+function renderSloanChatMarkdown(raw) {
+  if (raw == null) return '';
+  let s = String(raw)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+  s = s.replace(/\*\*([^*\n]+?)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>');
+  s = s.replace(/`([^`\n]+?)`/g, '<code>$1</code>');
+  s = s.replace(/\r\n|\r|\n/g, '<br>');
+  return s;
+}
+
 function appendSloanChatMessage(who, text, explicitImageUrl, docName) {
   const msgs = document.getElementById('sloanchat-messages');
   if (!msgs) return null;
@@ -4265,7 +4285,7 @@ function appendSloanChatMessage(who, text, explicitImageUrl, docName) {
   if (displayText) {
     const textEl = document.createElement('div');
     textEl.className = 'sloanchat-text';
-    textEl.textContent = displayText;
+    textEl.innerHTML = renderSloanChatMarkdown(displayText);
     el.appendChild(textEl);
   }
 
