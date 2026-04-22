@@ -216,6 +216,33 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     padding: 0 0 0 2px; font-size: var(--text-xs);
   }
 
+  /* Icon card tab strip — plain text with a 2px accent underline on
+     the active tab. Sits below the name / archetype / vibe inputs
+     inside .icon-card. Shares the .nav-tab class so switchTab's
+     active sync keeps working, but overrides the button chrome. */
+  .ic-tab-row {
+    display: flex; gap: 24px; margin-top: 14px;
+    border-top: 1px solid var(--border); padding-top: 14px;
+  }
+  .nav-tab.ic-tab {
+    padding: 4px 0; background: transparent; border: none;
+    border-radius: 0;
+    color: var(--ink-dim); letter-spacing: 0.04em;
+    font-size: var(--text-sm); font-weight: var(--weight-regular);
+    text-transform: none;
+    position: relative;
+    transition: color 0.12s;
+  }
+  .nav-tab.ic-tab:hover { color: var(--ink); background: transparent; border: none; }
+  .nav-tab.ic-tab.active {
+    background: transparent; color: var(--ink); border: none;
+  }
+  .nav-tab.ic-tab.active:hover { opacity: 1; background: transparent; border: none; }
+  .nav-tab.ic-tab.active::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -15px;
+    height: 2px; background: var(--accent);
+  }
+
   /* NOTIFICATION */
   #notification { position: fixed; top: 16px; right: 16px; z-index: 9999; padding: 11px 18px; border-radius: 2px; font-size: var(--text-xs); letter-spacing: 0.1em; display: none; animation: fadeIn 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
   #notification.success { background: var(--text); color: var(--bg); }
@@ -948,22 +975,16 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   </div>
 </div>
 
-<!-- HEADER -->
+<!-- HEADER — minimal. Wordmark on the left, proxy status on the
+     right. All tab switching now lives inside the icon card (Generate
+     / Converse) or the left nav (Queue / Schedule). -->
 <div id="header">
   <div style="display:flex;align-items:center;gap:16px">
     <div class="logo">Mirage</div>
     <div style="width:1px;height:18px;background:var(--border-md)"></div>
     <div class="eyebrow">Icon Studio</div>
   </div>
-  <div style="display:flex;align-items:center;gap:20px">
-    <div id="proxy-status" style="font-size:10px;letter-spacing:0.1em;cursor:pointer" onclick="checkProxy()">Checking...</div>
-    <div style="display:flex;gap:6px;align-items:center">
-      <div class="nav-tab active" data-tab="generate" onclick="switchTab('generate')">Generate</div>
-      <div class="nav-tab" data-tab="converse" onclick="switchTab('converse')">Converse</div>
-      <div class="nav-tab plain" data-tab="queue" onclick="switchTab('queue')">Queue <span class="badge" id="queue-count">0</span></div>
-      <div class="nav-tab plain" data-tab="schedule" onclick="switchTab('schedule')">Schedule</div>
-    </div>
-  </div>
+  <div id="proxy-status" style="font-size: var(--text-xs);letter-spacing:0.04em;cursor:pointer" onclick="checkProxy()">Checking…</div>
 </div>
 
 <div class="studio-main-row">
@@ -999,6 +1020,14 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     <a class="sidebar-item" href="/admin#projdash">Project Dashboard</a>
     <a class="sidebar-item" href="/admin#design">Design System</a>
     <a class="sidebar-item" href="/admin#techref">Tech Reference</a>
+
+    <!-- Studio-local tabs. These don't leave the page; switchTab flips
+         the active .tab-content. Href keeps the keyboard affordance. -->
+    <div class="sidebar-section">Studio</div>
+    <a class="sidebar-item" href="#queue" onclick="switchTab('queue');return false;">
+      Queue <span class="sidebar-badge" id="queue-count-nav">0</span>
+    </a>
+    <a class="sidebar-item" href="#schedule" onclick="switchTab('schedule');return false;">Schedule</a>
   </nav>
 
 <div id="app">
@@ -1024,10 +1053,13 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
           </button>
         </div>
 
-        <!-- LoRA inline status panel retired — the LoRA dot + label at
-             the top-right of the card now carries the entire on/off
-             state. Training controls moved to a dedicated surface
-             (admin Icons roster). -->
+        <!-- Generate / Converse tab strip — plain-text, underlined
+             active. Shares the .nav-tab class so switchTab's active
+             sync keeps working. -->
+        <div class="ic-tab-row">
+          <button type="button" class="nav-tab ic-tab active" data-tab="generate" onclick="switchTab('generate')">Generate</button>
+          <button type="button" class="nav-tab ic-tab" data-tab="converse" onclick="switchTab('converse')">Converse</button>
+        </div>
       </div>
 
       <div style="margin-bottom:16px">
@@ -1833,7 +1865,7 @@ $("lightbox").addEventListener("click",function(e){if(e.target===this)closeLight
 
 // ── ACTIONS ───────────────────────────────────────────────────────────────────
 function notify(msg,type="success") { const el=$("notification");if(!el)return;el.textContent=msg;el.className=type;el.style.display="block";clearTimeout(el._t);el._t=setTimeout(()=>{el.style.display="none";},3500); }
-function updateQueueCount() { const c=queue.length;setText("queue-count",c);setText("queue-sub",`${c} ${c===1?"drop":"drops"} scheduled`); }
+function updateQueueCount() { const c=queue.length;setText("queue-count",c);setText("queue-count-nav",c);setText("queue-sub",`${c} ${c===1?"drop":"drops"} scheduled`); }
 function updateLibCount() { const c=getTotalCount();setText("lib-total",c);setText("lib-subtitle",`${c} total images · saved automatically per icon`); }
 function selectIcon(id) {
   var target = ICONS_DATA.find(function(i){ return i.id === id; });
