@@ -206,29 +206,13 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   .icon-grid-card:hover { border-color: var(--border-strong); }
   .icon-grid-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Afacad', sans-serif; font-style: normal; font-size: 15px; color: rgba(255,255,255,0.9); flex-shrink: 0; }
 
-  /* CHARACTER BUILDER */
-  .char-builder { background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; margin-bottom: 20px; overflow: hidden; }
-  .char-builder-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  /* Reused by Icon card inputs and the Persona Builder */
   .char-builder-title { font-size: 10px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; }
-  .char-builder-body { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
-  .char-builder.collapsed .char-builder-body { display: none; }
   .char-section-label { font-size: 9px; letter-spacing: 0.18em; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
   .char-field { display: flex; flex-direction: column; gap: 5px; }
   .char-input { width: 100%; padding: 7px 10px; background: var(--bg); border: 1px solid var(--border-md); border-radius: 2px; font-size: 12px; color: var(--text); outline: none; font-family: 'DM Sans', sans-serif; transition: border-color 0.15s; }
   .char-input:focus { border-color: var(--border-strong); }
   .char-input::placeholder { color: var(--muted); }
-  .char-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-  .char-chip { padding: 5px 11px; border-radius: 2px; font-size: 11px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all 0.12s; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
-  .char-chip:hover { border-color: var(--border-md); color: var(--text); }
-  .char-chip.selected { background: var(--text); color: var(--bg); border-color: var(--text); }
-  .char-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .skin-swatches { display: flex; gap: 5px; flex-wrap: wrap; }
-  .skin-swatch { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; flex-shrink: 0; }
-  .skin-swatch:hover { transform: scale(1.1); }
-  .skin-swatch.selected { border-color: var(--text); box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--text); }
-  .char-save-btn { width: 100%; padding: 9px; background: transparent; border: 1px solid var(--border-strong); color: var(--dim); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; margin-top: 4px; }
-  .char-save-btn:hover { background: var(--text); color: var(--bg); border-color: var(--text); }
-  .char-prompt-preview { padding: 10px 12px; background: rgba(26,23,20,0.03); border: 1px solid var(--border); border-radius: 2px; font-size: 10px; color: var(--muted); line-height: 1.7; font-style: normal; margin-top: 8px; }
 
 
   /* EDITABLE PROMPT */
@@ -519,134 +503,6 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
         </div>
       </div>
 
-      <!-- Character Builder -->
-      <div class="char-builder" id="char-builder">
-        <div class="char-builder-header" onclick="toggleCharBuilder()">
-          <div class="char-builder-title">Character Builder</div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <div style="font-size:10px;color:var(--muted)" id="char-summary">Click to expand</div>
-            <div id="char-chevron" style="font-size:10px;color:var(--muted)">▼</div>
-          </div>
-        </div>
-        <div class="char-builder-body" id="char-builder-body">
-
-          <!-- Ethnicity / Heritage -->
-          <div class="char-field">
-            <div class="char-section-label">Ethnicity / Heritage</div>
-            <input id="cb-ethnicity" class="char-input" placeholder="e.g. East Asian, Afro-Caribbean, Southern European..." oninput="updateChar('ethnicity',this.value)" />
-          </div>
-
-          <!-- Skin tone -->
-          <div class="char-field">
-            <div class="char-section-label">Skin Tone</div>
-            <div class="skin-swatches" id="skin-swatches"></div>
-            <input id="cb-skin" class="char-input" style="margin-top:6px" placeholder="or describe e.g. warm olive, cool porcelain..." oninput="updateChar('skinTone',this.value)" />
-          </div>
-
-          <!-- Skin texture -->
-          <div class="char-field">
-            <div class="char-section-label">Skin Texture</div>
-            <div class="char-chips" id="chips-skinTexture"></div>
-          </div>
-
-          <!-- Skin texture -->
-          <div class="char-field">
-            <div class="char-section-label">Skin Texture</div>
-            <div class="char-chips" id="chips-skinTexture"></div>
-          </div>
-
-          <!-- Eyes -->
-          <div class="char-grid">
-            <div class="char-field">
-              <div class="char-section-label">Eye Color</div>
-              <div class="char-chips" id="chips-eyeColor"></div>
-              <input id="cb-eye-color-custom" class="char-input" style="margin-top:5px" placeholder="custom..." oninput="updateChar('eyeColor',this.value)" />
-            </div>
-            <div class="char-field">
-              <div class="char-section-label">Eye Shape</div>
-              <div class="char-chips" id="chips-eyeShape"></div>
-            </div>
-          </div>
-
-          <!-- Hair -->
-          <div class="char-field">
-            <div class="char-section-label">Hair Color</div>
-            <div class="char-chips" id="chips-hairColor"></div>
-            <input id="cb-hair-color-custom" class="char-input" style="margin-top:5px" placeholder="custom e.g. strawberry blonde, ash brown..." oninput="updateChar('hairColor',this.value)" />
-          </div>
-          <div class="char-grid">
-            <div class="char-field">
-              <div class="char-section-label">Hair Length</div>
-              <div class="char-chips" id="chips-hairLength"></div>
-            </div>
-            <div class="char-field">
-              <div class="char-section-label">Hair Texture</div>
-              <div class="char-chips" id="chips-hairTexture"></div>
-            </div>
-          </div>
-          <div class="char-field">
-            <div class="char-section-label">Hair Style</div>
-            <input id="cb-hair-style" class="char-input" placeholder="e.g. loose waves, messy bun, blunt cut, slicked back..." oninput="updateChar('hairStyle',this.value)" />
-          </div>
-
-          <!-- Face details -->
-          <div class="char-grid">
-            <div class="char-field">
-              <div class="char-section-label">Freckles</div>
-              <div class="char-chips" id="chips-freckles"></div>
-            </div>
-            <div class="char-field">
-              <div class="char-section-label">Makeup</div>
-              <div class="char-chips" id="chips-makeup"></div>
-            </div>
-          </div>
-
-          <!-- Body -->
-          <div class="char-grid">
-            <div class="char-field">
-              <div class="char-section-label">Build</div>
-              <div class="char-chips" id="chips-build"></div>
-            </div>
-            <div class="char-field">
-              <div class="char-section-label">Age Range</div>
-              <div class="char-chips" id="chips-age"></div>
-            </div>
-          </div>
-
-          <!-- Distinguishing features -->
-          <div class="char-field">
-            <div class="char-section-label">Distinguishing Features</div>
-            <input id="cb-features" class="char-input" placeholder="e.g. small scar on chin, gap teeth, birthmark on neck, nose ring..." oninput="updateChar('features',this.value)" />
-          </div>
-
-          <!-- Tattoos -->
-          <div class="char-field">
-            <div class="char-section-label">Tattoos / Piercings</div>
-            <input id="cb-tattoos" class="char-input" placeholder="e.g. fine line tattoo on forearm, double ear piercings..." oninput="updateChar('tattoos',this.value)" />
-          </div>
-
-          <!-- Setting -->
-          <div class="char-field">
-            <div class="char-section-label">Typical Setting</div>
-            <input id="cb-setting" class="char-input" placeholder="e.g. Lower East Side apartment, bookshelf walls..." oninput="updateIconField('setting',this.value)" />
-          </div>
-
-          <!-- Style -->
-          <div class="char-field">
-            <div class="char-section-label">Signature Style</div>
-            <input id="cb-style" class="char-input" placeholder="e.g. turtleneck pulled low, vintage Levi's, no jewelry..." oninput="updateIconField('style',this.value)" />
-          </div>
-
-          <!-- Character prompt preview -->
-          <div>
-            <div class="char-section-label" style="margin-bottom:6px">Character Description (injected into every prompt)</div>
-            <div class="char-prompt-preview" id="char-prompt-preview">Fill in the fields above to build the character description...</div>
-          </div>
-
-          <button class="char-save-btn" onclick="saveCharacter()">Save Character Profile</button>
-        </div>
-      </div>
-
       <!-- Persona Builder -->
       <div class="persona-builder collapsed" id="persona-builder">
         <div class="persona-builder-header" onclick="togglePersonaBuilder()">
@@ -917,6 +773,16 @@ const setText = (id, v) => { const e=$(id); if(e) e.textContent=v; };
 const setVal = (id, v) => { const e=$(id); if(e) e.value=v; };
 const setHTML = (id, v) => { const e=$(id); if(e) e.innerHTML=v; };
 
+// Deterministic per-icon avatar color. Hashes the icon name into an editorial
+// HSL palette — muted saturation, mid lightness, readable with white text.
+// Same inputs → same color across sessions / surfaces / machines.
+function colorForIcon(icon) {
+  const name = (icon && (icon.name || icon.id)) || '';
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return `hsl(${h % 360}, 35%, 48%)`;
+}
+
 // ── DATA ──────────────────────────────────────────────────────────────────────
 // ── Canonical Icon roster. This inline definition is still used for sync
 // access throughout the Studio, but admin/Persona Builder reads the same
@@ -1154,61 +1020,22 @@ function copyFullPrompt() {
   notify("Prompt copied");
 }
 
-// ── CHARACTER BUILDER ─────────────────────────────────────────────────────────
-function loadCharIntoBuilder() {
-  currentChar = {...getChar(selectedIcon.id)};
-  // Text fields — all null-safe
-  setVal("cb-ethnicity", currentChar.ethnicity||"");
-  setVal("cb-skin", currentChar.skinTone||"");
-  setVal("cb-eye-color-custom", currentChar.eyeColor&&!CHIPS.eyeColor.includes(currentChar.eyeColor)?currentChar.eyeColor:"");
-  setVal("cb-hair-color-custom", currentChar.hairColor&&!CHIPS.hairColor.includes(currentChar.hairColor)?currentChar.hairColor:"");
-  setVal("cb-hair-style", currentChar.hairStyle||"");
-  setVal("cb-features", currentChar.features||"");
-  setVal("cb-tattoos", currentChar.tattoos||"");
-  setVal("cb-setting", selectedIcon.setting||"");
-  setVal("cb-style", selectedIcon.style||"");
-  // Profile fields
+// ── CHARACTER STATE ───────────────────────────────────────────────────────────
+// The Character Builder panel was retired; editing now happens in the admin
+// Persona Builder. currentChar is still populated from persona_data /
+// character_data via applyPersonaData, feeds MG.parts() and convSync(), and
+// syncs back to Supabase via savePersona() in the Persona Builder surface.
+function syncIconProfileInputs() {
+  if (!selectedIcon) return;
   setVal("edit-name", selectedIcon.name);
   setVal("edit-arch", selectedIcon.archetype);
   setVal("edit-vibe", selectedIcon.vibe);
-  renderSkinSwatches();
-  renderAllChips();
-  updateCharPreview();
-  updateCharSummary();
   if (typeof applyStudioIconLock === 'function') applyStudioIconLock();
 }
 
-function updateChar(field, val) {
-  currentChar[field]=val;
-  updateCharPreview();
-  updateCharSummary();
-  refreshPrompt();
-}
-
 function updateIconField(field, val) {
+  if (!selectedIcon) return;
   selectedIcon[field]=val;
-  refreshPrompt();
-}
-
-function selectSkinSwatch(idx, el) {
-  const tone=SKIN_TONES[idx];
-  if(!tone) return;
-  currentChar.skinTonePrompt=tone.prompt;
-  currentChar.skinTone=tone.label;
-  setVal("cb-skin", tone.label);
-  document.querySelectorAll(".skin-swatch").forEach(s=>s.classList.remove("selected"));
-  el.classList.add("selected");
-  updateCharPreview();
-  updateCharSummary();
-  refreshPrompt();
-}
-
-function selectChip(group, val, el) {
-  currentChar[group] = currentChar[group]===val ? "" : val;
-  const container=el.closest(".char-chips");
-  if(container) container.querySelectorAll(".char-chip").forEach(c=>c.classList.toggle("selected",c.dataset.val===currentChar[group]));
-  updateCharPreview();
-  updateCharSummary();
   refreshPrompt();
 }
 
@@ -1236,7 +1063,7 @@ function applyStudioIconLock() {
   var protectedIcon = STUDIO_PROTECTED_ICONS.indexOf(name) !== -1;
   console.log('[studio-lock] icon:', name, '| user:', studioCurrentUser(), '| editable:', editable);
 
-  var btn = document.querySelector('.char-save-btn');
+  var btn = document.querySelector('.persona-save-btn');
   if (btn) {
     if (editable) {
       btn.disabled = false;
@@ -1270,62 +1097,6 @@ function applyStudioIconLock() {
   }
 }
 
-// Alias so any caller using the descriptive name hits the same hard guard.
-function saveCharacterProfile() { return saveCharacter(); }
-
-function saveCharacter() {
-  if (!studioCanEdit(selectedIcon && selectedIcon.name)) {
-    console.warn('[studio-lock] saveCharacter blocked for', selectedIcon && selectedIcon.name);
-    return; // silent no-op — do NOT write to localStorage, Supabase, or anything else
-  }
-  saveChar(selectedIcon.id, currentChar);
-  notify(selectedIcon.name+" character profile saved");
-  // Sync full currentChar to Supabase for cross-machine access
-  if (window.sbStudio && selectedIcon) {
-    window.sbStudio.from('personas').update({
-      character_data: currentChar,
-      updated_at: new Date().toISOString()
-    }).ilike('icon_name', selectedIcon.name).then(function(r) {
-      if (!r.error) console.log('Character synced to Supabase:', selectedIcon.name);
-      else console.warn('Character sync error:', r.error);
-    });
-  }
-}
-
-function toggleCharBuilder() {
-  const b=$("char-builder");
-  if(!b) return;
-  b.classList.toggle("collapsed");
-  const ch=$("char-chevron");
-  if(ch) ch.textContent=b.classList.contains("collapsed")?"▶":"▼";
-}
-
-function updateCharPreview() {
-  const desc=buildCharDesc();
-  const el=$("char-prompt-preview");
-  if(el) el.textContent=desc||"Fill in the fields above to build the character description...";
-}
-
-function updateCharSummary() {
-  const c=currentChar;
-  const parts=[c.ethnicity,c.skinTone,c.hairColor,c.eyeColor].filter(Boolean);
-  setText("char-summary", parts.length?parts.slice(0,3).join(" · "):"Not configured");
-}
-
-function renderSkinSwatches() {
-  const el=$("skin-swatches");
-  if(!el) return;
-  el.innerHTML=SKIN_TONES.map((t,i)=>`<div class="skin-swatch ${currentChar.skinTonePrompt===t.prompt||currentChar.skinTone===t.label?"selected":""}" style="background:${t.hex}" title="${t.label}" onclick="selectSkinSwatch(${i},this)"></div>`).join("");
-}
-
-function renderAllChips() {
-  Object.entries(CHIPS).forEach(([key,opts])=>{
-    const el=$("chips-"+key);
-    if(!el) return;
-    el.innerHTML=opts.map(o=>`<div class="char-chip ${currentChar[key]===o?"selected":""}" data-val="${o}" onclick="selectChip('${key}','${o}',this)">${o}</div>`).join("");
-  });
-}
-
 // ── RENDERS ───────────────────────────────────────────────────────────────────
 function renderIconList(filter="") {
   const el=$("icon-list"); if(!el) return;
@@ -1334,7 +1105,7 @@ function renderIconList(filter="") {
   el.innerHTML=f.map(icon=>{
     const cnt=getCount(icon.id);
     return `<div class="icon-list-item ${icon.id===selectedIcon.id?"selected":""}" onclick="selectIcon(${icon.id})">
-      <div class="icon-avatar" style="background:${icon.color}">${icon.name[0]}</div>
+      <div class="icon-avatar" style="background:${colorForIcon(icon)}">${icon.name[0]}</div>
       <div style="flex:1;min-width:0"><div style="font-family:'Afacad',sans-serif;font-style:normal;font-size:14px;margin-bottom:1px">${icon.name}</div><div style="font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${icon.archetype}</div></div>
       ${cnt>0?`<span class="icon-lib-badge">${cnt}</span>`:""}
       ${icon.id===selectedIcon.id?'<div style="width:4px;height:4px;border-radius:50%;background:var(--text);flex-shrink:0"></div>':""}
@@ -1344,7 +1115,7 @@ function renderIconList(filter="") {
 
 function renderIconCard() {
   const i=selectedIcon;
-  const av=$("card-avatar"); if(av){av.style.background=i.color;av.textContent=i.name[0];}
+  const av=$("card-avatar"); if(av){av.style.background=colorForIcon(i);av.textContent=i.name[0];}
   setText("btn-name", i.name);
   setVal("edit-name", i.name);
   setVal("edit-arch", i.archetype);
@@ -1408,7 +1179,7 @@ function renderOutput() {
 function renderLibrary() {
   const lib=load(LIB_KEY);
   const iconsWithImgs=ICONS_DATA.filter(i=>(lib[i.id]||[]).length>0);
-  const btns=[{id:"all",name:"All Icons",color:"#1a1714",count:getTotalCount()},...iconsWithImgs.map(i=>({id:i.id,name:i.name,color:i.color,count:(lib[i.id]||[]).length}))];
+  const btns=[{id:"all",name:"All Icons",color:"#1a1714",count:getTotalCount()},...iconsWithImgs.map(i=>({id:i.id,name:i.name,color:colorForIcon(i),count:(lib[i.id]||[]).length}))];
   setHTML("lib-icon-btns",btns.map(b=>`
     <div class="lib-icon-btn ${libIconId===b.id?"active":""}" onclick="setLibIcon(this.dataset.id)" data-id="${b.id}">
       <div class="lib-dot" style="background:${b.color}"></div>
@@ -1466,7 +1237,7 @@ function renderIconsGrid(filter="") {
     const persona = getPersona(icon.id);
     const cluster = icon.cluster || inferCluster(icon);
     return `<div class="icon-grid-card" onclick="selectIconAndGenerate(${icon.id})">
-      <div class="icon-grid-avatar" style="background:${icon.color}">${icon.name[0]}</div>
+      <div class="icon-grid-avatar" style="background:${colorForIcon(icon)}">${icon.name[0]}</div>
       <div style="flex:1;min-width:0">
         <div style="font-family:'Afacad',sans-serif;font-style:normal;font-size:17px;margin-bottom:2px">${icon.name}</div>
         <div style="font-size:10px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px">${icon.archetype}</div>
@@ -1507,7 +1278,7 @@ function renderSchedule() {
   const slots=[{time:"9:00 AM",type:"Free",s:"morning light"},{time:"1:00 PM",type:"PPV",s:"midday"},{time:"7:00 PM",type:"Free",s:"golden hour"},{time:"11:00 PM",type:"PPV",s:"night"}];
   el.innerHTML=icons.map(icon=>`
     <div class="sch-card">
-      <div class="sch-head"><div class="icon-avatar" style="background:${icon.color};width:34px;height:34px;font-size:13px">${icon.name[0]}</div><div><div style="font-family:'Afacad',sans-serif;font-style:normal;font-size:20px">${icon.name.toLowerCase()}</div><div style="font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">${icon.archetype}</div></div></div>
+      <div class="sch-head"><div class="icon-avatar" style="background:${colorForIcon(icon)};width:34px;height:34px;font-size:13px">${icon.name[0]}</div><div><div style="font-family:'Afacad',sans-serif;font-style:normal;font-size:20px">${icon.name.toLowerCase()}</div><div style="font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">${icon.archetype}</div></div></div>
       <div style="padding:8px 0">${slots.map(sl=>`<div class="sch-slot"><div><div style="font-size:12px;color:var(--dim)">${sl.time}</div><div style="font-size:9px;color:var(--muted)">${sl.s}</div></div><div style="font-size:9px;padding:2px 8px;border:1px solid var(--border-md);border-radius:1px;color:var(--muted)">${sl.type}</div></div>`).join("")}</div>
       <div style="padding:0 16px 14px"><button onclick="selectIconAndGenerate(${icon.id})" style="width:100%;padding:10px;background:var(--text);color:var(--bg);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;border:none;border-radius:2px;cursor:pointer;font-family:'DM Sans',sans-serif">Generate Drops →</button></div>
     </div>`).join("");
@@ -1568,7 +1339,7 @@ function selectIcon(id) {
   renderSceneTabs();
   renderParams();
   refreshPrompt();
-  loadCharIntoBuilder();
+  syncIconProfileInputs();
   if(typeof loadPersonaForIcon==="function") loadPersonaForIcon();
   if(typeof loadWardrobeForIcon==="function") loadWardrobeForIcon();
   if(typeof resetVoicePreview==="function") resetVoicePreview();
@@ -1649,13 +1420,7 @@ function loadPersonaIntoStudio(iconId) {
         localStorage.setItem(PERSONA_KEY, JSON.stringify(saved));
       } catch(e) {}
     }
-    if (typeof loadCharIntoBuilder === 'function') loadCharIntoBuilder();
-    // Force chip re-selection after a tick to ensure DOM is ready
-    setTimeout(function() {
-      if (typeof renderAllChips === 'function') renderAllChips();
-      if (typeof updateCharPreview === 'function') updateCharPreview();
-      if (typeof updateCharSummary === 'function') updateCharSummary();
-    }, 50);
+    if (typeof syncIconProfileInputs === 'function') syncIconProfileInputs();
     if (typeof loadPersonaForIcon === 'function') loadPersonaForIcon();
     if (typeof refreshPrompt === 'function') refreshPrompt();
     console.log('loadPersonaIntoStudio: loaded', iconName);
@@ -2161,16 +1926,13 @@ function init() {
   renderIconCard();
   renderSceneTabs();
   renderParams();
-  loadCharIntoBuilder();
+  syncIconProfileInputs();
   loadPersonaForIcon();
   loadWardrobeForIcon();
   refreshPrompt();
   renderLibrary();
   updateLibCount();
   renderSchedule();
-  // Start char builder and persona collapsed
-  const cb=$("char-builder");
-  if(cb) cb.classList.add("collapsed");
   checkProxy();
   setInterval(checkProxy,15000);
 }
@@ -2998,15 +2760,6 @@ window.lbNav=function(dir){MG.lbNav(dir);};
 window.lbUseRef=function(){MG.lbUseRef();};
 window.lbDownload=function(){MG.lbDownload();};
 window.lbDelete=function(){MG.lbDelete();};
-
-// Hook selectChip (character chips) to MG.refresh
-var _origSelectChip=window.selectChip;
-if(typeof window.selectChip==='function'){
-  window.selectChip=function(el,param,value){
-    _origSelectChip&&_origSelectChip.apply(this,arguments);
-    MG.refresh();
-  };
-}
 
 // Hook updateIconField to MG.refresh
 var _origUIF=window.updateIconField;
