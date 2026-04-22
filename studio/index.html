@@ -233,27 +233,6 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   .prompt-live-label { font-size: 9px; color: var(--green); letter-spacing: 0.08em; }
 
 
-  /* PERSONA BUILDER */
-  .persona-builder { background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; margin-bottom: 20px; overflow: hidden; }
-  .persona-builder-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-  .persona-builder.collapsed .persona-builder-body { display: none; }
-  .persona-builder-body { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
-  .persona-phrase-row { display: flex; gap: 6px; align-items: center; }
-  .persona-phrase-num { font-family: 'DM Sans', sans-serif; font-style: normal; font-size: 14px; color: var(--muted); width: 16px; flex-shrink: 0; }
-  .persona-input { width: 100%; padding: 7px 10px; background: var(--bg); border: 1px solid var(--border-md); border-radius: 2px; font-size: 12px; color: var(--text); outline: none; font-family: 'DM Sans', sans-serif; transition: border-color 0.15s; }
-  .persona-input:focus { border-color: var(--border-strong); }
-  .persona-textarea { width: 100%; padding: 8px 10px; background: var(--bg); border: 1px solid var(--border-md); border-radius: 2px; font-size: 12px; color: var(--text); outline: none; font-family: 'DM Sans', sans-serif; resize: vertical; min-height: 68px; line-height: 1.6; transition: border-color 0.15s; }
-  .persona-textarea:focus { border-color: var(--border-strong); }
-  .persona-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-  .persona-chip { padding: 5px 11px; border-radius: 2px; font-size: 11px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all 0.12s; font-family: 'DM Sans', sans-serif; }
-  .persona-chip.selected { background: var(--text); color: var(--bg); border-color: var(--text); }
-  .persona-cluster-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-  .persona-cluster-chip { padding: 5px 11px; border-radius: 2px; font-size: 11px; cursor: pointer; border: 1px solid var(--border-md); background: transparent; color: var(--dim); transition: all 0.12s; font-family: 'DM Sans', sans-serif; font-weight: 400; }
-  .persona-cluster-chip.selected { background: var(--text); color: var(--bg); border-color: var(--text); }
-  .persona-save-btn { width: 100%; padding: 9px; background: transparent; border: 1px solid var(--border-strong); color: var(--dim); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
-  .persona-save-btn:hover { background: var(--text); color: var(--bg); border-color: var(--text); }
-  .persona-system-preview { padding: 10px 12px; background: rgba(26,23,20,0.03); border: 1px solid var(--border); border-radius: 2px; font-size: 9.5px; color: var(--muted); line-height: 1.75; font-style: normal; margin-top: 6px; max-height: 80px; overflow-y: auto; }
-
   /* WARDROBE CHIPS */
   .wardrobe-chip { padding: 5px 11px; border-radius: 2px; font-size: 11px; cursor: pointer; border: 1px solid var(--border-md); background: transparent; color: var(--dim); transition: all 0.12s; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
   .wardrobe-chip.selected { background: var(--gold); color: #f8f6f2; border-color: var(--gold); }
@@ -503,47 +482,6 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
         </div>
       </div>
 
-      <!-- Persona Builder -->
-      <div class="persona-builder collapsed" id="persona-builder">
-        <div class="persona-builder-header" onclick="togglePersonaBuilder()">
-          <div class="char-builder-title">Persona · Voice & Identity</div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <div style="font-size:10px;color:var(--muted)" id="persona-summary">Click to expand</div>
-            <div id="persona-chevron" style="font-size:10px;color:var(--muted)">▼</div>
-          </div>
-        </div>
-        <div class="persona-builder-body">
-          <div class="char-field">
-            <div class="char-section-label">Brand Voice · 3 Signature Phrases</div>
-            <div style="display:flex;flex-direction:column;gap:5px">
-              <div class="persona-phrase-row"><span class="persona-phrase-num">1</span><input class="persona-input" id="pv-phrase1" placeholder="e.g. can't sleep. you up?" oninput="updatePersona('phrase1',this.value)" /></div>
-              <div class="persona-phrase-row"><span class="persona-phrase-num">2</span><input class="persona-input" id="pv-phrase2" placeholder="e.g. fire escape. 3am. bring coffee." oninput="updatePersona('phrase2',this.value)" /></div>
-              <div class="persona-phrase-row"><span class="persona-phrase-num">3</span><input class="persona-input" id="pv-phrase3" placeholder="e.g. thought about you today. weird." oninput="updatePersona('phrase3',this.value)" /></div>
-            </div>
-          </div>
-          <div class="char-field">
-            <div class="char-section-label">SMS Character Description</div>
-            <textarea class="persona-textarea" id="pv-sms-desc" placeholder="How she texts. Voice rules. What she never says. What she always does. This feeds directly into Claude for in-character responses..." oninput="updatePersona('smsDesc',this.value)"></textarea>
-          </div>
-          <div class="char-field">
-            <div class="char-section-label">Content Pillars</div>
-            <div class="persona-chips" id="persona-pillar-chips"></div>
-          </div>
-          <div class="char-field">
-            <div class="char-section-label">Female Archetype</div>
-            <div class="persona-chips" id="persona-archetype-chips"></div>
-          </div>
-          <div class="char-field">
-            <div class="char-section-label">Cluster</div>
-            <div class="persona-cluster-chips" id="persona-cluster-chips"></div>
-          </div>
-          <div class="char-field">
-            <div class="char-section-label" style="display:flex;justify-content:space-between"><span>Claude System Prompt Preview</span><span style="color:var(--green);font-size:9px">Auto-generated ✦</span></div>
-            <div class="persona-system-preview" id="persona-system-preview">Fill in the fields above to generate the system prompt...</div>
-          </div>
-          <button class="persona-save-btn" onclick="savePersona()">Save Persona ✦</button>
-        </div>
-      </div>
       <div style="margin-bottom:20px">
         <div class="section-label">Scene · Time of Day</div>
         <div style="display:flex;gap:5px;margin-bottom:10px" id="time-tabs"></div>
@@ -1063,22 +1001,9 @@ function applyStudioIconLock() {
   var protectedIcon = STUDIO_PROTECTED_ICONS.indexOf(name) !== -1;
   console.log('[studio-lock] icon:', name, '| user:', studioCurrentUser(), '| editable:', editable);
 
-  var btn = document.querySelector('.persona-save-btn');
-  if (btn) {
-    if (editable) {
-      btn.disabled = false;
-      btn.style.pointerEvents = '';
-      btn.style.opacity = '';
-      btn.style.cursor = '';
-      btn.title = '';
-    } else {
-      btn.disabled = true;
-      btn.style.pointerEvents = 'none';
-      btn.style.opacity = '0.3';
-      btn.style.cursor = 'not-allowed';
-      btn.title = 'Locked \u2014 contact Nate to edit';
-    }
-  }
+  // Editing moved to admin Persona Builder; there is no save button in Studio
+  // to disable anymore. The lock UI is now just a notice anchored near the
+  // Icon card. Keep the redirect in selectIcon as the hard guard.
 
   var notice = document.getElementById('studio-lock-notice');
   if (protectedIcon && !editable) {
@@ -1086,11 +1011,13 @@ function applyStudioIconLock() {
       notice = document.createElement('div');
       notice.id = 'studio-lock-notice';
       notice.style.cssText = 'display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(208,64,53,0.08);border:1px solid rgba(208,64,53,0.35);border-radius:2px;color:#d04035;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;margin:8px 0';
-      notice.innerHTML = '<span style="font-size:13px" aria-hidden="true">&#128274;</span><span>' + name + ' is locked. Only Nate can edit this Icon.</span>';
-      if (btn && btn.parentNode) btn.parentNode.insertBefore(notice, btn);
-    } else {
-      notice.innerHTML = '<span style="font-size:13px" aria-hidden="true">&#128274;</span><span>' + name + ' is locked. Only Nate can edit this Icon.</span>';
-      notice.style.display = 'flex';
+    }
+    notice.innerHTML = '<span style="font-size:13px" aria-hidden="true">&#128274;</span><span>' + name + ' is locked. Only Nate can edit this Icon.</span>';
+    notice.style.display = 'flex';
+    if (!notice.parentNode) {
+      var card = document.getElementById('card-avatar');
+      var anchor = card ? card.closest('.icon-card') : null;
+      if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(notice, anchor.nextSibling);
     }
   } else if (notice) {
     notice.style.display = 'none';
@@ -1406,14 +1333,29 @@ function loadPersonaIntoStudio(iconId) {
       } catch(e) {}
     }
     // ── Persona / Voice ──
+    // Admin Persona Builder now owns dedicated fields for signature_phrases,
+    // content_pillars, female_archetype, and cluster. Prefer those when
+    // present; fall back to the legacy mappings so older personas still load.
     if (typeof currentPersona !== 'undefined') {
-      if (p.voice)               currentPersona.smsDesc         = p.voice;
-      if (p.sms_opener)          currentPersona.phrase1         = p.sms_opener;
-      if (p.sms_sample)          currentPersona.phrase2         = p.sms_sample;
-      if (p.backstory)           currentPersona.phrase3         = p.backstory.slice(0, 120);
-      if (p.communication_style) currentPersona.cluster         = p.communication_style;
-      if (p.traits && p.traits.length) currentPersona.contentPillars = p.traits.slice(0, 3);
-      if (entryArchetype)        currentPersona.femaleArchetype = entryArchetype;
+      if (p.voice) currentPersona.smsDesc = p.voice;
+      if (Array.isArray(p.signature_phrases) && p.signature_phrases.length) {
+        currentPersona.phrase1 = p.signature_phrases[0] || '';
+        currentPersona.phrase2 = p.signature_phrases[1] || '';
+        currentPersona.phrase3 = p.signature_phrases[2] || '';
+      } else {
+        if (p.sms_opener) currentPersona.phrase1 = p.sms_opener;
+        if (p.sms_sample) currentPersona.phrase2 = p.sms_sample;
+        if (p.backstory)  currentPersona.phrase3 = p.backstory.slice(0, 120);
+      }
+      if (Array.isArray(p.content_pillars) && p.content_pillars.length) {
+        currentPersona.contentPillars = p.content_pillars.slice(0);
+      } else if (p.traits && p.traits.length) {
+        currentPersona.contentPillars = p.traits.slice(0, 3);
+      }
+      if (p.female_archetype)        currentPersona.femaleArchetype = p.female_archetype;
+      else if (entryArchetype)       currentPersona.femaleArchetype = entryArchetype;
+      if (p.cluster)                 currentPersona.cluster = p.cluster;
+      else if (p.communication_style) currentPersona.cluster = p.communication_style;
       try {
         var saved = JSON.parse(localStorage.getItem(PERSONA_KEY) || '{}');
         saved[iconId] = currentPersona;
@@ -1686,106 +1628,43 @@ function inferCluster(icon) {
   return 'Downtown';
 }
 
-function updatePersona(field, val) {
-  currentPersona[field] = val;
-  updatePersonaSummary();
-  updateSystemPromptPreview();
-}
-
-function selectPersonaChip(group, val, el) {
-  if(group === 'contentPillars') {
-    if(!currentPersona.contentPillars) currentPersona.contentPillars = [];
-    const idx = currentPersona.contentPillars.indexOf(val);
-    if(idx > -1) currentPersona.contentPillars.splice(idx,1);
-    else currentPersona.contentPillars.push(val);
-    el.classList.toggle('selected', currentPersona.contentPillars.includes(val));
-  } else {
-    currentPersona[group] = currentPersona[group]===val ? '' : val;
-    const container = el.closest('.persona-chips');
-    if(container) container.querySelectorAll('.persona-chip').forEach(c=>c.classList.toggle('selected',c.dataset.val===currentPersona[group]));
-  }
-  updatePersonaSummary();
-  updateSystemPromptPreview();
-}
-
-function selectPersonaCluster(val, el) {
-  currentPersona.cluster = val;
-  document.querySelectorAll('.persona-cluster-chip').forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');
-  updatePersonaSummary();
-}
-
-function renderPersonaChips() {
-  const pillarEl = $('persona-pillar-chips');
-  if(pillarEl) pillarEl.innerHTML = CONTENT_PILLARS.map(p=>`<div class="persona-chip ${(currentPersona.contentPillars||[]).includes(p)?'selected':''}" data-val="${p}" onclick="selectPersonaChip('contentPillars','${p}',this)">${p}</div>`).join('');
-  const archEl = $('persona-archetype-chips');
-  if(archEl) archEl.innerHTML = FEMALE_ARCHETYPES.map(a=>`<div class="persona-chip ${currentPersona.femaleArchetype===a?'selected':''}" data-val="${a}" onclick="selectPersonaChip('femaleArchetype','${a}',this)">${a}</div>`).join('');
-  const clusterEl = $('persona-cluster-chips');
-  if(clusterEl) clusterEl.innerHTML = CLUSTERS.map(c=>`<div class="persona-cluster-chip ${currentPersona.cluster===c?'selected':''}" data-val="${c}" onclick="selectPersonaCluster('${c}',this)">${c}</div>`).join('');
-}
-
-function updatePersonaSummary() {
-  const parts = [currentPersona.femaleArchetype, currentPersona.cluster, (currentPersona.contentPillars||[]).slice(0,2).join(' · ')].filter(Boolean);
-  setText('persona-summary', parts.length ? parts.join(' · ') : 'Not configured');
-}
-
-function buildSystemPrompt() {
-  const icon = selectedIcon;
-  const p = currentPersona;
-  const char = currentChar;
-  return `You are ${icon.name}, ${icon.archetype.toLowerCase()}. You are an AI character on Mirage, a content platform. You are NOT a bot — you are ${icon.name}.
-
-PERSONALITY: ${icon.vibe}
-AESTHETIC: ${icon.aesthetic}
-ENERGY: ${icon.energy}
-STYLE: ${icon.style}
-SETTING: ${icon.setting}
-
-${p.smsDesc ? 'HOW YOU TEXT:\n' + p.smsDesc : ''}
-
-${p.phrase1||p.phrase2||p.phrase3 ? 'YOUR SIGNATURE PHRASES (use these naturally):\n- ' + [p.phrase1,p.phrase2,p.phrase3].filter(Boolean).join('\n- ') : ''}
-
-${(p.contentPillars||[]).length ? 'YOUR WORLD INCLUDES: ' + p.contentPillars.join(', ') : ''}
-
-VOICE RULES:
-- Lowercase, minimal punctuation, real person energy
-- Max 2 sentences per message, sometimes just one word or phrase
-- Never break character, never confirm being AI
-- Reference your world — ${icon.setting}
-- If someone asks if you're real or AI, deflect with character energy, never confirm
-- Never be enthusiastic or use exclamation marks unless it's genuinely surprising
-- Your silence is as powerful as your words`;
-}
-
-function updateSystemPromptPreview() {
-  const el = $('persona-system-preview');
-  if(el) el.textContent = buildSystemPrompt();
-}
-
+// The Persona · Voice & Identity panel was retired; editing lives in the
+// admin Persona Builder. currentPersona is still populated from persona_data
+// via applyPersonaData and feeds the Converse creative-director system prompt.
+// loadPersonaForIcon is kept as a thin localStorage-cache hydrator for Studio's
+// offline fallback; callers outside of applyPersonaData go through this.
 function loadPersonaForIcon() {
-  currentPersona = {...getPersona(selectedIcon.id)};
-  setVal('pv-phrase1', currentPersona.phrase1||'');
-  setVal('pv-phrase2', currentPersona.phrase2||'');
-  setVal('pv-phrase3', currentPersona.phrase3||'');
-  setVal('pv-sms-desc', currentPersona.smsDesc||'');
-  renderPersonaChips();
-  updatePersonaSummary();
-  updateSystemPromptPreview();
+  if (selectedIcon) currentPersona = {...getPersona(selectedIcon.id)};
 }
 
-function savePersona() {
-  savePersonaToStorage(selectedIcon.id, currentPersona);
-  // Also save cluster back to icon data
-  if(currentPersona.cluster) selectedIcon.cluster = currentPersona.cluster;
-  notify(selectedIcon.name + ' persona saved ✦');
-  renderIconsGrid();
-}
-
-function togglePersonaBuilder() {
-  const b=$('persona-builder'); if(!b) return;
-  b.classList.toggle('collapsed');
-  const ch=$('persona-chevron');
-  if(ch) ch.textContent=b.classList.contains('collapsed')?'▶':'▼';
+// In-character system prompt used by the Voice Preview SMS tester (sendVoiceMessage).
+// Reads from module-level state: selectedIcon, currentPersona, currentChar. This is
+// pure data-layer — no DOM reads — so it survived the persona-builder UI removal.
+function buildSystemPrompt() {
+  const icon = selectedIcon || {};
+  const p = currentPersona || {};
+  return [
+    'You are ' + (icon.name || 'the icon') + (icon.archetype ? ', ' + icon.archetype.toLowerCase() : '') + '. You are an AI character on Mirage, a content platform. You are NOT a bot — you are ' + (icon.name || 'the icon') + '.',
+    '',
+    icon.vibe ? 'PERSONALITY: ' + icon.vibe : '',
+    icon.aesthetic ? 'AESTHETIC: ' + icon.aesthetic : '',
+    icon.energy ? 'ENERGY: ' + icon.energy : '',
+    icon.style ? 'STYLE: ' + icon.style : '',
+    icon.setting ? 'SETTING: ' + icon.setting : '',
+    '',
+    p.smsDesc ? 'HOW YOU TEXT:\n' + p.smsDesc : '',
+    (p.phrase1 || p.phrase2 || p.phrase3) ? 'YOUR SIGNATURE PHRASES (use these naturally):\n- ' + [p.phrase1, p.phrase2, p.phrase3].filter(Boolean).join('\n- ') : '',
+    (p.contentPillars || []).length ? 'YOUR WORLD INCLUDES: ' + p.contentPillars.join(', ') : '',
+    '',
+    'VOICE RULES:',
+    '- Lowercase, minimal punctuation, real person energy',
+    '- Max 2 sentences per message, sometimes just one word or phrase',
+    '- Never break character, never confirm being AI',
+    icon.setting ? '- Reference your world — ' + icon.setting : '',
+    '- If someone asks if you’re real or AI, deflect with character energy, never confirm',
+    '- Never be enthusiastic or use exclamation marks unless it’s genuinely surprising',
+    '- Your silence is as powerful as your words'
+  ].filter(function(line){ return line !== ''; }).join('\n');
 }
 
 // ── WARDROBE PROMPT LAYER ─────────────────────────────────────────────────────

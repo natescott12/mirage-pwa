@@ -141,6 +141,33 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 .field-group { background: var(--surface); border: 1px solid var(--border); padding: 20px; }
 .field-group-title { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
 
+/* Accordion mode — only kicks in when wrapPersonaAccordion() has restructured
+   the group. Title loses its bottom border/margin because the header owns the
+   divider; body slides in/out via the .collapsed toggle. */
+.field-group-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; padding: 14px 20px; margin: -20px -20px 0;
+  user-select: none;
+  transition: background 0.12s;
+}
+.field-group-header:hover { background: rgba(255,255,255,0.02); }
+.field-group-header .field-group-title { margin: 0; padding: 0; border: none; }
+.field-group-status { display: flex; align-items: center; gap: 10px; }
+.field-group-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+  opacity: 0; transition: opacity 0.2s;
+}
+.field-group.has-data .field-group-dot { opacity: 1; }
+.field-group-chev {
+  font-size: 14px; color: var(--ink-dim);
+  transition: transform 0.15s; transform: rotate(90deg);
+  line-height: 1;
+}
+.field-group.collapsed .field-group-chev { transform: rotate(0deg); }
+.field-group-body { padding-top: 16px; margin-top: 16px; border-top: 1px solid var(--border); }
+.field-group.collapsed { padding-bottom: 14px; }
+.field-group.collapsed .field-group-body { display: none; }
+
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
 .field-row.single { grid-template-columns: 1fr; }
 .field-row.triple { grid-template-columns: 1fr 1fr 1fr; }
@@ -2418,6 +2445,7 @@ function loadPersonaForIcon(idx) {
   '</div>';
 
   editor.innerHTML = activateBar + buildPersonaForm(p, iconObj);
+  wrapPersonaAccordion();
   applyPersonaLockState(iconObj.name);
 
   // Now fetch from Supabase and overwrite with full saved data
@@ -2522,6 +2550,22 @@ function loadPersonaForIcon(idx) {
           c.classList.toggle('selected', sp.scene_tags.includes(c.textContent.trim()));
         });
       }
+      // Voice & Personality — new fields merged in from Studio
+      if (Array.isArray(sp.signature_phrases)) {
+        setF('f-phrase-1', sp.signature_phrases[0]);
+        setF('f-phrase-2', sp.signature_phrases[1]);
+        setF('f-phrase-3', sp.signature_phrases[2]);
+      }
+      if (Array.isArray(sp.content_pillars)) {
+        document.querySelectorAll('.tag-chip[data-group="content_pillars"]').forEach(function(c) {
+          c.classList.toggle('selected', sp.content_pillars.includes(c.textContent.trim()));
+        });
+      }
+      pbSetChip('female_archetype', sp.female_archetype);
+      pbSetChip('cluster', sp.cluster);
+      // Apply has-data indicators to collapsible section headers now that
+      // all chip/input state has been written back in.
+      if (typeof refreshFieldGroupIndicators === 'function') refreshFieldGroupIndicators();
       applyPersonaLockState(iconObj.name);
     });
   }
@@ -2565,6 +2609,14 @@ function toggleIconActivation(btn) {
 
 
 // ── Physical Description: chip + swatch options (ported from Studio) ──────────
+// ── Voice & Personality chip options (shared with Studio's retired persona builder) ──
+const PERSONA_TRAITS = ['Mysterious','Intellectual','Warm','Bold','Vulnerable','Playful','Melancholy','Direct','Romantic','Detached','Fierce','Gentle','Witty','Quiet','Magnetic'];
+const CONTENT_PILLARS = ['Late nights','Morning light','Intimacy','Solitude','Fashion','Music','Art','Books','Coffee','Travel','Nostalgia','Desire','Quiet moments','Urban life','Domesticity','Film','Photography','Writing'];
+const FEMALE_ARCHETYPES = ['The Muse','The Rebel','The Intellectual','The Wanderer','The Sensualist','The Dreamer','The Warrior','The Healer','The Artist','The Mystic','The Socialite','The Loner','The Romantic','The Pragmatist','The Wild One','The Nurturer'];
+const CLUSTERS = ['Downtown','Wild','Soft','Edge','Global'];
+const COMM_STYLES = ['','Sparse and deliberate','Warm and verbose','Playful and teasing','Direct and blunt','Poetic and abstract','Casual and open'];
+const ENERGY_LEVELS = ['','Low / still','Medium / balanced','High / electric'];
+
 const PHYSICAL_CHIPS = {
   skin_texture: ['clear smooth','light freckles','heavy freckles','textured','moles','sun-kissed'],
   eye_color:    ['brown','dark brown','hazel','green','blue','grey','amber','black'],
@@ -2600,6 +2652,69 @@ function pbToggleChip(el) {
     const custom = document.getElementById('f-hair-color-custom');
     if (custom) custom.value = '';
   }
+  if (typeof refreshFieldGroupIndicators === 'function') refreshFieldGroupIndicators();
+}
+
+// Multi-select chip toggle (traits, content_pillars, scene_tags). Independent
+// from pbToggleChip — each chip is its own toggle with no sibling exclusivity.
+function pbToggleChipMulti(el) {
+  el.classList.toggle('selected');
+  if (typeof refreshFieldGroupIndicators === 'function') refreshFieldGroupIndicators();
+}
+
+// ── Persona Builder accordion ─────────────────────────────────────────────────
+// Wraps each .field-group rendered by buildPersonaForm with a clickable header
+// + collapsible body. Called immediately after innerHTML injection. Idempotent.
+function wrapPersonaAccordion() {
+  const editor = document.getElementById('persona-editor');
+  if (!editor) return;
+  editor.querySelectorAll(':scope > .field-group').forEach(function(group) {
+    if (group.querySelector(':scope > .field-group-header')) return; // already wrapped
+    const title = group.querySelector(':scope > .field-group-title');
+    if (!title) return;
+
+    const header = document.createElement('div');
+    header.className = 'field-group-header';
+    header.addEventListener('click', function() { group.classList.toggle('collapsed'); });
+
+    const status = document.createElement('div');
+    status.className = 'field-group-status';
+    status.innerHTML = '<span class="field-group-dot" aria-hidden="true"></span><span class="field-group-chev" aria-hidden="true">›</span>';
+
+    header.appendChild(title); // title node moves into header
+    header.appendChild(status);
+
+    const body = document.createElement('div');
+    body.className = 'field-group-body';
+    while (group.firstChild) body.appendChild(group.firstChild);
+
+    group.appendChild(header);
+    group.appendChild(body);
+    group.classList.add('collapsed');
+  });
+
+  // One-time delegated input listener so the has-data dot reacts to typing.
+  if (!editor.dataset.indicatorHook) {
+    editor.addEventListener('input', refreshFieldGroupIndicators, { passive: true });
+    editor.dataset.indicatorHook = '1';
+  }
+
+  refreshFieldGroupIndicators();
+}
+
+function refreshFieldGroupIndicators() {
+  const editor = document.getElementById('persona-editor');
+  if (!editor) return;
+  editor.querySelectorAll(':scope > .field-group').forEach(function(group) {
+    const hasText = Array.from(group.querySelectorAll('input, textarea')).some(function(el) {
+      return (el.value || '').trim() !== '';
+    });
+    const hasSelect = Array.from(group.querySelectorAll('select')).some(function(el) {
+      return el.value && el.value.trim() !== '';
+    });
+    const hasChip = !!group.querySelector('.tag-chip.selected, .skin-swatch.selected');
+    group.classList.toggle('has-data', hasText || hasSelect || hasChip);
+  });
 }
 
 function pbSelectSwatch(el) {
@@ -2609,6 +2724,7 @@ function pbSelectSwatch(el) {
   });
   const tone = document.getElementById('f-skin-tone');
   if (tone) tone.value = label;
+  if (typeof refreshFieldGroupIndicators === 'function') refreshFieldGroupIndicators();
 }
 
 function pbGetChip(group) {
@@ -2799,30 +2915,74 @@ function buildPersonaForm(p, icon) {
 
   <div class="field-group">
     <div class="field-group-title">Voice & Personality</div>
+
     <div class="field-row single">
-      <div class="field"><label>Voice / Tone</label><textarea id="f-voice" placeholder="How she speaks, her texting style, what she says and doesn't say…">${p.voice || ''}</textarea></div>
+      <div class="field"><label>Voice / Character Description</label><textarea id="f-voice" placeholder="How she speaks, her texting style, what she says and doesn't say. This feeds directly into Claude for in-character responses.">${p.voice || ''}</textarea></div>
     </div>
+
+    <div class="field-row single">
+      <div class="field">
+        <label>Signature Phrases · 3</label>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <input id="f-phrase-1" value="${(p.signature_phrases||[])[0]||''}" placeholder="1.  e.g. can't sleep. you up?">
+          <input id="f-phrase-2" value="${(p.signature_phrases||[])[1]||''}" placeholder="2.  e.g. fire escape. 3am. bring coffee.">
+          <input id="f-phrase-3" value="${(p.signature_phrases||[])[2]||''}" placeholder="3.  e.g. thought about you today. weird.">
+        </div>
+      </div>
+    </div>
+
     <div class="field-row single">
       <div class="field">
         <label>Personality Traits</label>
         <div class="tag-select">
-          ${['Mysterious','Intellectual','Warm','Bold','Vulnerable','Playful','Melancholy','Direct','Romantic','Detached','Fierce','Gentle','Witty','Quiet','Magnetic'].map(t =>
-            `<button class="tag-chip${(p.traits||[]).includes(t)?' selected':''}" data-group="traits" data-multi="true">${t}</button>`
+          ${PERSONA_TRAITS.map(t =>
+            `<button class="tag-chip${(p.traits||[]).includes(t)?' selected':''}" data-group="traits" data-multi="true" data-val="${t}" onclick="pbToggleChipMulti(this)">${t}</button>`
           ).join('')}
         </div>
       </div>
     </div>
+
+    <div class="field-row single">
+      <div class="field">
+        <label>Content Pillars</label>
+        <div class="tag-select">
+          ${CONTENT_PILLARS.map(t =>
+            `<button class="tag-chip${(p.content_pillars||[]).includes(t)?' selected':''}" data-group="content_pillars" data-multi="true" data-val="${t}" onclick="pbToggleChipMulti(this)">${t}</button>`
+          ).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Female Archetype</label>
+        <div class="tag-select">
+          ${FEMALE_ARCHETYPES.map(t =>
+            `<button class="tag-chip${p.female_archetype===t?' selected':''}" data-group="female_archetype" data-val="${t}" onclick="pbToggleChip(this)">${t}</button>`
+          ).join('')}
+        </div>
+      </div>
+      <div class="field">
+        <label>Cluster</label>
+        <div class="tag-select">
+          ${CLUSTERS.map(t =>
+            `<button class="tag-chip${p.cluster===t?' selected':''}" data-group="cluster" data-val="${t}" onclick="pbToggleChip(this)">${t}</button>`
+          ).join('')}
+        </div>
+      </div>
+    </div>
+
     <div class="field-row">
       <div class="field"><label>Communication Style</label>
         <select id="f-comm-style">
-          ${['','Sparse and deliberate','Warm and verbose','Playful and teasing','Direct and blunt','Poetic and abstract','Casual and open'].map(s =>
+          ${COMM_STYLES.map(s =>
             `<option${p.communication_style===s?' selected':''}>${s}</option>`
           ).join('')}
         </select>
       </div>
       <div class="field"><label>Energy Level</label>
         <select id="f-energy">
-          ${['','Low / still','Medium / balanced','High / electric'].map(s =>
+          ${ENERGY_LEVELS.map(s =>
             `<option${p.energy===s?' selected':''}>${s}</option>`
           ).join('')}
         </select>
@@ -2879,13 +3039,22 @@ function getSelectedChips(group) {
 function collectPersonaData() {
   const hairCustom = document.getElementById('f-hair-color-custom')?.value?.trim() || '';
   const hairChip = pbGetChip('hair_color');
+  const signaturePhrases = [
+    document.getElementById('f-phrase-1')?.value || '',
+    document.getElementById('f-phrase-2')?.value || '',
+    document.getElementById('f-phrase-3')?.value || '',
+  ];
   return {
     tagline: document.getElementById('f-tagline')?.value || '',
     age: document.getElementById('f-age')?.value || '',
     location: document.getElementById('f-location')?.value || '',
     occupation: document.getElementById('f-occupation')?.value || '',
     voice: document.getElementById('f-voice')?.value || '',
+    signature_phrases: signaturePhrases,
     traits: getSelectedChips('traits'),
+    content_pillars: getSelectedChips('content_pillars'),
+    female_archetype: pbGetChip('female_archetype'),
+    cluster: pbGetChip('cluster'),
     communication_style: document.getElementById('f-comm-style')?.value || '',
     energy: document.getElementById('f-energy')?.value || '',
     backstory: document.getElementById('f-backstory')?.value || '',
