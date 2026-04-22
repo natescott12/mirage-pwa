@@ -297,8 +297,14 @@ async function handleFigmaImageTask(task, urls) {
   }
   var summary = 'Placed ' + placed + ' image(s)' + (failed ? ' (' + failed + ' failed)' : '');
   setLastTask(summary);
-  // Use the normal terminal-patch path so polling resumes correctly.
-  toCodeJs({ type: 'patch', id: task.id, status: placed ? 'complete' : 'failed', result: summary });
+  // Call patchTaskReq directly instead of routing through toCodeJs —
+  // code.js has no 'patch' handler, so the message was being silently
+  // dropped, leaving tasks stuck in_progress forever (see stuck
+  // efa44e11 from 2026-04-21). Polling resumes at POLL_MS on PATCH
+  // success, backs off 10s on PATCH failure — matches the terminal-
+  // patch behavior used by the normal code-exec path.
+  patchTaskReq(task.id, placed ? 'complete' : 'failed', summary)
+    .then(function (ok) { setTimeout(poll, ok ? POLL_MS : 10000); });
 }
 
 async function poll() {
