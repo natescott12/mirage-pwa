@@ -42,11 +42,16 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   :root {
     /* Aligned to admin/index.html tokens so Studio and admin read as
        a single monochrome surface. bg2 / bg3 serve as surface /
-       surface-2 at admin values; borders are the admin hairline #333. */
+       surface-2 at admin values; borders are the admin hairline #333.
+       --sidebar, --sidebar-bg, --ink, --ink-mid, --accent are mirrored
+       from admin so the verbatim sidebar CSS block below resolves to
+       identical pixel values. */
     --bg: #141414; --bg2: #1f1f1f; --bg3: #292929;
     --text: #ffffff; --dim: rgba(255,255,255,0.55); --muted: rgba(255,255,255,0.4);
     --border: #333333; --border-md: #333333; --border-strong: rgba(255,255,255,0.25);
     --green: #78cc6e; --gold: #c09850; --red: #d04035;
+    --sidebar: 220px; --sidebar-bg: #1a1a1a;
+    --ink: #ffffff; --ink-mid: rgba(255,255,255,0.55); --accent: #78cc6e;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'DM Sans', sans-serif; font-weight: 300; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
@@ -120,43 +125,45 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   #notification.success { background: var(--text); color: var(--bg); }
   #notification.error { background: var(--red); color: #fff; }
 
-  /* SIDEBAR — mirrored from admin/index.html so the Studio lives under
-     the same nav shell. Hard-coded to the admin wireframe palette
-     (#1a1a1a rail on #141414 content, #333 borders, #78cc6e accent) so
-     the Studio's warmer body colours don't bleed into it. */
-  .studio-main-row { display: flex; flex: 1; overflow: hidden; min-height: 0; background: #141414; }
-  .studio-sidebar {
-    width: 220px; background: #1a1a1a;
-    border-right: 1px solid #333333; flex-shrink: 0;
+  /* SIDEBAR — copied verbatim from admin/index.html. Studio body uses
+     DM Sans 300, so the descendant font-family / font-weight override
+     below pins the rail to Afacad 400 so rendering matches admin pixel
+     for pixel. Do not add Studio-specific rules to these selectors;
+     keep any deviations in .studio-main-row or a separate block. */
+  .studio-main-row { display: flex; flex: 1; overflow: hidden; min-height: 0; background: var(--bg); }
+  .sidebar { font-family: 'Afacad', sans-serif; font-weight: 400; }
+  .sidebar a.sidebar-item { text-decoration: none; }
+
+  .sidebar {
+    width: var(--sidebar); background: var(--sidebar-bg);
+    border-right: 1px solid var(--border); flex-shrink: 0;
     display: flex; flex-direction: column; overflow-y: auto;
   }
-  .studio-sidebar .sidebar-section {
+  .sidebar-section {
     padding: 0 20px; margin: 20px 0 4px;
     font-size: 11px; letter-spacing: 0.08em;
-    text-transform: uppercase; color: rgba(255,255,255,0.25);
-    font-weight: 400; font-family: 'Afacad', sans-serif;
+    text-transform: uppercase; color: rgba(255,255,255,0.25); font-weight: 400;
   }
-  .studio-sidebar .sidebar-section:first-child { margin-top: 16px; }
-  .studio-sidebar .sidebar-item {
+  .sidebar-section:first-child { margin-top: 16px; }
+  .sidebar-item {
     display: flex; align-items: center;
     padding: 6px 20px; font-size: 14px; color: rgba(255,255,255,0.55);
     cursor: pointer; transition: color 0.12s, background 0.12s;
     letter-spacing: 0; position: relative; box-sizing: border-box;
-    font-weight: 400; font-family: 'Afacad', sans-serif;
-    text-decoration: none; line-height: 1.4;
   }
-  .studio-sidebar .sidebar-item::before {
+  .sidebar-item::before {
     content: ""; position: absolute; left: 0; top: 0; bottom: 0;
     width: 2px; background: transparent; transition: background 0.12s;
   }
-  .studio-sidebar .sidebar-item:hover { color: rgba(255,255,255,0.85); }
-  .studio-sidebar .sidebar-item.active {
-    color: #ffffff; background: rgba(120,204,110,0.08); font-weight: 400;
+  .sidebar-item:hover { color: rgba(255,255,255,0.85); }
+  .sidebar-item.active {
+    color: var(--ink); background: rgba(120,204,110,0.08); font-weight: 400;
   }
-  .studio-sidebar .sidebar-item.active::before { background: #78cc6e; }
-  .studio-sidebar .sidebar-badge {
+  .sidebar-item.active::before { background: var(--accent); }
+  .sidebar-item .icon { display: none; }
+  .sidebar-badge {
     margin-left: auto; font-size: 10px; background: rgba(255,255,255,0.08);
-    color: rgba(255,255,255,0.55); padding: 1px 7px; border-radius: 20px; letter-spacing: 0;
+    color: var(--ink-mid); padding: 1px 7px; border-radius: 20px; letter-spacing: 0;
   }
 
   /* APP */
@@ -569,7 +576,10 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
        here. Icon Studio stays active; every other item navigates to
        /admin with a hash so admin's applyPaneHash opens the right
        pane without a full context switch. -->
-  <nav class="studio-sidebar" aria-label="Main navigation">
+  <nav class="sidebar" aria-label="Main navigation">
+    <div class="sidebar-section">Ops</div>
+    <a class="sidebar-item" href="/admin#andie-chat">Andie</a>
+
     <div class="sidebar-section">Main</div>
     <a class="sidebar-item" href="/admin#dashboard">Dashboard</a>
     <a class="sidebar-item" href="/admin#icons">Icons</a>
