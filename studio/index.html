@@ -273,10 +273,6 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     background: transparent; color: var(--ink); border: none;
   }
   .nav-tab.ic-tab.active:hover { opacity: 1; background: transparent; border: none; }
-  .nav-tab.ic-tab.active::after {
-    content: ""; position: absolute; left: 0; right: 0; bottom: -15px;
-    height: 2px; background: var(--accent);
-  }
 
   /* NOTIFICATION */
   #notification { position: fixed; top: 16px; right: 16px; z-index: 9999; padding: 11px 18px; border-radius: 2px; font-size: var(--text-xs); letter-spacing: 0.1em; display: none; animation: fadeIn 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
@@ -3867,10 +3863,6 @@ function cloudTrainLora() {
     <div class="ic-tab-row conv-tab-row">
       <button type="button" class="nav-tab ic-tab" data-tab="generate" onclick="switchTab('generate')">Generate</button>
       <button type="button" class="nav-tab ic-tab active" data-tab="converse" onclick="switchTab('converse')">Converse</button>
-    </div>
-    <div class="conv-header">
-      <div class="conv-title">Talk to the Studio</div>
-      <div class="conv-sub">Describe a moment. Claude builds the brief. Flux generates it.</div>
     </div>
     <div id="conv-icon-bar" class="conv-icon-bar">
       <div id="conv-icon-avatar" class="conv-icon-avatar">S</div>
