@@ -98,28 +98,30 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   .studio-crossnav { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); text-decoration: none; font-family: var(--font); transition: color 0.15s; }
   .studio-crossnav:hover { color: var(--text); }
 
-  /* Top-bar Icon indicator — the selected Icon's name + a small caret.
-     Click navigates back to the admin Persona Builder. */
+  /* Top-bar Icon indicator — plain text name + a small dropdown caret.
+     No pill, no border. Click navigates back to the admin Persona
+     Builder. */
   .studio-icon-pill {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 4px 12px;
-    background: transparent; border: 1px solid var(--border);
-    border-radius: 999px; text-decoration: none;
-    cursor: pointer; transition: border-color 0.15s, background 0.15s;
+    padding: 4px 0;
+    background: transparent; border: none;
+    text-decoration: none;
+    cursor: pointer; transition: color 0.15s;
+    color: var(--ink-mid);
   }
-  .studio-icon-pill:hover { border-color: var(--border-strong); background: rgba(255,255,255,0.02); }
+  .studio-icon-pill:hover { color: var(--ink); background: transparent; }
   .studio-icon-pill .pill-avatar { display: none; }
   .studio-icon-pill .pill-name {
-    font-family: var(--font); font-size: 12px;
-    color: var(--ink); letter-spacing: 0.01em;
+    font-family: var(--font); font-size: var(--text-sm);
+    color: inherit; letter-spacing: 0.01em;
   }
   .studio-icon-pill .pill-caret {
     display: inline-block;
-    font-size: 12px; color: var(--ink-dim);
+    font-size: 10px; color: inherit;
     letter-spacing: 0; line-height: 1;
     text-transform: none; margin-left: 0;
   }
-  .studio-icon-pill:hover .pill-caret { color: rgba(255,255,255,0.85); }
+  .studio-icon-pill:hover .pill-caret { color: inherit; }
   .studio-icon-empty {
     padding: 80px 24px; text-align: center;
     color: var(--muted); font-size: var(--text-sm); line-height: 1.6;
@@ -181,28 +183,38 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     border-color: var(--accent);
   }
 
-  /* Generate / Converse act as admin-palette primary pills: white fill
-     when active, transparent + low-key text when idle. Queue / Schedule
-     are relegated to plain text (.plain) so the chrome only highlights
-     the primary actions. */
+  /* Generate / Converse adopt the canonical button sizing — active tab
+     is .btn-primary (white fill), idle is .btn-ghost (transparent +
+     --border). Queue / Schedule become .plain text links at --ink-dim
+     so the chrome only highlights the primary actions. */
   .nav-tab {
-    padding: 5px 12px; border-radius: 4px;
+    padding: 9px 18px; border-radius: 4px;
     font-family: var(--font);
     font-size: var(--text-sm); font-weight: var(--weight-medium);
-    letter-spacing: 0; text-transform: none;
+    letter-spacing: 0.04em; text-transform: none;
     color: var(--ink-mid);
-    background: transparent; border: 1px solid transparent;
-    cursor: pointer; transition: color 0.12s, background 0.12s, border-color 0.12s;
+    background: transparent; border: 1px solid var(--border);
+    cursor: pointer;
+    transition: color 0.12s, background 0.12s, border-color 0.12s, opacity 0.15s;
+    display: inline-flex; align-items: center; gap: 7px;
   }
-  .nav-tab:hover { color: var(--ink); }
-  .nav-tab.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .nav-tab:hover { color: var(--ink); border-color: rgba(255,255,255,0.25); }
+  .nav-tab.active {
+    background: var(--ink); color: var(--bg); border-color: var(--ink);
+  }
+  .nav-tab.active:hover { opacity: 0.85; border-color: var(--ink); }
   .nav-tab.plain {
-    padding: 5px 4px; color: rgba(255,255,255,0.4);
-    border-color: transparent;
+    padding: 5px 2px; color: var(--ink-dim);
+    border-color: transparent; background: transparent;
+    font-weight: var(--weight-regular);
   }
-  .nav-tab.plain:hover { color: rgba(255,255,255,0.9); background: transparent; border-color: transparent; }
+  .nav-tab.plain:hover { color: var(--ink); background: transparent; border-color: transparent; }
   .badge { background: rgba(255,255,255,0.1); color: var(--ink-mid); border-radius: 999px; padding: 1px 7px; font-size: 10px; margin-left: 5px; }
   .nav-tab.active .badge { background: rgba(20,20,20,0.12); color: var(--bg); }
+  .nav-tab.plain .badge {
+    background: transparent; color: var(--ink-dim);
+    padding: 0 0 0 2px; font-size: var(--text-xs);
+  }
 
   /* NOTIFICATION */
   #notification { position: fixed; top: 16px; right: 16px; z-index: 9999; padding: 11px 18px; border-radius: 2px; font-size: var(--text-xs); letter-spacing: 0.1em; display: none; animation: fadeIn 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
@@ -277,13 +289,58 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   .icon-card-field-val { font-size: var(--text-xs); color: var(--dim); line-height: 1.5; }
   .view-library-btn { display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; background: rgba(26,23,20,0.04); border: 1px solid var(--border); border-radius: 2px; cursor: pointer; margin-top: 8px; transition: border-color 0.15s; }
   .view-library-btn:hover { border-color: var(--border-strong); }
-  .section-label { font-size: 10px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; }
-  .time-tab { padding: 5px 12px; border-radius: 2px; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; border: 1px solid var(--border-md); transition: all 0.15s; background: transparent; color: var(--muted); font-family: var(--font); }
-  .time-tab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
-  .scene-opt { padding: 6px 12px; border-radius: 2px; font-size: var(--text-xs); cursor: pointer; border: 1px solid var(--border); transition: all 0.15s; color: var(--muted); font-family: var(--font); }
-  .scene-opt.active { background: rgba(26,23,20,0.07); border-color: var(--border-strong); color: var(--text); }
-  .param-opt { padding: 6px 10px; border-radius: 2px; font-size: var(--text-xs); cursor: pointer; border: 1px solid var(--border); transition: all 0.12s; color: var(--muted); font-family: var(--font); }
-  .param-opt.active { background: rgba(26,23,20,0.07); border-color: var(--border-strong); color: var(--text); }
+  /* Section labels — canonical small-caps, --ink-dim, 0.08em. Applied
+     across every labelled row in the generate pane. */
+  .section-label,
+  .shot-group-label,
+  .char-builder-title,
+  .char-section-label {
+    font-size: var(--text-xs); letter-spacing: 0.08em;
+    color: var(--ink-dim); text-transform: uppercase;
+    font-weight: var(--weight-regular);
+    margin-bottom: 10px;
+  }
+  .shot-group-label { margin-top: 10px; margin-bottom: 6px; }
+
+  /* All chip groups (scene, time-of-day, framing, angle, perspective,
+     base style, params, wardrobe, tabs) derive from the canonical
+     .chip treatment. Time-of-day gets the primary (white fill) active
+     state because it's the scene anchor; everything else uses the
+     accent-tinted selected state from .chip.selected. */
+  .time-tab, .scene-opt, .param-opt, .shot-chip, .wardrobe-chip, .wardrobe-tab-btn {
+    padding: 6px 14px; border-radius: 999px;
+    font-size: var(--text-sm); font-family: var(--font);
+    font-weight: var(--weight-regular); letter-spacing: 0;
+    text-transform: none;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface); color: var(--ink-mid);
+    transition: color 0.12s, border-color 0.12s, background 0.12s;
+    display: inline-flex; align-items: center;
+    white-space: nowrap;
+  }
+  .time-tab:hover, .scene-opt:hover, .param-opt:hover,
+  .shot-chip:hover, .wardrobe-chip:hover, .wardrobe-tab-btn:hover {
+    background: var(--surface-2); color: var(--ink);
+  }
+  /* Accent-tint selected state for everything except time-of-day */
+  .scene-opt.active, .param-opt.active,
+  .shot-chip.active, .shot-chip.selected,
+  .wardrobe-chip.selected, .wardrobe-tab-btn.active {
+    background: rgba(119,204,110,0.15); color: var(--ink);
+    border-color: var(--accent);
+  }
+  /* Time-of-day selected — primary button treatment (white / dark) */
+  .time-tab.active {
+    background: var(--ink); color: var(--bg); border-color: var(--ink);
+  }
+
+  /* Chip-row spacing — 8px gap between chips throughout the generate
+     pane. Callers can still override gap inline where a denser layout
+     is needed, but this is the default. */
+  #shot-framing, #shot-angle, #shot-perspective, #shot-base,
+  #wardrobe-chips, #time-tabs, #params-grid,
+  .scene-opts, .param-opts { gap: 8px; }
   #prompt-sections .ps-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px solid rgba(26,23,20,0.06); }
   #prompt-sections .ps-row:last-child { border-bottom: none; }
   #prompt-sections .ps-label { font-size: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; width: 74px; flex-shrink: 0; font-family: var(--font); }
@@ -333,7 +390,7 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   .slp-inline-sep { color: rgba(255,255,255,0.25); font-size: 12px; }
   .slp-inline-note { font-size: 12px; color: var(--ink-dim); }
   .slp-inline-link {
-    font-size: 12px; color: var(--ink-mid); cursor: pointer;
+    font-size: var(--text-sm); color: var(--ink-dim); cursor: pointer;
     text-decoration: none; transition: color 0.12s;
     background: transparent; border: none; padding: 0;
     font-family: var(--font);
@@ -479,8 +536,8 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
 
 
   /* WARDROBE CHIPS */
-  .wardrobe-chip { padding: 5px 11px; border-radius: 2px; font-size: var(--text-xs); cursor: pointer; border: 1px solid var(--border-md); background: transparent; color: var(--dim); transition: all 0.12s; font-family: var(--font); white-space: nowrap; }
-  .wardrobe-chip.selected { background: var(--gold); color: #f8f6f2; border-color: var(--gold); }
+  /* .wardrobe-chip + .wardrobe-chip.selected — shared chip treatment
+     above. Kept here only for legacy add/remove animations. */
   .wardrobe-add-row { display: flex; gap: 6px; margin-top: 8px; }
   .wardrobe-add-input { flex: 1; padding: 6px 10px; background: var(--bg); border: 1px solid var(--border-md); border-radius: 2px; font-size: var(--text-xs); color: var(--text); outline: none; font-family: var(--font); }
   .wardrobe-add-btn { padding: 6px 12px; background: transparent; border: 1px solid var(--border-md); border-radius: 2px; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; color: var(--muted); font-family: var(--font); transition: all 0.15s; white-space: nowrap; }
@@ -534,11 +591,9 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   body.in-admin #header { display: none !important; }
   body.in-admin #app { height: 100vh !important; }
 
-  .wardrobe-tab-btn { padding: 4px 10px; border-radius: 2px; font-size: 10px; cursor: pointer; border: 1px solid var(--border-md); background: transparent; color: var(--dim); font-family: var(--font); transition: all 0.12s; }
-  .wardrobe-tab-btn.active { background: var(--gold); color: #f8f6f2; border-color: var(--gold); }
-  .shot-chip { padding: 5px 10px; border-radius: 2px; font-size: 10px; cursor: pointer; border: 1px solid var(--border-md); background: transparent; color: var(--dim); transition: all 0.12s; font-family: var(--font); white-space: nowrap; }
-  .shot-chip.active { background: var(--accent,#3a6b8a); color: #f8f6f2; border-color: var(--accent,#3a6b8a); }
-  .shot-group-label { font-size: 9px; color: var(--dim); margin-bottom: 4px; margin-top: 8px; letter-spacing:.06em; text-transform:uppercase; }
+  /* .wardrobe-tab-btn / .shot-chip / .shot-group-label — shared chip
+     treatment above. Kept here so runtime selectors referencing these
+     class names still match. */
 
   /* Lightbox */
   .lb-overlay { position:fixed; inset:0; background:rgba(0,0,0,.92); z-index:9999; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .2s; }
@@ -569,11 +624,8 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   .ref-indicator { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--gold,#c9a96e); color:#1a1714; padding:8px 20px; border-radius:2px; font-size: var(--text-xs); font-family:var(--font); z-index:1000; opacity:0; transition:opacity .3s; pointer-events:none; }
   .ref-indicator.show { opacity:1; }
 
-  .wardrobe-tab-btn{padding:4px 10px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid var(--border-md);background:transparent;color:var(--dim);font-family:var(--font);transition:all .12s;}
-  .wardrobe-tab-btn.active{background:var(--gold);color:#f8f6f2;border-color:var(--gold);}
-  .shot-chip{padding:5px 10px;border-radius:2px;font-size:10px;cursor:pointer;border:1px solid var(--border-md);background:transparent;color:var(--dim);transition:all .12s;font-family:var(--font);white-space:nowrap;display:inline-block;}
-  .shot-chip.active{background:var(--accent,#4a7a5a);color:#f8f6f2;border-color:var(--accent,#4a7a5a);}
-  .shot-group-label{font-size:8px;color:var(--muted);margin-bottom:3px;margin-top:8px;letter-spacing:.06em;text-transform:uppercase;}
+  /* Duplicate .wardrobe-tab-btn / .shot-chip / .shot-group-label rules
+     removed — they conflicted with the canonical chip block. */
   .lb-overlay{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
   .lb-overlay.open{opacity:1;pointer-events:all;}
   .lb-wrap{position:relative;max-width:min(88vw,680px);max-height:92vh;display:flex;flex-direction:column;align-items:center;}
@@ -664,7 +716,7 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     <a href="/admin#personas" class="studio-icon-pill" id="studio-icon-pill" title="Switch Icon in Persona Builder">
       <span class="pill-avatar" id="studio-pill-avatar"></span>
       <span class="pill-name" id="studio-pill-name">—</span>
-      <span class="pill-caret" aria-hidden="true">›</span>
+      <span class="pill-caret" aria-hidden="true">▾</span>
     </a>
   </div>
   <div style="display:flex;align-items:center;gap:20px">
@@ -727,9 +779,9 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
       <div class="icon-card">
         <div class="icon-card-header">
           <div style="flex:1">
-            <input id="edit-name" class="char-input" style="font-family: var(--font);font-style:normal;font-size:22px;background:transparent;border-color:transparent;padding:0;margin-bottom:3px" placeholder="Icon name" oninput="updateIconField('name',this.value)" />
-            <input id="edit-arch" class="char-input" style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);background:transparent;border-color:transparent;padding:0;margin-bottom:4px" placeholder="Archetype" oninput="updateIconField('archetype',this.value)" />
-            <input id="edit-vibe" class="char-input" style="font-size:12px;color:var(--dim);background:transparent;border-color:transparent;padding:0" placeholder="Vibe / personality..." oninput="updateIconField('vibe',this.value)" />
+            <input id="edit-name" class="char-input" style="font-family: var(--font);font-style:normal;font-size: var(--text-lg);font-weight: var(--weight-regular);letter-spacing:-0.4px;line-height:1.1;background:transparent;border-color:transparent;padding:0;margin-bottom:6px" placeholder="Icon name" oninput="updateIconField('name',this.value)" />
+            <input id="edit-arch" class="char-input" style="font-size: var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);background:transparent;border-color:transparent;padding:0;margin-bottom:6px" placeholder="Archetype" oninput="updateIconField('archetype',this.value)" />
+            <input id="edit-vibe" class="char-input" style="font-size: var(--text-sm);color:var(--ink-mid);background:transparent;border-color:transparent;padding:0" placeholder="Vibe / personality..." oninput="updateIconField('vibe',this.value)" />
           </div>
         </div>
 
@@ -779,7 +831,7 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
 
       <div style="margin-bottom:20px">
         <div class="section-label">Scene · Time of Day</div>
-        <div style="display:flex;gap:5px;margin-bottom:10px" id="time-tabs"></div>
+        <div style="display:flex;gap:8px;margin-bottom:10px" id="time-tabs"></div>
 
       </div>
       <div style="margin-bottom:20px">
@@ -793,7 +845,7 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
           <span style="font-size:9px;color:var(--gold)">+ Multi-select</span>
         </div>
         <div class="shot-group-label">Framing</div>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:2px" id="shot-framing">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:2px" id="shot-framing">
           <div class="shot-chip" onclick="MG.toggleShot(this,'framing','tight portrait crop')">Tight crop</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'framing','waist up shot')">Waist up</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'framing','three quarter length')">Three quarter</div>
@@ -806,7 +858,7 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
           <button class="wardrobe-add-btn" onclick="MG.addShotChip('framing',document.getElementById('shot-add-framing'),'shot-framing')">+</button>
         </div>
         <div class="shot-group-label">Camera Angle</div>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:2px" id="shot-angle">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:2px" id="shot-angle">
           <div class="shot-chip" onclick="MG.toggleShot(this,'angle','eye level neutral intimate')">Eye level</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'angle','low angle from below subject powerful')">Low angle</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'angle','high angle from above subject vulnerable')">High angle</div>
@@ -819,7 +871,7 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
           <button class="wardrobe-add-btn" onclick="MG.addShotChip('angle',document.getElementById('shot-add-angle'),'shot-angle')">+</button>
         </div>
         <div class="shot-group-label">Perspective</div>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:2px" id="shot-perspective">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:2px" id="shot-perspective">
           <div class="shot-chip" onclick="MG.toggleShot(this,'perspective','over the shoulder implied relationship')">Over shoulder</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'perspective','silhouette backlit form only')">Silhouette</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'perspective','reflection through mirror or window')">Reflection</div>
@@ -832,7 +884,7 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
           <button class="wardrobe-add-btn" onclick="MG.addShotChip('perspective',document.getElementById('shot-add-perspective'),'shot-perspective')">+</button>
         </div>
         <div class="shot-group-label">Base Style</div>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px" id="shot-base">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px" id="shot-base">
           <div class="shot-chip active" onclick="MG.toggleShot(this,'base','35mm film natural light candid unposed organic')">Candid</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'base','editorial fashion photography American Apparel 2000s Corinne Day')">Editorial</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'base','phone camera snapshot lo-fi casual grain')">Phone snap</div>
@@ -841,13 +893,13 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
           <div class="shot-chip" onclick="MG.toggleShot(this,'base','intimate private moment personal bedroom')">Intimate</div>
         </div>
         <div class="section-label" style="display:flex;justify-content:space-between;align-items:center"><span>Wardrobe · Inject into Prompt</span><span style="font-size:9px;color:var(--gold)">✦ Prompt layer</span></div>
-        <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+        <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
           <button class="wardrobe-tab-btn active" onclick="MG.switchTab('tops')" id="wtab-tops">Tops</button>
           <button class="wardrobe-tab-btn" onclick="MG.switchTab('bottoms')" id="wtab-bottoms">Bottoms</button>
           <button class="wardrobe-tab-btn" onclick="MG.switchTab('accessories')" id="wtab-accessories">Accessories</button>
           <button class="wardrobe-tab-btn" onclick="MG.switchTab('look')" id="wtab-look">Full Look</button>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px" id="wardrobe-chips"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px" id="wardrobe-chips"></div>
         <div class="wardrobe-add-row">
           <input class="wardrobe-add-input" id="wardrobe-add-input" placeholder="Add wardrobe item e.g. fitted black leather jacket, Schott..." onkeydown="if(event.key==='Enter')addWardrobeItem()" />
           <button class="wardrobe-add-btn" onclick="addWardrobeItem()">+ Add</button>
