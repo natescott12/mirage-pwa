@@ -179,7 +179,7 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   }
   .chip:hover { background: var(--surface-2); color: var(--ink); }
   .chip.selected {
-    background: rgba(119,204,110,0.15); color: var(--ink);
+    background: rgba(119,204,110,0.12); color: var(--ink);
     border-color: var(--accent);
   }
 
@@ -336,16 +336,15 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   .shot-chip:hover, .wardrobe-chip:hover, .wardrobe-tab-btn:hover {
     background: var(--surface-2); color: var(--ink);
   }
-  /* Accent-tint selected state for everything except time-of-day */
+  /* Accent-tint selected state for every chip group — a whisper of
+     accent (0.12) on --surface with a solid --accent border. The chip
+     reads as "selected", not "solid button". */
   .scene-opt.active, .param-opt.active,
   .shot-chip.active, .shot-chip.selected,
-  .wardrobe-chip.selected, .wardrobe-tab-btn.active {
-    background: rgba(119,204,110,0.15); color: var(--ink);
-    border-color: var(--accent);
-  }
-  /* Time-of-day selected — primary button treatment (white / dark) */
+  .wardrobe-chip.selected, .wardrobe-tab-btn.active,
   .time-tab.active {
-    background: var(--ink); color: var(--bg); border-color: var(--ink);
+    background: rgba(119,204,110,0.12); color: var(--ink);
+    border-color: var(--accent);
   }
 
   /* Chip-row spacing — 8px gap between chips, 12px breathing room
@@ -1025,48 +1024,10 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
           </button>
         </div>
 
-        <!-- LoRA training — single-line status + plain-text action. No
-             panel fill. The three state rows toggle via display; status
-             badge is kept as a hidden element so legacy code that writes
-             to it stays intact. -->
-        <div id="lora-panel" class="studio-lora-inline" style="display:none">
-          <span id="lora-status-badge" style="display:none">Untrained</span>
-
-          <div id="lora-untrained" class="slp-inline-row">
-            <span class="slp-inline-dot off"></span>
-            <span class="slp-inline-label">Not trained</span>
-            <span class="slp-inline-sep">·</span>
-            <select id="lora-image-count" class="slp-inline-select" title="Images to use">
-              <option value="5">5 imgs</option>
-              <option value="10" selected>10 imgs</option>
-              <option value="15">15 imgs</option>
-              <option value="20">20 imgs</option>
-            </select>
-            <select id="lora-mode" class="slp-inline-select" title="Training mode">
-              <option value="character" selected>Character</option>
-              <option value="style">Style</option>
-              <option value="general">General</option>
-            </select>
-            <button type="button" class="slp-inline-link" onclick="startLoraTraining()">Train →</button>
-          </div>
-
-          <div id="lora-training" class="slp-inline-row" style="display:none">
-            <span class="slp-inline-dot training"></span>
-            <span class="slp-inline-label">Training in progress</span>
-            <span class="slp-inline-sep">·</span>
-            <span class="slp-inline-note" id="lora-training-msg">20–30 min</span>
-            <span class="slp-inline-sep">·</span>
-            <button type="button" class="slp-inline-link" onclick="checkLoraStatus()">Check status</button>
-          </div>
-
-          <div id="lora-ready" class="slp-inline-row" style="display:none">
-            <span class="slp-inline-dot on"></span>
-            <span class="slp-inline-label">LoRA Ready</span>
-            <span class="slp-inline-sep">·</span>
-            <button type="button" class="slp-inline-link" onclick="startLoraTraining()">Retrain</button>
-            <span id="lora-model-id" style="display:none"></span>
-          </div>
-        </div>
+        <!-- LoRA inline status panel retired — the LoRA dot + label at
+             the top-right of the card now carries the entire on/off
+             state. Training controls moved to a dedicated surface
+             (admin Icons roster). -->
       </div>
 
       <div style="margin-bottom:16px">
