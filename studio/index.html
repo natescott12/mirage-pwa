@@ -165,16 +165,16 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   .btn-ghost:hover { color: var(--ink); border-color: rgba(255,255,255,0.25); }
 
   /* ── CANONICAL CHIP ──
-     Surface fill, hairline border, ink-mid text. Selected state picks
-     up the accent (0.15) with a solid accent border. Hover is one step
-     lighter via --surface-2. */
+     Surface fill, hairline border, ink-mid text, square-ish (4px
+     radius). Selected state picks up the accent (0.15) with a solid
+     accent border. Hover lifts one step via --surface-2. */
   .chip {
-    padding: 5px 12px; font-size: var(--text-sm);
+    padding: 6px 14px; font-size: var(--text-sm);
     font-family: var(--font); font-weight: var(--weight-regular);
     color: var(--ink-mid); cursor: pointer;
     transition: color 0.12s, border-color 0.12s, background 0.12s;
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 20px; letter-spacing: 0.01em;
+    border-radius: 4px; letter-spacing: 0.01em;
     display: inline-flex; align-items: center;
   }
   .chip:hover { background: var(--surface-2); color: var(--ink); }
@@ -306,9 +306,10 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
      base style, params, wardrobe, tabs) derive from the canonical
      .chip treatment. Time-of-day gets the primary (white fill) active
      state because it's the scene anchor; everything else uses the
-     accent-tinted selected state from .chip.selected. */
+     accent-tinted selected state from .chip.selected. Square-ish 4px
+     radius across the board. */
   .time-tab, .scene-opt, .param-opt, .shot-chip, .wardrobe-chip, .wardrobe-tab-btn {
-    padding: 6px 14px; border-radius: 999px;
+    padding: 6px 14px; border-radius: 4px;
     font-size: var(--text-sm); font-family: var(--font);
     font-weight: var(--weight-regular); letter-spacing: 0;
     text-transform: none;
@@ -335,12 +336,16 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     background: var(--ink); color: var(--bg); border-color: var(--ink);
   }
 
-  /* Chip-row spacing — 8px gap between chips throughout the generate
-     pane. Callers can still override gap inline where a denser layout
-     is needed, but this is the default. */
+  /* Chip-row spacing — 8px gap between chips, 12px breathing room
+     below each chip row so the custom-input row doesn't crowd the
+     chips above it. Callers can still override gap inline where a
+     denser layout is genuinely needed. */
   #shot-framing, #shot-angle, #shot-perspective, #shot-base,
   #wardrobe-chips, #time-tabs, #params-grid,
-  .scene-opts, .param-opts { gap: 8px; }
+  .scene-opts, .param-opts {
+    gap: 8px;
+    margin-bottom: 12px;
+  }
   #prompt-sections .ps-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px solid rgba(26,23,20,0.06); }
   #prompt-sections .ps-row:last-child { border-bottom: none; }
   #prompt-sections .ps-label { font-size: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; width: 74px; flex-shrink: 0; font-family: var(--font); }
@@ -841,7 +846,7 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
 
       <div style="margin-bottom:20px">
         <div class="section-label">Scene · Time of Day</div>
-        <div style="display:flex;gap:8px;margin-bottom:10px" id="time-tabs"></div>
+        <div style="display:flex;gap:8px;margin-bottom:12px" id="time-tabs"></div>
 
       </div>
       <div style="margin-bottom:20px">
@@ -855,7 +860,7 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
           <span style="font-size:9px;color:var(--gold)">+ Multi-select</span>
         </div>
         <div class="shot-group-label">Framing</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:2px" id="shot-framing">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px" id="shot-framing">
           <div class="shot-chip" onclick="MG.toggleShot(this,'framing','tight portrait crop')">Tight crop</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'framing','waist up shot')">Waist up</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'framing','three quarter length')">Three quarter</div>
@@ -863,12 +868,12 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
           <div class="shot-chip" onclick="MG.toggleShot(this,'framing','wide environmental portrait, subject within surroundings, context is part of the story, not a close-up')">Environmental</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'framing','full scene wide shot, subject occupies bottom third of frame, environment dominant, architectural context visible, person small in frame')">Full scene</div>
         </div>
-        <div style="display:flex;gap:4px;margin-top:3px;margin-bottom:4px">
+        <div style="display:flex;gap:6px;margin-top:4px;margin-bottom:16px">
           <input class="wardrobe-add-input" id="shot-add-framing" placeholder="Add custom framing..." onkeydown="if(event.key==='Enter')MG.addShotChip('framing',this,'shot-framing')" style="font-size:10px;padding:4px 8px"/>
           <button class="wardrobe-add-btn" onclick="MG.addShotChip('framing',document.getElementById('shot-add-framing'),'shot-framing')">+</button>
         </div>
         <div class="shot-group-label">Camera Angle</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:2px" id="shot-angle">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px" id="shot-angle">
           <div class="shot-chip" onclick="MG.toggleShot(this,'angle','eye level neutral intimate')">Eye level</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'angle','low angle from below subject powerful')">Low angle</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'angle','high angle from above subject vulnerable')">High angle</div>
@@ -876,12 +881,12 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
           <div class="shot-chip" onclick="MG.toggleShot(this,'angle','dutch angle tilted frame tension')">Dutch angle</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'angle','worms eye extreme low ground level')">Worm's eye</div>
         </div>
-        <div style="display:flex;gap:4px;margin-top:3px;margin-bottom:4px">
+        <div style="display:flex;gap:6px;margin-top:4px;margin-bottom:16px">
           <input class="wardrobe-add-input" id="shot-add-angle" placeholder="Add custom angle..." onkeydown="if(event.key==='Enter')MG.addShotChip('angle',this,'shot-angle')" style="font-size:10px;padding:4px 8px"/>
           <button class="wardrobe-add-btn" onclick="MG.addShotChip('angle',document.getElementById('shot-add-angle'),'shot-angle')">+</button>
         </div>
         <div class="shot-group-label">Perspective</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:2px" id="shot-perspective">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px" id="shot-perspective">
           <div class="shot-chip" onclick="MG.toggleShot(this,'perspective','over the shoulder implied relationship')">Over shoulder</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'perspective','silhouette backlit form only')">Silhouette</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'perspective','reflection through mirror or window')">Reflection</div>
@@ -889,12 +894,12 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
           <div class="shot-chip" onclick="MG.toggleShot(this,'perspective','shot through plants or doorframe obscured')">Obscured</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'perspective','from behind back of head anonymity')">From behind</div>
         </div>
-        <div style="display:flex;gap:4px;margin-top:3px;margin-bottom:4px">
+        <div style="display:flex;gap:6px;margin-top:4px;margin-bottom:16px">
           <input class="wardrobe-add-input" id="shot-add-perspective" placeholder="Add custom perspective..." onkeydown="if(event.key==='Enter')MG.addShotChip('perspective',this,'shot-perspective')" style="font-size:10px;padding:4px 8px"/>
           <button class="wardrobe-add-btn" onclick="MG.addShotChip('perspective',document.getElementById('shot-add-perspective'),'shot-perspective')">+</button>
         </div>
         <div class="shot-group-label">Base Style</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px" id="shot-base">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px" id="shot-base">
           <div class="shot-chip active" onclick="MG.toggleShot(this,'base','35mm film natural light candid unposed organic')">Candid</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'base','editorial fashion photography American Apparel 2000s Corinne Day')">Editorial</div>
           <div class="shot-chip" onclick="MG.toggleShot(this,'base','phone camera snapshot lo-fi casual grain')">Phone snap</div>
@@ -903,13 +908,13 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
           <div class="shot-chip" onclick="MG.toggleShot(this,'base','intimate private moment personal bedroom')">Intimate</div>
         </div>
         <div class="section-label" style="display:flex;justify-content:space-between;align-items:center"><span>Wardrobe · Inject into Prompt</span><span style="font-size:9px;color:var(--gold)">✦ Prompt layer</span></div>
-        <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
           <button class="wardrobe-tab-btn active" onclick="MG.switchTab('tops')" id="wtab-tops">Tops</button>
           <button class="wardrobe-tab-btn" onclick="MG.switchTab('bottoms')" id="wtab-bottoms">Bottoms</button>
           <button class="wardrobe-tab-btn" onclick="MG.switchTab('accessories')" id="wtab-accessories">Accessories</button>
           <button class="wardrobe-tab-btn" onclick="MG.switchTab('look')" id="wtab-look">Full Look</button>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px" id="wardrobe-chips"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px" id="wardrobe-chips"></div>
         <div class="wardrobe-add-row">
           <input class="wardrobe-add-input" id="wardrobe-add-input" placeholder="Add wardrobe item e.g. fitted black leather jacket, Schott..." onkeydown="if(event.key==='Enter')addWardrobeItem()" />
           <button class="wardrobe-add-btn" onclick="addWardrobeItem()">+ Add</button>
