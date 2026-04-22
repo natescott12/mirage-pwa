@@ -45,7 +45,28 @@
   --sidebar: 220px;
 }
 
-html, body { height: 100%; background: var(--bg); font-family: var(--font); color: var(--ink); -webkit-font-smoothing: antialiased; }
+html, body {
+  height: 100%;
+  background: var(--bg);
+  font-family: var(--font);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── COLOR RESET ──
+   Form controls (input/textarea/select/button) default to user-agent
+   colours on a white system palette, which renders as black text on
+   the dark surface. Structural elements inside tables inherit those
+   defaults too. Force every element to read from --ink unless a later
+   rule intentionally dims it. Covers controls, table cells, and the
+   common surface wrappers explicitly. */
+input, textarea, select, button {
+  color: var(--ink);
+  background: transparent;
+  font-family: var(--font);
+}
+table, thead, tbody, tr, th, td { color: var(--ink); }
+.card, .panel, .pane, .field-group, .editor-main { color: var(--ink); }
 
 /* ── LOGIN ── */
 #login-screen {
