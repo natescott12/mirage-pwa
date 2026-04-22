@@ -55,10 +55,10 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   .studio-crossnav { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); text-decoration: none; font-family: 'DM Sans', sans-serif; transition: color 0.15s; }
   .studio-crossnav:hover { color: var(--text); }
 
-  /* Top-bar Icon indicator — the selected Icon's name only. Click
-     navigates back to the admin Persona Builder. */
+  /* Top-bar Icon indicator — the selected Icon's name + a small caret.
+     Click navigates back to the admin Persona Builder. */
   .studio-icon-pill {
-    display: inline-flex; align-items: center;
+    display: inline-flex; align-items: center; gap: 6px;
     padding: 4px 12px;
     background: transparent; border: 1px solid #333333;
     border-radius: 999px; text-decoration: none;
@@ -70,7 +70,13 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     font-family: 'Afacad', sans-serif; font-size: 12px;
     color: var(--text); letter-spacing: 0.01em;
   }
-  .studio-icon-pill .pill-caret { display: none; }
+  .studio-icon-pill .pill-caret {
+    display: inline-block;
+    font-size: 12px; color: rgba(255,255,255,0.4);
+    letter-spacing: 0; line-height: 1;
+    text-transform: none; margin-left: 0;
+  }
+  .studio-icon-pill:hover .pill-caret { color: rgba(255,255,255,0.85); }
   .studio-icon-empty {
     padding: 80px 24px; text-align: center;
     color: var(--muted); font-size: 13px; line-height: 1.6;
@@ -127,8 +133,8 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   .studio-sidebar .sidebar-section {
     padding: 0 20px; margin: 20px 0 4px;
     font-size: 11px; letter-spacing: 0.08em;
-    text-transform: uppercase; color: rgba(255,255,255,0.25); font-weight: 400;
-    font-family: 'Afacad', sans-serif;
+    text-transform: uppercase; color: rgba(255,255,255,0.25);
+    font-weight: 400; font-family: 'Afacad', sans-serif;
   }
   .studio-sidebar .sidebar-section:first-child { margin-top: 16px; }
   .studio-sidebar .sidebar-item {
@@ -136,7 +142,8 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     padding: 6px 20px; font-size: 14px; color: rgba(255,255,255,0.55);
     cursor: pointer; transition: color 0.12s, background 0.12s;
     letter-spacing: 0; position: relative; box-sizing: border-box;
-    font-family: 'Afacad', sans-serif; text-decoration: none;
+    font-weight: 400; font-family: 'Afacad', sans-serif;
+    text-decoration: none; line-height: 1.4;
   }
   .studio-sidebar .sidebar-item::before {
     content: ""; position: absolute; left: 0; top: 0; bottom: 0;
@@ -193,94 +200,60 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   #prompt-sections .ps-input[readonly] { color: var(--dim); opacity: .65; }
   #btn-generate { width: 100%; padding: 14px; background: var(--text); color: var(--bg); font-size: 11px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; border: none; border-radius: 2px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: opacity 0.15s; font-family: 'DM Sans', sans-serif; }
 
-  /* LoRA toggle — a clean on/off pill sitting above Generate. Green
-     dot = ON (trained likeness locked in); grey dot = OFF (clean scene,
-     no identity lock). Admin-palette #1f1f1f fill, #333 border. */
+  /* LoRA toggle — a clean on/off pill. Small dot + "LoRA" text.
+     Green dot = ON (trained likeness locked), grey dot = OFF (clean
+     scene). Pill chrome barely changes; the dot carries the state. */
   .lora-toggle {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 6px 14px; font-size: 12px; letter-spacing: 0;
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 5px 12px; font-size: 12px; letter-spacing: 0;
     text-transform: none; color: rgba(255,255,255,0.55);
-    background: #1f1f1f; border: 1px solid #333333;
+    background: transparent; border: 1px solid #333333;
     border-radius: 999px; cursor: pointer;
     font-family: 'Afacad', sans-serif; font-weight: 500;
     transition: color 0.15s, border-color 0.15s, background 0.15s;
   }
   .lora-toggle:hover { color: #ffffff; border-color: rgba(255,255,255,0.25); }
-  .lora-toggle.on { color: #ffffff; border-color: #78cc6e; background: rgba(120,204,110,0.12); }
+  .lora-toggle.on { color: #ffffff; }
   .lora-dot {
     width: 7px; height: 7px; border-radius: 50%;
-    background: rgba(255,255,255,0.3); transition: background 0.15s;
+    background: rgba(255,255,255,0.3); transition: background 0.15s, box-shadow 0.15s;
   }
   .lora-toggle.on .lora-dot { background: #78cc6e; box-shadow: 0 0 0 3px rgba(120,204,110,0.18); }
 
-  /* LoRA training panel — replaces the older gold-tinted tile. Matches
-     the rest of the Studio surfaces: #1f1f1f on #333 with a single
-     green dot for the Ready state, never a heavy button. */
-  .studio-lora-panel {
-    margin-top: 10px; padding: 14px 14px;
-    background: #1f1f1f; border: 1px solid #333333; border-radius: 4px;
+  /* LoRA training — slimmed to a single line below the icon card
+     fields. No panel fill, no heavy border; just a thin top divider,
+     a dot, a label, and a plain-text action link. Same pattern for
+     untrained / training / ready, state-swapped via hidden subrows. */
+  .studio-lora-inline {
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid #333333;
     font-family: 'Afacad', sans-serif;
   }
-  .studio-lora-panel .slp-head {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 10px;
-  }
-  .studio-lora-panel .slp-label {
-    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
-    color: rgba(255,255,255,0.35);
-  }
-  .studio-lora-panel .slp-status {
-    font-size: 10px; letter-spacing: 0.06em;
-    padding: 2px 8px; border-radius: 2px;
-    background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.55);
-  }
-  .studio-lora-panel .slp-body-text {
-    font-size: 12px; color: rgba(255,255,255,0.55);
-    margin-bottom: 10px; line-height: 1.5;
-  }
-  .studio-lora-panel .slp-row {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;
-  }
-  .studio-lora-panel .slp-row-label { font-size: 11px; color: rgba(255,255,255,0.4); }
-  .studio-lora-panel .slp-select {
-    font-size: 12px; padding: 5px 8px;
-    background: #141414; border: 1px solid #333333; color: var(--text);
-    border-radius: 3px; font-family: 'Afacad', sans-serif;
-    outline: none;
-  }
-  .studio-lora-panel .slp-btn {
-    width: 100%; padding: 9px; margin-top: 2px;
-    background: transparent; color: var(--text);
-    border: 1px solid #333333; border-radius: 3px;
-    font-family: 'Afacad', sans-serif; font-size: 12px; font-weight: 500;
-    letter-spacing: 0.02em; cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
-  }
-  .studio-lora-panel .slp-btn:hover { background: #ffffff; color: #141414; border-color: #ffffff; }
-  .studio-lora-panel .slp-btn-ghost {
-    width: auto; padding: 5px 12px; margin-top: 10px;
-    font-size: 11px; color: rgba(255,255,255,0.55);
-  }
-  .studio-lora-panel .slp-btn-ghost:hover { background: transparent; color: var(--text); border-color: rgba(255,255,255,0.25); }
-  .studio-lora-panel .slp-running {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 12px; color: rgba(255,255,255,0.65);
-  }
-  .studio-lora-panel .slp-sub {
-    font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px;
-  }
-  .studio-lora-panel .slp-ready {
+  .slp-inline-row {
     display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    min-height: 22px;
   }
-  .studio-lora-panel .slp-ready-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: #78cc6e; box-shadow: 0 0 0 3px rgba(120,204,110,0.18);
+  .slp-inline-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
   }
-  .studio-lora-panel .slp-ready-label {
-    font-size: 13px; font-weight: 500; color: var(--text);
+  .slp-inline-dot.off { background: rgba(255,255,255,0.25); }
+  .slp-inline-dot.training { background: #f0c040; animation: pulse 2s ease infinite; }
+  .slp-inline-dot.on { background: #78cc6e; box-shadow: 0 0 0 3px rgba(120,204,110,0.18); }
+  .slp-inline-label { font-size: 13px; color: var(--text); font-weight: 500; }
+  .slp-inline-sep { color: rgba(255,255,255,0.25); font-size: 12px; }
+  .slp-inline-note { font-size: 12px; color: rgba(255,255,255,0.4); }
+  .slp-inline-link {
+    font-size: 12px; color: rgba(255,255,255,0.5); cursor: pointer;
+    text-decoration: none; transition: color 0.12s;
+    background: transparent; border: none; padding: 0;
+    font-family: 'Afacad', sans-serif;
   }
-  .studio-lora-panel .slp-ready-note {
-    font-size: 11px; color: rgba(255,255,255,0.4); letter-spacing: 0;
+  .slp-inline-link:hover { color: var(--text); }
+  .slp-inline-select {
+    font-size: 11px; background: transparent;
+    border: 1px solid #333333; color: rgba(255,255,255,0.7);
+    padding: 2px 6px; border-radius: 3px;
+    font-family: 'Afacad', sans-serif; outline: none;
   }
   #btn-generate:hover { opacity: 0.85; } #btn-generate:disabled { opacity: 0.4; cursor: default; }
   .spinner { width: 13px; height: 13px; border: 1.5px solid rgba(248,246,242,0.25); border-top-color: var(--bg); border-radius: 50%; animation: spin 0.8s linear infinite; }
@@ -576,6 +549,7 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     <a href="/admin#personas" class="studio-icon-pill" id="studio-icon-pill" title="Switch Icon in Persona Builder">
       <span class="pill-avatar" id="studio-pill-avatar"></span>
       <span class="pill-name" id="studio-pill-name">—</span>
+      <span class="pill-caret" aria-hidden="true">›</span>
     </a>
   </div>
   <div style="display:flex;align-items:center;gap:20px">
@@ -641,49 +615,46 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
           </div>
         </div>
 
-        <!-- LoRA Training Panel — #1f1f1f surface on #333 border. Idle,
-             training, and ready states all share the same muted treatment;
-             the Ready state collapses to a green dot + "Ready" label rather
-             than a heavy CTA. -->
-        <div id="lora-panel" class="studio-lora-panel" style="display:none">
-          <div class="slp-head">
-            <span class="slp-label">LoRA Training</span>
-            <span id="lora-status-badge" class="slp-status">Untrained</span>
+        <!-- LoRA training — single-line status + plain-text action. No
+             panel fill. The three state rows toggle via display; status
+             badge is kept as a hidden element so legacy code that writes
+             to it stays intact. -->
+        <div id="lora-panel" class="studio-lora-inline" style="display:none">
+          <span id="lora-status-badge" style="display:none">Untrained</span>
+
+          <div id="lora-untrained" class="slp-inline-row">
+            <span class="slp-inline-dot off"></span>
+            <span class="slp-inline-label">Not trained</span>
+            <span class="slp-inline-sep">·</span>
+            <select id="lora-image-count" class="slp-inline-select" title="Images to use">
+              <option value="5">5 imgs</option>
+              <option value="10" selected>10 imgs</option>
+              <option value="15">15 imgs</option>
+              <option value="20">20 imgs</option>
+            </select>
+            <select id="lora-mode" class="slp-inline-select" title="Training mode">
+              <option value="character" selected>Character</option>
+              <option value="style">Style</option>
+              <option value="general">General</option>
+            </select>
+            <button type="button" class="slp-inline-link" onclick="startLoraTraining()">Train →</button>
           </div>
-          <div id="lora-untrained">
-            <div class="slp-body-text">Train a custom model on this icon's library images for consistent character output.</div>
-            <div class="slp-row">
-              <span class="slp-row-label">Images to use:</span>
-              <select id="lora-image-count" class="slp-select">
-                <option value="5">5 (min)</option>
-                <option value="10" selected>10</option>
-                <option value="15">15</option>
-                <option value="20">20 (max)</option>
-              </select>
-              <select id="lora-mode" class="slp-select">
-                <option value="character" selected>Character</option>
-                <option value="style">Style</option>
-                <option value="general">General</option>
-              </select>
-            </div>
-            <button onclick="startLoraTraining()" class="slp-btn">Train Icon Model</button>
+
+          <div id="lora-training" class="slp-inline-row" style="display:none">
+            <span class="slp-inline-dot training"></span>
+            <span class="slp-inline-label">Training in progress</span>
+            <span class="slp-inline-sep">·</span>
+            <span class="slp-inline-note" id="lora-training-msg">20–30 min</span>
+            <span class="slp-inline-sep">·</span>
+            <button type="button" class="slp-inline-link" onclick="checkLoraStatus()">Check status</button>
           </div>
-          <div id="lora-training" style="display:none">
-            <div class="slp-running">
-              <span class="spinner" style="width:10px;height:10px;border:1px solid rgba(255,255,255,0.15);border-top-color:#78cc6e;border-radius:50%;animation:spin .8s linear infinite"></span>
-              <span>Training in progress…</span>
-            </div>
-            <div class="slp-sub" id="lora-training-msg">This takes 20–30 minutes. You can close this and come back.</div>
-            <button onclick="checkLoraStatus()" class="slp-btn slp-btn-ghost">Check Status</button>
-          </div>
-          <div id="lora-ready" style="display:none">
-            <div class="slp-ready">
-              <span class="slp-ready-dot"></span>
-              <span class="slp-ready-label">Ready</span>
-              <span class="slp-ready-note">all generations use this model</span>
-            </div>
-            <div class="slp-sub" id="lora-model-id"></div>
-            <button onclick="startLoraTraining()" class="slp-btn slp-btn-ghost">Retrain</button>
+
+          <div id="lora-ready" class="slp-inline-row" style="display:none">
+            <span class="slp-inline-dot on"></span>
+            <span class="slp-inline-label">LoRA Ready</span>
+            <span class="slp-inline-sep">·</span>
+            <button type="button" class="slp-inline-link" onclick="startLoraTraining()">Retrain</button>
+            <span id="lora-model-id" style="display:none"></span>
           </div>
         </div>
       </div>
