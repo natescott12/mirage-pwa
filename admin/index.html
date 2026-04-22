@@ -1408,16 +1408,104 @@ button { color: inherit; }
     .cl-card-date { font-size: 10px; color: var(--ink-dim); letter-spacing: 0.04em; }
     .cl-empty { padding: 80px 0; text-align: center; color: var(--ink-dim); font-size: var(--text-sm); }
 
-    /* Cloud Library link — plain accent text, no chrome. Sits next to
-       the Reload button in the Content Library header. */
-    .cl-cloud-link {
-      font-family: var(--font);
-      font-size: var(--text-sm); font-weight: var(--weight-medium);
-      color: var(--accent); text-decoration: none;
-      letter-spacing: 0.02em;
-      transition: opacity 0.15s;
+    /* Cloud Library indicator — a small accent dot signalling that
+       the grid is sourced from Supabase cloud storage. Not a control. */
+    .cl-cloud-indicator {
+      display: inline-flex; align-items: center;
+      cursor: default;
     }
-    .cl-cloud-link:hover { opacity: 0.75; }
+    .cl-cloud-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 3px rgba(119,204,110,0.15);
+    }
+
+    /* Card checkbox — appears on hover top-left, stays visible when
+       the card is checked. Routes through clToggleSelect. */
+    .cl-card { position: relative; }
+    .cl-card-select {
+      position: absolute; top: 10px; left: 10px; z-index: 3;
+      width: 18px; height: 18px;
+      appearance: none; -webkit-appearance: none;
+      background: rgba(10,10,10,0.7);
+      border: 1px solid rgba(255,255,255,0.45);
+      border-radius: 3px; cursor: pointer;
+      opacity: 0; transition: opacity 0.15s, background 0.15s, border-color 0.15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cl-card:hover .cl-card-select,
+    .cl-card-select:checked { opacity: 1; }
+    .cl-card-select:checked {
+      background: var(--accent); border-color: var(--accent);
+    }
+    .cl-card-select:checked::after {
+      content: "✓"; color: var(--bg); font-size: 12px; font-weight: var(--weight-medium);
+      line-height: 1;
+    }
+
+    /* Selection bar — fixed to the bottom of the pane. Shows total
+       checked count + Clear / Delete Selected actions. */
+    .cl-select-bar {
+      position: sticky; bottom: 0; left: 0; right: 0; z-index: 40;
+      display: flex; align-items: center; gap: 16px;
+      padding: 12px 20px; margin: 16px -24px -24px;
+      background: var(--sidebar-bg); border-top: 1px solid var(--border);
+    }
+    .cl-select-count {
+      font-size: var(--text-sm); color: var(--ink-mid);
+      font-weight: var(--weight-medium);
+      margin-right: auto;
+    }
+
+    /* Lightbox — full-screen preview centered on a black backdrop.
+       Arrow buttons float at the sides, close button top-right,
+       metadata below the image. */
+    .cl-lightbox {
+      display: none; position: fixed; inset: 0; z-index: 9500;
+      align-items: center; justify-content: center;
+    }
+    .cl-lightbox.open { display: flex; }
+    .cl-lightbox[aria-hidden="true"].open { aria-hidden: "false"; }
+    .cl-lightbox-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.92); cursor: pointer;
+    }
+    .cl-lightbox-inner {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+      max-width: 90vw; max-height: 90vh;
+      pointer-events: none;
+    }
+    .cl-lightbox-img {
+      max-width: 88vw; max-height: 80vh;
+      object-fit: contain; border-radius: 4px;
+      background: var(--surface);
+      pointer-events: auto;
+    }
+    .cl-lightbox-meta {
+      display: flex; gap: 10px; align-items: baseline;
+      font-size: var(--text-sm); color: var(--ink-dim);
+      pointer-events: auto;
+    }
+    .cl-lightbox-meta-icon { color: var(--ink); font-weight: var(--weight-medium); }
+    .cl-lightbox-meta-dot { color: var(--ink-dim); opacity: 0.4; }
+    .cl-lightbox-meta-scene { color: var(--ink-mid); max-width: 60vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cl-lightbox-close, .cl-lightbox-nav {
+      position: absolute; z-index: 2;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(255,255,255,0.06); color: var(--ink);
+      border: 1px solid var(--border); cursor: pointer;
+      font-size: 22px; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0;
+      transition: background 0.12s, border-color 0.12s;
+    }
+    .cl-lightbox-close:hover, .cl-lightbox-nav:hover {
+      background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.25);
+    }
+    .cl-lightbox-close { top: 24px; right: 24px; font-size: 24px; }
+    .cl-lightbox-nav.prev { top: 50%; left: 24px; transform: translateY(-50%); }
+    .cl-lightbox-nav.next { top: 50%; right: 24px; transform: translateY(-50%); }
 
     /* Edit mode */
     .cl-edit-layout {
@@ -1802,10 +1890,9 @@ button { color: inherit; }
               <div class="page-sub" id="cl-browse-sub">All generated images</div>
             </div>
             <div style="display:flex;gap:16px;align-items:center">
-              <a href="https://supabase.com/dashboard/project/gmyenvnfuailickepvax/storage/buckets/content"
-                 target="_blank" rel="noopener noreferrer"
-                 class="cl-cloud-link"
-                 title="Open the content bucket viewer in Supabase Storage">Cloud Library</a>
+              <span class="cl-cloud-indicator" id="cl-cloud-indicator" title="Images sourced from Supabase cloud storage">
+                <span class="cl-cloud-dot"></span>
+              </span>
               <button class="btn-ghost btn-sm" onclick="clReload()">Reload</button>
             </div>
           </div>
@@ -1867,6 +1954,32 @@ button { color: inherit; }
                 <button class="cl-action-btn" onclick="clRevert()" title="Clear adjustments and reset the filter to None">Revert</button>
                 <button class="cl-action-btn primary" onclick="clSaveEdited()" title="Bake adjustments and save the edited version to Supabase">Save</button>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selection bar — appears when one or more cards are checked.
+             Fixed to the bottom of the Content Library pane. -->
+        <div class="cl-select-bar" id="cl-select-bar" style="display:none">
+          <span class="cl-select-count" id="cl-select-count">0 selected</span>
+          <button class="btn-ghost btn-sm" onclick="clClearSelection()">Clear</button>
+          <button class="btn-primary btn-sm" onclick="clDeleteSelected()">Delete Selected</button>
+        </div>
+
+        <!-- Lightbox — full-screen preview. Click backdrop or X to
+             close; left/right arrows step through clItems. -->
+        <div class="cl-lightbox" id="cl-lightbox" role="dialog" aria-modal="true" aria-hidden="true">
+          <div class="cl-lightbox-backdrop" onclick="clCloseLightbox()"></div>
+          <button class="cl-lightbox-close" onclick="clCloseLightbox()" aria-label="Close">×</button>
+          <button class="cl-lightbox-nav prev" onclick="clLightboxPrev()" aria-label="Previous">‹</button>
+          <button class="cl-lightbox-nav next" onclick="clLightboxNext()" aria-label="Next">›</button>
+          <div class="cl-lightbox-inner">
+            <img class="cl-lightbox-img" id="cl-lightbox-img" src="" alt="">
+            <div class="cl-lightbox-meta">
+              <span class="cl-lightbox-meta-icon" id="cl-lightbox-icon">—</span>
+              <span class="cl-lightbox-meta-dot">·</span>
+              <span class="cl-lightbox-meta-date" id="cl-lightbox-date"></span>
+              <span class="cl-lightbox-meta-scene" id="cl-lightbox-scene"></span>
             </div>
           </div>
         </div>
@@ -2673,6 +2786,15 @@ function showPane(id) {
   if (id === 'andie') initAndie();
   if (id === 'sloanlog') loadSloanLog();
   if (id === 'sloanchat') loadSloanChat();
+  /* Content Library — fire the browse fetch directly on pane activation.
+     The wireClPaneActivation IIFE later in the script also hooks this,
+     but making the call explicit here guarantees the fetch runs even
+     if the wrap IIFE evaluates before showPane is available. */
+  if (id === 'content' && typeof clLoadBrowse === 'function') {
+    let hasItems = false;
+    try { hasItems = Array.isArray(clItems) && clItems.length > 0; } catch (_) {}
+    if (!hasItems) clLoadBrowse();
+  }
  { loadPersonasFromJSON().then(function(p){ window.__personas=p; populateIconSelect(p); }); }
 
   if (id === 'personas') {
@@ -6066,8 +6188,11 @@ function clRenderGrid() {
     const date = (it.created_at || '').slice(0, 10);
     const iconName = it._iconName || '—';
     const safeId = String(it.id).replace(/'/g, "\\'");
+    const checked = clSelected.has(String(it.id)) ? ' checked' : '';
     return (
-      '<div class="cl-card" onclick="clOpenEdit(\'' + safeId + '\')">' +
+      '<div class="cl-card" onclick="clOpenLightbox(\'' + safeId + '\')">' +
+        '<input type="checkbox" class="cl-card-select" data-id="' + safeId + '"' + checked +
+          ' onclick="event.stopPropagation();clToggleSelect(\'' + safeId + '\', this.checked)" aria-label="Select image">' +
         '<div class="cl-card-img-wrap">' +
           '<img src="' + (it.image_url || '') + '" alt="' + iconName + '" loading="lazy" onerror="this.parentNode.style.opacity=0.3">' +
           '<button class="cl-card-edit-btn" onclick="event.stopPropagation();clOpenEdit(\'' + safeId + '\')">Edit</button>' +
@@ -6079,6 +6204,111 @@ function clRenderGrid() {
       '</div>'
     );
   }).join('');
+  clUpdateSelectBar();
+}
+
+// ── Lightbox (browse-mode preview) ───────────────────────────────────────────
+// Clicking a card opens this modal; the Edit button on the card still
+// routes straight to the full Lightroom-style edit view. Arrow keys and
+// the ‹ / › buttons step through the currently-filtered grid.
+let clLightboxIndex = -1;
+function clLightboxFilteredList() {
+  return clActiveIcon === 'all'
+    ? clItems.slice()
+    : clItems.filter(function(x){ return x._iconName === clActiveIcon; });
+}
+function clOpenLightbox(id) {
+  const list = clLightboxFilteredList();
+  const idx = list.findIndex(function(x){ return String(x.id) === String(id); });
+  if (idx < 0) return;
+  clLightboxIndex = idx;
+  clRenderLightbox();
+  const box = document.getElementById('cl-lightbox');
+  if (box) { box.classList.add('open'); box.setAttribute('aria-hidden', 'false'); }
+  document.body.style.overflow = 'hidden';
+}
+function clCloseLightbox() {
+  const box = document.getElementById('cl-lightbox');
+  if (box) { box.classList.remove('open'); box.setAttribute('aria-hidden', 'true'); }
+  document.body.style.overflow = '';
+  clLightboxIndex = -1;
+}
+function clLightboxStep(delta) {
+  const list = clLightboxFilteredList();
+  if (!list.length || clLightboxIndex < 0) return;
+  clLightboxIndex = (clLightboxIndex + delta + list.length) % list.length;
+  clRenderLightbox();
+}
+function clLightboxPrev() { clLightboxStep(-1); }
+function clLightboxNext() { clLightboxStep(1); }
+function clRenderLightbox() {
+  const list = clLightboxFilteredList();
+  const it = list[clLightboxIndex];
+  if (!it) return;
+  const img = document.getElementById('cl-lightbox-img');
+  const icon = document.getElementById('cl-lightbox-icon');
+  const date = document.getElementById('cl-lightbox-date');
+  const scene = document.getElementById('cl-lightbox-scene');
+  if (img) { img.src = it.image_url || ''; img.alt = it._iconName || ''; }
+  if (icon) icon.textContent = it._iconName || '—';
+  if (date) date.textContent = (it.created_at || '').slice(0, 10);
+  if (scene) scene.textContent = it.scene || '';
+}
+document.addEventListener('keydown', function(e) {
+  const box = document.getElementById('cl-lightbox');
+  if (!box || !box.classList.contains('open')) return;
+  if (e.key === 'Escape') { e.preventDefault(); clCloseLightbox(); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); clLightboxPrev(); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); clLightboxNext(); }
+});
+
+// ── Select + bulk delete ─────────────────────────────────────────────────────
+const clSelected = new Set();
+function clToggleSelect(id, on) {
+  const key = String(id);
+  if (on) clSelected.add(key); else clSelected.delete(key);
+  clUpdateSelectBar();
+}
+function clClearSelection() {
+  clSelected.clear();
+  document.querySelectorAll('.cl-card-select').forEach(function(c){ c.checked = false; });
+  clUpdateSelectBar();
+}
+function clUpdateSelectBar() {
+  const bar = document.getElementById('cl-select-bar');
+  const count = document.getElementById('cl-select-count');
+  if (!bar || !count) return;
+  if (clSelected.size === 0) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  count.textContent = clSelected.size + ' selected';
+}
+async function clDeleteSelected() {
+  if (clSelected.size === 0) return;
+  const n = clSelected.size;
+  const msg = 'Delete ' + n + ' image' + (n === 1 ? '' : 's') + ' from Supabase? This cannot be undone.';
+  if (!window.confirm(msg)) return;
+  const ids = Array.from(clSelected);
+  const results = await Promise.all(ids.map(function(id) {
+    return fetch(CL_SUPA_URL + '/rest/v1/content?id=eq.' + encodeURIComponent(id), {
+      method: 'DELETE',
+      headers: {
+        'apikey': CL_SUPA_KEY,
+        'Authorization': 'Bearer ' + CL_SUPA_KEY,
+        'Prefer': 'return=minimal'
+      }
+    }).then(function(r){ return { id: id, ok: r.ok, status: r.status }; })
+      .catch(function(err){ return { id: id, ok: false, error: err && err.message }; });
+  }));
+  const failed = results.filter(function(r){ return !r.ok; });
+  if (failed.length) {
+    console.error('[content-library] delete failures:', failed);
+    if (typeof toast === 'function') toast('Deleted ' + (results.length - failed.length) + ' · ' + failed.length + ' failed');
+  } else if (typeof toast === 'function') {
+    toast('Deleted ' + results.length + ' image' + (results.length === 1 ? '' : 's'));
+  }
+  clSelected.clear();
+  clUpdateSelectBar();
+  await clLoadBrowse();
 }
 
 // ── Edit view ────────────────────────────────────────────────────────────────
