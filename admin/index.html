@@ -10,17 +10,36 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ── LOCKED DESIGN TOKENS ──────────────────────────────────────────────────
+   Canonical design system for admin + studio. Every new element must
+   reference these tokens. Do not introduce parallel hex values; extend
+   the token set here if a new role is genuinely needed.
+
+   Typography: 3 sizes + 2 weights. Colours: 9 tokens. Buttons and chips
+   have one canonical treatment each (see .btn-primary, .btn-ghost, .chip
+   below). Token changes propagate to both files — keep them in sync. */
 :root {
+  /* Colours */
   --bg: #141414;
   --sidebar-bg: #1a1a1a;
   --surface: #1f1f1f;
   --surface-2: #292929;
   --border: #333333;
   --border-strong: rgba(255,255,255,0.22);
-  --ink: #ffffff;
-  --ink-mid: rgba(255,255,255,0.55);
-  --ink-dim: rgba(255,255,255,0.4);
   --accent: #78cc6e;
+  --ink: rgba(255,255,255,1.0);
+  --ink-mid: rgba(255,255,255,0.55);
+  --ink-dim: rgba(255,255,255,0.35);
+
+  /* Typography — 3 sizes, 2 weights */
+  --text-xs: 11px;    /* labels, section headers, metadata */
+  --text-sm: 13px;    /* body, nav items, table rows */
+  --text-base: 14px;  /* primary content, card names */
+  --text-lg: 28px;    /* page headers only */
+  --weight-regular: 400;
+  --weight-medium: 500;
+
+  /* Layout */
   --sidebar: 220px;
 }
 
@@ -104,7 +123,7 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 }
 .sidebar-item:hover { color: rgba(255,255,255,0.85); }
 .sidebar-item.active {
-  color: var(--ink); background: rgba(120,204,110,0.08); font-weight: 400;
+  color: var(--ink); background: rgba(119,204,110,0.08); font-weight: 400;
 }
 .sidebar-item.active::before { background: var(--accent); }
 /* Retired icon glyphs — the wireframe is text-only nav. Markup kept
@@ -128,33 +147,58 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 .page-title { font-size: 15px; font-weight: 500; letter-spacing: 0; line-height: 1.2; color: var(--ink); }
 .page-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 3px; letter-spacing: 0.01em; }
 
-/* ── BUTTONS ──
-   Only .btn (filled ink) reads as a primary action button. Every
-   secondary variant is reduced to plain text that changes opacity on
-   hover — no borders, no background, nothing that announces itself
-   as a button until you interact with it. */
-.btn {
+/* ── BUTTONS — two canonical treatments ──
+   .btn / .btn-primary — white fill, ink-inverted text. The only
+     control that announces itself. Use for the one primary action
+     on a surface.
+   .btn-ghost — transparent, #333 border, ink-mid text. Hover promotes
+     text to --ink. Use for every non-primary action.
+   .btn-outline is kept as a backwards-compat alias for .btn-ghost. */
+.btn, .btn-primary {
   padding: 8px 16px; background: var(--ink); color: var(--bg);
-  border: none; font-family: 'Afacad', sans-serif; font-size: 11px;
+  border: none; font-family: 'Afacad', sans-serif;
+  font-size: var(--text-xs); font-weight: var(--weight-medium);
   letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer;
   transition: opacity 0.15s; display: inline-flex; align-items: center; gap: 7px;
   border-radius: 4px;
 }
-.btn:hover { opacity: 0.85; }
+.btn:hover, .btn-primary:hover { opacity: 0.85; }
 .btn-sm { padding: 6px 12px; font-size: 10px; letter-spacing: 0.12em; }
-.btn-outline {
-  background: transparent; color: rgba(255,255,255,0.55);
-  border: none; padding: 4px 0;
-  letter-spacing: 0; text-transform: none; font-size: 11px;
+.btn-ghost, .btn-outline {
+  padding: 7px 14px; background: transparent; color: var(--ink-mid);
+  border: 1px solid var(--border);
+  font-family: 'Afacad', sans-serif;
+  font-size: var(--text-xs); font-weight: var(--weight-medium);
+  letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  display: inline-flex; align-items: center; gap: 7px;
+  border-radius: 4px;
 }
-.btn-outline:hover { color: var(--ink); opacity: 1; }
-.btn-ghost {
-  background: transparent; color: rgba(255,255,255,0.55); border: none;
-  padding: 4px 0; letter-spacing: 0; text-transform: none; font-size: 11px;
+.btn-ghost:hover, .btn-outline:hover {
+  color: var(--ink); border-color: rgba(255,255,255,0.25);
 }
-.btn-ghost:hover { color: var(--ink); opacity: 1; }
-.btn-danger { background: #b03025; border-radius: 4px; }
-.btn-success { background: #2a7a4a; border-radius: 4px; }
+.btn-danger { background: #b03025; color: var(--ink); border: none; border-radius: 4px; }
+.btn-success { background: #2a7a4a; color: var(--ink); border: none; border-radius: 4px; }
+
+/* ── CHIPS — one canonical treatment ──
+   Surface fill, hairline border, ink-mid text. Selected state picks
+   up the accent (0.15) with a solid accent border. Hover is one step
+   lighter via --surface-2. Applies to .chip and the legacy .tag-chip
+   alias used by the persona form. */
+.chip, .tag-chip {
+  padding: 5px 12px; font-size: var(--text-sm);
+  font-family: 'Afacad', sans-serif; font-weight: var(--weight-regular);
+  color: var(--ink-mid); cursor: pointer;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; letter-spacing: 0.01em;
+  display: inline-flex; align-items: center;
+}
+.chip:hover, .tag-chip:hover { background: var(--surface-2); color: var(--ink); }
+.chip.selected, .tag-chip.selected {
+  background: rgba(119,204,110,0.15); color: var(--ink);
+  border-color: var(--accent);
+}
 
 /* ── ICON GRID ──
    Publication-style cards: 4px radius, hairline border at 0.08 opacity,
@@ -188,14 +232,14 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 .editor-main { display: flex; flex-direction: column; gap: 16px; }
 
 .field-group {
-  background: #1f1f1f; border: 1px solid #333333;
+  background: var(--surface); border: 1px solid var(--border);
   border-radius: 4px; padding: 22px;
 }
 .field-group-title {
   font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
   color: rgba(255,255,255,0.35); font-weight: 700;
   margin-bottom: 14px; padding-bottom: 10px;
-  border-bottom: 1px solid #333333;
+  border-bottom: 1px solid var(--border);
 }
 
 /* Accordion mode — only kicks in when wrapPersonaAccordion() has restructured
@@ -232,7 +276,7 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 }
 .field-group-header:hover .field-group-chev { color: rgba(255,255,255,0.9); }
 .field-group.collapsed .field-group-chev { transform: rotate(0deg); }
-.field-group-body { padding-top: 16px; margin-top: 14px; border-top: 1px solid #333333; }
+.field-group-body { padding-top: 16px; margin-top: 14px; border-top: 1px solid var(--border); }
 .field-group.collapsed { padding-bottom: 12px; }
 .field-group.collapsed .field-group-body { display: none; }
 
@@ -246,8 +290,8 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
   color: rgba(255,255,255,0.4); font-weight: 500;
 }
 .field input, .field select, .field textarea {
-  padding: 10px 12px; background: #1f1f1f;
-  border: 1px solid #333333;
+  padding: 10px 12px; background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-family: 'Afacad', sans-serif; font-size: 14px; color: var(--ink);
   outline: none; transition: border-color 0.15s; width: 100%;
@@ -258,23 +302,9 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 .field textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
 .field select { padding-right: 28px; }
 
-/* tag-select chips — flat #1f1f1f pill with #333 border. Selected
-   pill picks up the accent at 0.15 opacity + a solid accent border. */
+/* tag-select layout — chip visuals live in the canonical .chip/.tag-chip
+   rule at the top of this stylesheet. */
 .tag-select { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-.tag-chip {
-  padding: 5px 12px; font-size: 12px;
-  color: rgba(255,255,255,0.55); cursor: pointer;
-  transition: color 0.12s, border-color 0.12s, background 0.12s;
-  border: 1px solid #333333;
-  background: #1f1f1f;
-  border-radius: 20px; font-family: 'Afacad', sans-serif;
-  letter-spacing: 0.01em;
-}
-.tag-chip:hover { color: var(--ink); border-color: rgba(255,255,255,0.25); }
-.tag-chip.selected {
-  background: rgba(120,204,110,0.15); color: var(--ink);
-  border-color: #78cc6e;
-}
 
 /* skin-tone swatches (Physical Description) */
 .skin-swatches { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
@@ -307,14 +337,14 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
   height: 56px;
   padding: 0 24px;
   background: var(--bg);
-  border-top: 1px solid #333333;
+  border-top: 1px solid var(--border);
   display: flex; align-items: center;
 }
 .persona-save-bar .persona-save-wide {
   flex: 1;
   padding: 11px 18px;
   background: #0a0a0a; color: var(--ink);
-  border: 1px solid #333333;
+  border: 1px solid var(--border);
   font-family: 'Afacad', sans-serif;
   font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
   cursor: pointer; border-radius: 4px;
@@ -409,17 +439,17 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
   font-size: 12px; color: rgba(255,255,255,0.4);
   margin-top: 6px; letter-spacing: 0.01em;
 }
-#pane-dashboard .table-wrap { background: transparent; border: 1px solid #333333; border-radius: 4px; overflow: hidden; }
+#pane-dashboard .table-wrap { background: transparent; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
 #pane-dashboard table { border-collapse: separate; border-spacing: 0; }
-#pane-dashboard thead tr { background: #1a1a1a; }
+#pane-dashboard thead tr { background: var(--sidebar-bg); }
 #pane-dashboard thead th {
   color: rgba(255,255,255,0.35); font-size: 10px; letter-spacing: 0.08em;
   text-transform: uppercase; font-weight: 500;
-  padding: 12px 16px; border-bottom: 1px solid #333333;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
 }
 #pane-dashboard tbody td {
   color: rgba(255,255,255,0.85); background: transparent;
-  border-bottom: 1px solid #333333; padding: 14px 16px; font-size: 13px;
+  border-bottom: 1px solid var(--border); padding: 14px 16px; font-size: 13px;
 }
 #pane-dashboard tbody tr:last-child td { border-bottom: none; }
 #pane-dashboard tbody tr:hover td { background: rgba(255,255,255,0.03); }
@@ -437,7 +467,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
   vertical-align: baseline; margin: 0 5px 0 12px; transform: translateY(-1px);
 }
 #pane-icons .icon-summary-dot.first { margin-left: 0; }
-#pane-icons .icon-summary-dot.active { background: #78cc6e; }
+#pane-icons .icon-summary-dot.active { background: var(--accent); }
 #pane-icons .icon-summary-dot.in-progress { background: #f0c040; }
 #pane-icons .icon-summary-dot.inactive { background: #e05555; }
 
@@ -450,7 +480,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 #persona-list-view #persona-list-search {
   flex: 1; max-width: 320px;
   padding: 8px 12px; background: transparent;
-  border: 1px solid #333333; border-radius: 4px;
+  border: 1px solid var(--border); border-radius: 4px;
   font-family: 'Afacad', sans-serif; font-size: 13px;
   color: var(--ink); outline: none; transition: border-color 0.15s;
 }
@@ -496,8 +526,8 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
   position: relative;
   display: flex; flex-direction: column; align-items: flex-start;
   padding: 18px 16px 14px;
-  background: #1f1f1f;
-  border: 1px solid #333333; border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border); border-radius: 6px;
   cursor: pointer; transition: border-color 0.12s;
   min-width: 0;
 }
@@ -509,7 +539,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
   width: 8px; height: 8px; border-radius: 50%;
 }
 #pane-icons .icons-pane-card .ipc-dot.active,
-#persona-list-view .icons-pane-card .ipc-dot.active { background: #78cc6e; }
+#persona-list-view .icons-pane-card .ipc-dot.active { background: var(--accent); }
 #pane-icons .icons-pane-card .ipc-dot.in-progress,
 #persona-list-view .icons-pane-card .ipc-dot.in-progress { background: #f0c040; }
 #pane-icons .icons-pane-card .ipc-dot.inactive,
@@ -535,11 +565,11 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 }
 #pane-icons .icons-pane-card .ipc-progress-track,
 #persona-list-view .icons-pane-card .ipc-progress-track {
-  height: 2px; background: #333333; border-radius: 2px; overflow: hidden;
+  height: 2px; background: var(--border); border-radius: 2px; overflow: hidden;
 }
 #pane-icons .icons-pane-card .ipc-progress-fill,
 #persona-list-view .icons-pane-card .ipc-progress-fill {
-  height: 100%; background: #78cc6e; transition: width 0.3s;
+  height: 100%; background: var(--accent); transition: width 0.3s;
 }
 #pane-icons .icons-pane-card .ipc-meta-row,
 #persona-list-view .icons-pane-card .ipc-meta-row {
@@ -723,7 +753,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
       padding: 3px 7px;
       border-radius: 3px;
     }
-    .icon-status-badge.in-progress { background: rgba(120,204,110,0.2); color: var(--accent); }
+    .icon-status-badge.in-progress { background: rgba(119,204,110,0.2); color: var(--accent); }
     .icon-status-badge.draft { background: rgba(255,255,255,0.08); color: var(--ink-mid); }
     .icon-status-badge.live { background: var(--green); color: #fff; }
     .icon-card {
@@ -763,7 +793,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
        absolute positioning so it never affects non-admin layout. */
     .tr-row { position: relative; }
     .tr-row.tr-status-pending { border-left: 2px solid rgba(212,167,85,0.6); padding-left: 16px; }
-    .tr-row.tr-status-dead { border-left: 2px solid rgba(120,204,110,0.6); opacity: 0.55; padding-left: 16px; }
+    .tr-row.tr-status-dead { border-left: 2px solid rgba(119,204,110,0.6); opacity: 0.55; padding-left: 16px; }
     .tr-edit-btn {
       position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
       background: transparent; border: 1px solid var(--border); color: var(--ink-dim);
@@ -792,7 +822,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
       letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; border-radius: 2px;
     }
     .tr-edit-save { border-color: var(--accent); color: var(--accent); }
-    .tr-edit-save:hover { background: rgba(120,204,110,0.1); }
+    .tr-edit-save:hover { background: rgba(119,204,110,0.1); }
     .tr-edit-cancel:hover { border-color: var(--ink-dim); }
     .tr-edit-status-msg { font-size: 11px; color: var(--ink-dim); min-height: 14px; }
     .tr-edit-status-msg.tr-edit-err { color: rgba(232,120,100,0.85); }
@@ -2654,8 +2684,8 @@ function updateDashboard() {
       <td style="color:rgba(255,255,255,0.5)">${icon.archetype || '—'}</td>
       <td>
         <div style="display:flex;align-items:center;gap:10px">
-          <div style="flex:1;height:3px;background:#333333;border-radius:2px;max-width:120px;overflow:hidden">
-            <div style="height:100%;width:${pct}%;background:#78cc6e;border-radius:2px"></div>
+          <div style="flex:1;height:3px;background: var(--border);border-radius:2px;max-width:120px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background: var(--accent);border-radius:2px"></div>
           </div>
           <span style="font-size:11px;color:rgba(255,255,255,0.5);font-variant-numeric:tabular-nums">${pct}%</span>
         </div>
