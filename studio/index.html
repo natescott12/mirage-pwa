@@ -4275,6 +4275,32 @@ function cloudTrainLora() {
     var lightText=g('cs-light');
     if(!window.MG){if(typeof switchTab==='function')switchTab('generate');return;}
 
+    // Force-inject CHARACTER from the selected icon's persona_data so
+    // the Flux prompt's CHARACTER row always carries her physical
+    // anchors, regardless of what the chat actually discussed. Same
+    // 10-field priority order MG.parts uses (ethnicity → skinTone →
+    // eyeColor → eyeShape → hairColor → hairLength → hairTexture →
+    // build → freckles → makeup). Writes straight to currentChar so
+    // MG.parts picks the values up on the next refresh.
+    (function forceCharacterInject() {
+      var si = window.selectedIcon || null;
+      if (!si || typeof currentChar === 'undefined' || !currentChar) return;
+      var pd = si.persona_data || si;
+      if (!pd) return;
+      var lower = function(v){ return v == null ? '' : String(v).toLowerCase(); };
+      if (pd.ethnicity)         currentChar.ethnicity      = pd.ethnicity;
+      if (pd.skin_tone_prompt)  currentChar.skinTonePrompt = pd.skin_tone_prompt;
+      if (pd.skin_tone)         currentChar.skinTone       = lower(pd.skin_tone);
+      if (pd.eye_color)         currentChar.eyeColor       = lower(pd.eye_color);
+      if (pd.eye_shape)         currentChar.eyeShape       = lower(pd.eye_shape);
+      if (pd.hair_color)        currentChar.hairColor      = lower(pd.hair_color);
+      if (pd.hair_length)       currentChar.hairLength     = lower(pd.hair_length);
+      if (pd.hair_texture)      currentChar.hairTexture    = lower(pd.hair_texture);
+      if (pd.build)             currentChar.build          = lower(pd.build);
+      if (pd.freckles)          currentChar.freckles       = lower(pd.freckles);
+      if (pd.makeup)            currentChar.makeup         = lower(pd.makeup);
+    })();
+
     // Wipe prior chip state so the Converse brief is the sole source of truth
     MG.framing.clear();
     MG.angle.clear();
