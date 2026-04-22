@@ -323,7 +323,7 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom: 36px; }
 .stat-card { background: transparent; padding: 0; }
 .stat-value { font-size: 28px; font-weight: 500; letter-spacing: -0.4px; line-height: 1; margin-bottom: 6px; }
-.stat-label { font-size: 9px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+.stat-label { font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500; }
 
 /* ── TABLE ── */
 .table-wrap { background: transparent; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; overflow: hidden; }
@@ -367,7 +367,26 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 /* Force dark on all content */
 .pane, .pane * { color: inherit; }
 .pane { background: var(--bg); color: var(--ink); }
-.stat-card { background: var(--surface) !important; border-color: var(--border) !important; }
+.stat-card { background: var(--surface) !important; border: 1px solid var(--border) !important; padding: 20px !important; border-radius: 4px !important; }
+
+/* Dashboard pane — wireframe palette scoped so other panes don't
+   inherit the table + header treatment. */
+#pane-dashboard .page-title { font-size: 14px; font-weight: 500; color: var(--ink); letter-spacing: 0; }
+#pane-dashboard .page-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 3px; }
+#pane-dashboard .table-wrap { background: transparent; border: 1px solid #333333; border-radius: 4px; overflow: hidden; }
+#pane-dashboard table { border-collapse: separate; border-spacing: 0; }
+#pane-dashboard thead tr { background: #1a1a1a; }
+#pane-dashboard thead th {
+  color: rgba(255,255,255,0.35); font-size: 10px; letter-spacing: 0.08em;
+  text-transform: uppercase; font-weight: 500;
+  padding: 12px 16px; border-bottom: 1px solid #333333;
+}
+#pane-dashboard tbody td {
+  color: rgba(255,255,255,0.85); background: transparent;
+  border-bottom: 1px solid #333333; padding: 14px 16px; font-size: 13px;
+}
+#pane-dashboard tbody tr:last-child td { border-bottom: none; }
+#pane-dashboard tbody tr:hover td { background: rgba(255,255,255,0.03); }
 .stat-value { color: var(--ink) !important; font-family: 'Afacad', sans-serif !important; }
 .stat-label { color: var(--ink-dim) !important; }
 .priority-item { border-color: var(--border) !important; background: transparent !important; }
@@ -2392,20 +2411,19 @@ function updateDashboard() {
   body.innerHTML = launch.map(icon => {
     const pct = getPersonaCompletion(icon);
     const status = getStatusFromCompletion(pct);
-    const badge = status === 'complete' ? '#2a7a4a' : status === 'partial' ? '#d4820a' : '#ccc';
     return `<tr>
       <td><strong>${icon.name}</strong></td>
-      <td style="color:var(--ink-dim)">${icon.archetype || '—'}</td>
+      <td style="color:rgba(255,255,255,0.5)">${icon.archetype || '—'}</td>
       <td>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="flex:1;height:3px;background:#ece9e4;border-radius:1px;max-width:80px">
-            <div style="height:100%;width:${pct}%;background:var(--ink);border-radius:1px"></div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="flex:1;height:3px;background:#333333;border-radius:2px;max-width:120px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:#78cc6e;border-radius:2px"></div>
           </div>
-          <span style="font-size:12px;color:var(--ink-dim)">${pct}%</span>
+          <span style="font-size:11px;color:rgba(255,255,255,0.5);font-variant-numeric:tabular-nums">${pct}%</span>
         </div>
       </td>
-      <td style="color:var(--ink-dim)">—</td>
-      <td><span style="font-size:11px;color:${badge};text-transform:uppercase;letter-spacing:0.1em">${status}</span></td>
+      <td style="color:rgba(255,255,255,0.5)">—</td>
+      <td><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;background:rgba(255,255,255,0.15);color:#fff;padding:3px 8px;border-radius:3px">${status}</span></td>
     </tr>`;
   }).join('');
 }
