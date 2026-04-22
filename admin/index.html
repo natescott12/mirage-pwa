@@ -12,13 +12,15 @@
 
 :root {
   --bg: #141414;
-  --surface: #1a1a1a;
-  --border: rgba(255,255,255,0.06);
-  --border-strong: rgba(255,255,255,0.16);
+  --sidebar-bg: #1a1a1a;
+  --surface: #1f1f1f;
+  --surface-2: #292929;
+  --border: #333333;
+  --border-strong: rgba(255,255,255,0.22);
   --ink: #ffffff;
   --ink-mid: rgba(255,255,255,0.55);
   --ink-dim: rgba(255,255,255,0.4);
-  --accent: #77cc6e;
+  --accent: #78cc6e;
   --sidebar: 220px;
 }
 
@@ -74,24 +76,25 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 .main { display: flex; flex: 1; overflow: hidden; }
 
 /* ── SIDEBAR ──
-   Text-only nav, 220px wide, bg slightly darker than the content
-   column (#0f0f0f vs content #141414) so the content reads "lifted"
-   rather than the nav feeling "heavy". Active item gets a solid 2px
-   accent bar + a barely-there accent-tinted background; no fill. */
+   Text-only nav, 220px wide, bg slightly lighter than the content
+   column (--sidebar-bg #1a1a1a vs --bg #141414) so the nav reads as
+   a calm rail above the page. Active item gets a 2px accent bar
+   rendered via ::before + a barely-there accent-tinted background;
+   no fill. */
 .sidebar {
-  width: var(--sidebar); background: #0f0f0f;
-  border-right: 1px solid rgba(255,255,255,0.08); flex-shrink: 0;
+  width: var(--sidebar); background: var(--sidebar-bg);
+  border-right: 1px solid var(--border); flex-shrink: 0;
   display: flex; flex-direction: column; overflow-y: auto;
 }
 .sidebar-section {
   padding: 0 20px; margin: 20px 0 4px;
-  font-size: 10px; letter-spacing: 0.08em;
+  font-size: 11px; letter-spacing: 0.08em;
   text-transform: uppercase; color: rgba(255,255,255,0.25); font-weight: 400;
 }
 .sidebar-section:first-child { margin-top: 16px; }
 .sidebar-item {
   display: flex; align-items: center;
-  padding: 6px 20px; font-size: 13px; color: rgba(255,255,255,0.55);
+  padding: 6px 20px; font-size: 14px; color: rgba(255,255,255,0.55);
   cursor: pointer; transition: color 0.12s, background 0.12s;
   letter-spacing: 0; position: relative; box-sizing: border-box;
 }
@@ -101,7 +104,7 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 }
 .sidebar-item:hover { color: rgba(255,255,255,0.85); }
 .sidebar-item.active {
-  color: var(--ink); background: rgba(119,204,110,0.08); font-weight: 400;
+  color: var(--ink); background: rgba(120,204,110,0.08); font-weight: 400;
 }
 .sidebar-item.active::before { background: var(--accent); }
 /* Retired icon glyphs — the wireframe is text-only nav. Markup kept
@@ -258,8 +261,8 @@ html, body { height: 100%; background: var(--bg); font-family: 'Afacad', sans-se
 }
 .tag-chip:hover { color: var(--ink); border-color: rgba(255,255,255,0.2); }
 .tag-chip.selected {
-  background: rgba(119,204,110,0.15); color: var(--ink);
-  border-color: rgba(119,204,110,0.35);
+  background: rgba(120,204,110,0.15); color: var(--ink);
+  border-color: rgba(120,204,110,0.35);
 }
 
 /* skin-tone swatches (Physical Description) */
@@ -541,7 +544,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
       padding: 3px 7px;
       border-radius: 3px;
     }
-    .icon-status-badge.in-progress { background: rgba(119,204,110,0.2); color: var(--accent); }
+    .icon-status-badge.in-progress { background: rgba(120,204,110,0.2); color: var(--accent); }
     .icon-status-badge.draft { background: rgba(255,255,255,0.08); color: var(--ink-mid); }
     .icon-status-badge.live { background: var(--green); color: #fff; }
     .icon-card {
@@ -582,7 +585,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
        absolute positioning so it never affects non-admin layout. */
     .tr-row { position: relative; }
     .tr-row.tr-status-pending { border-left: 2px solid rgba(212,167,85,0.6); padding-left: 16px; }
-    .tr-row.tr-status-dead { border-left: 2px solid rgba(119,204,110,0.6); opacity: 0.55; padding-left: 16px; }
+    .tr-row.tr-status-dead { border-left: 2px solid rgba(120,204,110,0.6); opacity: 0.55; padding-left: 16px; }
     .tr-edit-btn {
       position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
       background: transparent; border: 1px solid var(--border); color: var(--ink-dim);
@@ -611,7 +614,7 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
       letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; border-radius: 2px;
     }
     .tr-edit-save { border-color: var(--accent); color: var(--accent); }
-    .tr-edit-save:hover { background: rgba(119,204,110,0.1); }
+    .tr-edit-save:hover { background: rgba(120,204,110,0.1); }
     .tr-edit-cancel:hover { border-color: var(--ink-dim); }
     .tr-edit-status-msg { font-size: 11px; color: var(--ink-dim); min-height: 14px; }
     .tr-edit-status-msg.tr-edit-err { color: rgba(232,120,100,0.85); }
@@ -1580,12 +1583,15 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
         <div style="margin-bottom:40px">
           <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:16px">Colors</div>
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px">
-            <div style="background:var(--bg);border:1px solid var(--border);padding:16px"><div style="font-size:12px;font-weight:600">--bg</div><div style="font-size:11px;color:var(--ink-dim)">#0f0e0d · Page bg</div></div>
-            <div style="background:var(--surface);border:1px solid var(--border);padding:16px"><div style="font-size:12px;font-weight:600">--surface</div><div style="font-size:11px;color:var(--ink-dim)">#1a1814 · Cards</div></div>
-            <div style="background:var(--accent);border:1px solid var(--border);padding:16px;color:#fff"><div style="font-size:12px;font-weight:600">--accent</div><div style="font-size:11px;opacity:0.8">#77cc6e · CTA</div></div>
+            <div style="background:var(--bg);border:1px solid var(--border);padding:16px"><div style="font-size:12px;font-weight:600">--bg</div><div style="font-size:11px;color:var(--ink-dim)">#141414 · Page bg</div></div>
+            <div style="background:var(--sidebar-bg);border:1px solid var(--border);padding:16px"><div style="font-size:12px;font-weight:600">--sidebar-bg</div><div style="font-size:11px;color:var(--ink-dim)">#1a1a1a · Nav rail</div></div>
+            <div style="background:var(--surface);border:1px solid var(--border);padding:16px"><div style="font-size:12px;font-weight:600">--surface</div><div style="font-size:11px;color:var(--ink-dim)">#1f1f1f · Cards</div></div>
+            <div style="background:var(--surface-2);border:1px solid var(--border);padding:16px"><div style="font-size:12px;font-weight:600">--surface-2</div><div style="font-size:11px;color:var(--ink-dim)">#292929 · Inner panels</div></div>
+            <div style="background:var(--accent);border:1px solid var(--border);padding:16px;color:#0b0b0b"><div style="font-size:12px;font-weight:600">--accent</div><div style="font-size:11px;opacity:0.7">#78cc6e · CTA</div></div>
             <div style="background:var(--ink);border:1px solid var(--border);padding:16px;color:var(--bg)"><div style="font-size:12px;font-weight:600">--ink</div><div style="font-size:11px;opacity:0.6">#fff · Text</div></div>
             <div style="border:1px solid var(--border);padding:16px"><div style="font-size:12px;font-weight:600;color:var(--ink-mid)">--ink-mid</div><div style="font-size:11px;color:var(--ink-dim)">55% white</div></div>
-            <div style="border:1px solid var(--border);padding:16px"><div style="font-size:12px;font-weight:600;color:var(--ink-dim)">--ink-dim</div><div style="font-size:11px;color:var(--ink-dim)">35% white</div></div>
+            <div style="border:1px solid var(--border);padding:16px"><div style="font-size:12px;font-weight:600;color:var(--ink-dim)">--ink-dim</div><div style="font-size:11px;color:var(--ink-dim)">40% white</div></div>
+            <div style="border:1px solid var(--border);padding:16px"><div style="font-size:12px;font-weight:600">--border</div><div style="font-size:11px;color:var(--ink-dim)">#333 · Dividers</div></div>
             <div style="background:#2a6640;border:1px solid var(--border);padding:16px;color:#fff"><div style="font-size:12px;font-weight:600">--green</div><div style="font-size:11px;opacity:0.8">Live, success</div></div>
             <div style="background:#b03025;border:1px solid var(--border);padding:16px;color:#fff"><div style="font-size:12px;font-weight:600">--red</div><div style="font-size:11px;opacity:0.8">Danger, delete</div></div>
           </div>
