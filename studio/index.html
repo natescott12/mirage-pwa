@@ -134,9 +134,38 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   @keyframes fadeInFast { from { opacity:0; } to { opacity:1; } }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.25} }
 
-  /* HEADER */
-  #header { height: 52px; background: transparent; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; z-index: 50; }
-  .logo { font-family: var(--font); font-style: normal; font-size: 22px; }
+  /* HEADER — canonical top bar, identical to admin.
+     Left: MIRAGE wordmark in --accent | page name in --ink-mid.
+     Right: Sign out link only. 44px, flush --bg with a --border
+     hairline below. */
+  #header {
+    height: 44px; background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; flex-shrink: 0; z-index: 50;
+  }
+  .topbar-wordmark {
+    font-family: var(--font);
+    font-size: var(--text-sm); font-weight: var(--weight-medium);
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent);
+  }
+  .topbar-sep {
+    display: inline-block;
+    width: 1px; height: 14px; background: var(--border);
+  }
+  .topbar-section {
+    font-size: var(--text-sm); color: var(--ink-mid);
+    font-weight: var(--weight-regular); letter-spacing: 0;
+  }
+  .topbar-logout {
+    font-size: var(--text-sm); color: var(--ink-dim);
+    cursor: pointer; border: none; background: none;
+    font-family: var(--font); padding: 0;
+    letter-spacing: 0; text-transform: none;
+    transition: color 0.12s;
+  }
+  .topbar-logout:hover { color: var(--ink); }
 
   /* ── CANONICAL BUTTONS ──
      .btn-primary — white fill, ink-inverted text. The one control that
@@ -975,17 +1004,20 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   </div>
 </div>
 
-<!-- HEADER — minimal. Wordmark on the left, proxy status on the
-     right. All tab switching now lives inside the icon card (Generate
-     / Converse) or the left nav (Queue / Schedule). -->
+<!-- HEADER — canonical top bar, identical to admin. MIRAGE wordmark
+     in --accent on the left, page name in --ink-mid, Sign out on the
+     right. No other controls. -->
 <div id="header">
-  <div style="display:flex;align-items:center;gap:16px">
-    <div class="logo">Mirage</div>
-    <div style="width:1px;height:18px;background:var(--border-md)"></div>
-    <div class="eyebrow">Icon Studio</div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="topbar-wordmark">MIRAGE</div>
+    <div class="topbar-sep" aria-hidden="true"></div>
+    <div class="topbar-section" id="topbar-section">Icon Studio</div>
   </div>
-  <div id="proxy-status" style="font-size: var(--text-xs);letter-spacing:0.04em;cursor:pointer" onclick="checkProxy()">Checking…</div>
+  <button class="topbar-logout" type="button" onclick="studioSignOut()">Sign out</button>
 </div>
+<!-- Hidden proxy-status kept so legacy code (checkProxy) still has
+     a writable target without painting anything in the header. -->
+<div id="proxy-status" style="display:none" aria-hidden="true"></div>
 
 <div class="studio-main-row">
 
@@ -2067,6 +2099,15 @@ function bulkQueue() { let n=0;libSelected.forEach(id=>{const img=lbImages.find(
 function bulkDelete() { if(!confirm(`Delete ${libSelected.size} images?`))return;libSelected.forEach(id=>{const img=lbImages.find(i=>i.id===id);if(img)removeFromLib(img.icon.id,id);});libSelected.clear();renderLibrary();updateLibCount();notify("Deleted"); }
 
 // ── TAB SWITCHING ─────────────────────────────────────────────────────────────
+const STUDIO_TAB_LABELS = {
+  generate: 'Icon Studio',
+  converse: 'Converse',
+  queue: 'Queue',
+  schedule: 'Schedule',
+  library: 'Library',
+  icons: 'Icons',
+};
+
 function switchTab(tab) {
   // Hide all tabs
   document.querySelectorAll(".tab-content").forEach(e=>{e.classList.remove("active");e.style.display="none";});
@@ -2092,11 +2133,22 @@ function switchTab(tab) {
   document.querySelectorAll(".nav-tab").forEach(t=>{
     if(t.dataset.tab===tab) t.classList.add("active");
   });
+  // Keep the top bar's page label in sync with the active tab.
+  const label = STUDIO_TAB_LABELS[tab] || 'Icon Studio';
+  const sec = document.getElementById('topbar-section');
+  if (sec) sec.textContent = label;
   if(tab==="icons") renderIconsGrid();
   if(tab==="queue") renderQueue();
   if(tab==="schedule") renderSchedule();
   if(tab==="library") renderLibrary();
   if(tab==="converse" && typeof convSync==='function') convSync();
+}
+
+// Clear the shared admin auth token and bounce to the admin login.
+function studioSignOut() {
+  try { localStorage.removeItem('mirage-admin-auth'); } catch (_) {}
+  try { localStorage.removeItem('mirage-admin-user'); } catch (_) {}
+  window.location.replace('/admin');
 }
 
 // ── GENERATE ──────────────────────────────────────────────────────────────────

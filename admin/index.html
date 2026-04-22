@@ -118,19 +118,43 @@ button { color: inherit; }
 #app { display: none; height: 100vh; flex-direction: column; }
 #app.visible { display: flex; }
 
+/* ── TOPBAR — canonical layout on every pane ──
+   Left: MIRAGE wordmark in --accent, thin | separator, page name in
+   --ink-mid / --text-sm. Right: Sign out as plain --ink-dim text
+   (hover --ink). No other controls. 44px tall, flush background with
+   --bg so it reads as part of the page, split only by a --border
+   hairline at the bottom. */
 .topbar {
-  height: 52px; background: transparent;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  height: 44px; background: var(--bg);
+  border-bottom: 1px solid var(--border);
   display: flex; align-items: center; padding: 0 24px;
   justify-content: space-between; flex-shrink: 0; z-index: 10;
 }
-.topbar-left { display: flex; align-items: baseline; gap: 10px; }
-.topbar-wordmark { display: none; }
-.topbar-sep { display: none; }
-.topbar-section { font-size: var(--text-base); color: var(--ink); font-weight: var(--weight-medium); letter-spacing: 0; }
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar-wordmark {
+  display: inline-block;
+  font-family: var(--font);
+  font-size: var(--text-sm); font-weight: var(--weight-medium);
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--accent);
+}
+.topbar-sep {
+  display: inline-block;
+  width: 1px; height: 14px; background: var(--border);
+}
+.topbar-section {
+  font-size: var(--text-sm); color: var(--ink-mid);
+  font-weight: var(--weight-regular); letter-spacing: 0;
+}
 .topbar-right { display: flex; align-items: center; gap: 14px; }
-.topbar-user { font-size: var(--text-xs); color: rgba(255,255,255,0.4); letter-spacing: 0; }
-.topbar-logout { font-size: var(--text-xs); color: rgba(255,255,255,0.4); cursor: pointer; border: none; background: none; font-family: var(--font); padding: 0; letter-spacing: 0; text-transform: none; }
+.topbar-user { display: none; }
+.topbar-logout {
+  font-size: var(--text-sm); color: var(--ink-dim);
+  cursor: pointer; border: none; background: none;
+  font-family: var(--font); padding: 0;
+  letter-spacing: 0; text-transform: none;
+  transition: color 0.12s;
+}
 .topbar-logout:hover { color: var(--ink); }
 
 .main { display: flex; flex: 1; overflow: hidden; }
@@ -1742,9 +1766,9 @@ button { color: inherit; }
       <button type="button" class="topbar-menu-btn" id="topbar-menu-btn" onclick="toggleSidebar()" aria-label="Toggle menu">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
       </button>
-      <div class="topbar-wordmark">Mirage</div>
-      <div class="topbar-sep"></div>
-      <div class="topbar-section" id="topbar-section">Andie</div>
+      <div class="topbar-wordmark">MIRAGE</div>
+      <div class="topbar-sep" aria-hidden="true"></div>
+      <div class="topbar-section" id="topbar-section">Dashboard</div>
     </div>
     <div class="topbar-right">
       <div class="topbar-user" id="topbar-user"></div>
