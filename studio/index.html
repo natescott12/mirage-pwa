@@ -249,59 +249,6 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   .prompt-live-label { font-size: 9px; color: var(--green); letter-spacing: 0.08em; }
 
 
-  /* ── MOODBOARD ─────────────────────────────── */
-  .moodboard { background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; margin-bottom: 20px; overflow: hidden; }
-  .moodboard-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-  .moodboard-header:hover { background: rgba(26,23,20,0.02); }
-  .moodboard-body { padding: 14px 16px; }
-  .moodboard.collapsed .moodboard-body { display: none; }
-
-  .moodboard-dropzone {
-    border: 1.5px dashed var(--border-strong); border-radius: 2px; padding: 22px 16px;
-    text-align: center; cursor: pointer; transition: all 0.15s; margin-bottom: 12px;
-    background: rgba(26,23,20,0.02);
-  }
-  .moodboard-dropzone:hover, .moodboard-dropzone.dragover { border-color: var(--text); background: rgba(26,23,20,0.05); }
-  .moodboard-dropzone-icon { font-size: 20px; margin-bottom: 6px; opacity: 0.4; }
-  .moodboard-dropzone-text { font-size: 11px; color: var(--muted); line-height: 1.6; }
-  .moodboard-dropzone-text strong { color: var(--dim); font-weight: 400; }
-
-  .moodboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; }
-  .moodboard-item { position: relative; border-radius: 2px; overflow: hidden; border: 2px solid transparent; transition: border-color 0.15s; aspect-ratio: 4/5; }
-  .moodboard-item.active { border-color: var(--text); }
-  .moodboard-item.inactive { opacity: 0.45; }
-  .moodboard-item img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; filter: saturate(0.8); }
-
-  .mb-item-overlay { position: absolute; inset: 0; opacity: 0; transition: opacity 0.15s; background: rgba(26,23,20,0.65); display: flex; flex-direction: column; align-items: stretch; padding: 6px; gap: 4px; }
-  .moodboard-item:hover .mb-item-overlay { opacity: 1; }
-  .mb-label-row-item { display: flex; gap: 3px; flex-wrap: wrap; margin-bottom: 2px; }
-  .mb-label-pill { padding: 2px 7px; border: 1px solid rgba(248,246,242,0.4); border-radius: 1px; font-size: 7px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; font-family: 'DM Sans', sans-serif; color: rgba(248,246,242,0.7); background: transparent; transition: all 0.12s; }
-  .mb-label-pill.active { background: rgba(248,246,242,0.9); color: var(--text); border-color: transparent; }
-  .mb-item-actions { display: flex; gap: 4px; margin-top: auto; }
-  .mb-toggle { flex: 1; padding: 4px 6px; background: rgba(248,246,242,0.9); border: none; border-radius: 1px; font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; font-family: 'DM Sans', sans-serif; color: var(--text); }
-  .mb-delete { padding: 4px 7px; background: rgba(176,48,37,0.85); border: none; border-radius: 1px; font-size: 10px; cursor: pointer; color: #fff; }
-
-  .mb-label-chip { position: absolute; top: 5px; left: 5px; padding: 2px 7px; border-radius: 1px; font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; font-family: 'DM Sans', sans-serif; }
-  .mb-label-vibe { background: rgba(160,120,64,0.85); color: #fff; }
-  .mb-label-lighting { background: rgba(26,23,20,0.75); color: rgba(248,246,242,0.9); }
-  .mb-label-color { background: rgba(42,102,64,0.85); color: #fff; }
-  .mb-label-face { background: rgba(96,72,120,0.85); color: #fff; }
-  .mb-label-style { background: rgba(100,80,60,0.85); color: #fff; }
-
-  .mb-active-dot { position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
-  .moodboard-item.inactive .mb-active-dot { background: var(--muted); }
-
-  .mb-label-selector { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
-  .mb-label-btn { padding: 4px 10px; border: 1px solid var(--border-md); border-radius: 1px; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; font-family: 'DM Sans', sans-serif; color: var(--muted); background: transparent; transition: all 0.12s; }
-  .mb-label-btn.selected { background: var(--text); color: var(--bg); border-color: var(--text); }
-
-  .mb-extract-btn { width: 100%; padding: 9px; border: 1px solid var(--border-strong); background: transparent; color: var(--dim); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 2px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .mb-extract-btn:hover { background: var(--text); color: var(--bg); border-color: var(--text); }
-  .mb-extract-btn:disabled { opacity: 0.4; cursor: default; }
-  .mb-extracted { padding: 10px 12px; background: rgba(42,102,64,0.06); border: 1px solid rgba(42,102,64,0.2); border-radius: 2px; font-size: 10px; color: var(--dim); line-height: 1.7; font-style: normal; margin-top: 8px; display: none; }
-  .mb-extracted.visible { display: block; }
-
-
   /* PERSONA BUILDER */
   .persona-builder { background: var(--bg2); border: 1px solid var(--border-md); border-radius: 2px; margin-bottom: 20px; overflow: hidden; }
   .persona-builder-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
@@ -569,46 +516,6 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
             <div style="font-size:9px;color:var(--muted)" id="lora-model-id"></div>
             <button onclick="startLoraTraining()" style="margin-top:8px;padding:5px 12px;background:transparent;border:1px solid var(--border-md);color:var(--dim);border-radius:2px;font-size:9px;cursor:pointer;font-family:'DM Sans',sans-serif">Retrain</button>
           </div>
-        </div>
-      </div>
-
-      <!-- Moodboard -->
-      <div class="moodboard" id="moodboard">
-        <div class="moodboard-header" onclick="toggleMoodboard()">
-          <div style="display:flex;align-items:center;gap:10px">
-            <div class="char-builder-title">Moodboard</div>
-            <div style="font-size:9px;color:var(--muted);background:var(--bg3);padding:2px 8px;border-radius:999px" id="mb-count">0 references</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <div style="font-size:10px;color:var(--muted)" id="mb-summary">Visual references for generation</div>
-            <div id="mb-chevron" style="font-size:10px;color:var(--muted)">▼</div>
-          </div>
-        </div>
-        <div class="moodboard-body" id="moodboard-body">
-
-          <!-- Drop zone -->
-          <div class="moodboard-dropzone" id="mb-dropzone"
-            onclick="document.getElementById('mb-file-input').click()"
-            ondragover="mbDragOver(event)"
-            ondragleave="mbDragLeave(event)"
-            ondrop="mbDrop(event)">
-            <div class="moodboard-dropzone-icon">⊕</div>
-            <div class="moodboard-dropzone-text"><strong>Drop images here</strong> or click to upload<br>Editorial refs · lighting · color · face</div>
-          </div>
-          <input type="file" id="mb-file-input" accept="image/*" multiple style="display:none" onchange="mbFilePicked(event)" />
-
-          <!-- Image grid -->
-          <div class="moodboard-grid" id="mb-grid"></div>
-
-          <!-- Extract button -->
-          <button class="mb-extract-btn" id="mb-extract-btn" onclick="extractMoodboard()" style="display:none">
-            <span id="mb-extract-spinner" style="display:none;width:11px;height:11px;border-width:1.5px;border-color:rgba(26,23,20,0.2);border-top-color:var(--text)" class="spinner"></span>
-            ✦ Extract aesthetic from moodboard
-          </button>
-
-          <!-- Extracted description -->
-          <div class="mb-extracted" id="mb-extracted"></div>
-
         </div>
       </div>
 
@@ -1141,220 +1048,6 @@ const getChar = id => (load(CHAR_KEY)[id]||{});
 const saveChar = (id, char) => { const c=load(CHAR_KEY); c[id]={...char}; save(CHAR_KEY,c); };
 
 
-// ── MOODBOARD ─────────────────────────────────────────────────────────────────
-const MB_KEY = "mirage_moodboard_v1";
-let pendingMbLabel = "vibe";
-let mbExtracting = false;
-
-function loadMoodboard() {
-  try { return JSON.parse(localStorage.getItem(MB_KEY))||{}; } catch { return {}; }
-}
-function saveMoodboard(mb) {
-  try { localStorage.setItem(MB_KEY, JSON.stringify(mb)); } catch(e) { console.warn("Moodboard storage full",e); }
-}
-function getIconMoodboard(iconId) {
-  return (loadMoodboard()[iconId]||[]);
-}
-function saveIconMoodboard(iconId, items) {
-  const mb = loadMoodboard();
-  mb[iconId] = items;
-  saveMoodboard(mb);
-}
-
-function toggleMoodboard() {
-  const b=$("moodboard"); if(!b) return;
-  b.classList.toggle("collapsed");
-  const ch=$("mb-chevron");
-  if(ch) ch.textContent=b.classList.contains("collapsed")?"▶":"▼";
-}
-
-function selectMbLabel(el) {
-  document.querySelectorAll(".mb-label-btn").forEach(b=>b.classList.remove("selected"));
-  el.classList.add("selected");
-  pendingMbLabel = el.dataset.label;
-}
-
-function mbDragOver(e) {
-  e.preventDefault();
-  const dz=$("mb-dropzone"); if(dz) dz.classList.add("dragover");
-}
-function mbDragLeave(e) {
-  const dz=$("mb-dropzone"); if(dz) dz.classList.remove("dragover");
-}
-function mbDrop(e) {
-  e.preventDefault();
-  const dz=$("mb-dropzone"); if(dz) dz.classList.remove("dragover");
-  const files = Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith("image/"));
-  if(files.length) processMbFiles(files);
-}
-function mbFilePicked(e) {
-  const files = Array.from(e.target.files).filter(f=>f.type.startsWith("image/"));
-  if(files.length) processMbFiles(files);
-  e.target.value = ""; // reset so same file can be re-picked
-}
-
-function processMbFiles(files) {
-  let fileIndex = 0;
-  files.forEach(file=>{
-    const uniqueId = Date.now() + fileIndex; // unique per file
-    fileIndex++;
-    const reader=new FileReader();
-    reader.onload=e=>{
-      const base64=e.target.result;
-      const items=getIconMoodboard(selectedIcon.id);
-      if(items.length>=8){notify("Max 8 moodboard images per icon","error");return;}
-      items.push({
-        id: uniqueId,
-        base64,
-        label: pendingMbLabel,
-        active: true,
-        createdAt: new Date().toISOString()
-      });
-      saveIconMoodboard(selectedIcon.id, items);
-      renderMoodboard();
-      refreshPrompt();
-      // Upload to Supabase Storage asynchronously
-      uploadMoodboardImageToCloud(selectedIcon, items[items.length-1]);
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-function toggleMbItem(id) {
-  id = Number(id);
-  const items=getIconMoodboard(selectedIcon.id);
-  const item=items.find(i=>Number(i.id)===id);
-  if(item) item.active=!item.active;
-  saveIconMoodboard(selectedIcon.id, items);
-  renderMoodboard();
-  refreshPrompt();
-}
-
-function setMbItemLabel(id, label, el) {
-  id = Number(id);
-  // Update label on this specific item
-  const items=getIconMoodboard(selectedIcon.id);
-  const item=items.find(i=>Number(i.id)===id);
-  if(item) item.label=label;
-  saveIconMoodboard(selectedIcon.id, items);
-  // Update pill UI without full re-render
-  const card=document.getElementById("mbi-"+id);
-  if(card) card.querySelectorAll(".mb-label-pill").forEach(p=>p.classList.toggle("active",p.textContent===label));
-  // Update the label chip
-  const chip=card?card.querySelector(".mb-label-chip"):null;
-  if(chip) { chip.className="mb-label-chip mb-label-"+label; chip.textContent=label; }
-}
-
-function deleteMbItem(id) {
-  id = Number(id); // HTML attributes pass strings, IDs are stored as numbers
-  const items=getIconMoodboard(selectedIcon.id).filter(i=>Number(i.id)!==id);
-  saveIconMoodboard(selectedIcon.id, items);
-  renderMoodboard();
-  refreshPrompt();
-}
-
-function renderMoodboard() {
-  const items=getIconMoodboard(selectedIcon.id);
-  const grid=$("mb-grid");
-  const extractBtn=$("mb-extract-btn");
-  const countEl=$("mb-count");
-  const summaryEl=$("mb-summary");
-
-  if(countEl) countEl.textContent=`${items.length} reference${items.length!==1?"s":""}`;
-  if(summaryEl) summaryEl.textContent=items.length?`${items.filter(i=>i.active).length} active for generation`:"Visual references for generation";
-  if(extractBtn) extractBtn.style.display=items.length?"flex":"none";
-
-  if(!grid) return;
-  if(!items.length) {
-    grid.innerHTML="";
-    return;
-  }
-
-  const mbLabels = ["vibe","lighting","color","face","style"];
-  grid.innerHTML=items.map(item=>`
-    <div class="moodboard-item ${item.active?"active":"inactive"}" id="mbi-${item.id}">
-      <img src="${item.base64}" alt="${item.label}" />
-      <div class="mb-active-dot"></div>
-      <div class="mb-item-overlay">
-        <div class="mb-label-row-item">
-          ${mbLabels.map(l=>`<button class="mb-label-pill ${item.label===l?"active":""}" onclick="setMbItemLabel(${item.id},'${l}',this)">${l}</button>`).join("")}
-        </div>
-        <div class="mb-item-actions">
-          <button class="mb-toggle" onclick="toggleMbItem(${item.id})">${item.active?"Deactivate":"Activate"}</button>
-          <button class="mb-delete" onclick="deleteMbItem(${item.id})">✕</button>
-        </div>
-      </div>
-    </div>`).join("");
-}
-
-// Extract aesthetic language from moodboard using Claude vision
-async function extractMoodboard() {
-  const items=getIconMoodboard(selectedIcon.id).filter(i=>i.active);
-  if(!items.length) { notify("No active moodboard images","error"); return; }
-  if(mbExtracting) return;
-  mbExtracting=true;
-
-  const btn=$("mb-extract-btn");
-  const spinner=$("mb-extract-spinner");
-  const extracted=$("mb-extracted");
-  if(btn) { btn.disabled=true; btn.innerHTML='<div class="spinner" style="width:11px;height:11px;border-width:1.5px;border-color:rgba(26,23,20,0.15);border-top-color:var(--text)"></div> Analysing moodboard...'; }
-
-  try {
-    // Route through proxy to avoid CORS
-    const response = await fetch(PROXY + "/claude/extract", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ images: items.map(i => i.base64) })
-    });
-
-    const data = await response.json();
-    if(!response.ok) throw new Error(JSON.stringify(data) || "Extract failed");
-
-    const desc = data.aesthetic;
-    
-    // Store the extracted description per icon
-    const mb = loadMoodboard();
-    if(!mb[selectedIcon.id+"_extracted"]) mb[selectedIcon.id+"_extracted"]={};
-    mb[selectedIcon.id+"_extracted"] = desc;
-    saveMoodboard(mb);
-
-    if(extracted) { extracted.textContent='"'+desc+'"'; extracted.classList.add("visible"); }
-    refreshPrompt();
-    notify("✦ Moodboard aesthetic extracted");
-
-  } catch(err) {
-    notify("Extract failed — "+err.message,"error");
-  } finally {
-    mbExtracting=false;
-    if(btn) { btn.disabled=false; btn.innerHTML='✦ Extract aesthetic from moodboard'; }
-  }
-}
-
-function getMoodboardAesthetic() {
-  // Returns the stored extracted aesthetic string for this icon
-  try {
-    const mb=loadMoodboard();
-    return mb[selectedIcon.id+"_extracted"]||"";
-  } catch { return ""; }
-}
-
-function getMoodboardActiveImages() {
-  // Returns base64 strings of active moodboard images for Flux Kontext
-  return getIconMoodboard(selectedIcon.id).filter(i=>i.active).map(i=>i.base64);
-}
-
-function loadMoodboardForIcon() {
-  renderMoodboard();
-  // Show extracted if it exists
-  const mb=loadMoodboard();
-  const desc=mb[selectedIcon.id+"_extracted"]||"";
-  const extracted=$("mb-extracted");
-  if(extracted) {
-    if(desc) { extracted.textContent='"'+desc+'"'; extracted.classList.add("visible"); }
-    else { extracted.classList.remove("visible"); }
-  }
-}
-
 // ── PROXY ─────────────────────────────────────────────────────────────────────
 // Proxy URL — tries hosted Railway instance first, falls back to localhost
 // Update HOSTED_PROXY once Railway is deployed
@@ -1429,95 +1122,6 @@ function buildCharDesc() {
 
 function buildPrompt() { return typeof MG !== "undefined" ? MG.build() : ""; }
 
-async function uploadMoodboardImageToCloud(icon, item) {
-  if (!icon || !item || item.url) return;
-  try {
-    const resp = await fetch(PROXY + '/upload-moodboard', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ iconName: icon.name, imageId: String(item.id), base64: item.base64 })
-    });
-    const data = await resp.json();
-    if (!data.url) return;
-    // Update item with URL in localStorage
-    const items = getIconMoodboard(icon.id);
-    const idx = items.findIndex(i => i.id === item.id);
-    if (idx !== -1) { items[idx].url = data.url; saveIconMoodboard(icon.id, items); }
-    // Sync full URL list to Supabase
-    await syncMoodboardUrlsToSupabase(icon.name, icon.id);
-  } catch(e) { console.warn('Moodboard upload failed:', e.message); }
-}
-
-async function syncMoodboardUrlsToSupabase(iconName, iconId) {
-  if (!window.sbStudio) return;
-  const items = getIconMoodboard(iconId);
-  const images = items.filter(i => i.url).map(i => ({
-    id: i.id, url: i.url, label: i.label, active: i.active, createdAt: i.createdAt
-  }));
-  if (!images.length) return;
-  const { data: existing } = await window.sbStudio.from('personas').select('character_data').eq('icon_name', iconName).single();
-  const merged = { ...(existing?.character_data || {}), moodboard_images: images };
-  await window.sbStudio.from('personas').upsert({ icon_name: iconName, character_data: merged }, { onConflict: 'icon_name' });
-}
-
-async function loadMoodboardFromSupabase(icon) {
-  if (!window.sbStudio) return;
-  const existing = getIconMoodboard(icon.id);
-  if (existing.length > 0) return; // Already have local data
-  const { data } = await window.sbStudio.from('personas').select('character_data').eq('icon_name', icon.name).single();
-  const images = data?.character_data?.moodboard_images;
-  if (!images || !images.length) return;
-  // Fetch each image URL and convert to base64 for localStorage
-  const items = [];
-  for (const img of images) {
-    try {
-      const resp = await fetch(img.url);
-      const blob = await resp.blob();
-      const b64 = await new Promise(res => { const fr = new FileReader(); fr.onload = e => res(e.target.result); fr.readAsDataURL(blob); });
-      items.push({ id: img.id, base64: b64, url: img.url, label: img.label, active: img.active, createdAt: img.createdAt });
-    } catch(e) { console.warn('Failed to load moodboard image:', img.url); }
-  }
-  if (items.length) { saveIconMoodboard(icon.id, items); renderMoodboard(); }
-}
-
-async function uploadMoodboardImageToCloud(icon, item) {
-  if (!icon || !item || item.url) return;
-  try {
-    const r = await fetch(PROXY + '/upload-moodboard', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({iconName:icon.name, imageId:String(item.id), base64:item.base64}) });
-    const d = await r.json();
-    if (!d.url) return;
-    const items = getIconMoodboard(icon.id);
-    const i = items.findIndex(x => x.id === item.id);
-    if (i !== -1) { items[i].url = d.url; saveIconMoodboard(icon.id, items); }
-    await syncMoodboardToSupabase(icon.name, icon.id);
-  } catch(e) { console.warn('Moodboard upload failed:', e.message); }
-}
-async function syncMoodboardToSupabase(iconName, iconId) {
-  if (!window.sbStudio) return;
-  const items = getIconMoodboard(iconId);
-  const images = items.filter(i=>i.url).map(i=>({id:i.id,url:i.url,label:i.label,active:i.active,createdAt:i.createdAt}));
-  if (!images.length) return;
-  const {data:row} = await window.sbStudio.from('personas').select('character_data').eq('icon_name',iconName).single();
-  const merged = {...(row?.character_data||{}), moodboard_images: images};
-  await window.sbStudio.from('personas').upsert({icon_name:iconName, character_data:merged},{onConflict:'icon_name'});
-}
-async function loadMoodboardFromCloud(icon) {
-  if (!window.sbStudio || !icon) return;
-  if (getIconMoodboard(icon.id).length > 0) return;
-  const {data:row} = await window.sbStudio.from('personas').select('character_data').eq('icon_name',icon.name).single();
-  const images = row?.character_data?.moodboard_images;
-  if (!images || !images.length) return;
-  const items = [];
-  for (const img of images) {
-    try {
-      const resp = await fetch(img.url);
-      const blob = await resp.blob();
-      const b64 = await new Promise(res => { const fr = new FileReader(); fr.onload = e => res(e.target.result); fr.readAsDataURL(blob); });
-      items.push({id:img.id, base64:b64, url:img.url, label:img.label||'', active:img.active!==false, createdAt:img.createdAt});
-    } catch(e) { console.warn('Failed moodboard img:', img.url); }
-  }
-  if (items.length) { saveIconMoodboard(icon.id, items); renderMoodboard(); notify('✦ Moodboard synced from cloud'); }
-}
 function refreshPrompt() { if(typeof MG !== "undefined") MG.refresh(); }
 
 function getActivePrompt() { return buildPrompt(); }
@@ -1965,7 +1569,6 @@ function selectIcon(id) {
   renderParams();
   refreshPrompt();
   loadCharIntoBuilder();
-  loadMoodboardForIcon();
   if(typeof loadPersonaForIcon==="function") loadPersonaForIcon();
   if(typeof loadWardrobeForIcon==="function") loadWardrobeForIcon();
   if(typeof resetVoicePreview==="function") resetVoicePreview();
@@ -2094,7 +1697,6 @@ function loadPersonaIntoStudio(iconId) {
 
 function setScene(t) {
   scene=t;
-  // Use the first scene prompt for consistency, moodboard handles the visual direction
   scenePrompt=SCENES[t][0];
   renderSceneTabs();
   refreshPrompt();
@@ -2552,12 +2154,9 @@ function init() {
   renderSceneTabs();
   renderParams();
   loadCharIntoBuilder();
-  loadMoodboardForIcon();
   loadPersonaForIcon();
   loadWardrobeForIcon();
   refreshPrompt();
-  // Start moodboard collapsed
-  const mb=$("moodboard"); if(mb) mb.classList.add("collapsed");
   renderLibrary();
   updateLibCount();
   renderSchedule();
@@ -3296,20 +2895,7 @@ var MG=window.MG={
     var grain='';
     if(typeof params!=='undefined'&&params.grain)grain=params.grain;
 
-    // MOODBOARD — extra, style flavour only (max 12 words), not surfaced as a section
-    var moodboard='';
-    try{
-      var mbEl=document.getElementById('mb-extracted');
-      if(mbEl)moodboard=(mbEl.value||mbEl.textContent||'').replace(/^['"]+|['"]+$/g,'').trim();
-      if(!moodboard&&typeof getMoodboardAesthetic==='function')moodboard=getMoodboardAesthetic();
-      moodboard=moodboard.replace(/wearing[^,.]+/gi,'').replace(/dressed in[^,.]+/gi,'').trim();
-      if(moodboard){
-        var words=moodboard.split(/[,\s]+/).filter(Boolean);
-        moodboard=words.slice(0,12).join(' ');
-      }
-    }catch(e){}
-
-    return[base,identity,p.character,p.wardrobe,p.scene,p.shot,p.light,grain,p.style,moodboard]
+    return[base,identity,p.character,p.wardrobe,p.scene,p.shot,p.light,grain,p.style]
       .filter(function(s){return s&&s.trim();}).join(', ');
   },
   updateCharCount:function(){
