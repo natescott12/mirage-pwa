@@ -1531,6 +1531,7 @@ function switchTab(tab) {
   if(tab==="queue") renderQueue();
   if(tab==="schedule") renderSchedule();
   if(tab==="library") renderLibrary();
+  if(tab==="converse" && typeof convSync==='function') convSync();
 }
 
 // ── GENERATE ──────────────────────────────────────────────────────────────────
@@ -1927,6 +1928,7 @@ function init() {
   renderSceneTabs();
   renderParams();
   syncIconProfileInputs();
+  if (selectedIcon && typeof loadPersonaIntoStudio === 'function') loadPersonaIntoStudio(selectedIcon.id);
   loadPersonaForIcon();
   loadWardrobeForIcon();
   refreshPrompt();
@@ -3525,7 +3527,29 @@ function cloudTrainLora() {
     var currentBrief={};['scene','wardrobe','shot','light'].forEach(function(k){currentBrief[k]=(document.getElementById('cs-'+k)||{}).value||'';});
     var hasExistingBrief=currentBrief.scene||currentBrief.wardrobe||currentBrief.shot||currentBrief.light;
     var briefContext=hasExistingBrief?'\n\nThe user already has a brief in progress. Treat new messages as refinements — only update the fields the user is asking to change, and keep the others identical to what is shown here. The current brief is:\n<brief>'+JSON.stringify(currentBrief)+'</brief>':'';
-    var sysPrompt='You are a creative director for Mirage, an editorial AI platform. Help the user develop a scene for '+(si.name||'the icon')+' through natural conversation. Ask questions, explore ideas, suggest directions — be a collaborator not a form. There is no limit on how many turns you take. Only output the <brief> JSON when you have clear, confident answers for all four fields (scene, wardrobe, shot, light). If anything is ambiguous, keep asking. When you do output the brief, values must be SHORT Flux-ready visual keywords — max 10 words per field, comma separated, no sentences.'+briefContext+'\n\nExample brief output:\n<brief>{"scene":"quiet city overlook, dark Mercedes, late afternoon","wardrobe":"black blazer unbuttoned, tailored trousers, leather boots","shot":"full body, sideways driver seat, one leg out","light":"soft golden hour, long shadows"}</brief>';
+
+    // Pull persona/character context from module-level state populated by
+    // applyPersonaData on icon select. The creative director uses this to
+    // stay true to who the icon is — aesthetic, voice, setting should
+    // shape every suggestion.
+    var cc=(typeof currentChar!=='undefined'&&currentChar)?currentChar:{};
+    var cp=(typeof currentPersona!=='undefined'&&currentPersona)?currentPersona:{};
+    var charDesc=typeof buildCharDesc==='function'?buildCharDesc():'';
+    var personaLines=[];
+    personaLines.push(si.name+(si.archetype?' — '+si.archetype:''));
+    if(si.vibe)      personaLines.push('Vibe: '+si.vibe);
+    if(si.energy)    personaLines.push('Energy: '+si.energy);
+    if(si.aesthetic) personaLines.push('Aesthetic: '+si.aesthetic);
+    if(si.setting)   personaLines.push('Typical setting: '+si.setting);
+    if(si.style)     personaLines.push('Style: '+si.style);
+    if(charDesc)     personaLines.push('Physical: '+charDesc);
+    if(cp.smsDesc)   personaLines.push('Voice: '+cp.smsDesc);
+    if(cp.femaleArchetype&&cp.femaleArchetype!==si.archetype) personaLines.push('Persona archetype: '+cp.femaleArchetype);
+    if(cp.cluster)   personaLines.push('Communication: '+cp.cluster);
+    if(cp.contentPillars&&cp.contentPillars.length) personaLines.push('Traits: '+cp.contentPillars.join(', '));
+    var personaBlock='\n\n<persona>\n'+personaLines.join('\n')+'\n</persona>';
+
+    var sysPrompt='You are a creative director for Mirage, an editorial AI platform. You are briefing a scene for '+(si.name||'the icon')+'. Use the <persona> block below to stay true to who she is — her aesthetic, voice, and setting should shape every suggestion you make. Help the user develop a scene through natural conversation: ask questions, explore ideas, suggest directions — be a collaborator not a form. There is no limit on how many turns you take. Only output the <brief> JSON when you have clear, confident answers for all four fields (scene, wardrobe, shot, light). If anything is ambiguous, keep asking. When you do output the brief, values must be SHORT Flux-ready visual keywords — max 10 words per field, comma separated, no sentences.'+personaBlock+briefContext+'\n\nExample brief output:\n<brief>{"scene":"quiet city overlook, dark Mercedes, late afternoon","wardrobe":"black blazer unbuttoned, tailored trousers, leather boots","shot":"full body, sideways driver seat, one leg out","light":"soft golden hour, long shadows"}</brief>';
 
     function coerceImagesToJpeg(msgs){
       return msgs.map(function(m){
