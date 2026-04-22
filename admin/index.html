@@ -5099,19 +5099,15 @@ function beginEditRow(rowEl, item) {
 
 // ── CONTENT LIBRARY (Lightroom) ───────────────────────────────────────────────
 // Browse + Edit modes inside #pane-content. Browse pulls from the Supabase
-// `content` table and grids 4-up. Edit mode wires CSS-filter sliders and
-// named presets against a live preview, then bakes to canvas on save/export.
-// Named filter presets — pure CSS filter values. Each is the 100%-intensity
-// flavor; the Intensity slider scales everything toward the 'none' baseline.
-const CL_FILTERS = [
-  { id:'none',      label:'None',       values:{ exposure:0, contrast:0, highlights:0, shadows:0, whites:0, blacks:0, saturation:0, vibrance:0, grain:0, temp:0, tint:0, hue:0 } },
-  { id:'portra400', label:'Portra 400', values:{ exposure:4, contrast:8, highlights:-6, shadows:6, whites:2, blacks:-4, saturation:-8, vibrance:10, grain:6, temp:6, tint:2, hue:0 } },
-  { id:'fuji400h',  label:'Fuji 400H',  values:{ exposure:2, contrast:-4, highlights:-8, shadows:4, whites:0, blacks:-2, saturation:-14, vibrance:6, grain:4, temp:-8, tint:-4, hue:-3 } },
-  { id:'overcast',  label:'Overcast',   values:{ exposure:-2, contrast:-10, highlights:-4, shadows:10, whites:0, blacks:4, saturation:-22, vibrance:-6, grain:2, temp:-4, tint:0, hue:0 } },
-  { id:'flash',     label:'Flash',      values:{ exposure:6, contrast:18, highlights:-10, shadows:-6, whites:8, blacks:-12, saturation:6, vibrance:8, grain:3, temp:-2, tint:-2, hue:0 } },
-  { id:'dusk',      label:'Dusk',       values:{ exposure:-4, contrast:6, highlights:-14, shadows:10, whites:-6, blacks:4, saturation:-6, vibrance:8, grain:5, temp:10, tint:8, hue:5 } },
-  { id:'filmscan',  label:'Film Scan',  values:{ exposure:0, contrast:-6, highlights:-4, shadows:8, whites:-4, blacks:2, saturation:-18, vibrance:4, grain:14, temp:4, tint:2, hue:0 } },
-];
+// `content` table and grids 4-up. Edit mode drives an SVG filter pipeline
+// (feComponentTransfer + feColorMatrix + feTurbulence) against a live preview,
+// then bakes through a self-contained SVG-data-URL so the same primitives
+// run in every modern browser.
+//
+// Preset definitions live in the Supabase `studio_filters` table as jsonb,
+// so new presets can be added without code changes. The hardcoded list
+// below is a fallback for offline / table-missing cases and matches the
+// rows seeded into studio_filters.
 const CL_ADJUST_DEFS = [
   { key:'exposure',    label:'Exposure',   min:-100, max:100 },
   { key:'contrast',    label:'Contrast',   min:-100, max:100 },
@@ -5132,12 +5128,114 @@ const CL_COLOR_DEFS = [
 const CL_SUPA_URL = (typeof SUPABASE_URL !== 'undefined') ? SUPABASE_URL : 'https://gmyenvnfuailickepvax.supabase.co';
 const CL_SUPA_KEY = (typeof SUPABASE_ANON_KEY !== 'undefined') ? SUPABASE_ANON_KEY : 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
 
+// Identity 4×5 color matrix — lerp target for intensity blend.
+const CL_IDENTITY_MATRIX = [
+  1, 0, 0, 0, 0,
+  0, 1, 0, 0, 0,
+  0, 0, 1, 0, 0,
+  0, 0, 0, 1, 0
+];
+
+// Hand-authored signature color matrices per preset. The slider base values
+// carry the tonal personality; the matrix carries the color cast / channel
+// character that a pure adjustment stack can't produce (warm skin, cyan
+// highlights, magenta shadows, etc.). Both live in one jsonb definition.
+const CL_PRESETS_FALLBACK = [
+  {
+    slug: 'none', label: 'None', sort_order: 0,
+    definition: {
+      adjustments: { exposure:0, contrast:0, highlights:0, shadows:0, whites:0, blacks:0, saturation:0, vibrance:0, grain:0, temp:0, tint:0, hue:0 },
+      colorMatrix: CL_IDENTITY_MATRIX.slice()
+    }
+  },
+  {
+    slug: 'portra400', label: 'Portra 400', sort_order: 1,
+    definition: {
+      adjustments: { exposure:4, contrast:8, highlights:-6, shadows:6, whites:2, blacks:-4, saturation:-8, vibrance:10, grain:6, temp:6, tint:2, hue:0 },
+      // Warm skin tones, lifted shadows, slight cyan in highlights, muted-rich.
+      colorMatrix: [
+        1.04, -0.01, 0.00, 0, 0.005,
+        0.00,  1.02, 0.00, 0, 0.010,
+        0.00,  0.02, 0.98, 0, 0.015,
+        0,     0,    0,    1, 0
+      ]
+    }
+  },
+  {
+    slug: 'fuji400h', label: 'Fuji 400H', sort_order: 2,
+    definition: {
+      adjustments: { exposure:2, contrast:-4, highlights:-8, shadows:4, whites:0, blacks:-2, saturation:-14, vibrance:6, grain:4, temp:-8, tint:-4, hue:-3 },
+      // Cooler overall, slight green midtones, compressed highlights, pastel.
+      colorMatrix: [
+        0.97, 0.01, 0.02, 0, 0.005,
+        0.01, 1.02, 0.00, 0, 0.012,
+        0.02, 0.00, 1.02, 0, 0.005,
+        0,    0,    0,    1, 0
+      ]
+    }
+  },
+  {
+    slug: 'overcast', label: 'Overcast', sort_order: 3,
+    definition: {
+      adjustments: { exposure:-2, contrast:-10, highlights:-4, shadows:10, whites:0, blacks:4, saturation:-22, vibrance:-6, grain:2, temp:-4, tint:0, hue:0 },
+      // Desaturated, blue-grey cast, flat low contrast, lifted blacks.
+      colorMatrix: [
+        0.98, 0.00, 0.02, 0, 0.010,
+        0.01, 0.99, 0.02, 0, 0.015,
+        0.02, 0.02, 1.00, 0, 0.020,
+        0,    0,    0,    1, 0
+      ]
+    }
+  },
+  {
+    slug: 'flash', label: 'Flash', sort_order: 4,
+    definition: {
+      adjustments: { exposure:6, contrast:18, highlights:-10, shadows:-6, whites:8, blacks:-12, saturation:6, vibrance:8, grain:3, temp:-2, tint:-2, hue:0 },
+      // High contrast, cool blue-white highlights, harsh direct feel.
+      colorMatrix: [
+        1.05, -0.02, -0.02, 0, -0.010,
+       -0.02,  1.03,  0.00, 0,  0.000,
+        0.00,  0.02,  1.05, 0,  0.015,
+        0,     0,     0,    1,  0
+      ]
+    }
+  },
+  {
+    slug: 'dusk', label: 'Dusk', sort_order: 5,
+    definition: {
+      adjustments: { exposure:-4, contrast:6, highlights:-14, shadows:10, whites:-6, blacks:4, saturation:-6, vibrance:8, grain:5, temp:10, tint:8, hue:5 },
+      // Warm orange-red shadows, deep blacks, slight magenta highlights.
+      colorMatrix: [
+        1.08, 0.00, 0.02, 0,  0.010,
+        0.00, 0.98, 0.00, 0, -0.015,
+        0.02, 0.00, 1.00, 0,  0.005,
+        0,    0,    0,    1,  0
+      ]
+    }
+  },
+  {
+    slug: 'filmscan', label: 'Film Scan', sort_order: 6,
+    definition: {
+      adjustments: { exposure:0, contrast:-6, highlights:-4, shadows:8, whites:-4, blacks:2, saturation:-18, vibrance:4, grain:14, temp:4, tint:2, hue:0 },
+      // Faded lifted blacks, warm yellow-green cast, vintage, low saturation.
+      colorMatrix: [
+        1.02, 0.02, 0.00, 0, 0.020,
+        0.02, 1.02, 0.00, 0, 0.025,
+        0.00, 0.02, 0.94, 0, 0.015,
+        0,    0,    0,    1, 0
+      ]
+    }
+  }
+];
+
 let clItems = [];
 let clActiveIcon = 'all';
 let clCurrent = null;          // { id, image_url, icon_name, created_at, ... }
 let clFilterId = 'none';
-let clAdjust = {};             // current live values (after preset + user tweaks, before intensity)
+let clAdjust = {};             // current live adjustment values (slider state)
 let clCompare = 'edited';      // 'original' | 'edited'
+let clPresets = CL_PRESETS_FALLBACK.slice();
+let _clPresetsFetched = false;
 
 function clResetAdjust() {
   clAdjust = {};
@@ -5146,28 +5244,182 @@ function clResetAdjust() {
 }
 clResetAdjust();
 
-// Build a CSS filter string from an adjustment map. Intensity is 0..1.5 (150%).
-function clBuildFilterCSS(adj, intensity) {
-  const i = typeof intensity === 'number' ? intensity : 1;
-  // Exposure → brightness: ±100 → 0.5..1.5
-  const brightness = 1 + (adj.exposure * 0.005 + adj.whites * 0.002 + adj.blacks * -0.002 + adj.highlights * 0.0015 + adj.shadows * -0.0015) * i;
-  // Contrast → contrast: ±100 → 0.6..1.4
-  const contrast = 1 + (adj.contrast * 0.004) * i;
-  // Saturation + Vibrance → saturate: ±100 → 0.3..1.6
-  const saturate = 1 + ((adj.saturation * 0.006) + (adj.vibrance * 0.004)) * i;
-  // Temp/Tint → sepia (warm) + hue-rotate for cool shift
-  const warm = Math.max(0, adj.temp) * 0.004 * i;      // 0..0.4
-  const cool = Math.max(0, -adj.temp) * 0.003 * i;     // hue shift offset via hue-rotate
-  const tintShift = adj.tint * 0.05 * i;               // degrees
-  const hueShift = adj.hue * 0.6 * i;                  // degrees
-  // Grain is painted separately as a pseudo; CSS filter alone can't do noise cleanly.
+function clGetPreset(slug) {
+  return clPresets.find(function(p){ return p.slug === slug; }) || clPresets[0];
+}
+
+// ── SVG filter pipeline ─────────────────────────────────────────────────────
+// Build a 32-bin tone table from the Exposure/Contrast/Highlights/Shadows/
+// Whites/Blacks adjustments. Applied to R, G, B equally via feFuncR/G/B.
+function clBuildToneTable(adj, intensity) {
+  const bins = 32, values = [];
+  for (let i = 0; i < bins; i++) {
+    let v = i / (bins - 1);
+    v += (adj.exposure || 0) * 0.005 * intensity;
+    v = (v - 0.5) * (1 + (adj.contrast || 0) * 0.01 * intensity) + 0.5;
+    const hiMask = Math.max(0, (v - 0.5) * 2);
+    v += (adj.highlights || 0) * 0.004 * intensity * hiMask;
+    const shMask = Math.max(0, (0.5 - v) * 2);
+    v += (adj.shadows || 0) * 0.004 * intensity * shMask;
+    const whMask = Math.max(0, (v - 0.75) * 4);
+    v += (adj.whites || 0) * 0.003 * intensity * whMask;
+    const blMask = Math.max(0, (0.25 - v) * 4);
+    v += (adj.blacks || 0) * 0.003 * intensity * blMask;
+    values.push(Math.max(0, Math.min(1, v)).toFixed(4));
+  }
+  return values.join(' ');
+}
+
+// Blend the target 4×5 matrix toward identity by (1 - intensity). Intensity
+// above 1.0 extrapolates past the target, matching the 0..150% slider range.
+function clBlendMatrix(a, b, t) {
+  const out = new Array(20);
+  for (let i = 0; i < 20; i++) out[i] = a[i] * (1 - t) + b[i] * t;
+  return out;
+}
+
+// Warm/cool temperature + green/magenta tint. Applied as a plain 4×5 matrix.
+function clTempTintMatrix(adj, intensity) {
+  const t = (adj.temp || 0) * 0.003 * intensity;
+  const n = (adj.tint || 0) * 0.002 * intensity;
   return [
-    'brightness(' + brightness.toFixed(3) + ')',
-    'contrast(' + contrast.toFixed(3) + ')',
-    'saturate(' + Math.max(0, saturate).toFixed(3) + ')',
-    warm > 0 ? 'sepia(' + warm.toFixed(3) + ')' : '',
-    'hue-rotate(' + (hueShift + tintShift - cool * 12).toFixed(2) + 'deg)'
-  ].filter(Boolean).join(' ');
+    1 + t + n * 0.5, 0,         0,               0, 0,
+    0,               1 - n,     0,               0, 0,
+    0,               0,         1 - t + n * 0.5, 0, 0,
+    0,               0,         0,               1, 0
+  ];
+}
+
+function clMatrixToString(m) {
+  return m.map(function(x){ return (+x).toFixed(5); }).join(' ');
+}
+
+// Compose the full <filter> child primitives for a given preset + adjustments +
+// intensity. Returns raw SVG XML (no wrapping <filter> element).
+function clBuildFilterPrimitives(preset, adj, intensity, seed) {
+  const tone = clBuildToneTable(adj, intensity);
+  const sig = (preset && preset.definition && preset.definition.colorMatrix) || CL_IDENTITY_MATRIX;
+  const blendedSig = clBlendMatrix(CL_IDENTITY_MATRIX, sig, intensity);
+  const hue = (((adj.hue || 0) * 0.6) * intensity).toFixed(2);
+  const sat = Math.max(0, 1 + (((adj.saturation || 0) * 0.006) + ((adj.vibrance || 0) * 0.004)) * intensity).toFixed(3);
+  const tempTint = clMatrixToString(clTempTintMatrix(adj, intensity));
+  const grainAmp = Math.max(0, (adj.grain || 0) * 0.01 * intensity);
+  const hasGrain = grainAmp > 0.001;
+  const s = seed | 0;
+  // Grain pipeline: feTurbulence → feColorMatrix to tint the noise into a
+  // signed grayscale signal centered on 0, then feComposite to add it onto
+  // the graded image. k1=0, k2=1, k3=1, k4=0 → graded + noise.
+  const grainXml = hasGrain
+    ? (
+      '<feTurbulence type="fractalNoise" baseFrequency="1.2" numOctaves="2" seed="' + s + '" result="turb"/>' +
+      '<feColorMatrix in="turb" type="matrix" result="noise" values="' +
+        '1 0 0 0 ' + (-0.5) + ' ' +
+        '0 1 0 0 ' + (-0.5) + ' ' +
+        '0 0 1 0 ' + (-0.5) + ' ' +
+        '0 0 0 0 ' + grainAmp + '"/>' +
+      '<feComposite in="graded" in2="noise" operator="arithmetic" k1="0" k2="1" k3="' + grainAmp.toFixed(4) + '" k4="0"/>'
+    )
+    : '';
+  return (
+    '<feComponentTransfer>' +
+      '<feFuncR type="table" tableValues="' + tone + '"/>' +
+      '<feFuncG type="table" tableValues="' + tone + '"/>' +
+      '<feFuncB type="table" tableValues="' + tone + '"/>' +
+    '</feComponentTransfer>' +
+    '<feColorMatrix type="matrix" values="' + clMatrixToString(blendedSig) + '"/>' +
+    '<feColorMatrix type="hueRotate" values="' + hue + '"/>' +
+    '<feColorMatrix type="saturate" values="' + sat + '"/>' +
+    '<feColorMatrix type="matrix" values="' + tempTint + '" result="graded"/>' +
+    grainXml
+  );
+}
+
+// Lazy-create a hidden <svg><defs/></svg> container at the end of <body> to
+// hold the live + per-preset filter definitions. `filter: url(#id)` CSS on
+// the preview images picks them up from here.
+function clEnsureSvgHost() {
+  let host = document.getElementById('cl-svg-host');
+  if (host) return host;
+  host = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  host.id = 'cl-svg-host';
+  host.setAttribute('width', '0');
+  host.setAttribute('height', '0');
+  host.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none';
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  host.appendChild(defs);
+  document.body.appendChild(host);
+  return host;
+}
+
+function clUpdateLiveFilter() {
+  const host = clEnsureSvgHost();
+  const defs = host.querySelector('defs');
+  if (!defs) return;
+  const preset = clGetPreset(clFilterId);
+  const intensity = (parseFloat((document.getElementById('cl-intensity') || {}).value) || 100) / 100;
+  const prims = clBuildFilterPrimitives(preset, clAdjust, intensity, 42);
+  let live = defs.querySelector('#cl-live-filter');
+  if (!live) {
+    live = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+    live.id = 'cl-live-filter';
+    live.setAttribute('color-interpolation-filters', 'sRGB');
+    live.setAttribute('x', '0%'); live.setAttribute('y', '0%');
+    live.setAttribute('width', '100%'); live.setAttribute('height', '100%');
+    defs.appendChild(live);
+  }
+  live.innerHTML = prims;
+}
+
+// One <filter> per preset at 100% intensity, referenced by the thumbnails.
+function clSeedPresetFilters() {
+  const host = clEnsureSvgHost();
+  const defs = host.querySelector('defs');
+  if (!defs) return;
+  clPresets.forEach(function(p) {
+    const id = 'cl-preset-' + p.slug;
+    let f = defs.querySelector('#' + id);
+    if (!f) {
+      f = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+      f.id = id;
+      f.setAttribute('color-interpolation-filters', 'sRGB');
+      f.setAttribute('x', '0%'); f.setAttribute('y', '0%');
+      f.setAttribute('width', '100%'); f.setAttribute('height', '100%');
+      defs.appendChild(f);
+    }
+    const adj = Object.assign({}, (p.definition && p.definition.adjustments) || {});
+    f.innerHTML = clBuildFilterPrimitives(p, adj, 1, 7);
+  });
+}
+
+// Pull presets from studio_filters (jsonb definition). Keeps the fallback
+// if the table is missing, empty, or unreachable.
+async function clFetchPresets() {
+  try {
+    const r = await fetch(CL_SUPA_URL + '/rest/v1/studio_filters?select=slug,label,sort_order,definition&order=sort_order.asc', {
+      headers: { 'apikey': CL_SUPA_KEY, 'Authorization': 'Bearer ' + CL_SUPA_KEY }
+    });
+    if (!r.ok) return;
+    const rows = await r.json();
+    if (!Array.isArray(rows) || !rows.length) return;
+    clPresets = rows.map(function(row) {
+      return {
+        slug: row.slug,
+        label: row.label || row.slug,
+        sort_order: row.sort_order || 0,
+        definition: row.definition || { adjustments: {}, colorMatrix: CL_IDENTITY_MATRIX.slice() }
+      };
+    });
+    if (!clPresets.some(function(p){ return p.slug === 'none'; })) {
+      clPresets.unshift(CL_PRESETS_FALLBACK[0]);
+    }
+  } catch (e) {
+    console.warn('[content-library] studio_filters fetch failed, using fallback:', e && e.message);
+  }
+}
+async function clFetchPresetsOnce() {
+  if (_clPresetsFetched) return;
+  _clPresetsFetched = true;
+  await clFetchPresets();
 }
 
 // ── Browse view ──────────────────────────────────────────────────────────────
@@ -5235,7 +5487,7 @@ function clRenderGrid() {
 }
 
 // ── Edit view ────────────────────────────────────────────────────────────────
-function clOpenEdit(id) {
+async function clOpenEdit(id) {
   const item = clItems.find(function(x){ return String(x.id) === String(id); });
   if (!item) return;
   clCurrent = item;
@@ -5253,6 +5505,8 @@ function clOpenEdit(id) {
     img.crossOrigin = 'anonymous';
     img.src = item.image_url || '';
   }
+  await clFetchPresetsOnce();
+  clSeedPresetFilters();
   clSetCompare('edited');
   clRenderFilterStrip();
   clRenderAdjustments();
@@ -5276,23 +5530,25 @@ function clRenderFilterStrip() {
   const strip = document.getElementById('cl-filter-strip');
   if (!strip || !clCurrent) return;
   const thumbSrc = clCurrent.image_url || '';
-  strip.innerHTML = CL_FILTERS.map(function(f) {
-    const filterCSS = f.id === 'none' ? 'none' : clBuildFilterCSS(f.values, 1);
-    const active = f.id === clFilterId ? ' active' : '';
+  clSeedPresetFilters();
+  strip.innerHTML = clPresets.map(function(p) {
+    const filterRef = p.slug === 'none' ? 'none' : 'url(#cl-preset-' + p.slug + ')';
+    const active = p.slug === clFilterId ? ' active' : '';
     return (
-      '<div class="cl-filter-thumb' + active + '" onclick="clApplyPreset(\'' + f.id + '\')">' +
-        '<div class="cl-filter-thumb-preview"><img src="' + thumbSrc + '" style="filter:' + filterCSS + '" alt="' + f.label + '"></div>' +
-        '<div class="cl-filter-thumb-label">' + f.label + '</div>' +
+      '<div class="cl-filter-thumb' + active + '" onclick="clApplyPreset(\'' + p.slug + '\')">' +
+        '<div class="cl-filter-thumb-preview"><img src="' + thumbSrc + '" style="filter:' + filterRef + '" alt="' + p.label + '"></div>' +
+        '<div class="cl-filter-thumb-label">' + p.label + '</div>' +
       '</div>'
     );
   }).join('');
 }
-function clApplyPreset(id) {
-  const preset = CL_FILTERS.find(function(f){ return f.id === id; });
+function clApplyPreset(slug) {
+  const preset = clGetPreset(slug);
   if (!preset) return;
-  clFilterId = id;
+  clFilterId = slug;
   clResetAdjust();
-  Object.keys(preset.values).forEach(function(k){ clAdjust[k] = preset.values[k]; });
+  const adj = (preset.definition && preset.definition.adjustments) || {};
+  Object.keys(adj).forEach(function(k){ clAdjust[k] = adj[k]; });
   clRenderFilterStrip();
   clRenderAdjustments();
   clRenderColorGrading();
@@ -5340,41 +5596,58 @@ function clApplyFilters() {
   const pct = intensityEl ? parseFloat(intensityEl.value) : 100;
   if (intensityVal) intensityVal.textContent = Math.round(pct) + '%';
   if (clCompare === 'original') { img.style.filter = 'none'; return; }
-  img.style.filter = clBuildFilterCSS(clAdjust, pct / 100);
+  clUpdateLiveFilter();
+  img.style.filter = 'url(#cl-live-filter)';
 }
 
 // ── Save / Export ────────────────────────────────────────────────────────────
+// Bake via a self-contained SVG: source image embedded as a data URL, the
+// filter primitives inlined into a <filter>, then <image filter="url(#id)"/>.
+// Render the SVG through an <img> → canvas → JPEG blob. The data-URL source
+// makes the SVG self-contained so the canvas isn't tainted, and this path
+// works cross-browser (unlike ctx.filter = 'url(#...)', which is Chromium-only).
 async function clBakeToBlob() {
   if (!clCurrent || !clCurrent.image_url) throw new Error('No image loaded');
-  // Re-fetch via fetch to get CORS-usable bytes even if <img> tainted the canvas.
   const resp = await fetch(clCurrent.image_url, { mode: 'cors' });
   if (!resp.ok) throw new Error('Fetch source failed (' + resp.status + ')');
   const srcBlob = await resp.blob();
+  const srcDataUrl = await new Promise(function(resolve, reject){
+    const fr = new FileReader();
+    fr.onload = function(){ resolve(fr.result); };
+    fr.onerror = function(){ reject(new Error('FileReader failed')); };
+    fr.readAsDataURL(srcBlob);
+  });
   const bmp = await createImageBitmap(srcBlob);
   const w = bmp.width, h = bmp.height;
-  const canvas = document.createElement('canvas');
-  canvas.width = w; canvas.height = h;
-  const ctx = canvas.getContext('2d');
-  const intensity = (parseFloat(document.getElementById('cl-intensity').value) || 100) / 100;
-  ctx.filter = clBuildFilterCSS(clAdjust, intensity);
-  ctx.drawImage(bmp, 0, 0, w, h);
-  // Grain overlay — simple additive noise proportional to adj.grain * intensity.
-  const grain = (clAdjust.grain || 0) * intensity;
-  if (grain > 0) {
-    const imgData = ctx.getImageData(0, 0, w, h);
-    const d = imgData.data;
-    const amp = grain * 0.6; // max ~60 on 255 scale at grain=100, intensity=1
-    for (let p = 0; p < d.length; p += 4) {
-      const n = (Math.random() - 0.5) * amp;
-      d[p]     = Math.max(0, Math.min(255, d[p]     + n));
-      d[p + 1] = Math.max(0, Math.min(255, d[p + 1] + n));
-      d[p + 2] = Math.max(0, Math.min(255, d[p + 2] + n));
-    }
-    ctx.putImageData(imgData, 0, 0);
+
+  const preset = clGetPreset(clFilterId);
+  const intensity = (parseFloat((document.getElementById('cl-intensity') || {}).value) || 100) / 100;
+  const prims = clBuildFilterPrimitives(preset, clAdjust, intensity, (Date.now() & 0xffff) | 1);
+  const filterId = 'cl-bake-' + Date.now();
+  const svg =
+    '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">' +
+      '<defs><filter id="' + filterId + '" color-interpolation-filters="sRGB" x="0%" y="0%" width="100%" height="100%">' + prims + '</filter></defs>' +
+      '<image xlink:href="' + srcDataUrl + '" href="' + srcDataUrl + '" width="' + w + '" height="' + h + '" preserveAspectRatio="none" filter="url(#' + filterId + ')"/>' +
+    '</svg>';
+  const svgBlob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+  const svgUrl = URL.createObjectURL(svgBlob);
+  try {
+    const svgImg = await new Promise(function(resolve, reject){
+      const im = new Image();
+      im.onload = function(){ resolve(im); };
+      im.onerror = function(){ reject(new Error('SVG render failed')); };
+      im.src = svgUrl;
+    });
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(svgImg, 0, 0, w, h);
+    return await new Promise(function(resolve, reject){
+      canvas.toBlob(function(b){ b ? resolve(b) : reject(new Error('toBlob failed')); }, 'image/jpeg', 0.92);
+    });
+  } finally {
+    URL.revokeObjectURL(svgUrl);
   }
-  return await new Promise(function(resolve, reject){
-    canvas.toBlob(function(b){ b ? resolve(b) : reject(new Error('toBlob failed')); }, 'image/jpeg', 0.92);
-  });
 }
 
 async function clSaveEdited() {
