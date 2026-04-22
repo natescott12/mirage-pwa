@@ -51,6 +51,37 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   .eyebrow { font-size: 10px; letter-spacing: 0.22em; color: var(--muted); text-transform: uppercase; }
   .studio-crossnav { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); text-decoration: none; font-family: 'DM Sans', sans-serif; transition: color 0.15s; }
   .studio-crossnav:hover { color: var(--text); }
+
+  /* Top-bar Icon indicator — replaces the retired left icon sidebar.
+     Click navigates back to the admin Persona Builder. */
+  .studio-icon-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 4px 12px 4px 4px;
+    background: transparent; border: 1px solid var(--border);
+    border-radius: 999px; text-decoration: none;
+    cursor: pointer; transition: border-color 0.15s, background 0.15s;
+  }
+  .studio-icon-pill:hover { border-color: var(--border-strong); background: rgba(26,23,20,0.03); }
+  .studio-icon-pill .pill-avatar {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Afacad', sans-serif; font-style: normal;
+    font-size: 11px; color: rgba(255,255,255,0.92); flex-shrink: 0;
+  }
+  .studio-icon-pill .pill-name {
+    font-family: 'Afacad', sans-serif; font-size: 12px;
+    color: var(--text); letter-spacing: 0.01em;
+  }
+  .studio-icon-pill .pill-caret {
+    font-size: 10px; color: var(--muted); letter-spacing: 0.14em;
+    text-transform: uppercase; margin-left: 2px;
+  }
+  .studio-icon-empty {
+    padding: 80px 24px; text-align: center;
+    color: var(--muted); font-size: 13px; line-height: 1.6;
+  }
+  .studio-icon-empty a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+  .studio-icon-empty a:hover { opacity: 0.75; }
   ::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 2px; }
   @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
@@ -75,7 +106,7 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
   #app { flex: 1; overflow: hidden; }
   .tab-content { display: none; height: 100%; }
   .tab-content.active { display: block; }
-  #tab-generate.tab-content.active { display: grid; grid-template-columns: 280px 1fr 360px; }
+  #tab-generate.tab-content.active { display: grid; grid-template-columns: 1fr 360px; }
   #tab-library.tab-content.active, #tab-icons.tab-content.active, #tab-queue.tab-content.active, #tab-schedule.tab-content.active { display: block; overflow-y: auto; padding: 28px 32px; height: 100%; }
 
   /* GENERATE TAB */
@@ -415,7 +446,11 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     <div class="eyebrow">Icon Studio</div>
     <div style="width:1px;height:14px;background:var(--border-md);opacity:.6;margin-left:4px"></div>
     <a href="/admin" class="studio-crossnav" title="Back to admin">← Admin</a>
-    <a href="/admin#personas" class="studio-crossnav" title="Open Persona Builder in admin">Persona Builder</a>
+    <a href="/admin#personas" class="studio-icon-pill" id="studio-icon-pill" title="Switch Icon in Persona Builder">
+      <span class="pill-avatar" id="studio-pill-avatar"></span>
+      <span class="pill-name" id="studio-pill-name">—</span>
+      <span class="pill-caret">Switch</span>
+    </a>
   </div>
   <div style="display:flex;align-items:center;gap:20px">
     <div id="proxy-status" style="font-size:10px;letter-spacing:0.1em;cursor:pointer" onclick="checkProxy()">Checking...</div>
@@ -434,14 +469,10 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
 
   <!-- GENERATE -->
   <div id="tab-generate" class="tab-content active">
-    <div class="panel-left">
-      <div class="panel-head">
-        <div class="eyebrow">The Icons · <span id="icon-count">100</span></div>
-        <input class="search-input" placeholder="Search icons..." oninput="filterIcons(this.value)" />
+    <div class="panel-center" id="panel-center">
+      <div class="studio-icon-empty" id="studio-no-icon" style="display:none">
+        No icon selected. Head to the <a href="/admin#personas">Persona Builder</a> to pick one.
       </div>
-      <div id="icon-list"></div>
-    </div>
-    <div class="panel-center">
       <!-- Icon Profile Card -->
       <div class="icon-card">
         <div class="icon-card-header">
@@ -1067,6 +1098,9 @@ function renderIconList(filter="") {
 
 function renderIconCard() {
   const i=selectedIcon;
+  renderStudioIconPill();
+  if(!i){ toggleStudioEmpty(true); return; }
+  toggleStudioEmpty(false);
   const av=$("card-avatar"); if(av){av.style.background=colorForIcon(i);av.textContent=i.name[0];}
   setText("btn-name", i.name);
   setVal("edit-name", i.name);
@@ -1074,6 +1108,33 @@ function renderIconCard() {
   setVal("edit-vibe", i.vibe);
   const cnt=getCount(i.id);
   setText("card-lib-count", `${cnt} ${cnt===1?"image":"images"}`);
+}
+
+// Top-bar Icon indicator (replaces the retired left icon sidebar).
+// Mirrors selectedIcon state; a click takes the user back to the admin
+// Persona Builder to switch icons. Any empty-state handling for the
+// center panel lives here too so the two views stay in sync.
+function renderStudioIconPill() {
+  const i = selectedIcon;
+  const av = $("studio-pill-avatar");
+  const nm = $("studio-pill-name");
+  if (av) {
+    if (i) { av.style.background = colorForIcon(i); av.textContent = (i.name || "?")[0]; }
+    else   { av.style.background = "var(--border-md)"; av.textContent = "—"; }
+  }
+  if (nm) nm.textContent = i ? i.name : "No icon";
+}
+
+function toggleStudioEmpty(show) {
+  const empty = $("studio-no-icon");
+  if (empty) empty.style.display = show ? "block" : "none";
+  // Hide the profile card + prompt area when empty so the prompt is alone.
+  const center = $("panel-center");
+  if (!center) return;
+  Array.prototype.forEach.call(center.children, function(child) {
+    if (child === empty) return;
+    child.style.display = show ? "none" : "";
+  });
 }
 
 function renderSceneTabs() {
