@@ -3255,6 +3255,20 @@ var MG=window.MG={
       style=[styleStr,aesthetic].filter(function(s){return s&&s.trim();}).join(', ');
     }
 
+    // Sloan-only locked prefixes. Anchors the CHARACTER row in her
+    // concrete / East-LA environment and pins STYLE to named editorial
+    // references (Corinne Day, Juergen Teller, early i-D). Both signal
+    // legitimate published-editorial intent to Flux's moderation layer
+    // and keep her output visually consistent across sessions.
+    if (icon.name === 'Sloan') {
+      var lockedCharacter = 'polished concrete, white walls, East LA, not camera-aware, minimal jewelry, overcast window light';
+      var lockedStyle = 'editorial fashion photography, 35mm film grain, published magazine aesthetic, Corinne Day, Juergen Teller, early i-D magazine, documentary, natural light, not posed';
+      character = character && character !== 'woman'
+        ? character + ', ' + lockedCharacter
+        : lockedCharacter;
+      style = style ? style + ', ' + lockedStyle : lockedStyle;
+    }
+
     return{character:character,scene:scene,wardrobe:wardrobe,shot:shot,light:light,style:style};
   },
   build:function(){
