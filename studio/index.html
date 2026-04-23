@@ -1086,7 +1086,7 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
             <input id="edit-arch" class="char-input" style="font-size: var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);background:transparent;border-color:transparent;padding:0;margin-bottom:6px" placeholder="Archetype" oninput="updateIconField('archetype',this.value)" />
             <input id="edit-vibe" class="char-input" style="font-size: var(--text-sm);color:var(--ink-mid);background:transparent;border-color:transparent;padding:0" placeholder="Vibe / personality..." oninput="updateIconField('vibe',this.value)" />
           </div>
-          <button class="lora-toggle on" id="lora-toggle" type="button" onclick="toggleLora()" title="Use the icon's trained LoRA when generating. Off = clean scene, no identity lock.">
+          <button class="lora-toggle" id="lora-toggle" type="button" onclick="toggleLora()" title="Use the icon's trained LoRA when generating. Off = clean scene, no identity lock.">
             <span class="lora-dot" aria-hidden="true"></span><span class="lora-label">LoRA</span>
           </button>
         </div>
@@ -3599,9 +3599,9 @@ function _loraMap() {
   try { return JSON.parse(localStorage.getItem(LORA_ENABLED_KEY) || '{}'); } catch (_) { return {}; }
 }
 function getLoraEnabled(iconId) {
-  if (iconId == null) return true;
+  if (iconId == null) return false;
   const m = _loraMap();
-  return m[iconId] !== false; // default ON
+  return m[iconId] === true; // default OFF — only ON when the user explicitly flips it
 }
 function setLoraEnabled(iconId, enabled) {
   if (iconId == null) return;
@@ -3612,7 +3612,7 @@ function setLoraEnabled(iconId, enabled) {
 function renderLoraToggle() {
   const btn = document.getElementById('lora-toggle');
   if (!btn) return;
-  const enabled = selectedIcon ? getLoraEnabled(selectedIcon.id) : true;
+  const enabled = selectedIcon ? getLoraEnabled(selectedIcon.id) : false;
   btn.classList.toggle('on', enabled);
   btn.setAttribute('aria-pressed', enabled ? 'true' : 'false');
 }
