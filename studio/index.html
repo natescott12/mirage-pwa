@@ -3255,18 +3255,21 @@ var MG=window.MG={
       style=[styleStr,aesthetic].filter(function(s){return s&&s.trim();}).join(', ');
     }
 
-    // Sloan-only locked prefixes. Anchors the CHARACTER row in her
-    // concrete / East-LA environment and pins STYLE to named editorial
-    // references (Corinne Day, Juergen Teller, early i-D). Both signal
-    // legitimate published-editorial intent to Flux's moderation layer
-    // and keep her output visually consistent across sessions.
+    // Editorial STYLE anchor — applied to every icon. Pins Flux to a
+    // named published-editorial register (Corinne Day, Juergen Teller,
+    // early i-D) which signals legitimate intent to the moderation
+    // layer and gives every output a consistent visual floor.
+    var lockedStyle = 'editorial fashion photography, 35mm film grain, published magazine aesthetic, Corinne Day, Juergen Teller, early i-D magazine, documentary, natural light, not posed';
+    style = style ? style + ', ' + lockedStyle : lockedStyle;
+
+    // Sloan-specific CHARACTER anchor — locks her to the concrete /
+    // East-LA environment so her scenes stay visually consistent
+    // across sessions. Other icons keep their own environments clean.
     if (icon.name === 'Sloan') {
       var lockedCharacter = 'polished concrete, white walls, East LA, not camera-aware, minimal jewelry, overcast window light';
-      var lockedStyle = 'editorial fashion photography, 35mm film grain, published magazine aesthetic, Corinne Day, Juergen Teller, early i-D magazine, documentary, natural light, not posed';
       character = character && character !== 'woman'
         ? character + ', ' + lockedCharacter
         : lockedCharacter;
-      style = style ? style + ', ' + lockedStyle : lockedStyle;
     }
 
     return{character:character,scene:scene,wardrobe:wardrobe,shot:shot,light:light,style:style};
@@ -4221,7 +4224,7 @@ function cloudTrainLora() {
     if(cp.contentPillars&&cp.contentPillars.length) personaLines.push('Traits: '+cp.contentPillars.join(', '));
     var personaBlock='\n\n<persona>\n'+personaLines.join('\n')+'\n</persona>';
 
-    var sysPrompt='You are a creative director for Mirage, an editorial AI platform. You are briefing a scene for '+(si.name||'the icon')+'. Use the <persona> block below to stay true to who she is — her aesthetic, voice, and setting should shape every suggestion you make. Help the user develop a scene through natural conversation: ask questions, explore ideas, suggest directions — be a collaborator not a form. There is no limit on how many turns you take. Only output the <brief> JSON when you have clear, confident answers for all four fields (scene, wardrobe, shot, light). If anything is ambiguous, keep asking. When you do output the brief, values must be SHORT Flux-ready visual keywords — max 10 words per field, comma separated, no sentences.'+personaBlock+briefContext+'\n\nExample brief output:\n<brief>{"scene":"quiet city overlook, dark Mercedes, late afternoon","wardrobe":"black blazer unbuttoned, tailored trousers, leather boots","shot":"full body, sideways driver seat, one leg out","light":"soft golden hour, long shadows"}</brief>';
+    var sysPrompt='You are a creative director for Mirage, an editorial AI platform. You are briefing a scene for '+(si.name||'the icon')+'. Use the <persona> block below to stay true to who she is — her aesthetic, voice, and setting should shape every suggestion you make. Help the user develop a scene through natural conversation: ask questions, explore ideas, suggest directions — be a collaborator not a form. There is no limit on how many turns you take. Only output the <brief> JSON when you have clear, confident answers for all four fields (scene, wardrobe, shot, light). If anything is ambiguous, keep asking. When you do output the brief, values must be SHORT Flux-ready visual keywords — max 10 words per field, comma separated, no sentences.'+personaBlock+briefContext+'\n\n<editorial-framing>\nAll generated Flux prompts must include editorial framing to signal artistic intent. Always append to the STYLE row: "editorial fashion photography, 35mm film grain, published magazine aesthetic, Corinne Day, Juergen Teller, early i-D magazine, documentary, natural light, not posed".\n\nUse this vocabulary — it passes moderation: unbuttoned, collarbone visible, off shoulder, natural skin, oversized, relaxed, just woken up, unmade bed, crop top, midriff, sheer fabric backlit, caught in a moment.\n\nAvoid these words — they trigger moderation: revealing, exposed, intimate, see-through, undressed, nudity.\n</editorial-framing>\n\nExample brief output:\n<brief>{"scene":"quiet city overlook, dark Mercedes, late afternoon","wardrobe":"black blazer unbuttoned, tailored trousers, leather boots","shot":"full body, sideways driver seat, one leg out","light":"soft golden hour, long shadows"}</brief>';
 
     function coerceImagesToJpeg(msgs){
       return msgs.map(function(m){
