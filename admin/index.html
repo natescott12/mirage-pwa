@@ -5632,6 +5632,7 @@ async function sloanChatSend() {
     const rawBody = await r.text();
     loading.remove();
 
+    let replies = null;
     let reply;
     let mediaUrl = null;
     let figmaQueued = false;
@@ -5640,6 +5641,7 @@ async function sloanChatSend() {
       if (!r.ok || data.error) {
         reply = 'error: ' + (data.error || ('HTTP ' + r.status));
       } else {
+        replies = Array.isArray(data.replies) ? data.replies.filter(function(s) { return typeof s === 'string' && s.trim().length > 0; }) : null;
         reply = data.reply || '';
         mediaUrl = data.mediaUrl || data.imageUrl || null;
         figmaQueued = !!data.figmaQueued;
@@ -5647,7 +5649,15 @@ async function sloanChatSend() {
     } catch (_) {
       reply = 'non-JSON response (HTTP ' + r.status + '): ' + rawBody.slice(0, 300);
     }
-    appendSloanChatMessage('sloan', reply, mediaUrl);
+    if (replies && replies.length) {
+      for (let i = 0; i < replies.length; i++) {
+        const isLast = i === replies.length - 1;
+        appendSloanChatMessage('sloan', replies[i], isLast ? mediaUrl : null);
+        if (!isLast) await new Promise(function(resolve) { setTimeout(resolve, 400); });
+      }
+    } else {
+      appendSloanChatMessage('sloan', reply, mediaUrl);
+    }
     if (figmaQueued) {
       appendSloanChatMessage('system', '✦ Sloan queued a Figma task');
     }
