@@ -2385,7 +2385,8 @@ button { color: inherit; }
 
       <!-- SLOAN CHAT — direct chat pane that bypasses SMS/Twilio and
            talks straight to the proxy via /sms/incoming with channel=admin.
-           History stored in icon_chats keyed by 'admin:nate'. -->
+           History stored in icon_chats keyed by 'admin:<user>' — each
+           admin user (nate, anna) lands on their own conversation row. -->
       <div class="pane" id="pane-sloanchat">
         <div class="page-header">
           <div>
@@ -2722,15 +2723,14 @@ function hydrateAuthenticatedApp(user) {
   applyPaneHash();
 }
 
-// Hide user-scoped surfaces. Anna has no visibility into anything Sloan —
-// the SLOAN nav section and the Sloan Learning Log entry get hidden entirely
-// so she can't even see the option.
+// User-scoped nav visibility. Both Nate and Anna see the SLOAN section
+// (Sloan Chat + Sloan Learning Log). Per-user chat threading keeps each
+// of them on their own conversation row in icon_chats.
 function applyUserVisibility(user) {
-  const hideForAnna = user === 'anna';
   const section = document.getElementById('nav-section-sloan');
   const item = document.getElementById('nav-item-sloanlog');
-  if (section) section.style.display = hideForAnna ? 'none' : '';
-  if (item) item.style.display = hideForAnna ? 'none' : '';
+  if (section) section.style.display = '';
+  if (item) item.style.display = '';
 }
 
 function doLogin() {
@@ -2845,14 +2845,6 @@ function showPane(id) {
   // Icon Studio is no longer embedded — it navigates away to the Vercel
   // deployment via the sidebar item's onclick. Guard against legacy calls.
   if (id === 'studio') { window.location.href = 'https://mirage-pwa.vercel.app/studio'; return; }
-
-  // Anna has no access to Sloan-scoped panes even via deep links.
-  if (id === 'sloanlog') {
-    try {
-      const user = (typeof getAdminUser === 'function') ? getAdminUser() : null;
-      if (user === 'anna') { console.warn('[nav] sloanlog blocked for', user); id = 'dashboard'; }
-    } catch (_) {}
-  }
 
   // Keep the URL hash in sync with the active pane. replaceState (not a
   // plain hash assignment) avoids stacking history entries and avoids
@@ -5348,8 +5340,9 @@ function updatePnl() {
 // ── SLOAN CHAT (direct proxy chat, bypasses SMS/Twilio) ──────────────────────
 const SLOAN_CHAT_PROXY = 'https://mirage-proxy-production.up.railway.app';
 const SLOAN_CHAT_MIRAGE_KEY = 'mirage-int-2026';
-// iconId derived from the admin user so history is per-user. 'admin:nate'
-// today; if Anna ever gets chat access it'd be 'admin:anna'.
+// iconId derived from the admin user so history is per-user — Nate
+// reads/writes 'admin:nate', Anna reads/writes 'admin:anna'. Defaults
+// to 'admin:nate' if getAdminUser() returns falsy (logged-out edge).
 function sloanChatIconId() {
   const user = (typeof getAdminUser === 'function' && getAdminUser()) || 'nate';
   return 'admin:' + user;
