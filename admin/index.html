@@ -4121,6 +4121,11 @@ function collectPersonaData() {
 }
 
 function savePersona() {
+  console.log('[savePersona] iconName:',
+    (document.getElementById('f-name') || {}).value,
+    '| currentIconId:', window.currentIconId,
+    '| user:', (typeof getAdminUser === 'function') ? getAdminUser() : 'fn not found'
+  );
   // Hard guard — silently bail for any user who can't edit this icon.
   // This fires even if something re-enables the Save button at runtime.
   try {
