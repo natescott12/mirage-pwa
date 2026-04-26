@@ -3162,7 +3162,7 @@ function renderPersonaList() {
   // in allIcons by name. Without this merge the grid renders a persona
   // that the search bar can't actually find — and openPersona can't
   // resolve the click because allIcons is the source of truth there too.
-  Object.values(window.__personas || {}).forEach(function(p) {
+  (window.__personas || []).forEach(function(p, idx) {
     if (!p) return;
     const name = p.name || p.iconName;
     if (name && !allIcons.find(function(i) { return i.name === name; })) {
@@ -3172,7 +3172,7 @@ function renderPersonaList() {
         archetype: p.archetype || '',
         persona_data: p.persona_data || {},
         status: 'inactive',
-        _personaIdx: p._idx
+        _personaIdx: idx
       });
     }
   });
@@ -3418,6 +3418,12 @@ function applyPersonaLockState(iconName) {
 }
 
 function loadPersonaForIcon(idx) {
+  // Guardrail: re-enable the save button on every persona load entry,
+  // before any early return. applyPersonaLockState (the canonical setter)
+  // only runs on the success path; a 'Persona not found' or empty-idx
+  // bail used to leave the button disabled from a previous selection.
+  const saveBtn = document.getElementById('save-btn');
+  if (saveBtn) { saveBtn.disabled = false; }
   const editor = document.getElementById('persona-editor');
   if (!editor) return;
   if (!idx || idx === '') {
