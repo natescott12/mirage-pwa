@@ -4171,6 +4171,7 @@ function savePersona() {
       return; // silent no-op — do NOT overwrite Supabase, local state, or anything else
     }
   } catch (_) {}
+  console.log('[save] passed canEditIcon');
 
   // Derive currentIconId from dropdown if not set
   if (!currentIconId) {
@@ -4191,6 +4192,7 @@ function savePersona() {
       (document.getElementById('f-name') || {}).value || null;
   }
   if (!currentIconId) { toast('Select an icon first.'); return; }
+  console.log('[save] currentIconId:', currentIconId);
 
   // Header Save button is the single save surface. Remember its label so
   // we can restore it after the save settles.
@@ -4211,6 +4213,7 @@ function savePersona() {
     || (document.getElementById('f-name') || {}).value || '';
   const archetypeVal = (personaWrapper && personaWrapper.archetype)
     || (document.getElementById('f-archetype') || {}).value || '';
+  console.log('[save] nameVal:', nameVal);
 
   // Always update local state
   if (icon) {
@@ -4249,6 +4252,7 @@ function savePersona() {
       icon_id: iconIdVal,
       user: (typeof getAdminUser === 'function') ? getAdminUser() : 'fn not found'
     });
+    console.log('[save] firing upsert for:', nameVal);
     // Upsert — works for both existing icons (Luna/Vera/Aria) and new ones (Sloan etc)
     sb.from('personas').upsert({
       icon_name: nameVal,
