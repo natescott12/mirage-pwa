@@ -3167,6 +3167,8 @@ async function loadIconContentCounts() {
       if (!icon) return;
       if (row.persona_data) {
         icon.persona_data = Object.assign({}, icon.persona_data || {}, row.persona_data);
+        if (row.persona_data.name) icon.name = row.persona_data.name;
+        if (row.persona_data.archetype) icon.archetype = row.persona_data.archetype;
       }
       if (row.character_data) {
         icon.character_data = Object.assign({}, icon.character_data || {}, row.character_data);
@@ -3501,6 +3503,32 @@ function applyPersonaLockState(iconName) {
   }
 }
 
+// Lock toggle for the active persona. Lock state lives inside
+// persona_data.locked (no schema migration needed). When locked, the
+// Save Character Profile button is disabled. The toggle itself also
+// writes to Supabase so the lock is durable across reloads.
+function togglePersonaLock(iconName) {
+  const btn = document.getElementById('lock-btn');
+  const saveBtn = document.getElementById('save-btn');
+  if (!btn) return;
+  const isLocked = btn.dataset.locked === 'true';
+  const nowLocked = !isLocked;
+  btn.dataset.locked = String(nowLocked);
+  btn.textContent = nowLocked ? '🔒 LOCKED' : '🔓 UNLOCKED';
+  if (saveBtn) saveBtn.disabled = nowLocked;
+
+  if (typeof sb !== 'undefined' && sb && iconName) {
+    const merged = Object.assign({}, collectPersonaData(), { locked: nowLocked });
+    sb.from('personas').upsert({
+      icon_name: iconName,
+      persona_data: merged,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'icon_name' }).then(function(r) {
+      if (r && r.error) console.warn('[lock] Supabase write failed', r.error);
+    });
+  }
+}
+
 // Pulls the latest personas row by icon_name and writes every field
 // back into the persona builder form. Used both on initial load (from
 // loadPersonaForIcon) and after a successful save (from savePersona)
@@ -3528,6 +3556,15 @@ function refreshPersonaFromSupabase(iconName, opts) {
     }
     if (missingRow) return;
     const sp = r.data.persona_data || {};
+
+    // Restore lock state from persona_data.locked. Runs after the
+    // editor render so #lock-btn / #save-btn exist in the DOM.
+    if (sp.locked) {
+      const lockBtn = document.getElementById('lock-btn');
+      const saveBtnEl = document.getElementById('save-btn');
+      if (lockBtn) { lockBtn.dataset.locked = 'true'; lockBtn.textContent = '🔒 LOCKED'; }
+      if (saveBtnEl) saveBtnEl.disabled = true;
+    }
 
     function setF(id, val) { const el = document.getElementById(id); if (el && val !== undefined && val !== '') el.value = val; }
 
@@ -3660,6 +3697,7 @@ function loadPersonaForIconByName(iconName) {
       'onclick="toggleIconActivation(this)">' +
       (isActive ? 'Deactivate' : '✓ Activate Icon') +
     '</button>' +
+    '<button onclick="togglePersonaLock(\'' + iconObj.name.replace(/'/g, '\\\'') + '\')" id="lock-btn" data-locked="false" style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:var(--ink-mid);padding:6px 12px;font-size:11px;cursor:pointer;letter-spacing:0.05em;margin-left:8px;">🔓 UNLOCKED</button>' +
   '</div>';
 
   editor.innerHTML = activateBar + buildPersonaForm(p, iconObj);
@@ -3734,6 +3772,7 @@ function loadPersonaForIcon(idx) {
       'onclick="toggleIconActivation(this)">' +
       (isActive ? 'Deactivate' : '\u2713 Activate Icon') +
     '</button>' +
+    '<button onclick="togglePersonaLock(\'' + iconObj.name.replace(/'/g, '\\\'') + '\')" id="lock-btn" data-locked="false" style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:var(--ink-mid);padding:6px 12px;font-size:11px;cursor:pointer;letter-spacing:0.05em;margin-left:8px;">\ud83d\udd13 UNLOCKED</button>' +
   '</div>';
 
   editor.innerHTML = activateBar + buildPersonaForm(p, iconObj);
@@ -4287,6 +4326,12 @@ function collectPersonaData() {
     sms_voice: document.getElementById('f-sms-voice')?.value || '',
     sms_opener: document.getElementById('f-sms-opener')?.value || '',
     sms_sample: document.getElementById('f-sms-sample')?.value || '',
+    // name + archetype were previously only on the icon_name column /
+    // in-memory allIcons / localStorage. Persisting them inside
+    // persona_data so the merge in loadIconContentCounts can hydrate
+    // both fields back into allIcons on every refresh.
+    name: (document.getElementById('f-name') || {}).value || '',
+    archetype: (document.getElementById('f-archetype') || {}).value || '',
     updated_at: new Date().toISOString(),
   };
 }
@@ -4360,6 +4405,16 @@ function savePersona() {
   const nameVal = headerName || formName || '';
 
   if (!nameVal) { toast('No icon selected.'); return; }
+
+  // Lock guard — block save when the persona is currently locked.
+  // Restore the spinner button so it doesn't stay disabled with a
+  // half-spun state.
+  const lockBtn = document.getElementById('lock-btn');
+  if (lockBtn && lockBtn.dataset.locked === 'true') {
+    toast('This persona is locked. Unlock to edit.');
+    if (btn) { btn.innerHTML = originalLabel; btn.disabled = false; }
+    return;
+  }
 
   const archetypeVal = (document.getElementById('f-archetype') || {}).value || '';
   console.log('[save] nameVal:', nameVal);
