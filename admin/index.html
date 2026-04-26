@@ -4267,6 +4267,20 @@ function savePersona() {
         toast('Saved to Supabase ✓');
         // Clear local cache so next load reads from Supabase
         try { localStorage.removeItem('mirage_personas_v1'); } catch (e) {}
+        // Update in-memory personas cache so reload shows saved data
+        if (window.__personas && currentIconId !== undefined) {
+          const idxKey = String(
+            (typeof currentIconId === 'number' || /^\d+$/.test(String(currentIconId)))
+              ? currentIconId
+              : Object.keys(window.__personas).find(function(k) {
+                  return window.__personas[k].name === currentIconId ||
+                    window.__personas[k].iconName === currentIconId;
+                })
+          );
+          if (idxKey && window.__personas[idxKey]) {
+            window.__personas[idxKey].persona_data = persona_data;
+          }
+        }
       }
       const pct = getPersonaCompletion(icon);
       if (document.getElementById('persona-progress-label')) {
