@@ -2717,6 +2717,11 @@ function hydrateAuthenticatedApp(user) {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').classList.add('visible');
   initSupabase();
+  // Warm icon image counts now that sb is initialized so cards in any
+  // pane render with real numbers on first open. Cheap fetch (one
+  // SELECT, capped at 2000 rows). The window.load fallback no-ops
+  // pre-login because sb is null then.
+  if (typeof loadIconContentCounts === 'function') loadIconContentCounts();
   loadDashboard();
   loadIcons();
   applyUserVisibility(user);
