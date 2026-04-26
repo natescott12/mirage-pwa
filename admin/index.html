@@ -3326,7 +3326,19 @@ function openPersona(iconId) {
   // either a number or a string depending on where the click came from.
   const icon = allIcons.find(i => String(i.id) === String(iconId));
   if (!icon) { console.warn('[openPersona] no icon matched id', iconId, '— allIcons has', allIcons.length, 'entries'); return; }
-  const idx = icon._personaIdx !== undefined ? icon._personaIdx : (parseInt(iconId, 10) - 1);
+  // Resolve the __personas array index for this icon. _personaIdx is the
+  // canonical pointer; when it's missing (icon is __personas-only and the
+  // merge in renderPersonaList didn't capture an index — e.g. saved via
+  // Supabase but absent from icons-data.json) fall back to a name match
+  // in __personas before the position-derived parseInt(iconId)-1 guess
+  // that has been writing one icon's data to a neighboring slot.
+  let idx = icon._personaIdx;
+  if (idx === undefined && window.__personas) {
+    idx = window.__personas.findIndex(function(p) {
+      return p && (p.name || p.iconName) === icon.name;
+    });
+  }
+  if (idx === undefined || idx < 0) idx = parseInt(iconId, 10) - 1;
   // Wait for personas to load then swap into the form view for this icon.
   function _trySelect(attempts) {
     const sel = document.getElementById('persona-icon-select');
