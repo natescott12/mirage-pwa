@@ -3417,7 +3417,7 @@ function loadPersonaForIcon(idx) {
 
   const iconObj = { name: wrapper.name || wrapper.iconName || '', archetype: wrapper.archetype || '' };
   const p = wrapper.persona_data || wrapper;
-  const iconId = wrapper.id || parseInt(idx) + 1;
+  const iconId = wrapper.id || wrapper.name || wrapper.iconName;
   window.currentIconId = iconId;
 
   // Ensure in allIcons
@@ -4145,6 +4145,9 @@ function savePersona() {
         }
       }
     }
+  }
+  if (!currentIconId) {
+    currentIconId = (document.getElementById('f-name') || {}).value || null;
   }
   if (!currentIconId) { toast('Select an icon first.'); return; }
 
