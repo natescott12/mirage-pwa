@@ -3236,14 +3236,20 @@ function showPersonaList() {
   window.scrollTo(0, 0);
 }
 
-function showPersonaForm(idx) {
+function showPersonaForm(idx, iconOverride) {
   const list = document.getElementById('persona-list-view');
   const form = document.getElementById('persona-form-view');
   if (list) list.style.display = 'none';
   if (form) form.style.display = '';
   window.scrollTo(0, 0);
-  const personas = window.__personas || [];
-  const wrapper = Array.isArray(personas) ? personas[parseInt(idx)] : personas[String(idx)];
+  // iconOverride lets Supabase-only icons (not in window.__personas) seed
+  // the page header without going through the array-index lookup. When
+  // both are passed, the override wins.
+  let wrapper = iconOverride;
+  if (!wrapper) {
+    const personas = window.__personas || [];
+    wrapper = Array.isArray(personas) ? personas[parseInt(idx)] : personas[String(idx)];
+  }
   const nameEl = document.getElementById('persona-form-name');
   const archEl = document.getElementById('persona-form-archetype');
   if (wrapper) {
@@ -3344,8 +3350,12 @@ function openPersona(iconId) {
       return p && (p.name || p.iconName) === icon.name;
     });
   }
-  if (idx === undefined || idx < 0) idx = parseInt(iconId, 10) - 1;
   // Wait for personas to load then swap into the form view for this icon.
+  // For icons in __personas (idx >= 0) use the existing array-index path.
+  // For Supabase-only icons (idx < 0 or undefined), bypass __personas
+  // entirely and load by name. parseInt(iconId)-1 used to be the third
+  // fallback here — that's the position-derived guess that has been
+  // routing saves to neighboring slots. Removed.
   function _trySelect(attempts) {
     const sel = document.getElementById('persona-icon-select');
     if (!sel) return;
@@ -3353,9 +3363,16 @@ function openPersona(iconId) {
       setTimeout(function() { _trySelect(attempts - 1); }, 200);
       return;
     }
-    sel.value = String(idx);
-    showPersonaForm(String(idx));
-    loadPersonaForIcon(String(idx));
+    if (idx !== undefined && idx >= 0) {
+      sel.value = String(idx);
+      showPersonaForm(String(idx));
+      loadPersonaForIcon(String(idx));
+    } else {
+      window.currentIconId = icon.name;
+      try { sessionStorage.setItem('lastIconId', icon.name); } catch (_) {}
+      showPersonaForm(null, icon);
+      loadPersonaForIconByName(icon.name);
+    }
   }
   _trySelect(10);
 }
@@ -3555,6 +3572,57 @@ function refreshPersonaFromSupabase(iconName, opts) {
     if (typeof refreshFieldGroupIndicators === 'function') refreshFieldGroupIndicators();
     applyPersonaLockState(iconName);
   });
+}
+
+// Load a persona that doesn't exist in window.__personas — Supabase-only
+// icons that were created via savePersona but aren't seeded in
+// icons-data.json. Mirrors loadPersonaForIcon's editor render path but
+// bypasses the array-index wrapper lookup that was routing these icons
+// to the wrong neighboring slot.
+function loadPersonaForIconByName(iconName) {
+  if (!iconName) return;
+  const editor = document.getElementById('persona-editor');
+  if (!editor) return;
+  const saveBtn = document.getElementById('save-btn');
+  if (saveBtn) saveBtn.disabled = false;
+
+  const icon = (allIcons || []).find(function(i) { return i.name === iconName; });
+  if (!icon) {
+    editor.innerHTML = '<div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-text">Persona not found in allIcons. Try reloading.</div></div>';
+    return;
+  }
+
+  const iconObj = { name: icon.name, archetype: icon.archetype || '' };
+  const p = icon.persona_data || {};
+  const iconId = icon.id;
+  window.currentIconId = iconName;
+  try { sessionStorage.setItem('lastIconId', iconName); } catch (_) {}
+
+  const activeState = JSON.parse(localStorage.getItem('mirage-active-icons') || '{}');
+  const currentStatus = activeState[iconId] || icon.status || 'inactive';
+  const isActive = currentStatus === 'active' || currentStatus === 'live';
+
+  const activateBar = '<div class="activate-bar">' +
+    '<div class="activate-bar-info">' +
+      '<span class="icon-status-badge ' + (isActive ? 'in-progress' : 'draft') + '">' + currentStatus.toUpperCase() + '</span>' +
+      '<span class="activate-bar-name">' + iconObj.name + '</span>' +
+    '</div>' +
+    '<button style="background:' + (isActive ? 'transparent' : 'var(--accent)') + ';color:' + (isActive ? 'var(--ink-mid)' : '#fff') + ';border:1px solid ' + (isActive ? 'rgba(255,255,255,0.18)' : 'var(--accent)') + ';padding:7px 14px;border-radius:4px;font-family: var(--font);font-size:12px;font-weight: var(--weight-medium);cursor:pointer;" ' +
+      'data-iconid="' + iconId + '" ' +
+      'data-action="' + (isActive ? 'deactivate' : 'activate') + '" ' +
+      'onclick="toggleIconActivation(this)">' +
+      (isActive ? 'Deactivate' : '✓ Activate Icon') +
+    '</button>' +
+  '</div>';
+
+  editor.innerHTML = activateBar + buildPersonaForm(p, iconObj);
+  if (typeof wrapPersonaAccordion === 'function') wrapPersonaAccordion();
+  applyPersonaLockState(iconObj.name);
+
+  // Pull canonical persona_data from Supabase by name. Same helper that
+  // runs at the end of loadPersonaForIcon, so both paths converge on
+  // identical form-population logic.
+  refreshPersonaFromSupabase(iconObj.name, { archetype: iconObj.archetype });
 }
 
 function loadPersonaForIcon(idx) {
