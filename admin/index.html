@@ -3157,7 +3157,17 @@ function renderPersonaList() {
   if (!grid) return;
   const q = (document.getElementById('persona-list-search')?.value || '').toLowerCase();
   const filter = currentPersonaListFilter;
-  const sorted = [...(allIcons || [])].sort(function(a, b) {
+  // Merge allIcons (icons table / personas.json) with any extras in
+  // window.__personas (Supabase personas table) that don't already exist
+  // in allIcons by name. Without this merge the grid renders a persona
+  // that the search bar can't actually find.
+  const searchIndex = [
+    ...(allIcons || []),
+    ...Object.values(window.__personas || {}).filter(function(p) {
+      return p && !((allIcons || []).find(function(i) { return i.name === (p.name || p.iconName); }));
+    })
+  ];
+  const sorted = [...searchIndex].sort(function(a, b) {
     return (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase());
   });
   const list = sorted.filter(function(icon) {
