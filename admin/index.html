@@ -1173,6 +1173,11 @@ button { color: inherit; }
       background: rgba(255,255,255,0.04);
     }
     .sloanchat-msg .sloanchat-text:empty { display: none; }
+    .sloanchat-text br + br {
+      display: block;
+      margin-top: 8px;
+      content: '';
+    }
     .sloanchat-loading {
       align-self: flex-start;
       color: var(--ink-dim);
@@ -5757,6 +5762,7 @@ function renderSloanChatMarkdown(raw) {
   // Bullet list markers at line start — convert to a middle-dot glyph so
   // `- item` / `* item` / `• item` don't read as raw prefix chars.
   s = s.replace(/^[ \t]*[\-*•][ \t]+(.+?)[ \t]*$/gm, '• $1');
+  s = s.replace(/\r\n\r\n|\n\n/g, '<br><br>');
   s = s.replace(/\r\n|\r|\n/g, '<br>');
   return s;
 }
