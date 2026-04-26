@@ -3188,7 +3188,12 @@ function renderPersonaList() {
     return (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase());
   });
   const list = sorted.filter(function(icon) {
-    const matchQ = !q || (icon.name || '').toLowerCase().includes(q) || (icon.archetype || '').toLowerCase().includes(q);
+    const nameLc = (icon.name || '').toLowerCase();
+    const archLc = (icon.archetype || '').toLowerCase();
+    const matchQ = !q ||
+      nameLc.startsWith(q) ||
+      nameLc === q ||
+      archLc.split(' ').some(function(w) { return w.startsWith(q); });
     const matchS = !filter || iconPaneStatus(icon) === filter;
     return matchQ && matchS;
   });
@@ -3431,6 +3436,126 @@ function applyPersonaLockState(iconName) {
   }
 }
 
+// Pulls the latest personas row by icon_name and writes every field
+// back into the persona builder form. Used both on initial load (from
+// loadPersonaForIcon) and after a successful save (from savePersona)
+// so the form always reflects what's actually in Supabase.
+function refreshPersonaFromSupabase(iconName, opts) {
+  if (!sb || !iconName) return;
+  opts = opts || {};
+  const archetypeDefault = opts.archetype || '';
+  const sloanIconId = opts.iconId;
+  sb.from('personas').select('icon_name, persona_data, character_data').ilike('icon_name', iconName).single().then(function(r) {
+    // Sloan wipe detection — only fires when called from loadPersonaForIcon
+    // (which passes opts.iconId). Post-save calls don't pass iconId so a
+    // newly-saved Sloan won't get clobbered by the fallback.
+    const isSloan = (iconName === 'Sloan');
+    const missingRow = r.error || !r.data;
+    if (isSloan && sloanIconId !== undefined) {
+      const sp0 = (r.data && r.data.persona_data) || {};
+      const wiped = missingRow || (!sp0.tagline && !sp0.age && !sp0.voice);
+      if (wiped) {
+        console.warn('[sloan] wipe detected — restoring from fallback');
+        restoreSloanFromFallback(sloanIconId);
+        applyPersonaLockState(iconName);
+        return;
+      }
+    }
+    if (missingRow) return;
+    const sp = r.data.persona_data || {};
+
+    function setF(id, val) { const el = document.getElementById(id); if (el && val !== undefined && val !== '') el.value = val; }
+
+    setF('f-name', iconName);
+    setF('f-archetype', sp.archetype || archetypeDefault);
+    setF('f-tagline', sp.tagline);
+    setF('f-age', sp.age);
+    setF('f-location', sp.location);
+    setF('f-occupation', sp.occupation);
+    setF('f-voice', sp.voice);
+    setF('f-comm-style', sp.communication_style);
+    setF('f-energy', sp.energy);
+    setF('f-backstory', sp.backstory);
+    setF('f-desires', sp.desires);
+    setF('f-fears', sp.fears);
+    setF('f-aesthetic', sp.aesthetic);
+    setF('f-interests', sp.interests);
+    setF('f-flux-notes', sp.flux_notes);
+    setF('f-sms-voice', sp.sms_voice);
+    setF('f-sms-opener', sp.sms_opener);
+    setF('f-sms-sample', sp.sms_sample);
+    setF('f-ethnicity', sp.ethnicity);
+    setF('f-skin-tone', sp.skin_tone);
+    setF('f-hair-style', sp.hair_style);
+    setF('f-signature-style', sp.signature_style);
+    setF('f-distinguishing-features', sp.distinguishing_features);
+    setF('f-tattoos-piercings', sp.tattoos_piercings);
+    setF('f-typical-setting', sp.typical_setting);
+    pbSetChip('eye_color',    sp.eye_color);
+    pbSetChip('eye_shape',    sp.eye_shape);
+    pbSetChip('skin_texture', sp.skin_texture);
+    pbSetChip('hair_length',  sp.hair_length);
+    pbSetChip('hair_texture', sp.hair_texture);
+    pbSetChip('build',        sp.build);
+    pbSetChip('makeup',       sp.makeup);
+    pbSetChip('freckles',     sp.freckles);
+    pbSetChip('age_range',    sp.age_range);
+    if (sp.hair_color) {
+      const chipMatched = pbSetChip('hair_color', sp.hair_color);
+      const custom = document.getElementById('f-hair-color-custom');
+      if (custom) custom.value = chipMatched ? '' : sp.hair_color;
+    }
+    if (sp.skin_tone_prompt || sp.skin_tone) pbSetSkinSwatch(sp.skin_tone_prompt || sp.skin_tone);
+
+    var cd = r.data.character_data || {};
+    if (!sp.ethnicity && cd.ethnicity) setF('f-ethnicity', cd.ethnicity);
+    if (!sp.hair_style && cd.hairStyle) setF('f-hair-style', cd.hairStyle);
+    if (!sp.skin_tone && cd.skinTone) setF('f-skin-tone', cd.skinTone);
+    if (!sp.eye_color && cd.eyeColor) pbSetChip('eye_color', cd.eyeColor);
+    if (!sp.eye_shape && cd.eyeShape) pbSetChip('eye_shape', cd.eyeShape);
+    if (!sp.hair_length && cd.hairLength) pbSetChip('hair_length', cd.hairLength);
+    if (!sp.hair_texture && cd.hairTexture) pbSetChip('hair_texture', cd.hairTexture);
+    if (!sp.skin_texture && cd.skinTexture) pbSetChip('skin_texture', cd.skinTexture);
+    if (!sp.build && cd.build) pbSetChip('build', cd.build);
+    if (!sp.makeup && cd.makeup) pbSetChip('makeup', cd.makeup);
+    if (!sp.freckles && cd.freckles) pbSetChip('freckles', cd.freckles);
+    if (!sp.age_range && cd.age) pbSetChip('age_range', cd.age);
+    if (!sp.hair_color && cd.hairColor) {
+      const chipMatched = pbSetChip('hair_color', cd.hairColor);
+      const custom = document.getElementById('f-hair-color-custom');
+      if (custom && !chipMatched) custom.value = cd.hairColor;
+    }
+    if (!sp.skin_tone_prompt && cd.skinTonePrompt) pbSetSkinSwatch(cd.skinTonePrompt);
+    if (!sp.distinguishing_features && cd.features) setF('f-distinguishing-features', cd.features);
+    if (!sp.tattoos_piercings && cd.tattoos) setF('f-tattoos-piercings', cd.tattoos);
+
+    if (sp.traits && sp.traits.length) {
+      document.querySelectorAll('.tag-chip[data-group="traits"]').forEach(function(c) {
+        c.classList.toggle('selected', sp.traits.map(function(t){return t.toLowerCase();}).includes(c.textContent.trim().toLowerCase()));
+      });
+    }
+    if (sp.scene_tags && sp.scene_tags.length) {
+      document.querySelectorAll('.tag-chip[data-group="scene_tags"]').forEach(function(c) {
+        c.classList.toggle('selected', sp.scene_tags.includes(c.textContent.trim()));
+      });
+    }
+    if (Array.isArray(sp.signature_phrases)) {
+      setF('f-phrase-1', sp.signature_phrases[0]);
+      setF('f-phrase-2', sp.signature_phrases[1]);
+      setF('f-phrase-3', sp.signature_phrases[2]);
+    }
+    if (Array.isArray(sp.content_pillars)) {
+      document.querySelectorAll('.tag-chip[data-group="content_pillars"]').forEach(function(c) {
+        c.classList.toggle('selected', sp.content_pillars.includes(c.textContent.trim()));
+      });
+    }
+    pbSetChip('female_archetype', sp.female_archetype);
+    pbSetChip('cluster', sp.cluster);
+    if (typeof refreshFieldGroupIndicators === 'function') refreshFieldGroupIndicators();
+    applyPersonaLockState(iconName);
+  });
+}
+
 function loadPersonaForIcon(idx) {
   // Guardrail: re-enable the save button on every persona load entry,
   // before any early return. applyPersonaLockState (the canonical setter)
@@ -3499,127 +3624,10 @@ function loadPersonaForIcon(idx) {
   wrapPersonaAccordion();
   applyPersonaLockState(iconObj.name);
 
-  // Now fetch from Supabase and overwrite with full saved data
-  if (sb) {
-    sb.from('personas').select('icon_name, persona_data, character_data').ilike('icon_name', iconObj.name).single().then(function(r) {
-      // Sloan wipe detection: either the row is missing, or the core
-      // fields (tagline + age + voice) are all empty. Either way, restore
-      // from SLOAN_FALLBACK and write back to Supabase so the wipe never
-      // survives a second load.
-      const isSloan = (iconObj.name === 'Sloan');
-      const missingRow = r.error || !r.data;
-      if (isSloan) {
-        const sp0 = (r.data && r.data.persona_data) || {};
-        const wiped = missingRow || (!sp0.tagline && !sp0.age && !sp0.voice);
-        if (wiped) {
-          console.warn('[sloan] wipe detected \u2014 restoring from fallback');
-          restoreSloanFromFallback(iconId);
-          applyPersonaLockState(iconObj.name);
-          return;
-        }
-      }
-      if (missingRow) return;
-      const sp = r.data.persona_data || {};
-
-      function setF(id, val) { const el = document.getElementById(id); if (el && val !== undefined && val !== '') el.value = val; }
-
-      setF('f-name', iconObj.name);
-      setF('f-archetype', sp.archetype || iconObj.archetype);
-      setF('f-tagline', sp.tagline);
-      setF('f-age', sp.age);
-      setF('f-location', sp.location);
-      setF('f-occupation', sp.occupation);
-      setF('f-voice', sp.voice);
-      setF('f-comm-style', sp.communication_style);
-      setF('f-energy', sp.energy);
-      setF('f-backstory', sp.backstory);
-      setF('f-desires', sp.desires);
-      setF('f-fears', sp.fears);
-      setF('f-aesthetic', sp.aesthetic);
-      setF('f-interests', sp.interests);
-      setF('f-flux-notes', sp.flux_notes);
-      setF('f-sms-voice', sp.sms_voice);
-      setF('f-sms-opener', sp.sms_opener);
-      setF('f-sms-sample', sp.sms_sample);
-      // Physical — chips (data-group) + free text fields
-      setF('f-ethnicity', sp.ethnicity);
-      setF('f-skin-tone', sp.skin_tone);
-      setF('f-hair-style', sp.hair_style);
-      setF('f-signature-style', sp.signature_style);
-      setF('f-distinguishing-features', sp.distinguishing_features);
-      setF('f-tattoos-piercings', sp.tattoos_piercings);
-      setF('f-typical-setting', sp.typical_setting);
-      pbSetChip('eye_color',    sp.eye_color);
-      pbSetChip('eye_shape',    sp.eye_shape);
-      pbSetChip('skin_texture', sp.skin_texture);
-      pbSetChip('hair_length',  sp.hair_length);
-      pbSetChip('hair_texture', sp.hair_texture);
-      pbSetChip('build',        sp.build);
-      pbSetChip('makeup',       sp.makeup);
-      pbSetChip('freckles',     sp.freckles);
-      pbSetChip('age_range',    sp.age_range);
-      // hair_color may be chip or custom text
-      if (sp.hair_color) {
-        const chipMatched = pbSetChip('hair_color', sp.hair_color);
-        const custom = document.getElementById('f-hair-color-custom');
-        if (custom) custom.value = chipMatched ? '' : sp.hair_color;
-      }
-      if (sp.skin_tone_prompt || sp.skin_tone) pbSetSkinSwatch(sp.skin_tone_prompt || sp.skin_tone);
-
-      // Fallback: populate physical fields from character_data if persona_data fields empty
-      var cd = r.data.character_data || {};
-      if (!sp.ethnicity && cd.ethnicity) setF('f-ethnicity', cd.ethnicity);
-      if (!sp.hair_style && cd.hairStyle) setF('f-hair-style', cd.hairStyle);
-      if (!sp.skin_tone && cd.skinTone) setF('f-skin-tone', cd.skinTone);
-      if (!sp.eye_color && cd.eyeColor) pbSetChip('eye_color', cd.eyeColor);
-      if (!sp.eye_shape && cd.eyeShape) pbSetChip('eye_shape', cd.eyeShape);
-      if (!sp.hair_length && cd.hairLength) pbSetChip('hair_length', cd.hairLength);
-      if (!sp.hair_texture && cd.hairTexture) pbSetChip('hair_texture', cd.hairTexture);
-      if (!sp.skin_texture && cd.skinTexture) pbSetChip('skin_texture', cd.skinTexture);
-      if (!sp.build && cd.build) pbSetChip('build', cd.build);
-      if (!sp.makeup && cd.makeup) pbSetChip('makeup', cd.makeup);
-      if (!sp.freckles && cd.freckles) pbSetChip('freckles', cd.freckles);
-      if (!sp.age_range && cd.age) pbSetChip('age_range', cd.age);
-      if (!sp.hair_color && cd.hairColor) {
-        const chipMatched = pbSetChip('hair_color', cd.hairColor);
-        const custom = document.getElementById('f-hair-color-custom');
-        if (custom && !chipMatched) custom.value = cd.hairColor;
-      }
-      if (!sp.skin_tone_prompt && cd.skinTonePrompt) pbSetSkinSwatch(cd.skinTonePrompt);
-      if (!sp.distinguishing_features && cd.features) setF('f-distinguishing-features', cd.features);
-      if (!sp.tattoos_piercings && cd.tattoos) setF('f-tattoos-piercings', cd.tattoos);
-
-      // Traits chips
-      if (sp.traits && sp.traits.length) {
-        document.querySelectorAll('.tag-chip[data-group="traits"]').forEach(function(c) {
-          c.classList.toggle('selected', sp.traits.map(function(t){return t.toLowerCase();}).includes(c.textContent.trim().toLowerCase()));
-        });
-      }
-      // Scene tags
-      if (sp.scene_tags && sp.scene_tags.length) {
-        document.querySelectorAll('.tag-chip[data-group="scene_tags"]').forEach(function(c) {
-          c.classList.toggle('selected', sp.scene_tags.includes(c.textContent.trim()));
-        });
-      }
-      // Voice & Personality — new fields merged in from Studio
-      if (Array.isArray(sp.signature_phrases)) {
-        setF('f-phrase-1', sp.signature_phrases[0]);
-        setF('f-phrase-2', sp.signature_phrases[1]);
-        setF('f-phrase-3', sp.signature_phrases[2]);
-      }
-      if (Array.isArray(sp.content_pillars)) {
-        document.querySelectorAll('.tag-chip[data-group="content_pillars"]').forEach(function(c) {
-          c.classList.toggle('selected', sp.content_pillars.includes(c.textContent.trim()));
-        });
-      }
-      pbSetChip('female_archetype', sp.female_archetype);
-      pbSetChip('cluster', sp.cluster);
-      // Apply has-data indicators to collapsible section headers now that
-      // all chip/input state has been written back in.
-      if (typeof refreshFieldGroupIndicators === 'function') refreshFieldGroupIndicators();
-      applyPersonaLockState(iconObj.name);
-    });
-  }
+  // Fetch from Supabase via the shared helper so loadPersonaForIcon
+  // and savePersona's post-save refresh both run identical populate
+  // logic. iconId is passed so the Sloan-wipe restore path can fire.
+  refreshPersonaFromSupabase(iconObj.name, { archetype: iconObj.archetype, iconId: iconId });
 }
 function toggleIconActivation(btn) {
   const iconId = parseInt(btn.getAttribute('data-iconid'));
@@ -4193,7 +4201,7 @@ function savePersona() {
       const wrapper = window.__personas[String(idx)];
       if (wrapper) {
         currentIconId = wrapper.id || (parseInt(idx) + 1);
-        if (typeof allIcons !== 'undefined' && !allIcons.find(i => i.id === currentIconId)) {
+        if (typeof allIcons !== 'undefined' && !allIcons.find(i => i.id === currentIconId || i.name === (wrapper.name || wrapper.iconName))) {
           allIcons.push({ id: currentIconId, name: wrapper.name || '', archetype: wrapper.archetype || '', persona_data: wrapper.persona_data || {}, status: 'inactive', _personaIdx: parseInt(idx) });
         }
       }
@@ -4283,6 +4291,11 @@ function savePersona() {
         toast('Saved to Supabase ✓');
         // Clear local cache so next load reads from Supabase
         try { localStorage.removeItem('mirage_personas_v1'); } catch (e) {}
+        // Re-fetch from Supabase to confirm save landed and repopulate
+        // form. Same helper loadPersonaForIcon uses, so the form ends
+        // up showing exactly what's in Supabase post-write. Skip the
+        // Sloan-wipe restore by not passing iconId in opts.
+        if (nameVal) refreshPersonaFromSupabase(nameVal);
         // Update in-memory personas cache so reload shows saved data
         if (window.__personas && currentIconId !== undefined) {
           const idxKey = String(
