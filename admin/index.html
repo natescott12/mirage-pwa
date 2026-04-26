@@ -1,3 +1,4 @@
+<!-- MIRAGE ADMIN v2026-04-26-C -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6874,6 +6875,7 @@ function clRevert() {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 window.addEventListener('load', () => {
+  console.log('[admin] build: 2026-04-26-C');
   try {
     const lastId = sessionStorage.getItem('lastIconId');
     if (lastId) window.currentIconId = lastId;
