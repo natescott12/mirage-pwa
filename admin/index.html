@@ -1173,6 +1173,10 @@ button { color: inherit; }
       background: rgba(255,255,255,0.04);
     }
     .sloanchat-msg .sloanchat-text:empty { display: none; }
+    .sloanchat-text {
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
     .sloanchat-text br + br {
       display: block;
       margin-top: 8px;
@@ -5763,7 +5767,6 @@ function renderSloanChatMarkdown(raw) {
   // `- item` / `* item` / `• item` don't read as raw prefix chars.
   s = s.replace(/^[ \t]*[\-*•][ \t]+(.+?)[ \t]*$/gm, '• $1');
   s = s.replace(/\r\n\r\n|\n\n/g, '<br><br>');
-  s = s.replace(/\r\n|\r|\n/g, '<br>');
   return s;
 }
 
