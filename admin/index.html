@@ -4226,13 +4226,26 @@ function savePersona() {
 
   const persona_data = collectPersonaData();
   const icon = allIcons.find(i => i.id === currentIconId);
-  const personaWrapper = window.__personas &&
-    (window.__personas[String(currentIconId)] ||
-     window.__personas[String(parseInt(currentIconId))]);
-  const nameVal = (personaWrapper && (personaWrapper.name || personaWrapper.iconName))
-    || (document.getElementById('f-name') || {}).value || '';
-  const archetypeVal = (personaWrapper && personaWrapper.archetype)
-    || (document.getElementById('f-archetype') || {}).value || '';
+  // Derive icon_name from the .activate-bar-name span inside #persona-editor —
+  // it's set in loadPersonaForIcon directly from iconObj.name, always bound
+  // to the currently loaded icon, and never falls back to junk text. Fall
+  // through to #persona-form-name (with '—' / 'Persona' rejection) and then
+  // the f-name input as last resorts.
+  const editor = document.getElementById('persona-editor');
+  const headerName = (editor && editor.querySelector('.activate-bar-name'))
+    ? editor.querySelector('.activate-bar-name').textContent.trim()
+    : (function() {
+        const txt = document.getElementById('persona-form-name')
+          ? document.getElementById('persona-form-name').textContent.trim()
+          : '';
+        return (txt && txt !== '—' && txt !== 'Persona') ? txt : '';
+      })();
+  const formName = (document.getElementById('f-name') || {}).value;
+  const nameVal = headerName || formName || '';
+
+  if (!nameVal) { toast('No icon selected.'); return; }
+
+  const archetypeVal = (document.getElementById('f-archetype') || {}).value || '';
   console.log('[save] nameVal:', nameVal);
 
   // Always update local state
