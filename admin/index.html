@@ -2994,6 +2994,7 @@ async function loadPersonasFromJSON() {
         persona_data: p,
         status: 'partial'
       }));
+      window.__personas_loadedAt = Date.now();
       return window.__personas;
     }
     console.warn('icons-data.json fetch non-ok', r.status);
@@ -3011,6 +3012,7 @@ async function loadPersonasFromJSON() {
       persona_data: p,
       status: 'partial'
     }));
+    window.__personas_loadedAt = Date.now();
     return window.__personas;
   } catch(e) {
     console.warn('Could not load personas fallback:', e.message);
@@ -3424,6 +3426,15 @@ function loadPersonaForIcon(idx) {
   // bail used to leave the button disabled from a previous selection.
   const saveBtn = document.getElementById('save-btn');
   if (saveBtn) { saveBtn.disabled = false; }
+  // If the cached __personas is older than 60 seconds, kick a background
+  // refresh. The current call still uses whatever's currently in
+  // __personas; the refresh lands in time for the next click. Saved
+  // persona_data still arrives via the Supabase fetch later in this
+  // function, so stale wrappers only affect name/archetype defaults.
+  const loadedAt = window.__personas_loadedAt || 0;
+  if (window.__personas && (Date.now() - loadedAt) > 60000 && typeof loadPersonasFromJSON === 'function') {
+    loadPersonasFromJSON().catch(function() {});
+  }
   const editor = document.getElementById('persona-editor');
   if (!editor) return;
   if (!idx || idx === '') {
@@ -4254,6 +4265,8 @@ function savePersona() {
       } else {
         setSaveStatus('Saved to Supabase ✓', 'saved');
         toast('Saved to Supabase ✓');
+        // Clear local cache so next load reads from Supabase
+        try { localStorage.removeItem('mirage_personas_v1'); } catch (e) {}
       }
       const pct = getPersonaCompletion(icon);
       if (document.getElementById('persona-progress-label')) {
