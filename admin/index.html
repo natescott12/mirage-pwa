@@ -4208,10 +4208,20 @@ function savePersona() {
     icon.persona_data = persona_data;
   }
 
-  // Persist to localStorage
+  // Persist to localStorage. Wrap the setItem so a QuotaExceededError
+  // doesn't unwind savePersona before the Supabase upsert fires —
+  // localStorage is just a cache, Supabase is the real save.
   const localData = JSON.parse(localStorage.getItem('mirage_personas_v1') || '{}');
   localData[currentIconId] = { name: nameVal, archetype: archetypeVal, persona_data };
-  localStorage.setItem('mirage_personas_v1', JSON.stringify(localData));
+  try {
+    localStorage.setItem('mirage_personas_v1', JSON.stringify(localData));
+  } catch (e) {
+    if (e && e.name === 'QuotaExceededError') {
+      console.warn('[savePersona] localStorage quota exceeded — skipping local cache write');
+    } else {
+      throw e;
+    }
+  }
 
   // Save to Supabase if available
   if (sb) {
