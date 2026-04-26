@@ -4162,8 +4162,13 @@ function savePersona() {
 
   const persona_data = collectPersonaData();
   const icon = allIcons.find(i => i.id === currentIconId);
-  const nameVal = document.getElementById('f-name')?.value || icon?.name || '';
-  const archetypeVal = document.getElementById('f-archetype')?.value || icon?.archetype || '';
+  const personaWrapper = window.__personas &&
+    (window.__personas[String(currentIconId)] ||
+     window.__personas[String(parseInt(currentIconId))]);
+  const nameVal = (personaWrapper && (personaWrapper.name || personaWrapper.iconName))
+    || (document.getElementById('f-name') || {}).value || '';
+  const archetypeVal = (personaWrapper && personaWrapper.archetype)
+    || (document.getElementById('f-archetype') || {}).value || '';
 
   // Always update local state
   if (icon) {
