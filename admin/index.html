@@ -3029,14 +3029,28 @@ async function loadPersonasFromJSON() {
 
 
 function getPersonaCompletion(icon) {
-  if (!icon.persona_data) return 0;
-  const p = icon.persona_data;
-  // Persona-builder fields plus seed fields from icons-data.json so an
-  // unedited icon shows meaningful progress instead of the flat 7% that
-  // came from only `aesthetic` matching across the seed.
-  const fields = ['tagline','voice','backstory','aesthetic','interests','fears','desires','communication_style','eye_color','hair_color','hair_length','skin_tone','build','age','vibe','setting','style','energy','hair','color'];
-  const filled = fields.filter(f => p[f] && p[f].toString().trim().length > 0);
-  return Math.round((filled.length / fields.length) * 100);
+  // Two stores to count from:
+  //   persona_data  → voice / story / seed fields (snake_case)
+  //   character_data → physical description (camelCase, written by Studio)
+  // Sloan's physical fields live in character_data, not persona_data, so
+  // counting only the latter underreported her completion. Fields are
+  // disjoint between the two stores by design.
+  const p = icon.persona_data || {};
+  const c = icon.character_data || {};
+
+  const personaFields = ['tagline','voice','backstory','aesthetic','interests','fears','desires','communication_style','sms_voice','vibe','setting','style','energy'];
+  const characterFields = ['eyeColor','hairColor','skinTone','build','makeup','age'];
+
+  const filledPersona = personaFields.filter(function(f) {
+    return p[f] && p[f].toString().trim().length > 0;
+  });
+  const filledCharacter = characterFields.filter(function(f) {
+    return c[f] && c[f].toString().trim().length > 0;
+  });
+
+  const total = personaFields.length + characterFields.length;
+  const filled = filledPersona.length + filledCharacter.length;
+  return Math.round((filled / total) * 100);
 }
 
 function getStatusFromCompletion(pct) {
@@ -3138,7 +3152,7 @@ async function loadIconContentCounts() {
     //      instead of their actual completion.
     const [contentRes, personaRes] = await Promise.all([
       sb.from('content').select('icon_name').limit(2000),
-      sb.from('personas').select('icon_name, persona_data')
+      sb.from('personas').select('icon_name, persona_data, character_data')
     ]);
 
     const counts = {};
@@ -3150,8 +3164,12 @@ async function loadIconContentCounts() {
 
     (personaRes.data || []).forEach(function(row) {
       const icon = (allIcons || []).find(function(i) { return i.name === row.icon_name; });
-      if (icon && row.persona_data) {
+      if (!icon) return;
+      if (row.persona_data) {
         icon.persona_data = Object.assign({}, icon.persona_data || {}, row.persona_data);
+      }
+      if (row.character_data) {
+        icon.character_data = Object.assign({}, icon.character_data || {}, row.character_data);
       }
     });
 
