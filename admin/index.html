@@ -3127,17 +3127,33 @@ function renderIconsPane() {
 async function loadIconContentCounts() {
   if (typeof sb === 'undefined' || !sb) return;
   try {
-    // Group by icon_name. icon_id is unreliable across the content table
-    // (Sloan exists under both '1' and 'sloan'; some rows have null).
-    // icon_name is populated on virtually every row and matches
-    // allIcons[i].name on the card-side lookup.
-    const { data } = await sb.from('content').select('icon_name').limit(2000);
+    // Two parallel fetches:
+    //   1. content rows for image counts, grouped by icon_name. icon_id
+    //      is unreliable in the content table (Sloan splits across '1'
+    //      and 'sloan'; some rows have null icon_id).
+    //   2. personas rows for completion percentages. Without this merge,
+    //      getPersonaCompletion only sees seed data from icons-data.json
+    //      and edited personas show their seed-baseline percentage
+    //      instead of their actual completion.
+    const [contentRes, personaRes] = await Promise.all([
+      sb.from('content').select('icon_name').limit(2000),
+      sb.from('personas').select('icon_name, persona_data')
+    ]);
+
     const counts = {};
-    (data || []).forEach(function(r) {
+    (contentRes.data || []).forEach(function(r) {
       if (!r.icon_name) return;
       counts[r.icon_name] = (counts[r.icon_name] || 0) + 1;
     });
     iconContentCounts = counts;
+
+    (personaRes.data || []).forEach(function(row) {
+      const icon = (allIcons || []).find(function(i) { return i.name === row.icon_name; });
+      if (icon && row.persona_data) {
+        icon.persona_data = Object.assign({}, icon.persona_data || {}, row.persona_data);
+      }
+    });
+
     if (document.getElementById('pane-icons')?.classList.contains('active')) {
       renderIconsPane();
     }
