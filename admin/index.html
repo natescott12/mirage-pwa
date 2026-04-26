@@ -2717,13 +2717,14 @@ function hydrateAuthenticatedApp(user) {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').classList.add('visible');
   initSupabase();
-  // Warm icon image counts now that sb is initialized so cards in any
-  // pane render with real numbers on first open. Cheap fetch (one
-  // SELECT, capped at 2000 rows). The window.load fallback no-ops
-  // pre-login because sb is null then.
-  if (typeof loadIconContentCounts === 'function') loadIconContentCounts();
   loadDashboard();
-  loadIcons();
+  // Warm icon image counts + persona_data merge AFTER loadIcons() builds
+  // allIcons. The merge in loadIconContentCounts depends on allIcons
+  // being populated; if it fires earlier the allIcons.find() returns
+  // nothing and every persona stays at seed-baseline completion.
+  loadIcons().then(function() {
+    if (typeof loadIconContentCounts === 'function') loadIconContentCounts();
+  });
   applyUserVisibility(user);
   if (typeof initAndie === 'function') initAndie();
   applyPaneHash();
