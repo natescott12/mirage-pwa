@@ -6965,6 +6965,12 @@ window.addEventListener('load', () => {
   mergeLocalPersonas();
   document.getElementById('login-user').focus();
   loadTechReference();
+  // Pre-warm icon image counts so Persona Builder + Icons pane cards
+  // render with real numbers regardless of which pane the user opens
+  // first. Fires after Supabase init is wired by initSupabase.
+  if (typeof loadIconContentCounts === 'function') {
+    loadIconContentCounts();
+  }
 });
 </script>
 </body>
