@@ -1927,7 +1927,7 @@ button { color: inherit; }
             </div>
             <div style="display:flex;gap:12px;align-items:flex-start">
               <div id="persona-progress-label" style="font-size:12px;color:var(--ink-dim);padding-top:9px"></div>
-              <a href="/studio" class="persona-studio-link">Icon Studio →</a>
+              <a id="persona-studio-link" href="/studio" class="persona-studio-link">Icon Studio →</a>
             </div>
           </div>
 
@@ -3514,7 +3514,7 @@ function togglePersonaLock(iconName) {
   const isLocked = btn.dataset.locked === 'true';
   const nowLocked = !isLocked;
   btn.dataset.locked = String(nowLocked);
-  btn.textContent = nowLocked ? '🔒 LOCKED' : '🔓 UNLOCKED';
+  btn.textContent = nowLocked ? '🔒' : '🔓';
   if (saveBtn) saveBtn.disabled = nowLocked;
 
   if (typeof sb !== 'undefined' && sb && iconName) {
@@ -3535,6 +3535,11 @@ function togglePersonaLock(iconName) {
 // so the form always reflects what's actually in Supabase.
 function refreshPersonaFromSupabase(iconName, opts) {
   if (!sb || !iconName) return;
+  // Re-target the Icon Studio link so it deep-links into Studio with
+  // the currently-loaded icon pre-selected. Static href was '/studio'
+  // which dropped users on whatever Studio's default selectedIcon was.
+  const studioLink = document.getElementById('persona-studio-link');
+  if (studioLink) studioLink.href = '/studio?icon=' + encodeURIComponent(iconName);
   opts = opts || {};
   const archetypeDefault = opts.archetype || '';
   const sloanIconId = opts.iconId;
@@ -3562,7 +3567,7 @@ function refreshPersonaFromSupabase(iconName, opts) {
     if (sp.locked) {
       const lockBtn = document.getElementById('lock-btn');
       const saveBtnEl = document.getElementById('save-btn');
-      if (lockBtn) { lockBtn.dataset.locked = 'true'; lockBtn.textContent = '🔒 LOCKED'; }
+      if (lockBtn) { lockBtn.dataset.locked = 'true'; lockBtn.textContent = '🔒'; }
       if (saveBtnEl) saveBtnEl.disabled = true;
     }
 
