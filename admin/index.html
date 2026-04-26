@@ -3419,6 +3419,7 @@ function loadPersonaForIcon(idx) {
   const p = wrapper.persona_data || wrapper;
   const iconId = wrapper.id || wrapper.name || wrapper.iconName;
   window.currentIconId = iconId;
+  try { sessionStorage.setItem('lastIconId', String(iconId)); } catch (_) {}
 
   // Ensure in allIcons
   if (typeof allIcons !== 'undefined') {
@@ -4152,7 +4153,8 @@ function savePersona() {
     }
   }
   if (!currentIconId) {
-    currentIconId = (document.getElementById('f-name') || {}).value || null;
+    currentIconId = sessionStorage.getItem('lastIconId') ||
+      (document.getElementById('f-name') || {}).value || null;
   }
   if (!currentIconId) { toast('Select an icon first.'); return; }
 
@@ -6751,6 +6753,10 @@ function clRevert() {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 window.addEventListener('load', () => {
+  try {
+    const lastId = sessionStorage.getItem('lastIconId');
+    if (lastId) window.currentIconId = lastId;
+  } catch (_) {}
   mergeLocalPersonas();
   document.getElementById('login-user').focus();
   loadTechReference();
