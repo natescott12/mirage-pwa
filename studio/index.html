@@ -2830,6 +2830,26 @@ window.addEventListener('load', function() {
   setTimeout(function() { migrateSloanImages(); }, 3000);
 });
 
+// Back-to-admin link, only when Studio was deep-linked from a persona
+// (admin/index.html rewrites the Icon Studio header link to
+// /studio?icon=<name>). Plain text, top-left, no chrome.
+window.addEventListener('load', function() {
+  try {
+    const urlIcon = new URLSearchParams(window.location.search).get('icon');
+    if (!urlIcon) return;
+    const backLink = document.createElement('a');
+    backLink.href = '/admin#personas';
+    backLink.textContent = '← Icons';
+    backLink.style.cssText = 'position:fixed;top:16px;left:16px;z-index:1000;' +
+      'font-family:"Helvetica Neue",sans-serif;font-size:11px;' +
+      'color:rgba(255,255,255,0.45);text-decoration:none;' +
+      'letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;';
+    backLink.onmouseover = function() { this.style.color = 'rgba(255,255,255,0.9)'; };
+    backLink.onmouseout = function() { this.style.color = 'rgba(255,255,255,0.45)'; };
+    document.body.appendChild(backLink);
+  } catch (_) {}
+});
+
 // ── WARDROBE OVERHAUL ────────────────────────────────────────────────────────
 const WARDROBE_DEFAULTS = {
   tops: [
