@@ -2735,25 +2735,29 @@ window.addEventListener('load', function() {
       } catch(e) { console.warn('Pull sync failed', e); }
     });
 
-    // Also push any local-only personas up to Supabase
-    try {
-      var personas = JSON.parse(localStorage.getItem('mirage_personas_v1') || '{}');
-      var chars = JSON.parse(localStorage.getItem('mirage_characters_v1') || '{}');
-      Object.keys(personas).forEach(function(id) {
-        var p = personas[id];
-        if (!p || !p.name) return;
-        window.sbStudio.from('personas').upsert({
-          icon_name: p.name,
-          icon_id: String(id),
-          persona_data: p.persona_data || {},
-          character_data: chars[id] || {},
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'icon_name' }).then(function(r) {
-          if (!r.error) console.log('Synced to Supabase:', p.name);
-          else console.warn('Sync error for', p.name, r.error);
-        });
-      });
-    } catch(e) { console.warn('Push sync failed', e); }
+    // DISABLED 2026-04-26 — bulk push-up sync clobbering Supabase
+    // with stale localStorage data. localStorage is now a read cache only.
+    // Supabase is the source of truth. Do not re-enable without adding
+    // an updated_at recency guard that compares local vs remote timestamps.
+    //
+    // try {
+    //   var personas = JSON.parse(localStorage.getItem('mirage_personas_v1') || '{}');
+    //   var chars = JSON.parse(localStorage.getItem('mirage_characters_v1') || '{}');
+    //   Object.keys(personas).forEach(function(id) {
+    //     var p = personas[id];
+    //     if (!p || !p.name) return;
+    //     window.sbStudio.from('personas').upsert({
+    //       icon_name: p.name,
+    //       icon_id: String(id),
+    //       persona_data: p.persona_data || {},
+    //       character_data: chars[id] || {},
+    //       updated_at: new Date().toISOString()
+    //     }, { onConflict: 'icon_name' }).then(function(r) {
+    //       if (!r.error) console.log('Synced to Supabase:', p.name);
+    //       else console.warn('Sync error for', p.name, r.error);
+    //     });
+    //   });
+    // } catch(e) { console.warn('Push sync failed', e); }
   }, 2000);
 });
 
