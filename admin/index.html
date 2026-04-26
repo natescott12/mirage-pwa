@@ -3025,7 +3025,10 @@ async function loadPersonasFromJSON() {
 function getPersonaCompletion(icon) {
   if (!icon.persona_data) return 0;
   const p = icon.persona_data;
-  const fields = ['tagline','voice','backstory','aesthetic','interests','fears','desires','communication_style','eye_color','hair_color','hair_length','skin_tone','build','age'];
+  // Persona-builder fields plus seed fields from icons-data.json so an
+  // unedited icon shows meaningful progress instead of the flat 7% that
+  // came from only `aesthetic` matching across the seed.
+  const fields = ['tagline','voice','backstory','aesthetic','interests','fears','desires','communication_style','eye_color','hair_color','hair_length','skin_tone','build','age','vibe','setting','style','energy','hair','color'];
   const filled = fields.filter(f => p[f] && p[f].toString().trim().length > 0);
   return Math.round((filled.length / fields.length) * 100);
 }
@@ -3102,7 +3105,7 @@ function renderIconsPane() {
   grid.innerHTML = list.map(function(icon) {
     const pct = getPersonaCompletion(icon);
     const status = iconPaneStatus(icon);
-    const count = iconContentCounts[icon.id] || 0;
+    const count = iconContentCounts[icon.name] || 0;
     const safeId = String(icon.id).replace(/\x27/g, "\\x27");
     return '<div class="icons-pane-card" onclick="openPersona(\'' + safeId + '\')">' +
       '<span class="ipc-dot ' + status + '" title="' + status + '"></span>' +
@@ -3119,11 +3122,15 @@ function renderIconsPane() {
 async function loadIconContentCounts() {
   if (typeof sb === 'undefined' || !sb) return;
   try {
-    const { data } = await sb.from('content').select('icon_id').limit(2000);
+    // Group by icon_name. icon_id is unreliable across the content table
+    // (Sloan exists under both '1' and 'sloan'; some rows have null).
+    // icon_name is populated on virtually every row and matches
+    // allIcons[i].name on the card-side lookup.
+    const { data } = await sb.from('content').select('icon_name').limit(2000);
     const counts = {};
     (data || []).forEach(function(r) {
-      if (!r.icon_id) return;
-      counts[r.icon_id] = (counts[r.icon_id] || 0) + 1;
+      if (!r.icon_name) return;
+      counts[r.icon_name] = (counts[r.icon_name] || 0) + 1;
     });
     iconContentCounts = counts;
     if (document.getElementById('pane-icons')?.classList.contains('active')) {
@@ -3205,7 +3212,7 @@ function renderPersonaList() {
   grid.innerHTML = list.map(function(icon) {
     const pct = getPersonaCompletion(icon);
     const status = iconPaneStatus(icon);
-    const count = iconContentCounts[icon.id] || 0;
+    const count = iconContentCounts[icon.name] || 0;
     const safeId = String(icon.id).replace(/\x27/g, "\\x27");
     return '<div class="icons-pane-card" onclick="openPersona(\'' + safeId + '\')">' +
       '<span class="ipc-dot ' + status + '" title="' + status + '"></span>' +
@@ -6933,6 +6940,13 @@ function clRevert() {
     // image-count reflects Supabase reality.
     if (name === 'icons') {
       if (typeof renderIconsPane === 'function') renderIconsPane();
+      if (typeof loadIconContentCounts === 'function' && !Object.keys(iconContentCounts || {}).length) {
+        loadIconContentCounts();
+      }
+    }
+    // Persona Builder list also displays per-card image counts; trigger
+    // the same fetch on first visit so cards aren't all '0 images'.
+    if (name === 'personas') {
       if (typeof loadIconContentCounts === 'function' && !Object.keys(iconContentCounts || {}).length) {
         loadIconContentCounts();
       }
