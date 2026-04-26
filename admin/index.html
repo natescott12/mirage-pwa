@@ -3160,7 +3160,22 @@ function renderPersonaList() {
   // Merge allIcons (icons table / personas.json) with any extras in
   // window.__personas (Supabase personas table) that don't already exist
   // in allIcons by name. Without this merge the grid renders a persona
-  // that the search bar can't actually find.
+  // that the search bar can't actually find — and openPersona can't
+  // resolve the click because allIcons is the source of truth there too.
+  Object.values(window.__personas || {}).forEach(function(p) {
+    if (!p) return;
+    const name = p.name || p.iconName;
+    if (name && !allIcons.find(function(i) { return i.name === name; })) {
+      allIcons.push({
+        id: p.id || p.icon_id || name,
+        name: name,
+        archetype: p.archetype || '',
+        persona_data: p.persona_data || {},
+        status: 'inactive',
+        _personaIdx: p._idx
+      });
+    }
+  });
   const searchIndex = [
     ...(allIcons || []),
     ...Object.values(window.__personas || {}).filter(function(p) {
@@ -4194,15 +4209,23 @@ function savePersona() {
 
   // Save to Supabase if available
   if (sb) {
+    // icon_id must be numeric or null. After 5df4ce0, currentIconId can
+    // resolve to a name string ("Vera") via the wrapper.name fallback in
+    // loadPersonaForIcon. Stamping that as icon_id collides with the
+    // numeric/null shape Supabase expects and causes the upsert to hang.
+    const iconIdVal = (typeof currentIconId === 'number' ||
+      (typeof currentIconId === 'string' && /^\d+$/.test(currentIconId)))
+      ? String(currentIconId)
+      : null;
     console.log('[savePersona] upsert payload:', {
       icon_name: nameVal,
-      icon_id: String(currentIconId),
+      icon_id: iconIdVal,
       user: (typeof getAdminUser === 'function') ? getAdminUser() : 'fn not found'
     });
     // Upsert — works for both existing icons (Luna/Vera/Aria) and new ones (Sloan etc)
     sb.from('personas').upsert({
       icon_name: nameVal,
-      icon_id: String(currentIconId),
+      icon_id: iconIdVal,
       persona_data: persona_data,
       updated_at: new Date().toISOString()
     }, { onConflict: 'icon_name' }).then(function(result) {
