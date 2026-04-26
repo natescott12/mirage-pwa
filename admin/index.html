@@ -3691,13 +3691,16 @@ function loadPersonaForIconByName(iconName) {
       '<span class="icon-status-badge ' + (isActive ? 'in-progress' : 'draft') + '">' + currentStatus.toUpperCase() + '</span>' +
       '<span class="activate-bar-name">' + iconObj.name + '</span>' +
     '</div>' +
-    '<button style="background:' + (isActive ? 'transparent' : 'var(--accent)') + ';color:' + (isActive ? 'var(--ink-mid)' : '#fff') + ';border:1px solid ' + (isActive ? 'rgba(255,255,255,0.18)' : 'var(--accent)') + ';padding:7px 14px;border-radius:4px;font-family: var(--font);font-size:12px;font-weight: var(--weight-medium);cursor:pointer;" ' +
-      'data-iconid="' + iconId + '" ' +
-      'data-action="' + (isActive ? 'deactivate' : 'activate') + '" ' +
-      'onclick="toggleIconActivation(this)">' +
-      (isActive ? 'Deactivate' : '✓ Activate Icon') +
-    '</button>' +
-    '<button onclick="togglePersonaLock(\'' + iconObj.name.replace(/'/g, '\\\'') + '\')" id="lock-btn" data-locked="false" style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:var(--ink-mid);padding:6px 12px;font-size:11px;cursor:pointer;letter-spacing:0.05em;margin-left:8px;">🔓 UNLOCKED</button>' +
+    '<div style="display:flex;align-items:center;gap:8px;">' +
+      '<button onclick="togglePersonaLock(\'' + iconObj.name.replace(/'/g, '\\\'') + '\')" id="lock-btn" data-locked="false" title="Lock persona to prevent accidental edits" ' +
+        'style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:var(--ink-mid);width:32px;height:32px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;border-radius:4px;">🔓</button>' +
+      '<button style="background:' + (isActive ? 'transparent' : 'var(--accent)') + ';color:' + (isActive ? 'var(--ink-mid)' : '#fff') + ';border:1px solid ' + (isActive ? 'rgba(255,255,255,0.18)' : 'var(--accent)') + ';padding:7px 14px;border-radius:4px;font-family: var(--font);font-size:12px;font-weight: var(--weight-medium);cursor:pointer;" ' +
+        'data-iconid="' + iconId + '" ' +
+        'data-action="' + (isActive ? 'deactivate' : 'activate') + '" ' +
+        'onclick="toggleIconActivation(this)">' +
+        (isActive ? 'Deactivate' : '✓ Activate Icon') +
+      '</button>' +
+    '</div>' +
   '</div>';
 
   editor.innerHTML = activateBar + buildPersonaForm(p, iconObj);
@@ -3766,13 +3769,16 @@ function loadPersonaForIcon(idx) {
       '<span class="icon-status-badge ' + (isActive ? 'in-progress' : 'draft') + '">' + currentStatus.toUpperCase() + '</span>' +
       '<span class="activate-bar-name">' + iconObj.name + '</span>' +
     '</div>' +
-    '<button style="background:' + (isActive ? 'transparent' : 'var(--accent)') + ';color:' + (isActive ? 'var(--ink-mid)' : '#fff') + ';border:1px solid ' + (isActive ? 'rgba(255,255,255,0.18)' : 'var(--accent)') + ';padding:7px 14px;border-radius:4px;font-family: var(--font);font-size:12px;font-weight: var(--weight-medium);cursor:pointer;" ' +
-      'data-iconid="' + iconId + '" ' +
-      'data-action="' + (isActive ? 'deactivate' : 'activate') + '" ' +
-      'onclick="toggleIconActivation(this)">' +
-      (isActive ? 'Deactivate' : '\u2713 Activate Icon') +
-    '</button>' +
-    '<button onclick="togglePersonaLock(\'' + iconObj.name.replace(/'/g, '\\\'') + '\')" id="lock-btn" data-locked="false" style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:var(--ink-mid);padding:6px 12px;font-size:11px;cursor:pointer;letter-spacing:0.05em;margin-left:8px;">\ud83d\udd13 UNLOCKED</button>' +
+    '<div style="display:flex;align-items:center;gap:8px;">' +
+      '<button onclick="togglePersonaLock(\'' + iconObj.name.replace(/'/g, '\\\'') + '\')" id="lock-btn" data-locked="false" title="Lock persona to prevent accidental edits" ' +
+        'style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:var(--ink-mid);width:32px;height:32px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;border-radius:4px;">\ud83d\udd13</button>' +
+      '<button style="background:' + (isActive ? 'transparent' : 'var(--accent)') + ';color:' + (isActive ? 'var(--ink-mid)' : '#fff') + ';border:1px solid ' + (isActive ? 'rgba(255,255,255,0.18)' : 'var(--accent)') + ';padding:7px 14px;border-radius:4px;font-family: var(--font);font-size:12px;font-weight: var(--weight-medium);cursor:pointer;" ' +
+        'data-iconid="' + iconId + '" ' +
+        'data-action="' + (isActive ? 'deactivate' : 'activate') + '" ' +
+        'onclick="toggleIconActivation(this)">' +
+        (isActive ? 'Deactivate' : '\u2713 Activate Icon') +
+      '</button>' +
+    '</div>' +
   '</div>';
 
   editor.innerHTML = activateBar + buildPersonaForm(p, iconObj);
