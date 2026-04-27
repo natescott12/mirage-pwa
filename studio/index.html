@@ -2833,6 +2833,45 @@ window.addEventListener('load', function() {
   setTimeout(function() { migrateSloanImages(); }, 3000);
 });
 
+// ?icon= deep-link Supabase fallback. The init-time URL handler at
+// the top sets __defaultIcon for icons in ICONS_DATA. Icons that exist
+// only in Supabase (Celeste, anything Anna built in admin but not
+// seeded in icons-data.json) miss that path and Studio falls back to
+// the user default. This handler picks up the slack: if no seed
+// match, fetch from Supabase by name, synthesize a stub ICONS_DATA
+// entry, and call selectIcon to honor the URL param.
+window.addEventListener('load', function() {
+  try {
+    const urlIcon = new URLSearchParams(window.location.search).get('icon');
+    if (!urlIcon) return;
+    const match = ICONS_DATA.find(function(i) {
+      return i.name && i.name.toLowerCase() === urlIcon.toLowerCase();
+    });
+    if (match) {
+      selectIcon(match.id);
+      return;
+    }
+    if (typeof window.sbStudio === 'undefined' || !window.sbStudio) return;
+    window.sbStudio.from('personas')
+      .select('icon_name, persona_data, character_data')
+      .ilike('icon_name', urlIcon)
+      .single()
+      .then(function(result) {
+        if (!result.data) return;
+        const synthId = 'supabase-' + result.data.icon_name.toLowerCase();
+        const stub = {
+          id: synthId,
+          name: result.data.icon_name,
+          archetype: (result.data.persona_data || {}).archetype || '',
+          persona_data: result.data.persona_data || {},
+          character_data: result.data.character_data || {}
+        };
+        ICONS_DATA.push(stub);
+        if (typeof selectIcon === 'function') selectIcon(synthId);
+      });
+  } catch (_) {}
+});
+
 // Back-to-admin link, only when Studio was deep-linked from a persona
 // (admin/index.html rewrites the Icon Studio header link to
 // /studio?icon=<name>). Plain text, top-left, no chrome.
