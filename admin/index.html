@@ -2568,6 +2568,13 @@ button { color: inherit; }
 // ── CONFIG ──────────────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://gmyenvnfuailickepvax.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
+// Content Library aliases — declared up here next to the canonical
+// SUPABASE_* constants so any function that fires before the original
+// site (around line 6434) doesn't trip over a temporal-dead-zone
+// ReferenceError. typeof-guard kept as a safety net in case future
+// refactors move SUPABASE_URL.
+const CL_SUPA_URL = (typeof SUPABASE_URL !== 'undefined') ? SUPABASE_URL : 'https://gmyenvnfuailickepvax.supabase.co';
+const CL_SUPA_KEY = (typeof SUPABASE_ANON_KEY !== 'undefined') ? SUPABASE_ANON_KEY : 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
 
 // Simple admin credentials (change password!)
 const ADMIN_USERS = {
@@ -6431,8 +6438,9 @@ const CL_COLOR_DEFS = [
   { key:'hue',  label:'Hue',  min:-100, max:100 },
 ];
 
-const CL_SUPA_URL = (typeof SUPABASE_URL !== 'undefined') ? SUPABASE_URL : 'https://gmyenvnfuailickepvax.supabase.co';
-const CL_SUPA_KEY = (typeof SUPABASE_ANON_KEY !== 'undefined') ? SUPABASE_ANON_KEY : 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
+// CL_SUPA_URL / CL_SUPA_KEY are declared up next to SUPABASE_URL /
+// SUPABASE_ANON_KEY (around line 2576) so they're available before
+// any pane-activation or content-library handler can fire.
 
 // Identity 4×5 color matrix — lerp target for intensity blend.
 const CL_IDENTITY_MATRIX = [
