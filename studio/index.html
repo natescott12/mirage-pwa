@@ -283,9 +283,10 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
 
   /* SIDEBAR — copied verbatim from admin/index.html. Studio body uses
      DM Sans 300, so the descendant font-family / font-weight override
-     below pins the rail to Afacad 400 so rendering matches admin pixel
-     for pixel. Do not add Studio-specific rules to these selectors;
-     keep any deviations in .studio-main-row or a separate block. */
+     below pins the rail to var(--font) (Helvetica Neue) so rendering
+     matches admin pixel for pixel. Do not add Studio-specific rules
+     to these selectors; keep any deviations in .studio-main-row or
+     a separate block. */
   .studio-main-row { display: flex; flex: 1; overflow: hidden; min-height: 0; background: var(--bg); }
   .sidebar { font-family: var(--font); font-weight: var(--weight-regular); }
   .sidebar a.sidebar-item { text-decoration: none; }
