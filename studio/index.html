@@ -1021,7 +1021,7 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
     <div class="topbar-wordmark">MIRAGE</div>
     <div class="topbar-sep" aria-hidden="true"></div>
     <div class="topbar-section" id="topbar-section">Icon Studio</div>
-    <a href="/admin#personas" style="font-family:var(--font);font-size:12px;color:rgba(255,255,255,0.4);text-decoration:none;letter-spacing:0.02em;margin-left:16px;transition:color 0.12s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.4)'">← Persona Builder</a>
+    <a href="/admin#personas" onclick="this.href='/admin#personas'+(window.selectedIcon&&window.selectedIcon.name?'?icon='+encodeURIComponent(window.selectedIcon.name):'')" style="font-family:var(--font);font-size:12px;color:rgba(255,255,255,0.4);text-decoration:none;letter-spacing:0.02em;margin-left:16px;transition:color 0.12s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.4)'">← Persona Builder</a>
   </div>
   <button class="topbar-logout" type="button" onclick="studioSignOut()">Sign out</button>
 </div>

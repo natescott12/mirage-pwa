@@ -2869,10 +2869,33 @@ const PANE_HASH_ALIASES = {
 function applyPaneHash() {
   const raw = (window.location.hash || '').replace(/^#/, '').trim();
   if (!raw) return;
-  const hash = PANE_HASH_ALIASES[raw] || raw;
+  // Hash may carry deep-link query params (e.g. #personas?icon=Sloan).
+  // Split before alias lookup so '?icon=...' doesn't break pane resolution.
+  const qIdx = raw.indexOf('?');
+  const hashPart = qIdx >= 0 ? raw.slice(0, qIdx) : raw;
+  const queryPart = qIdx >= 0 ? raw.slice(qIdx + 1) : '';
+  const hash = PANE_HASH_ALIASES[hashPart] || hashPart;
   if (document.getElementById('pane-' + hash) && typeof showPane === 'function') {
     showPane(hash);
   }
+  if (hash === 'personas' && queryPart) {
+    try {
+      const iconName = new URLSearchParams(queryPart).get('icon');
+      if (iconName) _openPersonaByNameFromHash(iconName, 20);
+    } catch (_) {}
+  }
+}
+
+// Polls for allIcons to populate, then routes into the persona form for
+// the named icon. Backs off the studio back-link round-trip so deep-links
+// land on the right form even on a cold-start admin tab.
+function _openPersonaByNameFromHash(iconName, attempts) {
+  if (typeof allIcons === 'undefined' || !allIcons || !allIcons.length) {
+    if (attempts > 0) setTimeout(function() { _openPersonaByNameFromHash(iconName, attempts - 1); }, 200);
+    return;
+  }
+  const icon = allIcons.find(function(i) { return i.name && i.name.toLowerCase() === iconName.toLowerCase(); });
+  if (icon && typeof openPersona === 'function') openPersona(icon.id);
 }
 
 // If the user navigates via a hash change (Studio link, browser back/forward,
