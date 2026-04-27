@@ -1558,6 +1558,24 @@ button { color: inherit; }
       font-weight: var(--weight-medium);
       margin-right: auto;
     }
+    /* Destructive variant for the bulk-delete button. .btn-primary's
+       white fill rendered as white-on-light against the select bar's
+       --sidebar-bg, leaving the label invisible. Dark red fill +
+       warm-off-white text reads clearly and signals consequence. */
+    #cl-delete-btn {
+      padding: 7px 14px;
+      background: #8b1a1a;
+      color: #f6eaea;
+      border: none;
+      border-radius: 4px;
+      font-family: var(--font);
+      font-size: var(--text-xs);
+      font-weight: var(--weight-medium);
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    #cl-delete-btn:hover { background: #a52525; }
 
     /* Lightbox — full-screen preview centered on a black backdrop.
        Arrow buttons float at the sides, close button top-right,
@@ -2158,7 +2176,7 @@ button { color: inherit; }
         <div class="cl-select-bar" id="cl-select-bar" style="display:none">
           <span class="cl-select-count" id="cl-select-count">0 selected</span>
           <button class="btn-ghost btn-sm" onclick="clClearSelection()">Clear</button>
-          <button class="btn-primary btn-sm" onclick="clDeleteSelected()">Delete Selected</button>
+          <button id="cl-delete-btn" class="btn-sm" onclick="clDeleteSelected()">Delete Selected</button>
         </div>
 
         <!-- Lightbox — full-screen preview. Click backdrop or X to
