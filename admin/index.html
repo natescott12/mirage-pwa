@@ -2568,13 +2568,6 @@ button { color: inherit; }
 // ── CONFIG ──────────────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://gmyenvnfuailickepvax.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
-// Content Library aliases — declared up here next to the canonical
-// SUPABASE_* constants so any function that fires before the original
-// site (around line 6434) doesn't trip over a temporal-dead-zone
-// ReferenceError. typeof-guard kept as a safety net in case future
-// refactors move SUPABASE_URL.
-const CL_SUPA_URL = (typeof SUPABASE_URL !== 'undefined') ? SUPABASE_URL : 'https://gmyenvnfuailickepvax.supabase.co';
-const CL_SUPA_KEY = (typeof SUPABASE_ANON_KEY !== 'undefined') ? SUPABASE_ANON_KEY : 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
 
 // Simple admin credentials (change password!)
 const ADMIN_USERS = {
@@ -6438,10 +6431,6 @@ const CL_COLOR_DEFS = [
   { key:'hue',  label:'Hue',  min:-100, max:100 },
 ];
 
-// CL_SUPA_URL / CL_SUPA_KEY are declared up next to SUPABASE_URL /
-// SUPABASE_ANON_KEY (around line 2576) so they're available before
-// any pane-activation or content-library handler can fire.
-
 // Identity 4×5 color matrix — lerp target for intensity blend.
 const CL_IDENTITY_MATRIX = [
   1, 0, 0, 0, 0,
@@ -6738,8 +6727,8 @@ function clSeedPresetFilters() {
 // if the table is missing, empty, or unreachable.
 async function clFetchPresets() {
   try {
-    const r = await fetch(CL_SUPA_URL + '/rest/v1/studio_filters?select=slug,label,sort_order,definition&order=sort_order.asc', {
-      headers: { 'apikey': CL_SUPA_KEY, 'Authorization': 'Bearer ' + CL_SUPA_KEY }
+    const r = await fetch(SUPABASE_URL + '/rest/v1/studio_filters?select=slug,label,sort_order,definition&order=sort_order.asc', {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
     });
     if (!r.ok) return;
     const rows = await r.json();
@@ -6770,11 +6759,11 @@ async function clLoadBrowse() {
   const grid = document.getElementById('cl-grid');
   if (!grid) return;
   grid.innerHTML = '<div class="cl-empty">Loading…</div>';
-  const url = CL_SUPA_URL + '/rest/v1/content?select=id,image_url,icon_id,scene,created_at,is_published,edited_from,edit_preset,edit_adjustments,storage_path&order=created_at.desc&limit=500';
+  const url = SUPABASE_URL + '/rest/v1/content?select=id,image_url,icon_id,scene,created_at,is_published,edited_from,edit_preset,edit_adjustments,storage_path&order=created_at.desc&limit=500';
   console.log('[content-library] fetch →', url);
   try {
     const r = await fetch(url, {
-      headers: { 'apikey': CL_SUPA_KEY, 'Authorization': 'Bearer ' + CL_SUPA_KEY }
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
     });
     console.log('[content-library] response status', r.status);
     if (!r.ok) {
@@ -6969,15 +6958,15 @@ async function clDeleteSelected() {
   if (!window.confirm(msg)) return;
   const ids = Array.from(clSelected);
   const headers = {
-    'apikey': CL_SUPA_KEY,
-    'Authorization': 'Bearer ' + CL_SUPA_KEY,
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
     'Prefer': 'return=minimal'
   };
   const results = await Promise.all(ids.map(async function(id) {
     const item = clItems.find(function(x) { return String(x.id) === String(id); });
     const path = clItemStoragePath(item);
     // Row delete first — table is the source of truth for the UI.
-    const rowR = await fetch(CL_SUPA_URL + '/rest/v1/content?id=eq.' + encodeURIComponent(id), {
+    const rowR = await fetch(SUPABASE_URL + '/rest/v1/content?id=eq.' + encodeURIComponent(id), {
       method: 'DELETE', headers
     }).catch(function(err){ return { ok: false, status: 0, _err: err && err.message }; });
     // Storage delete. Best-effort: a 4xx here doesn't fail the whole op
@@ -6985,7 +6974,7 @@ async function clDeleteSelected() {
     // the worst case, and that's the path we already had pre-fix).
     let storageOk = true;
     if (path) {
-      const storeR = await fetch(CL_SUPA_URL + '/storage/v1/object/content/' + encodeURIComponent(path), {
+      const storeR = await fetch(SUPABASE_URL + '/storage/v1/object/content/' + encodeURIComponent(path), {
         method: 'DELETE', headers
       }).catch(function(){ return { ok: false }; });
       storageOk = !!(storeR && storeR.ok);
@@ -7212,18 +7201,18 @@ async function clSaveEdited() {
     // Upload to the `content` storage bucket with a deterministic filename.
     const iconSlug = (clCurrent._iconName || 'icon').toLowerCase().replace(/\s+/g,'-');
     const filename = iconSlug + '_edited_' + Date.now() + '.jpg';
-    const uploadRes = await fetch(CL_SUPA_URL + '/storage/v1/object/content/' + encodeURIComponent(filename), {
+    const uploadRes = await fetch(SUPABASE_URL + '/storage/v1/object/content/' + encodeURIComponent(filename), {
       method: 'POST',
       headers: {
-        'apikey': CL_SUPA_KEY,
-        'Authorization': 'Bearer ' + CL_SUPA_KEY,
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
         'Content-Type': 'image/jpeg',
         'x-upsert': 'true'
       },
       body: blob
     });
     if (!uploadRes.ok) throw new Error('Upload HTTP ' + uploadRes.status);
-    const publicUrl = CL_SUPA_URL + '/storage/v1/object/public/content/' + encodeURIComponent(filename);
+    const publicUrl = SUPABASE_URL + '/storage/v1/object/public/content/' + encodeURIComponent(filename);
     // Insert a new row alongside the original, linking via edited_from.
     const insertBody = {
       image_url: publicUrl,
@@ -7235,11 +7224,11 @@ async function clSaveEdited() {
       is_published: false,
       created_at: new Date().toISOString()
     };
-    const insertRes = await fetch(CL_SUPA_URL + '/rest/v1/content', {
+    const insertRes = await fetch(SUPABASE_URL + '/rest/v1/content', {
       method: 'POST',
       headers: {
-        'apikey': CL_SUPA_KEY,
-        'Authorization': 'Bearer ' + CL_SUPA_KEY,
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
         'Content-Type': 'application/json',
         'Prefer': 'return=representation'
       },
@@ -7251,11 +7240,11 @@ async function clSaveEdited() {
       // retry with a minimal payload so at least the edited image lands.
       if (/edited_from|edit_preset|edit_adjustments|column/i.test(body)) {
         const minimal = { image_url: publicUrl, icon_id: clCurrent.icon_id || null, scene: clCurrent.scene || null, is_published: false, created_at: new Date().toISOString() };
-        const retry = await fetch(CL_SUPA_URL + '/rest/v1/content', {
+        const retry = await fetch(SUPABASE_URL + '/rest/v1/content', {
           method: 'POST',
           headers: {
-            'apikey': CL_SUPA_KEY,
-            'Authorization': 'Bearer ' + CL_SUPA_KEY,
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
             'Content-Type': 'application/json',
             'Prefer': 'return=representation'
           },
