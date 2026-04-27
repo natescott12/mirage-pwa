@@ -6966,21 +6966,44 @@ async function clDeleteSelected() {
     const item = clItems.find(function(x) { return String(x.id) === String(id); });
     const path = clItemStoragePath(item);
     // Row delete first — table is the source of truth for the UI.
+    // Override Prefer from minimal → representation so the response
+    // body returns the deleted row(s). Empty array = RLS silently
+    // blocked or no row matched, both of which look like 204 success
+    // under return=minimal but should be treated as failures here.
+    const rowHeaders = Object.assign({}, headers, { 'Prefer': 'return=representation' });
     const rowR = await fetch(SUPABASE_URL + '/rest/v1/content?id=eq.' + encodeURIComponent(id), {
-      method: 'DELETE', headers
+      method: 'DELETE', headers: rowHeaders
     }).catch(function(err){ return { ok: false, status: 0, _err: err && err.message }; });
+    let rowBody = null;
+    let rowsAffected = null;
+    if (rowR && typeof rowR.json === 'function') {
+      try { rowBody = await rowR.json(); } catch (_) { rowBody = null; }
+    }
+    if (Array.isArray(rowBody)) rowsAffected = rowBody.length;
+    const statusOk = rowR.status === 200 || rowR.status === 204;
+    const rowOk = statusOk && (rowsAffected === null ? true : rowsAffected > 0);
+    console.log('[content-library] delete row', id, 'status:', rowR.status, 'rowsAffected:', rowsAffected, 'ok:', rowOk);
+    if (!rowOk) {
+      console.warn('[content-library] row delete did not affect any rows', { id: id, status: rowR.status, body: rowBody });
+    }
     // Storage delete. Best-effort: a 4xx here doesn't fail the whole op
     // (orphaned object is recoverable; lost row plus orphan storage is
     // the worst case, and that's the path we already had pre-fix).
     let storageOk = true;
-    if (path) {
+    if (path && rowOk) {
       const storeR = await fetch(SUPABASE_URL + '/storage/v1/object/content/' + encodeURIComponent(path), {
         method: 'DELETE', headers
       }).catch(function(){ return { ok: false }; });
       storageOk = !!(storeR && storeR.ok);
+      console.log('[content-library] delete storage', path, 'status:', storeR && storeR.status, 'ok:', storageOk);
       if (!storageOk) console.warn('[content-library] storage delete failed for', path, storeR && storeR.status);
+    } else if (path && !rowOk) {
+      // Skip storage delete when the row delete didn't take — keeps
+      // storage and table in sync rather than orphaning the row by
+      // removing its file.
+      storageOk = false;
     }
-    return { id: id, ok: rowR.ok, status: rowR.status, storageOk: storageOk, path: path };
+    return { id: id, ok: rowOk, status: rowR.status, rowsAffected: rowsAffected, storageOk: storageOk, path: path };
   }));
   const failed = results.filter(function(r){ return !r.ok; });
   const orphaned = results.filter(function(r){ return r.ok && r.path && !r.storageOk; });
