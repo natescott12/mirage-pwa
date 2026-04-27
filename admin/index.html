@@ -2093,11 +2093,11 @@ button { color: inherit; }
           <div style="margin-top:36px;padding-top:24px;border-top:1px solid var(--border)">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
               <div style="font-size: var(--text-xs);letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim)">Image Audit</div>
-              <button id="sloan-audit-run" onclick="runSloanImageAudit()" style="background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:3px;font-family: var(--font);font-size: var(--text-xs);letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;min-width:120px">Run Audit</button>
+              <button id="sloan-audit-run" onclick="runSloanImageAudit()" style="background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:3px;font-family: var(--font);font-size: var(--text-xs);letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;min-width:120px">Refresh</button>
             </div>
             <div id="sloan-audit-summary" style="font-size: var(--text-xs);color:var(--ink-dim);margin-bottom:12px;min-height:14px"></div>
             <div id="sloan-audit-list">
-              <div style="padding:30px;text-align:center;color:var(--ink-dim);font-size:12px">Click Run Audit to load results.</div>
+              <div style="padding:30px;text-align:center;color:var(--ink-dim);font-size:12px">Click Refresh to load results.</div>
             </div>
           </div>
         </div>
@@ -5737,10 +5737,10 @@ async function deleteSloanLog(id) {
   }
 }
 
-// Pulls the latest image audit verdicts cached by the proxy
-// (runSloanAudit populates them; GET /sloan/audit/data serves them).
-// Renders each row with thumbnail, colored verdict pill, rationale,
-// and date — sorted newest first — plus a KEEP/FLAG/DISCARD tally.
+// Reads per-image verdicts written by the proxy's autoAuditImage flow
+// (every generated image gets a row in sloan_image_verdicts). Uppercases
+// the verdict and maps notes -> rationale so renderSloanAudit can stay
+// shape-agnostic.
 async function runSloanImageAudit() {
   const btn = document.getElementById('sloan-audit-run');
   const summary = document.getElementById('sloan-audit-summary');
@@ -5750,8 +5750,8 @@ async function runSloanImageAudit() {
   if (summary) summary.textContent = '';
   list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--ink-dim);font-size:12px">Loading audit data…</div>';
   try {
-    const r = await fetch(SLOAN_PROXY_URL + '/sloan/audit/data', {
-      headers: { 'x-mirage-key': MIRAGE_INTERNAL_KEY },
+    const r = await fetch(SUPABASE_URL + '/rest/v1/sloan_image_verdicts?icon_name=eq.Sloan&select=id,image_url,created_at,verdict,notes,icon_name&order=created_at.desc&limit=200', {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const data = await r.json();
@@ -5760,17 +5760,22 @@ async function runSloanImageAudit() {
       list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--ink-dim);font-size:12px">No audit data yet — trigger a run from the proxy.</div>';
       return;
     }
-    rows.sort(function(a, b) {
-      const ta = a && a.created_at ? Date.parse(a.created_at) : 0;
-      const tb = b && b.created_at ? Date.parse(b.created_at) : 0;
-      return tb - ta;
+    const mapped = rows.map(function(r) {
+      return {
+        id: r.id,
+        image_url: r.image_url,
+        created_at: r.created_at,
+        verdict: String(r.verdict || '').toUpperCase(),
+        rationale: r.notes || '',
+        icon_name: r.icon_name,
+      };
     });
-    renderSloanAudit(rows);
+    renderSloanAudit(mapped);
   } catch (e) {
     console.warn('[sloan-audit] load error', e);
     list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--accent);font-size:12px">Failed to load: ' + (e.message || e) + '</div>';
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'Run Audit'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Refresh'; }
   }
 }
 
