@@ -1164,6 +1164,36 @@ button { color: inherit; }
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
+    .sloanchat-msg--work {
+      background: transparent;
+      border: none;
+      padding: 24px 0;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      max-width: 100%;
+    }
+    .sloanchat-msg--work::before {
+      content: 'Mirage Sloan';
+      display: block;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 12px;
+      font-family: 'Helvetica Neue', sans-serif;
+    }
+    .sloanchat-msg--work .sloanchat-text {
+      font-family: 'Afacad', sans-serif;
+      font-size: 14px;
+      line-height: 1.7;
+      max-width: 560px;
+      color: rgba(255,255,255,0.85);
+      white-space: pre-wrap;
+    }
+    .sloanchat-msg--work .sloanchat-text br + br {
+      display: block;
+      margin-top: 16px;
+      content: '';
+    }
     .sloanchat-img {
       display: block;
       max-width: 100%;
@@ -5792,12 +5822,25 @@ function appendSloanChatMessage(who, text, explicitImageUrl, docName) {
   const el = document.createElement('div');
   el.className = 'sloanchat-msg ' + who;
 
+  // Detect Mirage Sloan (work mode) replies and apply a different
+  // visual treatment via --work modifier. The 'Mirage Sloan:' prefix
+  // becomes a ::before label and gets stripped from the rendered text.
+  // Casual replies pick up the --casual modifier (unstyled today,
+  // reserved for future). Only applies to sloan-role messages.
+  const isMirageSloan = who === 'sloan' && typeof text === 'string' && text.includes('Mirage Sloan:');
+  if (who === 'sloan') {
+    el.classList.add(isMirageSloan ? 'sloanchat-msg--work' : 'sloanchat-msg--casual');
+  }
+
   // Resolve image URL: explicit argument (from mediaUrl / imageUrl fields
   // in the response) wins. Otherwise sniff the message text itself —
   // historical messages in icon_chats sometimes embed a Supabase URL
   // directly in the assistant turn.
   let imageUrl = explicitImageUrl || null;
   let displayText = text || '';
+  if (isMirageSloan) {
+    displayText = displayText.replace(/\*?\*?Mirage Sloan:\*?\*?\s*/, '').trim();
+  }
   if (!imageUrl && displayText) {
     const sniffed = sloanChatExtractImageUrl(displayText);
     if (sniffed) {
