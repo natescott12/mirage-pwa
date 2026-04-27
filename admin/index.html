@@ -2086,6 +2086,20 @@ button { color: inherit; }
           <div id="sloanlog-list">
             <div style="padding:40px;text-align:center;color:var(--ink-dim);font-size:12px">Loading&hellip;</div>
           </div>
+
+          <!-- Image audit viewer — pulls cached results from
+               GET /sloan/audit/data on the proxy. Run-button triggers a
+               fresh fetch; the proxy itself decides when to recompute. -->
+          <div style="margin-top:36px;padding-top:24px;border-top:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+              <div style="font-size: var(--text-xs);letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim)">Image Audit</div>
+              <button id="sloan-audit-run" onclick="runSloanImageAudit()" style="background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:3px;font-family: var(--font);font-size: var(--text-xs);letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;min-width:120px">Run Audit</button>
+            </div>
+            <div id="sloan-audit-summary" style="font-size: var(--text-xs);color:var(--ink-dim);margin-bottom:12px;min-height:14px"></div>
+            <div id="sloan-audit-list">
+              <div style="padding:30px;text-align:center;color:var(--ink-dim);font-size:12px">Click Run Audit to load results.</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -5721,6 +5735,74 @@ async function deleteSloanLog(id) {
     console.warn('[sloanlog] delete error', e);
     sloanLogStatus('Delete failed: ' + (e.message || e), true);
   }
+}
+
+// Pulls the latest image audit verdicts cached by the proxy
+// (runSloanAudit populates them; GET /sloan/audit/data serves them).
+// Renders each row with thumbnail, colored verdict pill, rationale,
+// and date — sorted newest first — plus a KEEP/FLAG/DISCARD tally.
+async function runSloanImageAudit() {
+  const btn = document.getElementById('sloan-audit-run');
+  const summary = document.getElementById('sloan-audit-summary');
+  const list = document.getElementById('sloan-audit-list');
+  if (!list) return;
+  if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+  if (summary) summary.textContent = '';
+  list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--ink-dim);font-size:12px">Loading audit data…</div>';
+  try {
+    const r = await fetch(SLOAN_PROXY_URL + '/sloan/audit/data', {
+      headers: { 'x-mirage-key': MIRAGE_INTERNAL_KEY },
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    const rows = Array.isArray(data) ? data : [];
+    if (!rows.length) {
+      list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--ink-dim);font-size:12px">No audit data yet — trigger a run from the proxy.</div>';
+      return;
+    }
+    rows.sort(function(a, b) {
+      const ta = a && a.created_at ? Date.parse(a.created_at) : 0;
+      const tb = b && b.created_at ? Date.parse(b.created_at) : 0;
+      return tb - ta;
+    });
+    renderSloanAudit(rows);
+  } catch (e) {
+    console.warn('[sloan-audit] load error', e);
+    list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--accent);font-size:12px">Failed to load: ' + (e.message || e) + '</div>';
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Run Audit'; }
+  }
+}
+
+function renderSloanAudit(rows) {
+  const summary = document.getElementById('sloan-audit-summary');
+  const list = document.getElementById('sloan-audit-list');
+  if (!list) return;
+  const esc = function(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+  const keep = rows.filter(function(r) { return r.verdict === 'KEEP'; }).length;
+  const flag = rows.filter(function(r) { return r.verdict === 'FLAG'; }).length;
+  const discard = rows.filter(function(r) { return r.verdict === 'DISCARD'; }).length;
+  if (summary) summary.textContent = keep + ' keep, ' + flag + ' flag, ' + discard + ' discard';
+
+  // Verdict pill colors — green/yellow/red, muted to fit the dark UI.
+  const pillStyle = function(v) {
+    if (v === 'KEEP')    return 'background:rgba(70,160,90,0.15);color:#7ed992;border:1px solid rgba(70,160,90,0.4)';
+    if (v === 'FLAG')    return 'background:rgba(220,180,60,0.15);color:#e8c767;border:1px solid rgba(220,180,60,0.4)';
+    if (v === 'DISCARD') return 'background:rgba(176,48,37,0.15);color:#e88a7e;border:1px solid rgba(176,48,37,0.4)';
+    return 'background:var(--bg);color:var(--ink-dim);border:1px solid var(--border)';
+  };
+
+  list.innerHTML = rows.map(function(r) {
+    const dt = r.created_at ? new Date(r.created_at) : null;
+    const dateStr = dt && !isNaN(dt) ? dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    return ''
+      + '<div style="display:grid;grid-template-columns:72px 90px 1fr auto;gap:14px;align-items:start;padding:12px 0;border-bottom:1px solid var(--border)">'
+      +   (r.image_url ? '<img src="' + esc(r.image_url) + '" alt="" style="width:72px;height:96px;object-fit:cover;border-radius:2px;background:var(--bg)">' : '<div style="width:72px;height:96px;background:var(--bg);border:1px solid var(--border);border-radius:2px"></div>')
+      +   '<div><span style="display:inline-block;padding:4px 10px;border-radius:2px;font-size:10px;letter-spacing:0.14em;font-family:var(--font);' + pillStyle(r.verdict) + '">' + esc(r.verdict || '—') + '</span></div>'
+      +   '<div style="font-size: var(--text-sm);color:var(--ink);line-height:1.5">' + esc(r.rationale || '') + '</div>'
+      +   '<div style="font-size:10px;color:var(--ink-dim);letter-spacing:0.04em;white-space:nowrap">' + esc(dateStr) + '</div>'
+      + '</div>';
+  }).join('');
 }
 
 // ── P&L MODEL ─────────────────────────────────────────────────────────────────
