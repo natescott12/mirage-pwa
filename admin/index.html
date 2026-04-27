@@ -2022,6 +2022,7 @@ button { color: inherit; }
             <div style="display:flex;gap:12px;align-items:flex-start">
               <div id="persona-progress-label" style="font-size:12px;color:var(--ink-dim);padding-top:9px"></div>
               <a href="#icons" class="persona-studio-link">← Icons</a>
+              <a id="persona-studio-link" href="/studio" class="persona-studio-link">Icon Studio →</a>
             </div>
           </div>
 
@@ -3399,6 +3400,10 @@ function showPersonaForm(idx, iconOverride) {
   if (wrapper) {
     if (nameEl) nameEl.textContent = wrapper.name || 'Persona';
     if (archEl) archEl.textContent = wrapper.archetype || '—';
+    const studioLink = document.getElementById('persona-studio-link');
+    if (studioLink && wrapper.name) {
+      studioLink.href = '/studio?icon=' + encodeURIComponent(wrapper.name);
+    }
   }
 }
 
