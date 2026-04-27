@@ -942,6 +942,21 @@ button { color: inherit; }
   border: 1px solid rgba(119,204,110,0.25);
 }
 .andie-typing { color: var(--ink-dim); font-size: var(--text-xs); font-style: italic; padding-left: 42px; }
+.andie-time {
+  font-size: 10px;
+  color: rgba(255,255,255,0.3);
+  margin-top: 4px;
+}
+.andie-msg.user .andie-time { text-align: right; }
+.andie-msg.assistant .andie-time { text-align: left; }
+.andie-day-separator {
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+  margin: 16px 0 8px 0;
+}
 .andie-input-row {
   display: flex; gap: 10px; flex-shrink: 0; align-items: stretch;
   background: var(--surface); border: 1px solid var(--border);
@@ -1206,6 +1221,23 @@ button { color: inherit; }
       background: rgba(255,255,255,0.04);
     }
     .sloanchat-msg .sloanchat-text:empty { display: none; }
+    .sloanchat-time {
+      font-size: 10px;
+      color: rgba(255,255,255,0.3);
+      margin-top: 4px;
+    }
+    .sloanchat-msg.nate .sloanchat-time { text-align: right; }
+    .sloanchat-msg.sloan .sloanchat-time,
+    .sloanchat-msg--work .sloanchat-time,
+    .sloanchat-msg--casual .sloanchat-time { text-align: left; }
+    .sloanchat-day-separator {
+      text-align: center;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.25);
+      margin: 16px 0 8px 0;
+    }
     .sloanchat-text {
       line-height: 1.6;
       white-space: pre-wrap;
@@ -5200,7 +5232,10 @@ function andieEscape(s) {
 function andieRender(opts) {
   const chat = document.getElementById('andie-chat');
   if (!chat) return;
-  const items = andieMessages.map(m => {
+  // Scoped per-render last-day-key so separators land cleanly each pass
+  // without depending on cross-render state.
+  let lastDayKey = null;
+  const items = andieMessages.reduce(function(acc, m) {
     const role = m.role === 'user' ? 'user' : 'assistant';
     const avatar = role === 'user' ? (currentUser ? currentUser[0].toUpperCase() : 'U') : 'A';
 
@@ -5235,12 +5270,26 @@ function andieRender(opts) {
     const userImg = attachedImg ? `<img src="${andieEscape(attachedImg)}" style="max-width:100%;border-radius:4px;margin-bottom:8px;display:block;" />` : '';
     const docChip = attachedDoc ? `<div style="font-size: var(--text-xs);color:var(--ink-dim);margin-bottom:6px;">📄 PDF attached</div>` : '';
 
-    return `
+    // Day separator + time element come from m.timestamp (ms or ISO).
+    // Falls through to no-op for legacy messages without timestamps.
+    const tsDate = m.timestamp ? new Date(m.timestamp) : null;
+    const tsValid = tsDate && !isNaN(tsDate.getTime());
+    if (tsValid) {
+      const dayKey = __chatDayKey(tsDate);
+      if (dayKey !== lastDayKey) {
+        acc.push('<div class="andie-day-separator">' + andieEscape(__chatDayLabel(tsDate)) + '</div>');
+        lastDayKey = dayKey;
+      }
+    }
+    const timeBlock = tsValid ? '<div class="andie-time">' + andieEscape(__chatTimeStr(tsDate)) + '</div>' : '';
+
+    acc.push(`
       <div class="andie-msg ${role}">
         <div class="andie-avatar">${andieEscape(avatar)}</div>
-        <div class="andie-bubble">${userImg}${docChip}${andieEscape(textPart)}${trailingImg}</div>
-      </div>`;
-  });
+        <div class="andie-bubble">${userImg}${docChip}${andieEscape(textPart)}${trailingImg}${timeBlock}</div>
+      </div>`);
+    return acc;
+  }, []);
   if (opts && opts.typing) items.push('<div class="andie-typing">Andie is thinking...</div>');
   chat.innerHTML = items.join('');
   chat.scrollTop = chat.scrollHeight;
@@ -5499,7 +5548,7 @@ async function andieSend() {
     userContent = text;
   }
 
-  andieMessages.push({ role: 'user', content: userContent });
+  andieMessages.push({ role: 'user', content: userContent, timestamp: Date.now() });
   andieSaveHistory();
   andieChatClearAttachment();
   if (inp) inp.value = '';
@@ -5518,9 +5567,9 @@ async function andieSend() {
     const data = await r.json();
     if (data.error) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
     const reply = (data.reply || '').trim() || '...';
-    andieMessages.push({ role: 'assistant', content: reply });
+    andieMessages.push({ role: 'assistant', content: reply, timestamp: Date.now() });
   } catch (e) {
-    andieMessages.push({ role: 'assistant', content: '[proxy error: ' + e.message + ']' });
+    andieMessages.push({ role: 'assistant', content: '[proxy error: ' + e.message + ']', timestamp: Date.now() });
   } finally {
     andieSaveHistory();
     if (btn) btn.disabled = false;
@@ -5718,6 +5767,32 @@ function sloanChatIconId() {
   return 'admin:' + user;
 }
 
+// ── Chat time / day-separator helpers ────────────────────────────────────
+// Used by both Sloan Chat and Andie Chat. iMessage-style: time on every
+// bubble (h:mm AM/PM), day separator only when the date changes between
+// adjacent messages. State (__sloanLastDayKey / __andieLastDayKey) is
+// reset at full-history reloads; appends just push forward.
+function __chatTimeStr(d) {
+  const h = d.getHours();
+  const m = d.getMinutes();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = ((h + 11) % 12) + 1;
+  return h12 + ':' + (m < 10 ? '0' + m : m) + ' ' + ampm;
+}
+function __chatDayLabel(d) {
+  const today = new Date();
+  const yest = new Date(); yest.setDate(yest.getDate() - 1);
+  const sameDay = function(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); };
+  if (sameDay(d, today)) return 'Today';
+  if (sameDay(d, yest)) return 'Yesterday';
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return days[d.getDay()] + ' ' + months[d.getMonth()] + ' ' + d.getDate();
+}
+function __chatDayKey(d) { return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(); }
+let __sloanLastDayKey = null;
+let __andieLastDayKey = null;
+
 async function loadSloanChat() {
   const msgs = document.getElementById('sloanchat-messages');
   if (!msgs) return;
@@ -5731,6 +5806,7 @@ async function loadSloanChat() {
     const rows = await r.json();
     const history = (rows[0] && rows[0].messages) || [];
     msgs.innerHTML = '';
+    __sloanLastDayKey = null;
     if (!history.length) {
       const empty = document.createElement('div');
       empty.className = 'sloanchat-empty';
@@ -5745,7 +5821,10 @@ async function loadSloanChat() {
         : Array.isArray(m.content)
           ? m.content.map(function(c) { return c && c.type === 'text' ? (c.text || '') : ''; }).join('')
           : '';
-      if (text.trim()) appendSloanChatMessage(who, text);
+      // m.timestamp is the persisted timestamp (ms or ISO). Falls
+      // through to undefined for legacy rows, which means no time
+      // shown on those bubbles — honest about what we don't know.
+      if (text.trim()) appendSloanChatMessage(who, text, null, null, m.timestamp);
     });
     msgs.scrollTop = msgs.scrollHeight;
   } catch (e) {
@@ -5803,7 +5882,7 @@ function renderSloanChatMarkdown(raw) {
   return s;
 }
 
-function appendSloanChatMessage(who, text, explicitImageUrl, docName) {
+function appendSloanChatMessage(who, text, explicitImageUrl, docName, timestamp) {
   const msgs = document.getElementById('sloanchat-messages');
   if (!msgs) return null;
 
@@ -5822,6 +5901,21 @@ function appendSloanChatMessage(who, text, explicitImageUrl, docName) {
 
   const empty = msgs.querySelector('.sloanchat-empty');
   if (empty) empty.remove();
+
+  // Day separator: only when the day changes between adjacent messages.
+  // Resolved against the bubble's own timestamp (or now-ish if missing).
+  const tsDate = timestamp ? new Date(timestamp) : null;
+  if (tsDate && !isNaN(tsDate.getTime())) {
+    const dayKey = __chatDayKey(tsDate);
+    if (dayKey !== __sloanLastDayKey) {
+      const sep = document.createElement('div');
+      sep.className = 'sloanchat-day-separator';
+      sep.textContent = __chatDayLabel(tsDate);
+      msgs.appendChild(sep);
+      __sloanLastDayKey = dayKey;
+    }
+  }
+
   const el = document.createElement('div');
   el.className = 'sloanchat-msg ' + who;
 
@@ -5885,6 +5979,13 @@ function appendSloanChatMessage(who, text, explicitImageUrl, docName) {
     textEl.className = 'sloanchat-text';
     textEl.innerHTML = renderSloanChatMarkdown(displayText);
     el.appendChild(textEl);
+  }
+
+  if (tsDate && !isNaN(tsDate.getTime())) {
+    const timeEl = document.createElement('div');
+    timeEl.className = 'sloanchat-time';
+    timeEl.textContent = __chatTimeStr(tsDate);
+    el.appendChild(timeEl);
   }
 
   msgs.appendChild(el);
@@ -5979,7 +6080,7 @@ async function sloanChatSend() {
   // Show Nate's bubble with the attached image or doc chip (if any) plus text.
   const attachedImageUrl = attachment && attachment.kind === 'image' ? attachment.dataUrl : null;
   const attachedDocName = attachment && attachment.kind === 'document' ? attachment.name : null;
-  appendSloanChatMessage('nate', text, attachedImageUrl, attachedDocName);
+  appendSloanChatMessage('nate', text, attachedImageUrl, attachedDocName, Date.now());
   input.value = '';
   sloanChatClearAttachment();
   btn.disabled = true;
@@ -6038,19 +6139,19 @@ async function sloanChatSend() {
     if (replies && replies.length) {
       for (let i = 0; i < replies.length; i++) {
         const isLast = i === replies.length - 1;
-        appendSloanChatMessage('sloan', replies[i], isLast ? mediaUrl : null);
+        appendSloanChatMessage('sloan', replies[i], isLast ? mediaUrl : null, null, Date.now());
         if (!isLast) await new Promise(function(resolve) { setTimeout(resolve, 400); });
       }
     } else {
-      appendSloanChatMessage('sloan', reply, mediaUrl);
+      appendSloanChatMessage('sloan', reply, mediaUrl, null, Date.now());
     }
     if (figmaQueued) {
-      appendSloanChatMessage('system', '✦ Sloan queued a Figma task');
+      appendSloanChatMessage('system', '✦ Sloan queued a Figma task', null, null, Date.now());
     }
   } catch (e) {
     const stillThere = document.querySelector('.sloanchat-loading');
     if (stillThere) stillThere.remove();
-    appendSloanChatMessage('sloan', 'connection error: ' + (e && e.message));
+    appendSloanChatMessage('sloan', 'connection error: ' + (e && e.message), null, null, Date.now());
   } finally {
     btn.disabled = false;
     btn.textContent = 'Send';
