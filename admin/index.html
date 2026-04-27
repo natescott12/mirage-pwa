@@ -1897,6 +1897,9 @@ button { color: inherit; }
       <div class="sidebar-item" id="nav-item-sloanlog" onclick="showPane('sloanlog')">
         <span class="icon">✎</span> Sloan Learning Log
       </div>
+      <div class="sidebar-item" id="nav-item-sloanaudit" onclick="showPane('sloanaudit')">
+        <span class="icon">◐</span> Image Audit
+      </div>
       <div class="sidebar-section">Platform</div>
       <div class="sidebar-item" onclick="showPane('subscribers')">
         <span class="icon">○</span> Subscribers
@@ -2086,19 +2089,27 @@ button { color: inherit; }
           <div id="sloanlog-list">
             <div style="padding:40px;text-align:center;color:var(--ink-dim);font-size:12px">Loading&hellip;</div>
           </div>
+        </div>
+      </div>
 
-          <!-- Image audit viewer — pulls cached results from
-               GET /sloan/audit/data on the proxy. Run-button triggers a
-               fresh fetch; the proxy itself decides when to recompute. -->
-          <div style="margin-top:36px;padding-top:24px;border-top:1px solid var(--border)">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-              <div style="font-size: var(--text-xs);letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim)">Image Audit</div>
-              <button id="sloan-audit-run" onclick="runSloanImageAudit()" style="background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:3px;font-family: var(--font);font-size: var(--text-xs);letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;min-width:120px">Refresh</button>
-            </div>
-            <div id="sloan-audit-summary" style="font-size: var(--text-xs);color:var(--ink-dim);margin-bottom:12px;min-height:14px"></div>
-            <div id="sloan-audit-list">
-              <div style="padding:30px;text-align:center;color:var(--ink-dim);font-size:12px">Click Refresh to load results.</div>
-            </div>
+      <!-- IMAGE AUDIT — pulls per-image verdicts from sloan_image_verdicts.
+           Auto-loads on showPane('sloanaudit'). -->
+      <div class="pane" id="pane-sloanaudit" style="overflow-y:auto;height:calc(100vh - 48px)">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Image Audit</div>
+            <div class="page-sub">Per-image verdicts from Sloan&rsquo;s auto-audit pipeline &mdash; review what to keep, flag, or discard</div>
+          </div>
+        </div>
+
+        <div style="max-width:880px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="font-size: var(--text-xs);letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim)">Image Audit</div>
+            <button id="sloan-audit-run" onclick="runSloanImageAudit()" style="background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:3px;font-family: var(--font);font-size: var(--text-xs);letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;min-width:120px">Refresh</button>
+          </div>
+          <div id="sloan-audit-summary" style="font-size: var(--text-xs);color:var(--ink-dim);margin-bottom:12px;min-height:14px"></div>
+          <div id="sloan-audit-list">
+            <div style="padding:30px;text-align:center;color:var(--ink-dim);font-size:12px">Loading&hellip;</div>
           </div>
         </div>
       </div>
@@ -2872,6 +2883,8 @@ const PANE_HASH_ALIASES = {
   'andiechat': 'andie',
   'sloan-chat': 'sloanchat',
   'sloan-log': 'sloanlog',
+  'image-audit': 'sloanaudit',
+  'sloan-audit': 'sloanaudit',
   'persona-builder': 'personas',
   'content-library': 'content',
   'task-checklist': 'checklist',
@@ -3007,7 +3020,7 @@ function showPane(id) {
   const pane = document.getElementById('pane-' + id);
   if (pane) pane.classList.add('active');
 
-  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', sloanchat:'Sloan Chat', sloanlog:'Sloan Learning Log', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', projdash:'Project Dashboard', design:'Design System', techref:'Tech Reference', andie:'Andie' };
+  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', sloanchat:'Sloan Chat', sloanlog:'Sloan Learning Log', sloanaudit:'Image Audit', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', projdash:'Project Dashboard', design:'Design System', techref:'Tech Reference', andie:'Andie' };
   document.getElementById('topbar-section').textContent = labels[id] || id;
 
   // highlight sidebar
@@ -3033,6 +3046,7 @@ function showPane(id) {
   if (id === 'pnl') initPnl();
   if (id === 'andie') initAndie();
   if (id === 'sloanlog') loadSloanLog();
+  if (id === 'sloanaudit') runSloanImageAudit();
   if (id === 'sloanchat') loadSloanChat();
   /* Content Library — fire the browse fetch directly on pane activation.
      The wireClPaneActivation IIFE later in the script also hooks this,
