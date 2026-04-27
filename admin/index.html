@@ -2022,7 +2022,7 @@ button { color: inherit; }
             </div>
             <div style="display:flex;gap:12px;align-items:flex-start">
               <div id="persona-progress-label" style="font-size:12px;color:var(--ink-dim);padding-top:9px"></div>
-              <a id="persona-studio-link" href="/studio" class="persona-studio-link">Icon Studio →</a>
+              <a href="#icons" class="persona-studio-link">← Icons</a>
             </div>
           </div>
 
@@ -3631,11 +3631,6 @@ function togglePersonaLock(iconName) {
 // so the form always reflects what's actually in Supabase.
 function refreshPersonaFromSupabase(iconName, opts) {
   if (!sb || !iconName) return;
-  // Re-target the Icon Studio link so it deep-links into Studio with
-  // the currently-loaded icon pre-selected. Static href was '/studio'
-  // which dropped users on whatever Studio's default selectedIcon was.
-  const studioLink = document.getElementById('persona-studio-link');
-  if (studioLink) studioLink.href = '/studio?icon=' + encodeURIComponent(iconName);
   opts = opts || {};
   const archetypeDefault = opts.archetype || '';
   const sloanIconId = opts.iconId;
