@@ -1533,7 +1533,10 @@ button { color: inherit; }
       display: flex; align-items: center; justify-content: center;
     }
     .cl-card:hover .cl-card-select,
-    .cl-card-select:checked { opacity: 1; }
+    .cl-card-select:checked,
+    .cl-grid.cl-select-active .cl-card-select { opacity: 1; }
+    .cl-grid.cl-select-active .cl-card { cursor: pointer; }
+    .cl-grid.cl-select-active .cl-card-edit-btn { display: none; }
     .cl-card-select:checked {
       background: var(--accent); border-color: var(--accent);
     }
@@ -2079,6 +2082,7 @@ button { color: inherit; }
               <div class="page-sub" id="cl-browse-sub">All generated images</div>
             </div>
             <div style="display:flex;gap:8px;align-items:center">
+              <button id="cl-select-toggle" class="btn-ghost btn-sm" onclick="clToggleSelectMode()">Select</button>
               <button class="btn-ghost btn-sm" onclick="clReload()">Reload</button>
             </div>
           </div>
@@ -6740,7 +6744,7 @@ async function clLoadBrowse() {
   const grid = document.getElementById('cl-grid');
   if (!grid) return;
   grid.innerHTML = '<div class="cl-empty">Loading…</div>';
-  const url = CL_SUPA_URL + '/rest/v1/content?select=id,image_url,icon_id,scene,created_at,is_published,edited_from,edit_preset,edit_adjustments&order=created_at.desc&limit=500';
+  const url = CL_SUPA_URL + '/rest/v1/content?select=id,image_url,icon_id,scene,created_at,is_published,edited_from,edit_preset,edit_adjustments,storage_path&order=created_at.desc&limit=500';
   console.log('[content-library] fetch →', url);
   try {
     const r = await fetch(url, {
@@ -6804,7 +6808,7 @@ function clRenderGrid() {
     const checked = clSelected.has(String(it.id)) ? ' checked' : '';
     const imgSrc = proxifyImageUrl(it.image_url || '');
     return (
-      '<div class="cl-card" onclick="clOpenLightbox(\'' + safeId + '\')">' +
+      '<div class="cl-card" onclick="clCardClick(\'' + safeId + '\')">' +
         '<input type="checkbox" class="cl-card-select" data-id="' + safeId + '"' + checked +
           ' onclick="event.stopPropagation();clToggleSelect(\'' + safeId + '\', this.checked)" aria-label="Select image">' +
         '<div class="cl-card-img-wrap">' +
@@ -6878,10 +6882,33 @@ document.addEventListener('keydown', function(e) {
 
 // ── Select + bulk delete ─────────────────────────────────────────────────────
 const clSelected = new Set();
+let clSelectMode = false;
+function clToggleSelectMode() {
+  clSelectMode = !clSelectMode;
+  const btn = document.getElementById('cl-select-toggle');
+  if (btn) btn.textContent = clSelectMode ? 'Done' : 'Select';
+  const grid = document.querySelector('.cl-grid');
+  if (grid) grid.classList.toggle('cl-select-active', clSelectMode);
+  if (!clSelectMode) clClearSelection();
+}
 function clToggleSelect(id, on) {
   const key = String(id);
   if (on) clSelected.add(key); else clSelected.delete(key);
+  // Sync the rendered checkbox so card-click and direct-checkbox-click
+  // paths produce the same visible state.
+  const cb = document.querySelector('.cl-card-select[data-id="' + key.replace(/"/g, '\\"') + '"]');
+  if (cb) cb.checked = on;
   clUpdateSelectBar();
+}
+// Dispatcher for card body clicks. In select mode, toggle the card's
+// selection. Otherwise open the lightbox as before.
+function clCardClick(id) {
+  if (clSelectMode) {
+    const key = String(id);
+    clToggleSelect(key, !clSelected.has(key));
+  } else {
+    clOpenLightbox(id);
+  }
 }
 function clClearSelection() {
   clSelected.clear();
@@ -6896,27 +6923,57 @@ function clUpdateSelectBar() {
   bar.style.display = 'flex';
   count.textContent = clSelected.size + ' selected';
 }
+// Pull the storage object path for an item. Prefer the persisted
+// storage_path column; fall back to extracting it from image_url so
+// older rows that predate the column still get cleaned up.
+function clItemStoragePath(item) {
+  if (!item) return null;
+  if (item.storage_path) return item.storage_path;
+  if (item.image_url) {
+    const m = item.image_url.match(/\/storage\/v1\/object\/(?:public\/)?content\/(.+?)(?:\?|$)/);
+    if (m && m[1]) { try { return decodeURIComponent(m[1]); } catch (_) { return m[1]; } }
+  }
+  return null;
+}
+
 async function clDeleteSelected() {
   if (clSelected.size === 0) return;
   const n = clSelected.size;
-  const msg = 'Delete ' + n + ' image' + (n === 1 ? '' : 's') + ' from Supabase? This cannot be undone.';
+  const msg = 'Delete ' + n + ' image' + (n === 1 ? '' : 's') + ' from Supabase? This removes the row AND the storage object. Cannot be undone.';
   if (!window.confirm(msg)) return;
   const ids = Array.from(clSelected);
-  const results = await Promise.all(ids.map(function(id) {
-    return fetch(CL_SUPA_URL + '/rest/v1/content?id=eq.' + encodeURIComponent(id), {
-      method: 'DELETE',
-      headers: {
-        'apikey': CL_SUPA_KEY,
-        'Authorization': 'Bearer ' + CL_SUPA_KEY,
-        'Prefer': 'return=minimal'
-      }
-    }).then(function(r){ return { id: id, ok: r.ok, status: r.status }; })
-      .catch(function(err){ return { id: id, ok: false, error: err && err.message }; });
+  const headers = {
+    'apikey': CL_SUPA_KEY,
+    'Authorization': 'Bearer ' + CL_SUPA_KEY,
+    'Prefer': 'return=minimal'
+  };
+  const results = await Promise.all(ids.map(async function(id) {
+    const item = clItems.find(function(x) { return String(x.id) === String(id); });
+    const path = clItemStoragePath(item);
+    // Row delete first — table is the source of truth for the UI.
+    const rowR = await fetch(CL_SUPA_URL + '/rest/v1/content?id=eq.' + encodeURIComponent(id), {
+      method: 'DELETE', headers
+    }).catch(function(err){ return { ok: false, status: 0, _err: err && err.message }; });
+    // Storage delete. Best-effort: a 4xx here doesn't fail the whole op
+    // (orphaned object is recoverable; lost row plus orphan storage is
+    // the worst case, and that's the path we already had pre-fix).
+    let storageOk = true;
+    if (path) {
+      const storeR = await fetch(CL_SUPA_URL + '/storage/v1/object/content/' + encodeURIComponent(path), {
+        method: 'DELETE', headers
+      }).catch(function(){ return { ok: false }; });
+      storageOk = !!(storeR && storeR.ok);
+      if (!storageOk) console.warn('[content-library] storage delete failed for', path, storeR && storeR.status);
+    }
+    return { id: id, ok: rowR.ok, status: rowR.status, storageOk: storageOk, path: path };
   }));
   const failed = results.filter(function(r){ return !r.ok; });
+  const orphaned = results.filter(function(r){ return r.ok && r.path && !r.storageOk; });
   if (failed.length) {
     console.error('[content-library] delete failures:', failed);
     if (typeof toast === 'function') toast('Deleted ' + (results.length - failed.length) + ' · ' + failed.length + ' failed');
+  } else if (orphaned.length) {
+    if (typeof toast === 'function') toast('Deleted ' + results.length + ' rows · ' + orphaned.length + ' storage cleanup failed');
   } else if (typeof toast === 'function') {
     toast('Deleted ' + results.length + ' image' + (results.length === 1 ? '' : 's'));
   }
