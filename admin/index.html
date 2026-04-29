@@ -2893,6 +2893,194 @@ function doLogout() {
   document.getElementById('login-error').textContent = '';
 }
 
+// ── PROJECT DASHBOARD — SESSION COMMAND CENTER ──────────────
+// Top: priority columns + health chips + needs-attention list.
+// Bottom: live activity (commits, sloan log + audit).
+// Keeps the function name initPriorities so showPane('projdash') stays untouched.
+
+const PD_PRIORITIES = {
+  working: [
+    { text: 'Twilio resubmission — May 1 (done, under review)', active: true },
+    { text: 'Add SUPABASE_SERVICE_KEY to Railway' },
+    { text: 'Fallback API key v2 → v3' },
+    { text: 'Credential rotation' },
+    { text: 'Manual synthesis trigger' },
+  ],
+  sloan: [
+    { text: 'Test Google + Are.na directives' },
+    { text: 'Track 2 — Brand Strategy v2' },
+    { text: 'Capture gold standard conversation' },
+    { text: 'Vera and Aria development' },
+  ],
+  design: [
+    { text: 'Magazine site — wireframes first' },
+    { text: 'PWA screens: Landing, World Intro, Features, Free Preview' },
+    { text: 'First-week subscriber choreography' },
+  ],
+};
+
+const PD_ATTENTION = [
+  'Sloan voice — nuclear restore, testing in progress',
+  'LoRA retrain — needs 10 approved images',
+  'Fallback API key still v2',
+  'SUPABASE_SERVICE_KEY missing from Railway',
+  'Credential rotation overdue',
+];
+
+// Status colors. Reusing chat-status-dot's green/red and design-system
+// amber so the dashboard reads consistent with the rest of the admin.
+const PD_COLOR_GREEN   = '#78cc6e';
+const PD_COLOR_AMBER   = '#d4a634';
+const PD_COLOR_RED     = '#e87864';
+const PD_COLOR_NEUTRAL = '#6b6b6b';
+
+function pdEscape(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function pdRelTime(input) {
+  const t = typeof input === 'string' ? new Date(input).getTime() : Number(input);
+  if (!isFinite(t) || t <= 0) return '';
+  const diff = Math.max(0, Math.floor((Date.now() - t) / 1000));
+  if (diff < 60)    return diff + 's ago';
+  if (diff < 3600)  return Math.floor(diff / 60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+  return Math.floor(diff / 86400) + 'd ago';
+}
+
+function pdDot(color, hollow) {
+  const base = 'display:inline-block;width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-right:10px;';
+  if (hollow) return `<span style="${base}background:transparent;border:1px solid var(--surface-2);"></span>`;
+  return `<span style="${base}background:${color};"></span>`;
+}
+
+function pdRenderPriorities(hostId, items) {
+  const host = document.getElementById(hostId);
+  if (!host) return;
+  host.innerHTML = items.map(function(i) {
+    return `<div style="display:flex;align-items:center;padding:5px 0;font-size:var(--text-sm);color:var(--ink);">${pdDot(PD_COLOR_GREEN, !i.active)}<span>${pdEscape(i.text)}</span></div>`;
+  }).join('');
+}
+
+function pdRenderAttention() {
+  const host = document.getElementById('pd-attention');
+  if (!host) return;
+  host.innerHTML = PD_ATTENTION.map(function(t) {
+    return `<div style="display:flex;align-items:center;padding:5px 0;">${pdDot(PD_COLOR_AMBER)}<span style="font-size:var(--text-sm);color:var(--ink-mid);">${pdEscape(t)}</span></div>`;
+  }).join('');
+}
+
+function pdHealthChip(label, color, value) {
+  return `<span style="display:inline-flex;align-items:center;padding:6px 10px;background:var(--surface);border:1px solid var(--border);border-radius:6px;">
+    <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${color};margin-right:8px;"></span>
+    <span style="font-size:var(--text-xs);letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-dim);margin-right:6px;">${pdEscape(label)}</span>
+    <span style="font-size:var(--text-xs);color:var(--ink-mid);">${pdEscape(value)}</span>
+  </span>`;
+}
+
+function pdRenderHealth(proxyChip) {
+  const host = document.getElementById('pd-health');
+  if (!host) return;
+  host.innerHTML = proxyChip
+    + pdHealthChip('Twilio', PD_COLOR_AMBER, 'under review')
+    + pdHealthChip('Vercel', PD_COLOR_GREEN, 'live')
+    + pdHealthChip('mirageicons.com', PD_COLOR_GREEN, 'live');
+}
+
+async function pdLoadHealth() {
+  pdRenderHealth(pdHealthChip('Proxy', PD_COLOR_NEUTRAL, 'checking…'));
+  try {
+    const r = await fetch('https://mirage-proxy-production.up.railway.app/health');
+    if (r.ok) {
+      const d = await r.json().catch(function() { return null; });
+      const v = d && d.version ? 'v' + d.version : 'ok';
+      pdRenderHealth(pdHealthChip('Proxy', PD_COLOR_GREEN, v));
+    } else {
+      pdRenderHealth(pdHealthChip('Proxy', PD_COLOR_RED, 'down ' + r.status));
+    }
+  } catch (e) {
+    pdRenderHealth(pdHealthChip('Proxy', PD_COLOR_RED, 'unreachable'));
+  }
+}
+
+function pdRowActivity(badge, body, when) {
+  return `<div style="display:flex;align-items:center;gap:10px;padding:5px 0;">
+    <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:var(--text-xs);color:var(--accent);flex-shrink:0;">${pdEscape(badge)}</span>
+    <span style="font-size:var(--text-sm);color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${pdEscape(body)}</span>
+    <span style="font-size:var(--text-xs);color:var(--ink-dim);flex-shrink:0;">${pdEscape(when)}</span>
+  </div>`;
+}
+
+async function pdLoadCommits(repo, hostId) {
+  const host = document.getElementById(hostId);
+  if (!host) return;
+  host.innerHTML = `<div style="font-size:var(--text-sm);color:var(--ink-dim);padding:5px 0;">loading…</div>`;
+  try {
+    // Unauthenticated GitHub API. 60 req/hour per IP is plenty for this
+    // dashboard; rate-limit hits show as a clear status line below.
+    const r = await fetch('https://api.github.com/repos/natescott12/' + repo + '/commits?per_page=5', {
+      headers: { 'Accept': 'application/vnd.github+json' },
+    });
+    if (!r.ok) throw new Error('http ' + r.status);
+    const commits = await r.json();
+    if (!Array.isArray(commits) || !commits.length) {
+      host.innerHTML = `<div style="font-size:var(--text-sm);color:var(--ink-dim);padding:5px 0;">no commits</div>`;
+      return;
+    }
+    host.innerHTML = commits.map(function(c) {
+      const sha = String(c.sha || '').slice(0, 7);
+      const fullMsg = (c.commit && c.commit.message || '').split('\n')[0];
+      const msg = fullMsg.length > 60 ? fullMsg.slice(0, 60) + '…' : fullMsg;
+      const when = pdRelTime(c.commit && c.commit.author && c.commit.author.date);
+      return pdRowActivity(sha, msg, when);
+    }).join('');
+  } catch (e) {
+    host.innerHTML = `<div style="font-size:var(--text-sm);color:var(--ink-dim);padding:5px 0;">rate limited — try again shortly</div>`;
+  }
+}
+
+async function pdLoadSloanActivity() {
+  const host = document.getElementById('pd-sloan-activity');
+  if (!host) return;
+  host.innerHTML = `<div style="font-size:var(--text-sm);color:var(--ink-dim);padding:5px 0;">loading…</div>`;
+  const sbHeaders = { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY };
+  try {
+    const [memR, vrdR] = await Promise.all([
+      fetch(SUPABASE_URL + '/rest/v1/sloan_memory?select=category,summary,created_at&order=created_at.desc&limit=3', { headers: sbHeaders }),
+      fetch(SUPABASE_URL + '/rest/v1/sloan_image_verdicts?select=scene_description,verdict,created_at&order=created_at.desc&limit=1', { headers: sbHeaders }),
+    ]);
+    const memories = memR.ok ? await memR.json() : [];
+    const verdicts = vrdR.ok ? await vrdR.json() : [];
+    const memHtml = (memories || []).map(function(m) {
+      const summary = String(m.summary || '');
+      const truncated = summary.length > 60 ? summary.slice(0, 60) + '…' : summary;
+      return pdRowActivity(String(m.category || 'log').toLowerCase(), truncated, pdRelTime(m.created_at));
+    }).join('');
+    const vrdHtml = (verdicts || []).map(function(v) {
+      const desc = String(v.scene_description || '');
+      const truncated = desc.length > 60 ? desc.slice(0, 60) + '…' : desc;
+      return pdRowActivity('verdict ' + String(v.verdict || '?').toLowerCase(), truncated, pdRelTime(v.created_at));
+    }).join('');
+    const combined = memHtml + vrdHtml;
+    host.innerHTML = combined || `<div style="font-size:var(--text-sm);color:var(--ink-dim);padding:5px 0;">no recent activity</div>`;
+  } catch (e) {
+    host.innerHTML = `<div style="font-size:var(--text-sm);color:var(--ink-dim);padding:5px 0;">activity unavailable</div>`;
+  }
+}
+
+function initPriorities() {
+  pdRenderPriorities('pd-priorities-working', PD_PRIORITIES.working);
+  pdRenderPriorities('pd-priorities-sloan',   PD_PRIORITIES.sloan);
+  pdRenderPriorities('pd-priorities-design',  PD_PRIORITIES.design);
+  pdRenderAttention();
+  pdLoadHealth();
+  pdLoadCommits('mirage-proxy', 'pd-commits-proxy');
+  pdLoadCommits('mirage-pwa',   'pd-commits-pwa');
+  pdLoadSloanActivity();
+}
+
 // Auto-restore: if a valid session exists in localStorage, skip the login
 // screen and hydrate directly. Fresh reloads land exactly where the user
 // left off (including deep-link hash).
@@ -4857,193 +5045,6 @@ function resetChecklist() {
   initChecklist();
 }
 
-// ── PROJECT DASHBOARD — SESSION COMMAND CENTER ──────────────
-// Top: priority columns + health chips + needs-attention list.
-// Bottom: live activity (commits, sloan log + audit).
-// Keeps the function name initPriorities so showPane('projdash') stays untouched.
-
-const PD_PRIORITIES = {
-  working: [
-    { text: 'Twilio resubmission — May 1 (done, under review)', active: true },
-    { text: 'Add SUPABASE_SERVICE_KEY to Railway' },
-    { text: 'Fallback API key v2 → v3' },
-    { text: 'Credential rotation' },
-    { text: 'Manual synthesis trigger' },
-  ],
-  sloan: [
-    { text: 'Test Google + Are.na directives' },
-    { text: 'Track 2 — Brand Strategy v2' },
-    { text: 'Capture gold standard conversation' },
-    { text: 'Vera and Aria development' },
-  ],
-  design: [
-    { text: 'Magazine site — wireframes first' },
-    { text: 'PWA screens: Landing, World Intro, Features, Free Preview' },
-    { text: 'First-week subscriber choreography' },
-  ],
-};
-
-const PD_ATTENTION = [
-  'Sloan voice — nuclear restore, testing in progress',
-  'LoRA retrain — needs 10 approved images',
-  'Fallback API key still v2',
-  'SUPABASE_SERVICE_KEY missing from Railway',
-  'Credential rotation overdue',
-];
-
-// Status colors. Reusing chat-status-dot's green/red and design-system
-// amber so the dashboard reads consistent with the rest of the admin.
-const PD_COLOR_GREEN   = '#78cc6e';
-const PD_COLOR_AMBER   = '#d4a634';
-const PD_COLOR_RED     = '#e87864';
-const PD_COLOR_NEUTRAL = '#6b6b6b';
-
-function pdEscape(s) {
-  return String(s == null ? '' : s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
-
-function pdRelTime(input) {
-  const t = typeof input === 'string' ? new Date(input).getTime() : Number(input);
-  if (!isFinite(t) || t <= 0) return '';
-  const diff = Math.max(0, Math.floor((Date.now() - t) / 1000));
-  if (diff < 60)    return diff + 's ago';
-  if (diff < 3600)  return Math.floor(diff / 60) + 'm ago';
-  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
-  return Math.floor(diff / 86400) + 'd ago';
-}
-
-function pdDot(color, hollow) {
-  const base = 'display:inline-block;width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-right:10px;';
-  if (hollow) return `<span style="${base}background:transparent;border:1px solid var(--surface-2);"></span>`;
-  return `<span style="${base}background:${color};"></span>`;
-}
-
-function pdRenderPriorities(hostId, items) {
-  const host = document.getElementById(hostId);
-  if (!host) return;
-  host.innerHTML = items.map(function(i) {
-    return `<div style="display:flex;align-items:center;padding:5px 0;font-size:var(--text-sm);color:var(--ink);">${pdDot(PD_COLOR_GREEN, !i.active)}<span>${pdEscape(i.text)}</span></div>`;
-  }).join('');
-}
-
-function pdRenderAttention() {
-  const host = document.getElementById('pd-attention');
-  if (!host) return;
-  host.innerHTML = PD_ATTENTION.map(function(t) {
-    return `<div style="display:flex;align-items:center;padding:5px 0;">${pdDot(PD_COLOR_AMBER)}<span style="font-size:var(--text-sm);color:var(--ink-mid);">${pdEscape(t)}</span></div>`;
-  }).join('');
-}
-
-function pdHealthChip(label, color, value) {
-  return `<span style="display:inline-flex;align-items:center;padding:6px 10px;background:var(--surface);border:1px solid var(--border);border-radius:6px;">
-    <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${color};margin-right:8px;"></span>
-    <span style="font-size:var(--text-xs);letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-dim);margin-right:6px;">${pdEscape(label)}</span>
-    <span style="font-size:var(--text-xs);color:var(--ink-mid);">${pdEscape(value)}</span>
-  </span>`;
-}
-
-function pdRenderHealth(proxyChip) {
-  const host = document.getElementById('pd-health');
-  if (!host) return;
-  host.innerHTML = proxyChip
-    + pdHealthChip('Twilio', PD_COLOR_AMBER, 'under review')
-    + pdHealthChip('Vercel', PD_COLOR_GREEN, 'live')
-    + pdHealthChip('mirageicons.com', PD_COLOR_GREEN, 'live');
-}
-
-async function pdLoadHealth() {
-  pdRenderHealth(pdHealthChip('Proxy', PD_COLOR_NEUTRAL, 'checking…'));
-  try {
-    const r = await fetch('https://mirage-proxy-production.up.railway.app/health');
-    if (r.ok) {
-      const d = await r.json().catch(function() { return null; });
-      const v = d && d.version ? 'v' + d.version : 'ok';
-      pdRenderHealth(pdHealthChip('Proxy', PD_COLOR_GREEN, v));
-    } else {
-      pdRenderHealth(pdHealthChip('Proxy', PD_COLOR_RED, 'down ' + r.status));
-    }
-  } catch (e) {
-    pdRenderHealth(pdHealthChip('Proxy', PD_COLOR_RED, 'unreachable'));
-  }
-}
-
-function pdRowActivity(badge, body, when) {
-  return `<div style="display:flex;align-items:center;gap:10px;padding:5px 0;">
-    <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:var(--text-xs);color:var(--accent);flex-shrink:0;">${pdEscape(badge)}</span>
-    <span style="font-size:var(--text-sm);color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${pdEscape(body)}</span>
-    <span style="font-size:var(--text-xs);color:var(--ink-dim);flex-shrink:0;">${pdEscape(when)}</span>
-  </div>`;
-}
-
-async function pdLoadCommits(repo, hostId) {
-  const host = document.getElementById(hostId);
-  if (!host) return;
-  host.innerHTML = `<div style="font-size:var(--text-sm);color:var(--ink-dim);padding:5px 0;">loading…</div>`;
-  try {
-    // Unauthenticated GitHub API. 60 req/hour per IP is plenty for this
-    // dashboard; rate-limit hits show as a clear status line below.
-    const r = await fetch('https://api.github.com/repos/natescott12/' + repo + '/commits?per_page=5', {
-      headers: { 'Accept': 'application/vnd.github+json' },
-    });
-    if (!r.ok) throw new Error('http ' + r.status);
-    const commits = await r.json();
-    if (!Array.isArray(commits) || !commits.length) {
-      host.innerHTML = `<div style="font-size:var(--text-sm);color:var(--ink-dim);padding:5px 0;">no commits</div>`;
-      return;
-    }
-    host.innerHTML = commits.map(function(c) {
-      const sha = String(c.sha || '').slice(0, 7);
-      const fullMsg = (c.commit && c.commit.message || '').split('\n')[0];
-      const msg = fullMsg.length > 60 ? fullMsg.slice(0, 60) + '…' : fullMsg;
-      const when = pdRelTime(c.commit && c.commit.author && c.commit.author.date);
-      return pdRowActivity(sha, msg, when);
-    }).join('');
-  } catch (e) {
-    host.innerHTML = `<div style="font-size:var(--text-sm);color:var(--ink-dim);padding:5px 0;">rate limited — try again shortly</div>`;
-  }
-}
-
-async function pdLoadSloanActivity() {
-  const host = document.getElementById('pd-sloan-activity');
-  if (!host) return;
-  host.innerHTML = `<div style="font-size:var(--text-sm);color:var(--ink-dim);padding:5px 0;">loading…</div>`;
-  const sbHeaders = { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY };
-  try {
-    const [memR, vrdR] = await Promise.all([
-      fetch(SUPABASE_URL + '/rest/v1/sloan_memory?select=category,summary,created_at&order=created_at.desc&limit=3', { headers: sbHeaders }),
-      fetch(SUPABASE_URL + '/rest/v1/sloan_image_verdicts?select=scene_description,verdict,created_at&order=created_at.desc&limit=1', { headers: sbHeaders }),
-    ]);
-    const memories = memR.ok ? await memR.json() : [];
-    const verdicts = vrdR.ok ? await vrdR.json() : [];
-    const memHtml = (memories || []).map(function(m) {
-      const summary = String(m.summary || '');
-      const truncated = summary.length > 60 ? summary.slice(0, 60) + '…' : summary;
-      return pdRowActivity(String(m.category || 'log').toLowerCase(), truncated, pdRelTime(m.created_at));
-    }).join('');
-    const vrdHtml = (verdicts || []).map(function(v) {
-      const desc = String(v.scene_description || '');
-      const truncated = desc.length > 60 ? desc.slice(0, 60) + '…' : desc;
-      return pdRowActivity('verdict ' + String(v.verdict || '?').toLowerCase(), truncated, pdRelTime(v.created_at));
-    }).join('');
-    const combined = memHtml + vrdHtml;
-    host.innerHTML = combined || `<div style="font-size:var(--text-sm);color:var(--ink-dim);padding:5px 0;">no recent activity</div>`;
-  } catch (e) {
-    host.innerHTML = `<div style="font-size:var(--text-sm);color:var(--ink-dim);padding:5px 0;">activity unavailable</div>`;
-  }
-}
-
-function initPriorities() {
-  pdRenderPriorities('pd-priorities-working', PD_PRIORITIES.working);
-  pdRenderPriorities('pd-priorities-sloan',   PD_PRIORITIES.sloan);
-  pdRenderPriorities('pd-priorities-design',  PD_PRIORITIES.design);
-  pdRenderAttention();
-  pdLoadHealth();
-  pdLoadCommits('mirage-proxy', 'pd-commits-proxy');
-  pdLoadCommits('mirage-pwa',   'pd-commits-pwa');
-  pdLoadSloanActivity();
-}
 
 // ── ANDIE — OPERATIONS DIRECTOR CHAT ──────────────────────────────────────────
 const ANDIE_PROXY_URL = 'https://mirage-proxy-production.up.railway.app/andie/chat';
