@@ -5924,7 +5924,7 @@ async function loadSloanChat() {
       msgs.appendChild(empty);
       return;
     }
-    history.slice(-20).forEach(function(m) {
+    history.slice(-100).forEach(function(m) {
       const who = m.role === 'user' ? 'nate' : 'sloan';
       const text = (typeof m.content === 'string')
         ? m.content
