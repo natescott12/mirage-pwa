@@ -2220,71 +2220,56 @@ button { color: inherit; }
       </div>
 
 
-      <!-- PROJECT DASHBOARD — one-page brief, document style -->
+      <!-- PROJECT DASHBOARD — session command center. Top half: orientation
+           (priority columns, system health chips, needs-attention list).
+           Bottom half: live activity (recent commits, sloan log + audit). -->
       <div class="pane" id="pane-projdash">
-        <div style="max-width:640px;margin:0 auto;padding:16px 0 80px;line-height:1.55;">
+        <div style="max-width:1100px;margin:0 auto;padding:16px 0 80px;">
 
-          <div style="margin-bottom:56px">
-            <div style="font-size:44px;font-weight: var(--weight-medium);letter-spacing:-1.2px;line-height:1;margin-bottom:14px;color:var(--ink)">Mirage</div>
-            <div style="font-size:15px;color:var(--ink-mid);letter-spacing:0.01em;font-style:italic">The women you wish you knew.</div>
-          </div>
-
-          <div style="margin-bottom:36px">
-            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:10px">What it is</div>
-            <p style="margin:0;color:var(--ink);font-size:14.5px">AI content platform. Curated AI-generated characters called Icons. Non-explicit, clearly labeled AI. American Apparel 2000s editorial aesthetic — film grain, desaturated, natural light. PWA delivery (no app store fees).</p>
-          </div>
-
-          <div style="margin-bottom:36px">
-            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:10px">The model</div>
-            <p style="margin:0;color:var(--ink);font-size:14.5px">Proximity and distance. Real enough to text, intimate enough to share things with — always slightly out of reach. That tension is the product.</p>
-          </div>
-
-          <div style="margin-bottom:36px">
-            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:10px">Tiers</div>
-            <p style="margin:0;color:var(--ink);font-size:14.5px">Glimpse $4.99 / Illusion $14.99 / Mirage VIP $39.99</p>
-          </div>
-
-          <div style="margin-bottom:36px">
-            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:10px">At scale (10K subscribers, 30/55/15 tier mix)</div>
-            <p style="margin:0;color:var(--ink);font-size:14.5px">$172K gross&nbsp; /&nbsp; $145K net&nbsp; /&nbsp; 84.5% margin&nbsp; /&nbsp; $1.74M annual</p>
-          </div>
-
-          <div style="margin-bottom:36px">
-            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:10px">Launch Icons</div>
-            <div style="color:var(--ink);font-size:14.5px;line-height:1.75">
-              Sloan — The Downtown Intellectual <span style="color:var(--ink-dim)">(live)</span><br>
-              Vera — The Unapologetic Bold <span style="color:var(--ink-dim)">(not built)</span><br>
-              Aria — The Soft Sadcore <span style="color:var(--ink-dim)">(not built)</span>
+          <!-- Priority columns -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;">
+              <div style="font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:12px;">Mirage Working</div>
+              <div id="pd-priorities-working"></div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;">
+              <div style="font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:12px;">All Things Sloan</div>
+              <div id="pd-priorities-sloan"></div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;">
+              <div style="font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:12px;">Mirage Design / Strategy</div>
+              <div id="pd-priorities-design"></div>
             </div>
           </div>
 
-          <div style="margin-bottom:36px">
-            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:10px">Current phase</div>
-            <p style="margin:0;color:var(--ink);font-size:14.5px">Building Sloan. One Icon done right before three done quickly. Every system proven through Sloan before Vera and Aria are built.</p>
+          <!-- System health chips -->
+          <div style="margin-bottom:24px;">
+            <div style="font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:10px;">System Health</div>
+            <div id="pd-health" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
           </div>
 
-          <div style="margin-bottom:36px">
-            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:10px">Domain</div>
-            <p style="margin:0;color:var(--ink);font-size:14.5px">mirage.is</p>
+          <!-- Needs attention -->
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:32px;">
+            <div style="font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:10px;">Needs Attention</div>
+            <div id="pd-attention"></div>
           </div>
 
-          <div style="margin-bottom:36px">
-            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:10px">Team</div>
-            <div style="color:var(--ink);font-size:14.5px;line-height:1.75">
-              Nate — Founder, Executive Design Director<br>
-              Anna — Supabase integration<br>
-              Sloan — AI Creative Director<br>
-              Andie — Anna&#39;s AI <span style="color:var(--ink-dim)">(not yet built)</span>
+          <!-- Recent activity -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;">
+              <div style="font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:14px;">Recent Commits</div>
+              <div style="margin-bottom:14px;">
+                <div style="font-size:var(--text-xs);color:var(--ink-mid);margin-bottom:6px;">mirage-proxy</div>
+                <div id="pd-commits-proxy"></div>
+              </div>
+              <div>
+                <div style="font-size:var(--text-xs);color:var(--ink-mid);margin-bottom:6px;">mirage-pwa</div>
+                <div id="pd-commits-pwa"></div>
+              </div>
             </div>
-          </div>
-
-          <div>
-            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:10px">Strategy</div>
-            <div style="color:var(--ink);font-size:14.5px;line-height:1.65;display:flex;flex-direction:column;gap:12px">
-              <div><span style="color:var(--ink-dim)">Phase 1.&nbsp;</span>Sloan ghost presence. Editorial images, short form video, cinemagraphs. Build following before anyone knows what she is.</div>
-              <div><span style="color:var(--ink-dim)">Phase 2.&nbsp;</span>Mirage launches. The connection becomes known.</div>
-              <div><span style="color:var(--ink-dim)">Phase 3.&nbsp;</span>Sloan as public CMO. Panels, interviews, industry voice.</div>
-              <div><span style="color:var(--ink-dim)">Phase 4.&nbsp;</span>Icons expand. Sloan introduces Vera.</div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;">
+              <div style="font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:14px;">Sloan Activity</div>
+              <div id="pd-sloan-activity"></div>
             </div>
           </div>
 
@@ -4872,59 +4857,192 @@ function resetChecklist() {
   initChecklist();
 }
 
-// ── PROJECT DASHBOARD — NEXT PRIORITIES ─────────────────────────────────────
-// Bumped to v2 so the refresh of priority titles doesn't collide with any
-// state the user had clicked into the old v1 list.
-const PRIORITIES_KEY = 'mirage-priorities-v2';
+// ── PROJECT DASHBOARD — SESSION COMMAND CENTER ──────────────
+// Top: priority columns + health chips + needs-attention list.
+// Bottom: live activity (commits, sloan log + audit).
+// Keeps the function name initPriorities so showPane('projdash') stays untouched.
 
-const PRIORITIES = [
-  { id: 'pr-sloan-builder',      title: 'Fill Sloan Persona Builder with Test Sloan',      detail: 'Wire Test Sloan\u2019s input through the Persona Builder so the production persona inherits refined voice, knowledge, and guardrails.', default: 'wip' },
-  { id: 'pr-andie-phase2',       title: 'Andie Phase 2 — write access to Persona Builder', detail: 'Let Andie update Icon personas directly from the chat \u2014 capture the diff, review, and commit.', default: 'todo' },
-  { id: 'pr-subscriber-profile', title: 'Subscriber Profile Builder',                      detail: 'Capture name, city, age, interests at signup. Injected into every Icon system prompt.', default: 'todo' },
-  { id: 'pr-guardrails',         title: 'Guardrail framework',                             detail: 'Content moderation, hard stops, escalation policy, age verification. The ethical spine of the product.', default: 'todo' },
-  { id: 'pr-lora',               title: 'LoRA face consistency',                           detail: 'Wire Replicate inference so Icon faces stay consistent across all image generations.', default: 'todo' },
-  { id: 'pr-figma-screens',      title: 'PWA Figma screens',                               detail: 'Build Landing, World Intro, Features, Free Preview from Figma designs.', default: 'todo' },
-  { id: 'pr-supabase-pwa',       title: 'Supabase PWA backend (Anna)',                     detail: 'Wire real Supabase client into the PWA mock adapter.', default: 'todo' },
-  { id: 'pr-segpay',             title: 'Segpay payment integration',                      detail: 'Wire payment processing. 12% fee. Gate content behind subscription tiers.', default: 'todo' },
+const PD_PRIORITIES = {
+  working: [
+    { text: 'Twilio resubmission — May 1 (done, under review)', active: true },
+    { text: 'Add SUPABASE_SERVICE_KEY to Railway' },
+    { text: 'Fallback API key v2 → v3' },
+    { text: 'Credential rotation' },
+    { text: 'Manual synthesis trigger' },
+  ],
+  sloan: [
+    { text: 'Test Google + Are.na directives' },
+    { text: 'Track 2 — Brand Strategy v2' },
+    { text: 'Capture gold standard conversation' },
+    { text: 'Vera and Aria development' },
+  ],
+  design: [
+    { text: 'Magazine site — wireframes first' },
+    { text: 'PWA screens: Landing, World Intro, Features, Free Preview' },
+    { text: 'First-week subscriber choreography' },
+  ],
+};
+
+const PD_ATTENTION = [
+  'Sloan voice — nuclear restore, testing in progress',
+  'LoRA retrain — needs 10 approved images',
+  'Fallback API key still v2',
+  'SUPABASE_SERVICE_KEY missing from Railway',
+  'Credential rotation overdue',
 ];
 
-const STATUS_CYCLE = ['todo', 'wip', 'done'];
-const STATUS_LABEL = { todo: 'To Do', wip: 'In Progress', done: 'Done' };
+// Status colors. Reusing chat-status-dot's green/red and design-system
+// amber so the dashboard reads consistent with the rest of the admin.
+const PD_COLOR_GREEN   = '#78cc6e';
+const PD_COLOR_AMBER   = '#d4a634';
+const PD_COLOR_RED     = '#e87864';
+const PD_COLOR_NEUTRAL = '#6b6b6b';
 
-function getPrioritiesState() {
-  try { return JSON.parse(localStorage.getItem(PRIORITIES_KEY)) || {}; } catch { return {}; }
+function pdEscape(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
-function savePrioritiesState(s) { localStorage.setItem(PRIORITIES_KEY, JSON.stringify(s)); }
 
-function initPriorities() {
-  const list = document.getElementById('pd-priorities-list');
-  if (!list) return;
-  const state = getPrioritiesState();
-  list.innerHTML = PRIORITIES.map((p, idx) => {
-    const status = state[p.id] || p.default;
-    return `
-      <div class="pd-priority">
-        <div class="pd-priority-num">${idx + 1}</div>
-        <div class="pd-priority-body">
-          <div class="pd-priority-title">${p.title}</div>
-          <div class="pd-priority-detail">${p.detail}</div>
-        </div>
-        <div>
-          <span class="pd-badge pd-badge-clickable ${status}" onclick="cyclePriorityStatus('${p.id}')" title="Click to cycle status">${STATUS_LABEL[status]}</span>
-        </div>
-      </div>`;
+function pdRelTime(input) {
+  const t = typeof input === 'string' ? new Date(input).getTime() : Number(input);
+  if (!isFinite(t) || t <= 0) return '';
+  const diff = Math.max(0, Math.floor((Date.now() - t) / 1000));
+  if (diff < 60)    return diff + 's ago';
+  if (diff < 3600)  return Math.floor(diff / 60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+  return Math.floor(diff / 86400) + 'd ago';
+}
+
+function pdDot(color, hollow) {
+  const base = 'display:inline-block;width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-right:10px;';
+  if (hollow) return `<span style="${base}background:transparent;border:1px solid var(--surface-2);"></span>`;
+  return `<span style="${base}background:${color};"></span>`;
+}
+
+function pdRenderPriorities(hostId, items) {
+  const host = document.getElementById(hostId);
+  if (!host) return;
+  host.innerHTML = items.map(function(i) {
+    return `<div style="display:flex;align-items:center;padding:5px 0;font-size:var(--text-sm);color:var(--ink);">${pdDot(PD_COLOR_GREEN, !i.active)}<span>${pdEscape(i.text)}</span></div>`;
   }).join('');
 }
 
-function cyclePriorityStatus(id) {
-  const state = getPrioritiesState();
-  const p = PRIORITIES.find(x => x.id === id);
-  if (!p) return;
-  const current = state[id] || p.default;
-  const next = STATUS_CYCLE[(STATUS_CYCLE.indexOf(current) + 1) % STATUS_CYCLE.length];
-  state[id] = next;
-  savePrioritiesState(state);
-  initPriorities();
+function pdRenderAttention() {
+  const host = document.getElementById('pd-attention');
+  if (!host) return;
+  host.innerHTML = PD_ATTENTION.map(function(t) {
+    return `<div style="display:flex;align-items:center;padding:5px 0;">${pdDot(PD_COLOR_AMBER)}<span style="font-size:var(--text-sm);color:var(--ink-mid);">${pdEscape(t)}</span></div>`;
+  }).join('');
+}
+
+function pdHealthChip(label, color, value) {
+  return `<span style="display:inline-flex;align-items:center;padding:6px 10px;background:var(--surface);border:1px solid var(--border);border-radius:6px;">
+    <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${color};margin-right:8px;"></span>
+    <span style="font-size:var(--text-xs);letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-dim);margin-right:6px;">${pdEscape(label)}</span>
+    <span style="font-size:var(--text-xs);color:var(--ink-mid);">${pdEscape(value)}</span>
+  </span>`;
+}
+
+function pdRenderHealth(proxyChip) {
+  const host = document.getElementById('pd-health');
+  if (!host) return;
+  host.innerHTML = proxyChip
+    + pdHealthChip('Twilio', PD_COLOR_AMBER, 'under review')
+    + pdHealthChip('Vercel', PD_COLOR_GREEN, 'live')
+    + pdHealthChip('mirageicons.com', PD_COLOR_GREEN, 'live');
+}
+
+async function pdLoadHealth() {
+  pdRenderHealth(pdHealthChip('Proxy', PD_COLOR_NEUTRAL, 'checking…'));
+  try {
+    const r = await fetch('https://mirage-proxy-production.up.railway.app/health');
+    if (r.ok) {
+      const d = await r.json().catch(function() { return null; });
+      const v = d && d.version ? 'v' + d.version : 'ok';
+      pdRenderHealth(pdHealthChip('Proxy', PD_COLOR_GREEN, v));
+    } else {
+      pdRenderHealth(pdHealthChip('Proxy', PD_COLOR_RED, 'down ' + r.status));
+    }
+  } catch (e) {
+    pdRenderHealth(pdHealthChip('Proxy', PD_COLOR_RED, 'unreachable'));
+  }
+}
+
+function pdRowActivity(badge, body, when) {
+  return `<div style="display:flex;align-items:center;gap:10px;padding:5px 0;">
+    <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:var(--text-xs);color:var(--accent);flex-shrink:0;">${pdEscape(badge)}</span>
+    <span style="font-size:var(--text-sm);color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${pdEscape(body)}</span>
+    <span style="font-size:var(--text-xs);color:var(--ink-dim);flex-shrink:0;">${pdEscape(when)}</span>
+  </div>`;
+}
+
+async function pdLoadCommits(repo, hostId) {
+  const host = document.getElementById(hostId);
+  if (!host) return;
+  host.innerHTML = `<div style="font-size:var(--text-sm);color:var(--ink-dim);padding:5px 0;">loading…</div>`;
+  try {
+    // Unauthenticated GitHub API. 60 req/hour per IP is plenty for this
+    // dashboard; rate-limit hits show as a clear status line below.
+    const r = await fetch('https://api.github.com/repos/natescott12/' + repo + '/commits?per_page=5', {
+      headers: { 'Accept': 'application/vnd.github+json' },
+    });
+    if (!r.ok) throw new Error('http ' + r.status);
+    const commits = await r.json();
+    if (!Array.isArray(commits) || !commits.length) {
+      host.innerHTML = `<div style="font-size:var(--text-sm);color:var(--ink-dim);padding:5px 0;">no commits</div>`;
+      return;
+    }
+    host.innerHTML = commits.map(function(c) {
+      const sha = String(c.sha || '').slice(0, 7);
+      const fullMsg = (c.commit && c.commit.message || '').split('\n')[0];
+      const msg = fullMsg.length > 60 ? fullMsg.slice(0, 60) + '…' : fullMsg;
+      const when = pdRelTime(c.commit && c.commit.author && c.commit.author.date);
+      return pdRowActivity(sha, msg, when);
+    }).join('');
+  } catch (e) {
+    host.innerHTML = `<div style="font-size:var(--text-sm);color:var(--ink-dim);padding:5px 0;">rate limited — try again shortly</div>`;
+  }
+}
+
+async function pdLoadSloanActivity() {
+  const host = document.getElementById('pd-sloan-activity');
+  if (!host) return;
+  host.innerHTML = `<div style="font-size:var(--text-sm);color:var(--ink-dim);padding:5px 0;">loading…</div>`;
+  const sbHeaders = { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY };
+  try {
+    const [memR, vrdR] = await Promise.all([
+      fetch(SUPABASE_URL + '/rest/v1/sloan_memory?select=category,summary,created_at&order=created_at.desc&limit=3', { headers: sbHeaders }),
+      fetch(SUPABASE_URL + '/rest/v1/sloan_image_verdicts?select=scene_description,verdict,created_at&order=created_at.desc&limit=1', { headers: sbHeaders }),
+    ]);
+    const memories = memR.ok ? await memR.json() : [];
+    const verdicts = vrdR.ok ? await vrdR.json() : [];
+    const memHtml = (memories || []).map(function(m) {
+      const summary = String(m.summary || '');
+      const truncated = summary.length > 60 ? summary.slice(0, 60) + '…' : summary;
+      return pdRowActivity(String(m.category || 'log').toLowerCase(), truncated, pdRelTime(m.created_at));
+    }).join('');
+    const vrdHtml = (verdicts || []).map(function(v) {
+      const desc = String(v.scene_description || '');
+      const truncated = desc.length > 60 ? desc.slice(0, 60) + '…' : desc;
+      return pdRowActivity('verdict ' + String(v.verdict || '?').toLowerCase(), truncated, pdRelTime(v.created_at));
+    }).join('');
+    const combined = memHtml + vrdHtml;
+    host.innerHTML = combined || `<div style="font-size:var(--text-sm);color:var(--ink-dim);padding:5px 0;">no recent activity</div>`;
+  } catch (e) {
+    host.innerHTML = `<div style="font-size:var(--text-sm);color:var(--ink-dim);padding:5px 0;">activity unavailable</div>`;
+  }
+}
+
+function initPriorities() {
+  pdRenderPriorities('pd-priorities-working', PD_PRIORITIES.working);
+  pdRenderPriorities('pd-priorities-sloan',   PD_PRIORITIES.sloan);
+  pdRenderPriorities('pd-priorities-design',  PD_PRIORITIES.design);
+  pdRenderAttention();
+  pdLoadHealth();
+  pdLoadCommits('mirage-proxy', 'pd-commits-proxy');
+  pdLoadCommits('mirage-pwa',   'pd-commits-pwa');
+  pdLoadSloanActivity();
 }
 
 // ── ANDIE — OPERATIONS DIRECTOR CHAT ──────────────────────────────────────────
