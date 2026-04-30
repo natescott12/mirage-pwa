@@ -6306,6 +6306,7 @@ async function sloanChatSend() {
       'To=' + encodeURIComponent('admin'),
       'Body=' + encodeURIComponent(text || ''),
       'channel=admin',
+      'userName=' + encodeURIComponent(user),
     ];
     if (attachment) {
       parts.push('NumMedia=1');
