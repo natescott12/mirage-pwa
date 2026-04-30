@@ -1464,6 +1464,42 @@ let lbImages = [], lbIdx = 0;
 let promptLocked = false;
 let currentChar = {};
 
+// Hydrate currentChar from cached character data whenever selectedIcon
+// changes. Priority order:
+//   1. selectedIcon.character_data — only the deep-link stub path
+//      attaches this directly, with data freshly fetched from Supabase
+//      this session (always more current than any cache).
+//   2. mirage_characters_v1[id], then [name] — primary localStorage
+//      cache populated by the load-time Supabase pull.
+//   3. mirage_personas_v1[id|name].character_data — secondary fallback
+//      for older sync paths that nested character data inside the
+//      persona record.
+// No-op if nothing is found, so an upstream caller that already set
+// currentChar (e.g. via applyPersonaData) keeps its work.
+function hydrateCurrentCharFromStorage() {
+  if (typeof selectedIcon === 'undefined' || !selectedIcon) return;
+  if (selectedIcon.character_data && Object.keys(selectedIcon.character_data).length) {
+    currentChar = Object.assign({}, selectedIcon.character_data);
+    return;
+  }
+  try {
+    var chars = JSON.parse(localStorage.getItem('mirage_characters_v1') || '{}');
+    var c = chars[selectedIcon.id] || chars[selectedIcon.name];
+    if (c && Object.keys(c).length) {
+      currentChar = Object.assign({}, c);
+      return;
+    }
+  } catch (_) {}
+  try {
+    var personas = JSON.parse(localStorage.getItem('mirage_personas_v1') || '{}');
+    var p = personas[selectedIcon.id] || personas[selectedIcon.name];
+    if (p && p.character_data && Object.keys(p.character_data).length) {
+      currentChar = Object.assign({}, p.character_data);
+    }
+  } catch (_) {}
+}
+hydrateCurrentCharFromStorage();
+
 // ── STORAGE ───────────────────────────────────────────────────────────────────
 const LIB_KEY = "mirage_library_v2";
 const CHAR_KEY = "mirage_characters_v1";
@@ -1937,6 +1973,7 @@ function selectIcon(id) {
   }
   selectedIcon = target;
   window.selectedIcon = selectedIcon;
+  hydrateCurrentCharFromStorage();
   if(selectedIcon && typeof loadPersonaIntoStudio==='function') loadPersonaIntoStudio(selectedIcon.id);
   renderIconList();
   renderIconCard();
@@ -2868,6 +2905,14 @@ window.addEventListener('load', function() {
           character_data: result.data.character_data || {}
         };
         ICONS_DATA.push(stub);
+        // Seed currentChar from the freshly-fetched stub before selectIcon
+        // runs. The helper inside selectIcon would also pick this up via
+        // selectedIcon.character_data, but setting it here explicitly is
+        // belt-and-suspenders for cases where stub data is fresher than
+        // anything that ended up in localStorage.
+        if (stub.character_data && Object.keys(stub.character_data).length) {
+          currentChar = Object.assign({}, stub.character_data);
+        }
         if (typeof selectIcon === 'function') selectIcon(synthId);
       });
   } catch (_) {}
