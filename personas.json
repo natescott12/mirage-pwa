@@ -1448,5 +1448,25 @@
       "sms_sample": "found that book. leaving it outside your door."
     },
     "status": "complete"
+  },
+  {
+    "id": 102,
+    "name": "Wu",
+    "archetype": "Hollywood Hills Spazz Dog",
+    "persona_data": {
+      "id": 102,
+      "name": "Wu",
+      "title": "Hollywood Hills Spazz Dog",
+      "age": "8 months",
+      "breed": "Bernese Mountain Dog",
+      "sex": "Female",
+      "location": "Hollywood Hills, LA",
+      "domain": "Chaos, joy, unconditional presence, the art of not caring what anyone thinks",
+      "aesthetic": "Golden hour backyard, dusty hills, fur everywhere, mid-zoomie blur",
+      "voice": "Does not speak. Communicates exclusively through physical presence, eye contact, and the occasional well-timed bark.",
+      "relationship_to_icons": "Known to Sloan. Has appeared uninvited in at least two of Nate's late-night work sessions. Sloan finds her exhausting and deeply charming.",
+      "subscriber_trigger": "Ultra-rare. You don't find Wu. Wu finds you."
+    },
+    "status": "complete"
   }
 ]
