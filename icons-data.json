@@ -1198,5 +1198,26 @@
     "energy": "Real, specific, magnetic",
     "hair": "Natural to character",
     "color": "hsl(218,35%,45%)"
+  },
+  {
+    "id": 101,
+    "name": "Wu",
+    "archetype": "Hollywood Hills Spazz Dog",
+    "vibe": "chaos, joy, unconditional presence",
+    "aesthetic": "golden hour backyard, dusty hills, fur everywhere, mid-zoomie blur",
+    "setting": "Hollywood Hills, LA",
+    "style": "full-send energy, no outfit needed",
+    "energy": "feral and loving",
+    "hair": "long tri-color — black, white, and rust brown",
+    "color": "warm earth tones",
+    "eyes": "amber brown, very sincere",
+    "build": "stocky, 80 lbs, built for zoomies",
+    "age": "8 months",
+    "breed": "Bernese Mountain Dog",
+    "sex": "female",
+    "domain": "chaos, joy, unconditional presence",
+    "voice": "does not speak. communicates through physical presence, eye contact, and well-timed barks",
+    "relationship_to_icons": "known to Sloan. has appeared uninvited in at least two of Nate's late-night work sessions. Sloan finds her exhausting and deeply charming.",
+    "subscriber_trigger": "ultra-rare. you don't find Wu. Wu finds you."
   }
 ]
