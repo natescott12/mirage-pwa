@@ -3,26 +3,207 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mirage</title>
-<link href="https://fonts.googleapis.com/css2?family=Afacad:wght@400;500&display=swap" rel="stylesheet">
+<title>Mirage — The women you wish you knew.</title>
+<meta name="description" content="Mirage is a subscription platform featuring AI-generated Icons — remarkable women you can actually talk to.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { height: 100%; background: #f5f4f0; }
-body { font-family: 'Afacad', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-.wrap { text-align: center; padding: 40px 24px; }
-.wordmark { font-size: 48px; font-weight: 400; letter-spacing: 0.04em; color: #1a1714; margin-bottom: 20px; }
-.divider { width: 32px; height: 1px; background: #dddbd5; margin: 28px auto; }
-.tagline { font-size: 13px; font-weight: 500; color: #8a8880; letter-spacing: 0.14em; text-transform: uppercase; }
-.sub { font-size: 12px; color: #b0ada8; letter-spacing: 0.06em; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #0a0a0a; color: #f6eaea; }
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    flex-direction: column;
+  }
+  main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 24px 40px;
+  }
+  .wrap { max-width: 560px; width: 100%; text-align: center; }
+  .wordmark {
+    font-weight: 500;
+    font-size: 56px;
+    letter-spacing: 0.02em;
+    margin-bottom: 24px;
+  }
+  .tagline {
+    font-size: 18px;
+    color: rgba(246, 234, 234, 0.75);
+    margin-bottom: 48px;
+    letter-spacing: 0.01em;
+  }
+  .description {
+    font-size: 15px;
+    color: rgba(246, 234, 234, 0.7);
+    line-height: 1.6;
+    margin-bottom: 64px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .signup {
+    border-top: 1px solid rgba(246, 234, 234, 0.1);
+    padding-top: 48px;
+    margin-bottom: 24px;
+  }
+  .signup-label {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(246, 234, 234, 0.55);
+    margin-bottom: 18px;
+  }
+  .signup-title {
+    font-size: 22px;
+    font-weight: 500;
+    margin-bottom: 24px;
+  }
+  form.signup-form {
+    display: flex;
+    gap: 8px;
+    max-width: 420px;
+    margin: 0 auto 16px;
+  }
+  input[type="tel"] {
+    flex: 1;
+    background: transparent;
+    border: 1px solid rgba(246, 234, 234, 0.25);
+    color: #f6eaea;
+    padding: 12px 16px;
+    font-family: inherit;
+    font-size: 15px;
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input[type="tel"]:focus { border-color: rgba(246, 234, 234, 0.6); }
+  input[type="tel"]::placeholder { color: rgba(246, 234, 234, 0.4); }
+  button.submit {
+    background: #f6eaea;
+    color: #0a0a0a;
+    border: none;
+    padding: 12px 24px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  button.submit:hover { opacity: 0.85; }
+  .compliance {
+    font-size: 12px;
+    color: rgba(246, 234, 234, 0.55);
+    line-height: 1.6;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .thanks {
+    display: none;
+    font-size: 14px;
+    color: rgba(246, 234, 234, 0.85);
+    margin-bottom: 16px;
+  }
+  .thanks.show { display: block; }
+  footer {
+    border-top: 1px solid rgba(246, 234, 234, 0.08);
+    padding: 32px 24px;
+    text-align: center;
+    font-size: 13px;
+    color: rgba(246, 234, 234, 0.5);
+  }
+  footer .links {
+    margin-bottom: 12px;
+  }
+  footer a {
+    color: rgba(246, 234, 234, 0.7);
+    text-decoration: none;
+    margin: 0 12px;
+    border-bottom: 1px solid rgba(246, 234, 234, 0.2);
+    padding-bottom: 1px;
+    transition: opacity 0.2s;
+  }
+  footer a:hover { opacity: 0.7; }
+  @media (max-width: 480px) {
+    .wordmark { font-size: 44px; }
+    .tagline { font-size: 16px; }
+    form.signup-form { flex-direction: column; }
+    button.submit { padding: 14px 24px; }
+  }
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="wordmark">Mirage</div>
-    <div class="divider"></div>
-    <div class="tagline">Made to be wanted.</div>
-    <div class="divider"></div>
-    <div class="sub">Coming soon.</div>
-  </div>
+  <main>
+    <div class="wrap">
+      <div class="wordmark">Mirage</div>
+      <div class="tagline">The women you wish you knew.</div>
+      <p class="description">
+        Mirage is a subscription platform featuring AI-generated Icons — remarkable women you can actually talk to. Subscribers connect with Icons through SMS and exclusive content.
+      </p>
+
+      <div class="signup">
+        <div class="signup-label">Join the waitlist</div>
+        <div class="signup-title">Be first when we launch.</div>
+
+        <div class="thanks" id="thanks">Thanks. We'll text you when we launch.</div>
+
+        <form class="signup-form" id="waitlist-form" novalidate>
+          <input type="tel" name="phone" placeholder="Your phone number" required autocomplete="tel" inputmode="tel">
+          <button type="submit" class="submit">Join</button>
+        </form>
+
+        <p class="compliance">
+          By subscribing you agree to receive recurring SMS messages from Mirage. Reply STOP to opt out at any time. Message and data rates may apply.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="links">
+      <a href="/privacy">Privacy</a>
+      <a href="/terms">Terms</a>
+      <a href="/sms-terms">SMS Terms</a>
+    </div>
+    <div>© 2026 Intro LA LLC. All rights reserved.</div>
+  </footer>
+
+  <script>
+    (function() {
+      var form = document.getElementById('waitlist-form');
+      var thanks = document.getElementById('thanks');
+      if (!form) return;
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var phoneInput = form.querySelector('input[name="phone"]');
+        var phone = (phoneInput.value || '').trim();
+        if (!phone) {
+          phoneInput.focus();
+          return;
+        }
+        // Best-effort POST to /api/waitlist; show thanks regardless so the
+        // page doesn't break if the endpoint isn't wired up yet.
+        try {
+          fetch('/api/waitlist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone: phone })
+          }).catch(function() {});
+        } catch (e) {}
+        form.style.display = 'none';
+        thanks.classList.add('show');
+      });
+    })();
+  </script>
 </body>
 </html>
