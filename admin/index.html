@@ -4294,14 +4294,18 @@ function pbToggleChipMulti(el) {
 window.__photoState = { inspiration: [], canon: [] };
 
 function photoSetState(inspiration, canon) {
+  // Defensive — saved persona may have null, undefined, or missing
+  // arrays. Treat anything non-array as empty so the render path
+  // doesn't blow up on .map of a non-array.
   window.__photoState.inspiration = Array.isArray(inspiration) ? inspiration.slice() : [];
   window.__photoState.canon = Array.isArray(canon) ? canon.slice() : [];
+  console.log('[photo] hydrate — inspiration:', window.__photoState.inspiration.length, 'canon:', window.__photoState.canon.length);
   photoRender('inspiration');
   photoRender('canon');
 }
 
 function photoCollect() {
-  return {
+  const out = {
     inspiration_images: window.__photoState.inspiration.map(function(e) {
       return { url: e.url, caption: e.caption || '', description: e.description || '' };
     }),
@@ -4309,6 +4313,8 @@ function photoCollect() {
       return { url: e.url, is_hero: !!e.is_hero };
     }),
   };
+  console.log('[photo] collect — inspiration:', out.inspiration_images.length, 'canon:', out.canon_images.length);
+  return out;
 }
 
 function photoEscapeAttr(s) {
@@ -4980,9 +4986,11 @@ function collectPersonaData() {
     // both fields back into allIcons on every refresh.
     name: (document.getElementById('f-name') || {}).value || '',
     archetype: (document.getElementById('f-archetype') || {}).value || '',
-    // Photography arrays: { url, caption } for inspiration, { url, is_hero } for canon.
-    inspiration_images: (typeof photoCollect === 'function' ? photoCollect().inspiration_images : []),
-    canon_images: (typeof photoCollect === 'function' ? photoCollect().canon_images : []),
+    // Photography arrays — collected once and spread into the result so
+    // photoCollect() doesn't iterate __photoState twice. Each inspiration
+    // entry is { url, caption, description }; each canon entry is
+    // { url, is_hero }.
+    ...(typeof photoCollect === 'function' ? photoCollect() : { inspiration_images: [], canon_images: [] }),
     updated_at: new Date().toISOString(),
   };
 }
@@ -5107,6 +5115,14 @@ function savePersona() {
       icon_id: iconIdVal,
       user: (typeof getAdminUser === 'function') ? getAdminUser() : 'fn not found'
     });
+    // Photography metadata visibility — log the actual arrays going into
+    // persona_data so we can verify in the console whether saves include
+    // them. If these are empty when uploads succeeded, the wiring between
+    // photoUpload → __photoState → photoCollect → collectPersonaData is
+    // broken and the upload is to-storage-only.
+    console.log('[savePersona] photography metadata —',
+      'inspiration_images:', persona_data.inspiration_images,
+      'canon_images:', persona_data.canon_images);
     console.log('[save] firing upsert for:', nameVal);
     // Upsert — works for both existing icons (Luna/Vera/Aria) and new ones (Sloan etc)
     sb.from('personas').upsert({
