@@ -4327,6 +4327,48 @@ function photoRender(kind) {
   }).join('');
 }
 
+// Inspiration-only Claude vision extract. Fired fire-and-forget after a
+// successful Inspiration upload — the upload itself never waits on this,
+// so a slow/failed extract never blocks subsequent uploads. On success
+// the description is appended to the Flux Prompt Notes textarea
+// (#f-flux-notes); empty target gets set, non-empty target gets the new
+// line appended on a fresh line. On failure: silent toast, no throw.
+async function photoExtractDescription(publicUrl) {
+  try {
+    const r = await fetch('https://mirage-proxy-production.up.railway.app/claude/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        max_tokens: 400,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'url', url: publicUrl } },
+            { type: 'text', text: "Describe this person's physical appearance for use as an image generation reference. Focus on: facial structure and shape, eye color and shape, skin tone and texture, hair color, length and texture, distinguishing features like freckles or bone structure. Be specific and concise. Return only the description, no preamble." },
+          ],
+        }],
+      }),
+    });
+    if (!r.ok) throw new Error('extract HTTP ' + r.status);
+    const data = await r.json();
+    const text = (data && data.reply) ? String(data.reply).trim() : '';
+    if (!text) throw new Error('empty reply');
+    return text;
+  } catch (e) {
+    console.warn('[photo] extract failed:', e && e.message);
+    toast("Couldn't extract description");
+    return null;
+  }
+}
+
+function photoAppendFluxNote(desc) {
+  if (!desc) return;
+  const ta = document.getElementById('f-flux-notes');
+  if (!ta) return;
+  const cur = (ta.value || '').trim();
+  ta.value = cur ? (cur + '\n' + desc) : desc;
+}
+
 async function photoUpload(kind, files) {
   const iconId = window.currentIconId;
   if (!iconId) { toast('Select an icon first.'); return; }
@@ -4351,6 +4393,12 @@ async function photoUpload(kind, files) {
         ? { url: publicUrl, caption: '' }
         : { url: publicUrl, is_hero: false };
       window.__photoState[kind].push(entry);
+      // Inspiration uploads kick off a Claude vision extract in parallel;
+      // we don't await so multiple files upload back-to-back without each
+      // waiting on a 3-5s vision call. Canon uploads skip extraction.
+      if (kind === 'inspiration') {
+        photoExtractDescription(publicUrl).then(photoAppendFluxNote);
+      }
     } catch (e) {
       console.warn('[photo] upload failed:', e && e.message);
       toast('Upload failed: ' + (e && e.message ? e.message : 'unknown'));
