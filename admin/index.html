@@ -346,6 +346,72 @@ button { color: inherit; }
 .field-group.collapsed { padding-bottom: 12px; }
 .field-group.collapsed .field-group-body { display: none; }
 
+/* Photography section — Persona Builder accordion. Inspiration + Canon
+   sub-sections, dashed upload zones, 4-col thumb grid. Hero state on
+   canon entries: gold border, gold star badge top-left. */
+.photo-subsection { margin-top: 22px; }
+.photo-subsection:first-child { margin-top: 0; }
+.photo-subsection-label {
+  font-size: var(--text-xs); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-dim); font-weight: 700; margin-bottom: 4px;
+}
+.photo-subsection-desc {
+  font-size: var(--text-xs); color: var(--ink-dim); margin-bottom: 12px;
+  letter-spacing: 0.01em; line-height: 1.5;
+}
+.photo-upload-zone {
+  border: 1px dashed rgba(255,255,255,0.22); border-radius: 4px;
+  padding: 22px; text-align: center; cursor: pointer;
+  font-size: var(--text-xs); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-dim); margin-bottom: 14px;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.photo-upload-zone:hover {
+  background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.35);
+  color: var(--ink-mid);
+}
+.photo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.photo-thumb-wrap { display: flex; flex-direction: column; }
+.photo-thumb {
+  position: relative; aspect-ratio: 1 / 1; border-radius: 4px;
+  overflow: hidden; background: var(--surface-2); border: 1px solid var(--border);
+}
+.photo-thumb.is-hero { border-color: #c9a96e; box-shadow: 0 0 0 1px #c9a96e inset; }
+.photo-thumb-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-thumb-actions {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.55); opacity: 0;
+  display: flex; align-items: center; justify-content: center;
+  gap: 5px; flex-wrap: wrap; padding: 6px;
+  transition: opacity 0.12s;
+}
+.photo-thumb:hover .photo-thumb-actions { opacity: 1; }
+.photo-action-btn {
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18);
+  color: var(--ink); padding: 5px 8px; border-radius: 3px;
+  font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase;
+  cursor: pointer; font-family: inherit;
+  transition: background 0.12s;
+}
+.photo-action-btn:hover { background: rgba(255,255,255,0.2); }
+.photo-action-btn.delete { background: rgba(208,64,53,0.2); border-color: rgba(208,64,53,0.45); }
+.photo-action-btn.delete:hover { background: rgba(208,64,53,0.4); }
+.photo-hero-badge {
+  position: absolute; top: 6px; left: 6px; z-index: 2;
+  background: #c9a96e; color: #1a1a1a;
+  width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; line-height: 1;
+}
+.photo-caption-input {
+  width: 100%; box-sizing: border-box; margin-top: 6px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--ink); padding: 5px 7px; border-radius: 3px;
+  font-size: var(--text-xs); font-family: inherit;
+}
+.photo-caption-input::placeholder { color: var(--ink-dim); }
+.photo-caption-input:focus { outline: none; border-color: rgba(255,255,255,0.3); }
+
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
 .field-row.single { grid-template-columns: 1fr; }
 .field-row.triple { grid-template-columns: 1fr 1fr 1fr; }
@@ -3960,6 +4026,11 @@ function refreshPersonaFromSupabase(iconName, opts) {
     }
     pbSetChip('female_archetype', sp.female_archetype);
     pbSetChip('cluster', sp.cluster);
+    // Photography — load saved Inspiration + Canon arrays into the grids.
+    // Uses the same persona_data row, so both arrays land in the same save.
+    if (typeof photoSetState === 'function') {
+      photoSetState(sp.inspiration_images, sp.canon_images);
+    }
     if (typeof refreshFieldGroupIndicators === 'function') refreshFieldGroupIndicators();
     applyPersonaLockState(iconName);
   });
@@ -4190,6 +4261,139 @@ function pbToggleChipMulti(el) {
 }
 
 // ── Persona Builder accordion ─────────────────────────────────────────────────
+// Photography state — Inspiration + Canon image arrays for the active
+// icon. Reset on every refreshPersonaFromSupabase so it always reflects
+// what's in the row, never a stale prior icon's photos. Persisted via
+// collectPersonaData → savePersona, loaded via photoSetState below.
+window.__photoState = { inspiration: [], canon: [] };
+
+function photoSetState(inspiration, canon) {
+  window.__photoState.inspiration = Array.isArray(inspiration) ? inspiration.slice() : [];
+  window.__photoState.canon = Array.isArray(canon) ? canon.slice() : [];
+  photoRender('inspiration');
+  photoRender('canon');
+}
+
+function photoCollect() {
+  return {
+    inspiration_images: window.__photoState.inspiration.map(function(e) {
+      return { url: e.url, caption: e.caption || '' };
+    }),
+    canon_images: window.__photoState.canon.map(function(e) {
+      return { url: e.url, is_hero: !!e.is_hero };
+    }),
+  };
+}
+
+function photoEscapeAttr(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function photoRender(kind) {
+  const grid = document.getElementById('photo-grid-' + kind);
+  if (!grid) return;
+  const items = window.__photoState[kind] || [];
+  grid.innerHTML = items.map(function(item, idx) {
+    const safeUrl = photoEscapeAttr(item.url);
+    if (kind === 'inspiration') {
+      const safeCaption = photoEscapeAttr(item.caption || '');
+      return '<div class="photo-thumb-wrap">' +
+        '<div class="photo-thumb">' +
+          '<img class="photo-thumb-img" src="' + safeUrl + '" alt="">' +
+          '<div class="photo-thumb-actions">' +
+            '<button class="photo-action-btn delete" onclick="photoDelete(\'inspiration\',' + idx + ')">Delete</button>' +
+          '</div>' +
+        '</div>' +
+        '<input class="photo-caption-input" placeholder="add a note..." value="' + safeCaption + '" oninput="photoSetCaption(\'inspiration\',' + idx + ',this.value)">' +
+      '</div>';
+    }
+    const isHero = !!item.is_hero;
+    return '<div class="photo-thumb-wrap">' +
+      '<div class="photo-thumb' + (isHero ? ' is-hero' : '') + '">' +
+        (isHero ? '<div class="photo-hero-badge">★</div>' : '') +
+        '<img class="photo-thumb-img" src="' + safeUrl + '" alt="">' +
+        '<div class="photo-thumb-actions">' +
+          (isHero ? '' : '<button class="photo-action-btn" onclick="photoSetHero(' + idx + ')">Set Hero</button>') +
+          '<button class="photo-action-btn" onclick="photoCopyUrl(\'' + safeUrl + '\')">Copy URL</button>' +
+          '<button class="photo-action-btn delete" onclick="photoDelete(\'canon\',' + idx + ')">Delete</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function photoUpload(kind, files) {
+  const iconId = window.currentIconId;
+  if (!iconId) { toast('Select an icon first.'); return; }
+  for (const file of Array.from(files)) {
+    try {
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const filename = 'photo_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8) + '.' + (ext || 'jpg');
+      const path = 'photography/' + iconId + '/' + kind + '/' + filename;
+      const upR = await fetch(SUPABASE_URL + '/storage/v1/object/content/' + encodeURI(path), {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'Content-Type': file.type || 'image/jpeg',
+          'x-upsert': 'true',
+        },
+        body: file,
+      });
+      if (!upR.ok) throw new Error('Upload HTTP ' + upR.status);
+      const publicUrl = SUPABASE_URL + '/storage/v1/object/public/content/' + encodeURI(path);
+      const entry = kind === 'inspiration'
+        ? { url: publicUrl, caption: '' }
+        : { url: publicUrl, is_hero: false };
+      window.__photoState[kind].push(entry);
+    } catch (e) {
+      console.warn('[photo] upload failed:', e && e.message);
+      toast('Upload failed: ' + (e && e.message ? e.message : 'unknown'));
+    }
+  }
+  photoRender(kind);
+}
+
+function photoUploadHandler(kind, ev) {
+  const files = ev.target.files;
+  if (files && files.length) photoUpload(kind, files);
+  ev.target.value = ''; // reset so re-selecting the same file fires onchange again
+}
+
+function photoDelete(kind, idx) {
+  const arr = window.__photoState[kind];
+  if (!arr || !arr[idx]) return;
+  arr.splice(idx, 1);
+  photoRender(kind);
+}
+
+function photoSetHero(idx) {
+  window.__photoState.canon.forEach(function(e, i) { e.is_hero = (i === idx); });
+  photoRender('canon');
+}
+
+function photoCopyUrl(url) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(
+      function() { toast('Copied URL'); },
+      function() { toast('Copy failed'); }
+    );
+  } else {
+    toast('Clipboard unavailable');
+  }
+}
+
+function photoSetCaption(kind, idx, value) {
+  const arr = window.__photoState[kind];
+  if (!arr || !arr[idx]) return;
+  arr[idx].caption = value;
+}
+
 // Wraps each .field-group rendered by buildPersonaForm with a clickable header
 // + collapsible body. Identity lands open on first render (always needs to be
 // visible); every other section defaults to collapsed and reveals a one-line
@@ -4325,6 +4529,24 @@ function buildPersonaForm(p, icon) {
       <div class="field"><label>Age</label><input id="f-age" value="${p.age || ''}" placeholder="e.g. 24"></div>
       <div class="field"><label>Location</label><input id="f-location" value="${p.location || ''}" placeholder="e.g. Lower East Side, NY"></div>
       <div class="field"><label>Occupation</label><input id="f-occupation" value="${p.occupation || ''}" placeholder="e.g. Art director"></div>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field-group-title">Photography</div>
+    <div class="photo-subsection">
+      <div class="photo-subsection-label">Inspiration</div>
+      <div class="photo-subsection-desc">Real-world references. Private — never platform-facing.</div>
+      <div class="photo-upload-zone" onclick="document.getElementById('photo-upload-inspiration').click()">Upload reference images</div>
+      <input type="file" id="photo-upload-inspiration" accept="image/jpeg,image/png,image/webp" multiple style="display:none" onchange="photoUploadHandler('inspiration', event)">
+      <div class="photo-grid" id="photo-grid-inspiration"></div>
+    </div>
+    <div class="photo-subsection">
+      <div class="photo-subsection-label">Canon</div>
+      <div class="photo-subsection-desc">Approved generations. The official look.</div>
+      <div class="photo-upload-zone" onclick="document.getElementById('photo-upload-canon').click()">Upload reference images</div>
+      <input type="file" id="photo-upload-canon" accept="image/jpeg,image/png,image/webp" multiple style="display:none" onchange="photoUploadHandler('canon', event)">
+      <div class="photo-grid" id="photo-grid-canon"></div>
     </div>
   </div>
 
@@ -4645,6 +4867,9 @@ function collectPersonaData() {
     // both fields back into allIcons on every refresh.
     name: (document.getElementById('f-name') || {}).value || '',
     archetype: (document.getElementById('f-archetype') || {}).value || '',
+    // Photography arrays: { url, caption } for inspiration, { url, is_hero } for canon.
+    inspiration_images: (typeof photoCollect === 'function' ? photoCollect().inspiration_images : []),
+    canon_images: (typeof photoCollect === 'function' ? photoCollect().canon_images : []),
     updated_at: new Date().toISOString(),
   };
 }
