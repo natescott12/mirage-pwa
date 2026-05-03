@@ -411,6 +411,32 @@ button { color: inherit; }
 }
 .photo-caption-input::placeholder { color: var(--ink-dim); }
 .photo-caption-input:focus { outline: none; border-color: rgba(255,255,255,0.3); }
+.photo-extract-label {
+  font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-dim); font-weight: 700;
+  margin-top: 8px; margin-bottom: 4px;
+}
+.photo-extract-textarea {
+  width: 100%; box-sizing: border-box;
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--ink); padding: 6px 7px; border-radius: 3px;
+  font-size: var(--text-xs); font-family: inherit;
+  line-height: 1.4; resize: vertical; min-height: 60px;
+}
+.photo-extract-textarea:focus { outline: none; border-color: rgba(255,255,255,0.3); }
+.photo-extract-apply {
+  margin-top: 5px; align-self: flex-start;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18);
+  color: var(--ink); padding: 5px 9px; border-radius: 3px;
+  font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
+  cursor: pointer; font-family: inherit;
+  transition: background 0.12s;
+}
+.photo-extract-apply:hover { background: rgba(255,255,255,0.18); }
+.photo-extract-status {
+  font-size: 10px; color: var(--ink-dim); margin-top: 8px;
+  font-style: italic;
+}
 
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
 .field-row.single { grid-template-columns: 1fr; }
@@ -4277,7 +4303,7 @@ function photoSetState(inspiration, canon) {
 function photoCollect() {
   return {
     inspiration_images: window.__photoState.inspiration.map(function(e) {
-      return { url: e.url, caption: e.caption || '' };
+      return { url: e.url, caption: e.caption || '', description: e.description || '' };
     }),
     canon_images: window.__photoState.canon.map(function(e) {
       return { url: e.url, is_hero: !!e.is_hero };
@@ -4302,6 +4328,23 @@ function photoRender(kind) {
     const safeUrl = photoEscapeAttr(item.url);
     if (kind === 'inspiration') {
       const safeCaption = photoEscapeAttr(item.caption || '');
+      // Extract block — three render states: pending (in flight),
+      // failed (no description, grey note), or done (editable
+      // textarea + Apply button). If no extract was ever run for an
+      // entry — e.g. legacy data without description — render no
+      // block at all so existing entries don't grow ghost UI.
+      let extractBlock = '';
+      if (item.extract_status === 'pending') {
+        extractBlock = '<div class="photo-extract-status">Extracting…</div>';
+      } else if (item.extract_status === 'failed') {
+        extractBlock = '<div class="photo-extract-status">Couldn\'t extract description</div>';
+      } else if (item.description) {
+        const safeDesc = photoEscapeAttr(item.description);
+        extractBlock =
+          '<div class="photo-extract-label">Extracted Description</div>' +
+          '<textarea class="photo-extract-textarea" oninput="photoSetDescription(' + idx + ',this.value)">' + safeDesc + '</textarea>' +
+          '<button class="photo-extract-apply" onclick="photoApplyDescription(' + idx + ')">Apply to Flux Notes</button>';
+      }
       return '<div class="photo-thumb-wrap">' +
         '<div class="photo-thumb">' +
           '<img class="photo-thumb-img" src="' + safeUrl + '" alt="">' +
@@ -4310,6 +4353,7 @@ function photoRender(kind) {
           '</div>' +
         '</div>' +
         '<input class="photo-caption-input" placeholder="add a note..." value="' + safeCaption + '" oninput="photoSetCaption(\'inspiration\',' + idx + ',this.value)">' +
+        extractBlock +
       '</div>';
     }
     const isHero = !!item.is_hero;
@@ -4329,10 +4373,12 @@ function photoRender(kind) {
 
 // Inspiration-only Claude vision extract. Fired fire-and-forget after a
 // successful Inspiration upload — the upload itself never waits on this,
-// so a slow/failed extract never blocks subsequent uploads. On success
-// the description is appended to the Flux Prompt Notes textarea
-// (#f-flux-notes); empty target gets set, non-empty target gets the new
-// line appended on a fresh line. On failure: silent toast, no throw.
+// so a slow/failed extract never blocks subsequent uploads. The result
+// no longer auto-writes to Flux Notes; it lands in entry.description and
+// surfaces as an editable textarea below the thumbnail. The user clicks
+// "Apply to Flux Notes" to commit it. extract_status drives the render
+// state: 'pending' → spinner-y note, 'failed' → grey "couldn't extract"
+// note, 'done' → editable textarea + Apply button.
 async function photoExtractDescription(publicUrl) {
   try {
     const r = await fetch('https://mirage-proxy-production.up.railway.app/claude/chat', {
@@ -4356,17 +4402,26 @@ async function photoExtractDescription(publicUrl) {
     return text;
   } catch (e) {
     console.warn('[photo] extract failed:', e && e.message);
-    toast("Couldn't extract description");
     return null;
   }
 }
 
-function photoAppendFluxNote(desc) {
+function photoSetDescription(idx, value) {
+  const arr = window.__photoState.inspiration;
+  if (!arr || !arr[idx]) return;
+  arr[idx].description = value;
+}
+
+function photoApplyDescription(idx) {
+  const arr = window.__photoState.inspiration;
+  if (!arr || !arr[idx]) return;
+  const desc = (arr[idx].description || '').trim();
   if (!desc) return;
   const ta = document.getElementById('f-flux-notes');
   if (!ta) return;
   const cur = (ta.value || '').trim();
   ta.value = cur ? (cur + '\n' + desc) : desc;
+  toast('Applied to Flux Notes');
 }
 
 async function photoUpload(kind, files) {
@@ -4390,14 +4445,24 @@ async function photoUpload(kind, files) {
       if (!upR.ok) throw new Error('Upload HTTP ' + upR.status);
       const publicUrl = SUPABASE_URL + '/storage/v1/object/public/content/' + encodeURI(path);
       const entry = kind === 'inspiration'
-        ? { url: publicUrl, caption: '' }
+        ? { url: publicUrl, caption: '', description: '', extract_status: 'pending' }
         : { url: publicUrl, is_hero: false };
       window.__photoState[kind].push(entry);
-      // Inspiration uploads kick off a Claude vision extract in parallel;
-      // we don't await so multiple files upload back-to-back without each
-      // waiting on a 3-5s vision call. Canon uploads skip extraction.
+      // Inspiration uploads fire a Claude vision extract in parallel.
+      // The closure captures the entry object reference so even if the
+      // array shifts (e.g. user deletes another entry mid-extract), the
+      // resolution mutates the right entry. If the entry was deleted
+      // before resolve, the mutation hits an orphan and is harmless.
       if (kind === 'inspiration') {
-        photoExtractDescription(publicUrl).then(photoAppendFluxNote);
+        photoExtractDescription(publicUrl).then(function(desc) {
+          if (desc) {
+            entry.description = desc;
+            entry.extract_status = 'done';
+          } else {
+            entry.extract_status = 'failed';
+          }
+          photoRender('inspiration');
+        });
       }
     } catch (e) {
       console.warn('[photo] upload failed:', e && e.message);
