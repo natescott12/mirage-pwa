@@ -1796,6 +1796,7 @@ button { color: inherit; }
     .cl-edit-sub { display: none; }
 
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 </head>
 <body>
 
@@ -6103,17 +6104,8 @@ function sloanChatExtractImageUrl(text) {
 // and anything richer should be treated as a design decision, not a
 // silent upgrade.
 function renderSloanChatMarkdown(raw) {
-  if (raw == null) return '';
-  let s = String(raw)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-  s = s.replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>');
-  s = s.replace(/\r\n\r\n|\n\n/g, '<br><br>');
-  s = s.replace(/\n/g, '<br>');
-  return s;
+  if (!raw) return '';
+  return marked.parse(raw);
 }
 
 function appendSloanChatMessage(who, text, explicitImageUrl, docName, timestamp) {
