@@ -3561,7 +3561,14 @@ async function loadIconContentCounts() {
     iconContentCounts = counts;
 
     (personaRes.data || []).forEach(function(row) {
-      const icon = (allIcons || []).find(function(i) { return i.name === row.icon_name; });
+      // Match by icon_id first — durable across name changes — and fall
+      // back to name match for legacy rows that pre-date the icon_id
+      // backfill. After all rows are migrated, the fallback becomes dead
+      // code but doesn't hurt anything.
+      const icon = (allIcons || []).find(function(i) {
+        if (row.icon_id != null && i.id != null) return String(i.id) === String(row.icon_id);
+        return i.name === row.icon_name;
+      });
       if (!icon) return;
       if (row.persona_data) {
         icon.persona_data = Object.assign({}, icon.persona_data || {}, row.persona_data);
@@ -5105,14 +5112,12 @@ function savePersona() {
 
   // Save to Supabase if available
   if (sb) {
-    // icon_id must be numeric or null. After 5df4ce0, currentIconId can
-    // resolve to a name string ("Vera") via the wrapper.name fallback in
-    // loadPersonaForIcon. Stamping that as icon_id collides with the
-    // numeric/null shape Supabase expects and causes the upsert to hang.
-    const iconIdVal = (typeof currentIconId === 'number' ||
-      (typeof currentIconId === 'string' && /^\d+$/.test(currentIconId)))
-      ? String(currentIconId)
-      : null;
+    // icon_id is the conflict key on personas (UNIQUE constraint added
+    // along with this fix). currentIconId can be numeric (Luna, Wu, …)
+    // or a string ("Sloan") — both shapes pass through unchanged so the
+    // row is matched by id, not by name. Without this, renames create
+    // orphaned duplicate rows because onConflict can't find the original.
+    const iconIdVal = (currentIconId == null) ? null : String(currentIconId);
     console.log('[savePersona] upsert payload:', {
       icon_name: nameVal,
       icon_id: iconIdVal,
@@ -5133,7 +5138,7 @@ function savePersona() {
       icon_id: iconIdVal,
       persona_data: persona_data,
       updated_at: new Date().toISOString()
-    }, { onConflict: 'icon_name' }).then(function(result) {
+    }, { onConflict: 'icon_id' }).then(function(result) {
       if (btn) { btn.innerHTML = originalLabel; btn.disabled = false; }
       hasUnsavedChanges = false;
       if (result.error) {
