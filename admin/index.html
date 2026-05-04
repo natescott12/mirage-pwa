@@ -2373,7 +2373,7 @@ button { color: inherit; }
             <div style="font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:10px;">Founder Investment</div>
             <div style="display:grid;grid-template-columns:160px 1fr;row-gap:8px;font-size:var(--text-sm);color:var(--ink);">
               <div style="color:var(--ink-mid);">Hours Invested</div>
-              <div>313 hrs <span style="color:var(--ink-dim);">(est. since April 5)</span></div>
+              <div>315 hrs <span style="color:var(--ink-dim);">(est. since April 5)</span></div>
               <div style="color:var(--ink-mid);">Sweat Equity</div>
               <div>$75,000 – $90,000 <span style="color:var(--ink-dim);">(at $250–$300/hr)</span></div>
               <div style="color:var(--ink-mid);">Tracking from</div>
@@ -2416,7 +2416,7 @@ button { color: inherit; }
         <div class="page-header">
           <div>
             <div class="page-title">Task Checklist</div>
-            <div class="page-sub">April 2026 — track what's done</div>
+            <div class="page-sub">May 2026 — track what's done</div>
           </div>
           <button class="btn btn-ghost btn-sm" onclick="resetChecklist()">Reset all</button>
         </div>
@@ -3035,23 +3035,25 @@ function doLogout() {
 const PD_PRIORITIES = {
   working: [
     { text: 'GOOGLE_DOC_READ — build next', active: true },
-    { text: 'GOOGLE_DOC_SHARE, GOOGLE_SLIDES_SHARE — queued' },
-    { text: 'Are.na browser auth — parked, needs new approach' },
-    { text: 'SUPABASE_SERVICE_KEY to Railway — still pending' },
+    { text: 'Railway webhook fix — urgent' },
     { text: 'Credential rotation — overdue' },
+    { text: 'icon_chats RLS — security, before real subscribers' },
+    { text: 'SUPABASE_SERVICE_KEY to Railway env vars' },
+    { text: 'Admin timestamps PT not UTC' },
+    { text: 'Sloan-test.js sync with Persona Builder' },
   ],
   sloan: [
-    { text: 'SEND_WORLD — resolved, craft work ongoing', active: true },
-    { text: 'Question marks — voice rule fixed, monitoring' },
-    { text: 'SAVE_DETAIL coaching — next session' },
+    { text: 'SEND_WORLD overcorrection — monitoring ongoing', active: true },
+    { text: 'Question mark regression — confirm self-corrects' },
+    { text: 'SAVE_DETAIL behavioral coaching — next session' },
+    { text: 'Sloan-test.js sync — needs to happen' },
     { text: 'Bible v4 — queued' },
-    { text: 'Vera and Aria framework — waiting on Anna drafts' },
   ],
   design: [
-    { text: 'First-week choreography — must finish this week', active: true },
-    { text: 'Magazine site — wireframes first' },
-    { text: 'PWA screens: Landing, World Intro, Features, Free Preview' },
-    { text: 'Segpay payments — launch blocker' },
+    { text: 'Site experience: Landing, World Intro, Features, Free Preview — not started', active: true },
+    { text: 'Magazine site wireframes — not started' },
+    { text: 'First-week choreography — launch blocker, must finish this week' },
+    { text: 'Segpay — research at minimum this week' },
   ],
 };
 
@@ -3062,6 +3064,10 @@ const PD_ATTENTION = [
   'Fallback API key still v2',
   'Credential rotation overdue',
   'LoRA retrain — needs 10 approved images',
+  'Railway webhook unreliable — broke twice, manual redeploy required each time',
+  'Site experience not started — Inspectah Deck has produced nothing',
+  'SUPABASE_SERVICE_KEY missing from Railway proxy env vars',
+  'Three Railway deploys pending confirmation — synthesis truncation fix, daily 6am cron, debug log removal',
 ];
 
 // Status colors. Reusing chat-status-dot's green/red and design-system
@@ -3121,7 +3127,7 @@ function pdRenderHealth(proxyChip) {
   const host = document.getElementById('pd-health');
   if (!host) return;
   host.innerHTML = proxyChip
-    + pdHealthChip('Twilio', PD_COLOR_RED, 'rejected — resubmitting Mon')
+    + pdHealthChip('Twilio', PD_COLOR_AMBER, 'resubmitted May 1 — deadline May 8')
     + pdHealthChip('Vercel', PD_COLOR_GREEN, 'live')
     + pdHealthChip('mirageicons.com', PD_COLOR_GREEN, 'live');
 }
@@ -5300,8 +5306,11 @@ const CHECKLIST_SECTIONS = [
     { id:'sec-u6', text:'Prompt sanitization layer (moderation fix)', tag:'urgent' },
     { id:'sec-u7', text:'Sloan re-connect to Learning Log and audit viewer', tag:'urgent' },
     { id:'sec-u8', text:'Add timestamps to Sloan and Andie chat messages', tag:'urgent' },
-    { id:'sec-u9', text:'Twilio toll-free resubmission (deadline May 2)', tag:'urgent' },
+    { id:'sec-u9', text:'Twilio toll-free +1 855 533-0518 Twilio verification (deadline May 8 — call support 1-888-898-4567)', tag:'urgent' },
     { id:'sec-u10', text:'Rotate Supabase legacy service_role key in git history', tag:'urgent' },
+    { id:'sec-u11', text:'Railway webhook reliability — broke twice, fix before next session', tag:'urgent' },
+    { id:'sec-u12', text:'Credential rotation — GitHub PAT, Replicate, Anthropic key, Supabase service key', tag:'urgent' },
+    { id:'sec-u13', text:'icon_chats RLS — no row-level security, fix before real subscribers', tag:'urgent' },
   ]},
   { title: 'INFRASTRUCTURE — DONE', doneByDefault: true, items: [
     { id:'inf-d1', text:'Proxy v3.6.3 stable on Railway', tag:'infra' },
@@ -5322,6 +5331,13 @@ const CHECKLIST_SECTIONS = [
     { id:'inf-d16', text:'Persona lock system', tag:'infra' },
     { id:'inf-d17', text:'Image counts on icon cards', tag:'infra' },
     { id:'inf-d18', text:'Completion percentage on icon cards', tag:'infra' },
+  ]},
+  { title: 'INFRASTRUCTURE — PENDING', items: [
+    { id:'inf-p1', text:'SUPABASE_SERVICE_KEY missing from Railway proxy env vars', tag:'infra' },
+    { id:'inf-p2', text:'Sloan-test.js sync with Persona Builder — Persona Builder is now source of truth', tag:'infra' },
+    { id:'inf-p3', text:'Admin timestamps render PT not UTC', tag:'infra' },
+    { id:'inf-p4', text:'GOOGLE_DOC_READ — not built', tag:'infra' },
+    { id:'inf-p5', text:'GOOGLE_DOC_SHARE — not built', tag:'infra' },
   ]},
   { title: 'STUDIO — DONE', doneByDefault: true, items: [
     { id:'stu-d1', text:'LoRA toggle — per-icon, localStorage, ON/OFF gates Flux payload', tag:'infra' },
@@ -5344,6 +5360,10 @@ const CHECKLIST_SECTIONS = [
     { id:'stu-p6', text:'Visual refresh pass', tag:'infra' },
     { id:'stu-p7', text:'LoRA retrain — images 94, 96, 98, 100, 102', tag:'infra' },
   ]},
+  { title: 'DESIGN — PENDING', items: [
+    { id:'des-p1', text:'Site experience: Landing, World Intro, Features, Free Preview', tag:'infra' },
+    { id:'des-p2', text:'Magazine site wireframes', tag:'infra' },
+  ]},
   { title: 'SLOAN — CONTENT', items: [
     { id:'sln-c1', text:'Fill Sloan Persona Builder completely (7% done)', tag:'content' },
     { id:'sln-c2', text:'Generate launch image library — 50+ approved images', tag:'content' },
@@ -5351,6 +5371,9 @@ const CHECKLIST_SECTIONS = [
     { id:'sln-c4', text:'Sloan Layer 2 knowledge documents', tag:'content' },
     { id:'sln-c5', text:'Filter evaluation with Sloan — test all presets on real images', tag:'content' },
     { id:'sln-c6', text:'Sloan public presence setup (Instagram, X)', tag:'content' },
+    { id:'sln-c7', text:'First-week subscriber choreography — launch blocker', tag:'content' },
+    { id:'sln-c8', text:'SEND_WORLD overcorrection fix', tag:'content' },
+    { id:'sln-c9', text:'LoRA retrain — needs 10 approved images', tag:'content' },
   ]},
   { title: 'SLOAN CD — PHASE 2 (IMAGE AGENT)', items: [
     { id:'sln-cd2-1', text:'Sloan Lightroom integration — evaluate and edit images via chat', tag:'infra' },
