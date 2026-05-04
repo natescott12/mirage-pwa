@@ -6485,7 +6485,6 @@ function sloanChatExtractImageUrl(text) {
 // silent upgrade.
 function renderSloanChatMarkdown(raw) {
   if (!raw) return '';
-  console.log('[chat render] newlines:', (raw.match(/\n/g)||[]).length, 'preview:', raw.substring(0,200));
   // Pass breaks/gfm directly at parse time so a single newline becomes
   // a <br>. The global marked.setOptions in <head> already sets this,
   // but marked 9.x has been observed to not always honor the global on
