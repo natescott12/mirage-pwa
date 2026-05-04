@@ -6525,7 +6525,7 @@ function appendSloanChatMessage(who, text, explicitImageUrl, docName, timestamp)
     const sniffed = sloanChatExtractImageUrl(displayText);
     if (sniffed) {
       imageUrl = sniffed;
-      displayText = displayText.replace(sniffed, '').replace(/\s{2,}/g, ' ').trim();
+      displayText = displayText.replace(sniffed, '').replace(/[ \t]{2,}/g, ' ').trim();
     }
   }
 
