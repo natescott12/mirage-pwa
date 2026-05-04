@@ -6470,6 +6470,7 @@ function sloanChatExtractImageUrl(text) {
 // silent upgrade.
 function renderSloanChatMarkdown(raw) {
   if (!raw) return '';
+  console.log('[chat render] newlines:', (raw.match(/\n/g)||[]).length, 'preview:', raw.substring(0,200));
   return marked.parse(raw);
 }
 
