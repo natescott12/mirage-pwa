@@ -2325,15 +2325,15 @@ button { color: inherit; }
           <!-- Priority columns -->
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;">
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;">
-              <div style="font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:12px;">Mirage Working</div>
+              <div style="font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:12px;">Method Man</div>
               <div id="pd-priorities-working"></div>
             </div>
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;">
-              <div style="font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:12px;">All Things Sloan</div>
+              <div style="font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:12px;">GZA</div>
               <div id="pd-priorities-sloan"></div>
             </div>
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;">
-              <div style="font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:12px;">Mirage Design / Strategy</div>
+              <div style="font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:12px;">Inspectah Deck / Raekwon</div>
               <div id="pd-priorities-design"></div>
             </div>
           </div>
@@ -2349,13 +2349,13 @@ button { color: inherit; }
             <div style="font-size:var(--text-xs);letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:10px;">Founder Investment</div>
             <div style="display:grid;grid-template-columns:160px 1fr;row-gap:8px;font-size:var(--text-sm);color:var(--ink);">
               <div style="color:var(--ink-mid);">Hours Invested</div>
-              <div>300 hrs <span style="color:var(--ink-dim);">(est. since April 5)</span></div>
+              <div>313 hrs <span style="color:var(--ink-dim);">(est. since April 5)</span></div>
               <div style="color:var(--ink-mid);">Sweat Equity</div>
               <div>$75,000 – $90,000 <span style="color:var(--ink-dim);">(at $250–$300/hr)</span></div>
               <div style="color:var(--ink-mid);">Tracking from</div>
               <div>May 1, 2026 <span style="color:var(--ink-dim);">— logged going forward</span></div>
             </div>
-            <div style="font-size:var(--text-xs);color:var(--ink-dim);margin-top:10px;">Estimate based on ~27 days at 10-12 hrs/day. Tracked accurately from May 1.</div>
+            <div style="font-size:var(--text-xs);color:var(--ink-dim);margin-top:10px;">Tracked from May 1. ~12.5hrs added May 3.</div>
           </div>
 
           <!-- Needs attention -->
@@ -3010,31 +3010,34 @@ function doLogout() {
 
 const PD_PRIORITIES = {
   working: [
-    { text: 'Twilio resubmission — May 1 (done, under review)', active: true },
-    { text: 'Add SUPABASE_SERVICE_KEY to Railway' },
-    { text: 'Fallback API key v2 → v3' },
-    { text: 'Credential rotation' },
-    { text: 'Manual synthesis trigger' },
+    { text: 'GOOGLE_DOC_READ — build next', active: true },
+    { text: 'GOOGLE_DOC_SHARE, GOOGLE_SLIDES_SHARE — queued' },
+    { text: 'Are.na browser auth — parked, needs new approach' },
+    { text: 'SUPABASE_SERVICE_KEY to Railway — still pending' },
+    { text: 'Credential rotation — overdue' },
   ],
   sloan: [
-    { text: 'Test Google + Are.na directives' },
-    { text: 'Track 2 — Brand Strategy v2' },
-    { text: 'Capture gold standard conversation' },
-    { text: 'Vera and Aria development' },
+    { text: 'SEND_WORLD — resolved, craft work ongoing', active: true },
+    { text: 'Question marks — voice rule fixed, monitoring' },
+    { text: 'SAVE_DETAIL coaching — next session' },
+    { text: 'Bible v4 — queued' },
+    { text: 'Vera and Aria framework — waiting on Anna drafts' },
   ],
   design: [
+    { text: 'First-week choreography — must finish this week', active: true },
     { text: 'Magazine site — wireframes first' },
     { text: 'PWA screens: Landing, World Intro, Features, Free Preview' },
-    { text: 'First-week subscriber choreography' },
+    { text: 'Segpay payments — launch blocker' },
   ],
 };
 
 const PD_ATTENTION = [
-  'Sloan voice — nuclear restore, testing in progress',
-  'LoRA retrain — needs 10 approved images',
+  'Twilio rejected twice — resubmitting Monday with new strategy',
+  'Segpay not started — launch blocker',
+  'First-week choreography undefined — launch blocker',
   'Fallback API key still v2',
-  'SUPABASE_SERVICE_KEY missing from Railway',
   'Credential rotation overdue',
+  'LoRA retrain — needs 10 approved images',
 ];
 
 // Status colors. Reusing chat-status-dot's green/red and design-system
@@ -3094,7 +3097,7 @@ function pdRenderHealth(proxyChip) {
   const host = document.getElementById('pd-health');
   if (!host) return;
   host.innerHTML = proxyChip
-    + pdHealthChip('Twilio', PD_COLOR_AMBER, 'under review')
+    + pdHealthChip('Twilio', PD_COLOR_RED, 'rejected — resubmitting Mon')
     + pdHealthChip('Vercel', PD_COLOR_GREEN, 'live')
     + pdHealthChip('mirageicons.com', PD_COLOR_GREEN, 'live');
 }
