@@ -68,10 +68,31 @@
   }
   form.signup-form {
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+    gap: 12px;
     max-width: 420px;
     margin: 0 auto 16px;
   }
+  .consent-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 12px;
+    color: rgba(246, 234, 234, 0.7);
+    line-height: 1.5;
+    cursor: pointer;
+    text-align: left;
+  }
+  .consent-row input[type="checkbox"] {
+    margin-top: 3px;
+    flex-shrink: 0;
+    accent-color: #f6eaea;
+  }
+  button.submit:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  button.submit:disabled:hover { opacity: 0.4; }
   input[type="tel"] {
     flex: 1;
     background: transparent;
@@ -159,12 +180,12 @@
 
         <form class="signup-form" id="waitlist-form" novalidate>
           <input type="tel" name="phone" placeholder="Your phone number" required autocomplete="tel" inputmode="tel">
-          <button type="submit" class="submit">Join</button>
+          <label class="consent-row">
+            <input type="checkbox" id="consent-checkbox">
+            <span>I agree to receive recurring SMS messages from Mirage. Reply STOP to opt out at any time. Message and data rates may apply.</span>
+          </label>
+          <button type="submit" class="submit" id="join-btn" disabled>Join</button>
         </form>
-
-        <p class="compliance">
-          By subscribing you agree to receive recurring SMS messages from Mirage. Reply STOP to opt out at any time. Message and data rates may apply.
-        </p>
       </div>
     </div>
   </main>
@@ -183,6 +204,13 @@
       var form = document.getElementById('waitlist-form');
       var thanks = document.getElementById('thanks');
       if (!form) return;
+      var consentCheckbox = document.getElementById('consent-checkbox');
+      var joinBtn = document.getElementById('join-btn');
+      if (consentCheckbox && joinBtn) {
+        consentCheckbox.addEventListener('change', function() {
+          joinBtn.disabled = !consentCheckbox.checked;
+        });
+      }
       form.addEventListener('submit', function(e) {
         e.preventDefault();
         var phoneInput = form.querySelector('input[name="phone"]');
