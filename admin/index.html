@@ -2426,8 +2426,8 @@ button { color: inherit; }
           </div>
           <div id="cl-label" style="font-size:12px;color:var(--ink-dim);margin-top:6px"></div>
         </div>
-        <div id="checklist-body"></div>
-        <div id="checklist-personal" style="margin-top:32px"></div>
+        <div id="checklist-personal"></div>
+        <div id="checklist-body" style="margin-top:32px"></div>
       </div>
 
       <!-- P&L DASHBOARD -->
@@ -5480,8 +5480,26 @@ function resetChecklist() {
 // toward the main progress bar.
 const PERSONAL_TASKS_SECTION = 'personal_tasks';
 const PERSONAL_TASKS_LABEL = 'nate_personal_tasks';
+const PERSONAL_TASKS_SEED_TEXTS = [
+  'Tax / Financial: W2s from gambling → spreadsheet for accountant',
+  'Tax / Financial: IRS — pay 2024 taxes (website access broken, months of trying)',
+  'Tax / Financial: IRS Tax Protection Services — call back re: stolen refund check',
+  'Cars: Porsche — service',
+  'Cars: BMW — insurance claim for cracked windshield',
+  "Health: General doctor — full checkup (you're 50, don't skip)",
+  'Health: Dentist appointment',
+  'Health: Eye doctor appointment',
+  'Admin: New passport',
+];
 let personalTasksRowId = null;
 let personalTasks = [];
+
+function buildPersonalTasksSeed() {
+  const ts = Date.now();
+  return PERSONAL_TASKS_SEED_TEXTS.map(function(text, i) {
+    return { id: 'pt-' + ts + '-' + i, text: text, done: false };
+  });
+}
 
 async function loadPersonalTasks() {
   try {
@@ -5495,11 +5513,14 @@ async function loadPersonalTasks() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const rows = await r.json();
     if (rows && rows.length) {
+      // Existing data — never overwrite.
       personalTasksRowId = rows[0].id;
       try { personalTasks = JSON.parse(rows[0].value || '[]'); }
       catch (_) { personalTasks = []; }
       if (!Array.isArray(personalTasks)) personalTasks = [];
     } else {
+      // First-load seed — only when the row truly doesn't exist yet.
+      const seeded = buildPersonalTasksSeed();
       const ins = await fetch(SUPABASE_URL + '/rest/v1/system_config', {
         method: 'POST',
         headers: {
@@ -5511,7 +5532,7 @@ async function loadPersonalTasks() {
         body: JSON.stringify({
           section: PERSONAL_TASKS_SECTION,
           label: PERSONAL_TASKS_LABEL,
-          value: '[]',
+          value: JSON.stringify(seeded),
           status: 'active',
         }),
       });
@@ -5521,7 +5542,7 @@ async function loadPersonalTasks() {
       } else {
         console.warn('[personal-tasks] seed insert failed:', ins.status);
       }
-      personalTasks = [];
+      personalTasks = seeded;
     }
   } catch (e) {
     console.warn('[personal-tasks] load failed:', e.message);
