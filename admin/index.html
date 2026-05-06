@@ -3300,6 +3300,9 @@ function showPane(id) {
   // Stop Andie polling whenever we leave her pane. The id === 'andie'
   // branch below restarts it if that's where we're heading.
   if (id !== 'andie' && typeof andieStopPolling === 'function') andieStopPolling();
+  // Same dance for Sloan Chat — the loadSloanChat call below restarts
+  // polling on entry.
+  if (id !== 'sloanchat' && typeof sloanchatStopPolling === 'function') sloanchatStopPolling();
 
   document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
@@ -6788,6 +6791,15 @@ function __chatDayKey(d) { return d.getFullYear() + '-' + d.getMonth() + '-' + d
 let __sloanLastDayKey = null;
 let __andieLastDayKey = null;
 
+// Polling state — incremental refresh of Sloan Chat while the pane is
+// active. Tracks the last known icon_chats history length so each poll
+// can append just the delta. sloanChatSend manually bumps this counter
+// for its locally-appended turns so a poll firing mid-send won't render
+// duplicates.
+let __sloanchatLastHistoryLength = 0;
+let __sloanchatPollTimer = null;
+const SLOANCHAT_POLL_INTERVAL_MS = 10000;
+
 async function loadSloanChat() {
   const msgs = document.getElementById('sloanchat-messages');
   if (!msgs) return;
@@ -6802,11 +6814,13 @@ async function loadSloanChat() {
     const history = (rows[0] && rows[0].messages) || [];
     msgs.innerHTML = '';
     __sloanLastDayKey = null;
+    __sloanchatLastHistoryLength = history.length;
     if (!history.length) {
       const empty = document.createElement('div');
       empty.className = 'sloanchat-empty';
       empty.textContent = 'no messages yet — say something';
       msgs.appendChild(empty);
+      sloanchatStartPolling();
       return;
     }
     history.slice(-100).forEach(function(m) {
@@ -6822,9 +6836,70 @@ async function loadSloanChat() {
       if (text.trim()) appendSloanChatMessage(who, text, null, null, m.timestamp);
     });
     msgs.scrollTop = msgs.scrollHeight;
+    sloanchatStartPolling();
   } catch (e) {
     console.error('[sloanchat] history load failed:', e && e.message);
     msgs.innerHTML = '<div class="sloanchat-empty">Failed to load history: ' + (e && e.message) + '</div>';
+  }
+}
+
+function sloanchatStartPolling() {
+  if (__sloanchatPollTimer) return;
+  __sloanchatPollTimer = setInterval(sloanchatPollTick, SLOANCHAT_POLL_INTERVAL_MS);
+  console.log('[sloanchat] polling started — every', SLOANCHAT_POLL_INTERVAL_MS, 'ms');
+}
+
+function sloanchatStopPolling() {
+  if (!__sloanchatPollTimer) return;
+  clearInterval(__sloanchatPollTimer);
+  __sloanchatPollTimer = null;
+  console.log('[sloanchat] polling stopped');
+}
+
+async function sloanchatPollTick() {
+  // Defensive: bail if the pane was hidden between intervals (showPane's
+  // stop hook should have already cleared the timer, but tab visibility
+  // changes can also leave us idle).
+  const pane = document.getElementById('pane-sloanchat');
+  if (!pane || !pane.classList.contains('active')) return;
+  if (document.hidden) return;
+  try {
+    const iconId = sloanChatIconId();
+    const r = await fetch(SUPABASE_URL + '/rest/v1/icon_chats?icon_id=eq.' + encodeURIComponent(iconId) + '&select=messages', {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
+    });
+    if (!r.ok) return;
+    const rows = await r.json();
+    const history = (rows[0] && rows[0].messages) || [];
+    if (history.length <= __sloanchatLastHistoryLength) {
+      // Counter ahead of icon_chats — usually a local-only error bubble
+      // bumped past truth. Clamp so a recovery message can still land.
+      if (__sloanchatLastHistoryLength > history.length) {
+        __sloanchatLastHistoryLength = history.length;
+      }
+      return;
+    }
+    const newOnes = history.slice(__sloanchatLastHistoryLength);
+    const msgs = document.getElementById('sloanchat-messages');
+    const wasAtBottom = msgs ? (msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 80) : true;
+    // First arrival into an empty thread — drop the placeholder.
+    if (msgs) {
+      const empty = msgs.querySelector('.sloanchat-empty');
+      if (empty) empty.remove();
+    }
+    newOnes.forEach(function(m) {
+      const who = m.role === 'user' ? 'nate' : 'sloan';
+      const text = (typeof m.content === 'string')
+        ? m.content
+        : Array.isArray(m.content)
+          ? m.content.map(function(c) { return c && c.type === 'text' ? (c.text || '') : ''; }).join('')
+          : '';
+      if (text.trim()) appendSloanChatMessage(who, text, null, null, m.timestamp);
+    });
+    __sloanchatLastHistoryLength = history.length;
+    if (wasAtBottom && msgs) msgs.scrollTop = msgs.scrollHeight;
+  } catch (e) {
+    console.warn('[sloanchat] poll error:', e && e.message);
   }
 }
 
@@ -7049,6 +7124,9 @@ async function sloanChatSend() {
   const attachedImageUrl = attachment && attachment.kind === 'image' ? attachment.dataUrl : null;
   const attachedDocName = attachment && attachment.kind === 'document' ? attachment.name : null;
   appendSloanChatMessage('nate', text, attachedImageUrl, attachedDocName, Date.now());
+  // Server persists the user turn to icon_chats — keep the poll counter
+  // in lockstep so a tick firing mid-send doesn't re-render this bubble.
+  __sloanchatLastHistoryLength += 1;
   input.value = '';
   sloanChatClearAttachment();
   btn.disabled = true;
@@ -7105,14 +7183,20 @@ async function sloanChatSend() {
     } catch (_) {
       reply = 'non-JSON response (HTTP ' + r.status + '): ' + rawBody.slice(0, 300);
     }
+    // Only successful (no-error) responses persist an assistant turn to
+    // icon_chats, so only those should bump the poll counter.
+    const persistsToIconChats = !(typeof reply === 'string' && reply.indexOf('error: ') === 0)
+      && !(typeof reply === 'string' && reply.indexOf('non-JSON response') === 0);
     if (replies && replies.length) {
       for (let i = 0; i < replies.length; i++) {
         const isLast = i === replies.length - 1;
         appendSloanChatMessage('sloan', replies[i], isLast ? mediaUrl : null, null, Date.now());
+        if (persistsToIconChats) __sloanchatLastHistoryLength += 1;
         if (!isLast) await new Promise(function(resolve) { setTimeout(resolve, 400); });
       }
     } else {
       appendSloanChatMessage('sloan', reply, mediaUrl, null, Date.now());
+      if (persistsToIconChats) __sloanchatLastHistoryLength += 1;
     }
     if (figmaQueued) {
       appendSloanChatMessage('system', '✦ Sloan queued a Figma task', null, null, Date.now());
