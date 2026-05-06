@@ -7496,6 +7496,14 @@ const CL_PRESETS_FALLBACK = [
 let clItems = [];
 let clActiveIcon = 'all';
 let clCurrent = null;          // { id, image_url, icon_id, scene, created_at, ... } + resolved _iconName
+// Icon roster derived from a one-shot `select=icon_id` index query at
+// pane init. Powers tabs and per-tab counts independent of which tab is
+// active — without this, switching a tab would shrink the visible roster
+// because tabs were derived from the currently-loaded clItems.
+let clAllIconNames = [];       // sorted distinct display names
+let clIconIdsByName = {};      // 'Sloan' → ['sloan','1'], 'Vera' → ['vera','2'], ...
+let clCountByName = {};        // display name → row count
+let clTotalCount = 0;          // total rows across all icon_ids
 
 // icon_id → display name via the already-loaded admin roster. Falls back to
 // the bare id string if the roster hasn't hydrated yet or the id is unknown.
@@ -7702,11 +7710,73 @@ async function clFetchPresetsOnce() {
 }
 
 // ── Browse view ──────────────────────────────────────────────────────────────
+const CL_BROWSE_SELECT = 'id,image_url,icon_id,scene,created_at,is_published,edited_from,edit_preset,edit_adjustments,storage_path';
+
+// One-shot index of every icon_id in the content table. Builds the tab
+// list and per-tab counts so switching tabs doesn't shrink the roster
+// or lie about totals. Cheap — single column, large limit.
+async function clLoadIconMap() {
+  try {
+    const url = SUPABASE_URL + '/rest/v1/content?select=icon_id&limit=10000';
+    const r = await fetch(url, {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+    });
+    if (!r.ok) {
+      console.warn('[content-library] icon-map fetch failed', r.status);
+      return;
+    }
+    const rows = await r.json();
+    const idsByName = {};
+    const countsByName = {};
+    rows.forEach(function(row) {
+      const iid = row && row.icon_id;
+      if (!iid) return;
+      const name = clResolveIconName(iid);
+      if (!name) return;
+      if (!idsByName[name]) idsByName[name] = [];
+      if (idsByName[name].indexOf(String(iid)) < 0) idsByName[name].push(String(iid));
+      countsByName[name] = (countsByName[name] || 0) + 1;
+    });
+    clIconIdsByName = idsByName;
+    clCountByName = countsByName;
+    clAllIconNames = Object.keys(idsByName).sort(function(a, b) { return a.localeCompare(b); });
+    clTotalCount = rows.length;
+    console.log('[content-library] icon-map →', clAllIconNames.length, 'icons,', clTotalCount, 'rows total');
+  } catch (e) {
+    console.warn('[content-library] icon-map error:', e && e.message);
+  }
+}
+
 async function clLoadBrowse() {
   const grid = document.getElementById('cl-grid');
   if (!grid) return;
   grid.innerHTML = '<div class="cl-empty">Loading…</div>';
-  const url = SUPABASE_URL + '/rest/v1/content?select=id,image_url,icon_id,scene,created_at,is_published,edited_from,edit_preset,edit_adjustments,storage_path&order=created_at.desc&limit=500';
+
+  // Build the icon-id map once per pane session so tab counts and the
+  // tab list are accurate regardless of which tab gets clicked first.
+  if (!clAllIconNames.length) {
+    await clLoadIconMap();
+  }
+
+  let url;
+  if (clActiveIcon && clActiveIcon !== 'all') {
+    // Per-icon view — query Supabase directly for that icon's rows. No
+    // row cap, so icons with rows beyond the All-view's first 500 still
+    // show fully. icon_id values are quoted to keep PostgREST `in.()`
+    // happy with hyphens, dots, etc.
+    const ids = (clIconIdsByName[clActiveIcon] || []).slice();
+    if (!ids.length) ids.push(clActiveIcon);
+    const inList = ids.map(function(id) {
+      return '"' + String(id).replace(/"/g, '\\"') + '"';
+    }).join(',');
+    url = SUPABASE_URL + '/rest/v1/content?select=' + CL_BROWSE_SELECT
+      + '&icon_id=in.(' + inList + ')'
+      + '&order=created_at.desc';
+  } else {
+    // All-view stays capped at 500 rows so the grid stays responsive.
+    url = SUPABASE_URL + '/rest/v1/content?select=' + CL_BROWSE_SELECT
+      + '&order=created_at.desc&limit=500';
+  }
   console.log('[content-library] fetch →', url);
   try {
     const r = await fetch(url, {
@@ -7718,7 +7788,7 @@ async function clLoadBrowse() {
       throw new Error('HTTP ' + r.status + (body ? ': ' + body.slice(0, 200) : ''));
     }
     const rows = await r.json();
-    console.log('[content-library] got', (rows && rows.length) || 0, 'rows');
+    console.log('[content-library] got', (rows && rows.length) || 0, 'rows for', clActiveIcon);
     // Resolve icon_id → display name once so downstream UI (filter tabs,
     // card labels, edit title) can keep using a stable string.
     clItems = rows.map(function(row){
@@ -7735,32 +7805,41 @@ async function clLoadBrowse() {
 /* Reload button handler — force a fresh fetch regardless of cache state. */
 function clReload() {
   clItems = [];
+  clAllIconNames = [];
+  clIconIdsByName = {};
+  clCountByName = {};
+  clTotalCount = 0;
   clLoadBrowse();
 }
 
 function clRenderFilters() {
   const row = document.getElementById('cl-filter-row');
   if (!row) return;
-  const names = ['all'];
-  clItems.forEach(function(x) { if (x._iconName && names.indexOf(x._iconName) < 0) names.push(x._iconName); });
+  // Tabs are sourced from the icon_id index, not the currently-loaded
+  // clItems — otherwise selecting an icon tab would shrink the tab list
+  // because clItems is now per-icon.
+  const names = ['all'].concat(clAllIconNames);
   if (names.indexOf(clActiveIcon) < 0) clActiveIcon = 'all';
   row.innerHTML = names.map(function(n) {
-    const count = n === 'all' ? clItems.length : clItems.filter(function(x){return x._iconName===n;}).length;
+    const count = n === 'all' ? clTotalCount : (clCountByName[n] || 0);
     const cls = 'cl-filter-btn' + (clActiveIcon === n ? ' active' : '');
     const label = n === 'all' ? 'All' : n;
     return '<button class="' + cls + '" onclick="clSetIconFilter(\'' + n.replace(/'/g, "\\'") + '\')">' + label + '<span class="cl-filter-count">' + count + '</span></button>';
   }).join('');
 }
 function clSetIconFilter(name) {
+  if (clActiveIcon === name) return;
   clActiveIcon = name;
-  clRenderFilters();
-  clRenderGrid();
+  // Different filter ⇒ different data set ⇒ re-fetch.
+  clLoadBrowse();
 }
 function clRenderGrid() {
   const grid = document.getElementById('cl-grid');
   const sub = document.getElementById('cl-browse-sub');
   if (!grid) return;
-  const list = clActiveIcon === 'all' ? clItems.slice() : clItems.filter(function(x){return x._iconName===clActiveIcon;});
+  // clItems is already scoped to the active filter (server-side), so no
+  // client-side filtering here.
+  const list = clItems.slice();
   if (sub) sub.textContent = list.length + ' image' + (list.length===1?'':'s') + (clActiveIcon==='all'?'':' · ' + clActiveIcon);
   if (!list.length) { grid.innerHTML = '<div class="cl-empty">No images' + (clActiveIcon==='all'?'':' for ' + clActiveIcon) + '.</div>'; return; }
   grid.innerHTML = list.map(function(it, i) {
@@ -7793,9 +7872,8 @@ function clRenderGrid() {
 // the ‹ / › buttons step through the currently-filtered grid.
 let clLightboxIndex = -1;
 function clLightboxFilteredList() {
-  return clActiveIcon === 'all'
-    ? clItems.slice()
-    : clItems.filter(function(x){ return x._iconName === clActiveIcon; });
+  // clItems already reflects the active filter (server-side scoped).
+  return clItems.slice();
 }
 function clOpenLightbox(id) {
   const list = clLightboxFilteredList();
