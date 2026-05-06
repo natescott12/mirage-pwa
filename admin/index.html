@@ -2427,6 +2427,7 @@ button { color: inherit; }
           <div id="cl-label" style="font-size:12px;color:var(--ink-dim);margin-top:6px"></div>
         </div>
         <div id="checklist-body"></div>
+        <div id="checklist-personal" style="margin-top:32px"></div>
       </div>
 
       <!-- P&L DASHBOARD -->
@@ -3323,7 +3324,7 @@ function showPane(id) {
   }
   if (id === 'subscribers') loadSubscribers();
   if (id === 'requests') loadRequests();
-  if (id === 'checklist') initChecklist();
+  if (id === 'checklist') { initChecklist(); loadPersonalTasks(); }
   if (id === 'pnl') initPnl();
   if (id === 'andie') initAndie();
   if (id === 'sloanlog') loadSloanLog();
@@ -5470,6 +5471,227 @@ function updateChecklistProgress() {
 function resetChecklist() {
   saveChecklistState({});
   initChecklist();
+}
+
+// ── PERSONAL TASKS ───────────────────────────────────────────────────────────
+// Lives under the main Mirage checklist, fully editable, persisted to
+// system_config under section='personal_tasks', label='nate_personal_tasks'.
+// Value is a JSON-serialised array of { id, text, done }. Does NOT count
+// toward the main progress bar.
+const PERSONAL_TASKS_SECTION = 'personal_tasks';
+const PERSONAL_TASKS_LABEL = 'nate_personal_tasks';
+let personalTasksRowId = null;
+let personalTasks = [];
+
+async function loadPersonalTasks() {
+  try {
+    const url = SUPABASE_URL + '/rest/v1/system_config'
+      + '?section=eq.' + encodeURIComponent(PERSONAL_TASKS_SECTION)
+      + '&label=eq.' + encodeURIComponent(PERSONAL_TASKS_LABEL)
+      + '&select=id,value';
+    const r = await fetch(url, {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const rows = await r.json();
+    if (rows && rows.length) {
+      personalTasksRowId = rows[0].id;
+      try { personalTasks = JSON.parse(rows[0].value || '[]'); }
+      catch (_) { personalTasks = []; }
+      if (!Array.isArray(personalTasks)) personalTasks = [];
+    } else {
+      const ins = await fetch(SUPABASE_URL + '/rest/v1/system_config', {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation',
+        },
+        body: JSON.stringify({
+          section: PERSONAL_TASKS_SECTION,
+          label: PERSONAL_TASKS_LABEL,
+          value: '[]',
+          status: 'active',
+        }),
+      });
+      if (ins.ok) {
+        const created = await ins.json();
+        if (Array.isArray(created) && created[0]) personalTasksRowId = created[0].id;
+      } else {
+        console.warn('[personal-tasks] seed insert failed:', ins.status);
+      }
+      personalTasks = [];
+    }
+  } catch (e) {
+    console.warn('[personal-tasks] load failed:', e.message);
+    personalTasks = [];
+  }
+  renderPersonalTasks();
+}
+
+async function savePersonalTasks() {
+  try {
+    if (!personalTasksRowId) {
+      const ins = await fetch(SUPABASE_URL + '/rest/v1/system_config', {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation,resolution=merge-duplicates',
+        },
+        body: JSON.stringify({
+          section: PERSONAL_TASKS_SECTION,
+          label: PERSONAL_TASKS_LABEL,
+          value: JSON.stringify(personalTasks),
+          status: 'active',
+        }),
+      });
+      if (ins.ok) {
+        const created = await ins.json();
+        if (Array.isArray(created) && created[0]) personalTasksRowId = created[0].id;
+      } else {
+        console.warn('[personal-tasks] save (insert) failed:', ins.status);
+      }
+      return;
+    }
+    const r = await fetch(SUPABASE_URL + '/rest/v1/system_config?id=eq.' + encodeURIComponent(personalTasksRowId), {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify({ value: JSON.stringify(personalTasks) }),
+    });
+    if (!r.ok) console.warn('[personal-tasks] save failed:', r.status);
+  } catch (e) {
+    console.warn('[personal-tasks] save error:', e.message);
+  }
+}
+
+function ptEsc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+    return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c];
+  });
+}
+
+function renderPersonalTasks() {
+  const wrap = document.getElementById('checklist-personal');
+  if (!wrap) return;
+  let html = '<div style="margin-bottom:32px">';
+  html += '<div class="cl-section-title">PERSONAL</div>';
+  personalTasks.forEach(function(t, idx) {
+    html += '<div class="cl-task' + (t.done ? ' cl-done' : '') + '" style="cursor:default" data-id="' + ptEsc(t.id) + '">';
+    html += '<div class="cl-task-box pt-toggle" data-idx="' + idx + '" style="cursor:pointer">';
+    html += t.done ? '<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.8 7L9 1" stroke="#0f0e0d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' : '';
+    html += '</div>';
+    html += '<div style="flex:1;min-width:0;display:flex;align-items:center;gap:10px">';
+    html += '<div class="cl-task-text pt-text" data-idx="' + idx + '" style="cursor:text;flex:1">' + ptEsc(t.text) + '</div>';
+    html += '<button type="button" class="pt-delete" data-idx="' + idx + '" aria-label="Delete task" title="Delete" style="background:none;border:none;color:var(--ink-dim);cursor:pointer;padding:2px 8px;font-size:14px;line-height:1;opacity:0.5">×</button>';
+    html += '</div>';
+    html += '</div>';
+  });
+  html += '<div class="cl-task" style="cursor:default;opacity:0.95">';
+  html += '<div class="cl-task-box" style="border-style:dashed;background:transparent"></div>';
+  html += '<div style="flex:1;min-width:0;display:flex;align-items:center;gap:10px">';
+  html += '<input type="text" id="pt-add-input" placeholder="Add a personal task..." style="flex:1;background:transparent;border:none;outline:none;color:var(--ink);font-family:inherit;font-size:var(--text-sm);padding:0">';
+  html += '<button type="button" id="pt-add-btn" aria-label="Add task" title="Add" style="background:none;border:none;color:var(--ink-dim);cursor:pointer;padding:2px 8px;font-size:16px;line-height:1">+</button>';
+  html += '</div>';
+  html += '</div>';
+  html += '</div>';
+  wrap.innerHTML = html;
+  bindPersonalTaskHandlers();
+}
+
+function bindPersonalTaskHandlers() {
+  const wrap = document.getElementById('checklist-personal');
+  if (!wrap) return;
+  wrap.querySelectorAll('.pt-toggle').forEach(function(el) {
+    el.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const idx = parseInt(el.getAttribute('data-idx'), 10);
+      if (!Number.isFinite(idx) || !personalTasks[idx]) return;
+      personalTasks[idx].done = !personalTasks[idx].done;
+      savePersonalTasks();
+      renderPersonalTasks();
+    });
+  });
+  wrap.querySelectorAll('.pt-text').forEach(function(el) {
+    el.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const idx = parseInt(el.getAttribute('data-idx'), 10);
+      if (!Number.isFinite(idx) || !personalTasks[idx]) return;
+      const current = personalTasks[idx].text || '';
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = current;
+      input.className = 'pt-edit-input';
+      input.style.cssText = 'flex:1;background:transparent;border:none;outline:none;color:var(--ink);font-family:inherit;font-size:var(--text-sm);padding:0';
+      el.replaceWith(input);
+      input.focus();
+      try { input.setSelectionRange(input.value.length, input.value.length); } catch (_) {}
+      let committed = false;
+      const commit = function() {
+        if (committed) return;
+        committed = true;
+        const next = (input.value || '').trim();
+        if (next && next !== current) {
+          personalTasks[idx].text = next;
+          savePersonalTasks();
+          renderPersonalTasks();
+        } else if (!next) {
+          personalTasks.splice(idx, 1);
+          savePersonalTasks();
+          renderPersonalTasks();
+        } else {
+          renderPersonalTasks();
+        }
+      };
+      input.addEventListener('blur', commit);
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+        else if (e.key === 'Escape') { committed = true; renderPersonalTasks(); }
+      });
+    });
+  });
+  wrap.querySelectorAll('.pt-delete').forEach(function(el) {
+    el.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const idx = parseInt(el.getAttribute('data-idx'), 10);
+      if (!Number.isFinite(idx)) return;
+      personalTasks.splice(idx, 1);
+      savePersonalTasks();
+      renderPersonalTasks();
+    });
+  });
+  const addInput = document.getElementById('pt-add-input');
+  const addBtn = document.getElementById('pt-add-btn');
+  const addTask = function() {
+    if (!addInput) return;
+    const text = (addInput.value || '').trim();
+    if (!text) return;
+    personalTasks.push({
+      id: 'pt-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
+      text: text,
+      done: false,
+    });
+    addInput.value = '';
+    savePersonalTasks();
+    renderPersonalTasks();
+    setTimeout(function() {
+      const next = document.getElementById('pt-add-input');
+      if (next) next.focus();
+    }, 0);
+  };
+  if (addInput) {
+    addInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); addTask(); }
+    });
+  }
+  if (addBtn) addBtn.addEventListener('click', addTask);
 }
 
 
