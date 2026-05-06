@@ -6798,7 +6798,30 @@ let __andieLastDayKey = null;
 // duplicates.
 let __sloanchatLastHistoryLength = 0;
 let __sloanchatPollTimer = null;
+// Tripped while sloanChatSend is in flight so the poll doesn't fire
+// between the local user-bubble append and the server's icon_chats
+// save (which would re-render the same turn).
+let __sloanchatSending = false;
 const SLOANCHAT_POLL_INTERVAL_MS = 10000;
+
+// Single fetch that aligns the counter to the current persisted history
+// length without rendering anything. Called at the end of sloanChatSend
+// so the next poll tick uses an accurate baseline regardless of how
+// many turns the server saved during this send.
+async function sloanchatRealignCounter() {
+  try {
+    const iconId = sloanChatIconId();
+    const r = await fetch(SUPABASE_URL + '/rest/v1/icon_chats?icon_id=eq.' + encodeURIComponent(iconId) + '&select=messages', {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
+    });
+    if (!r.ok) return;
+    const rows = await r.json();
+    const history = (rows[0] && rows[0].messages) || [];
+    __sloanchatLastHistoryLength = history.length;
+  } catch (e) {
+    console.warn('[sloanchat] realign error:', e && e.message);
+  }
+}
 
 async function loadSloanChat() {
   const msgs = document.getElementById('sloanchat-messages');
@@ -6863,6 +6886,9 @@ async function sloanchatPollTick() {
   const pane = document.getElementById('pane-sloanchat');
   if (!pane || !pane.classList.contains('active')) return;
   if (document.hidden) return;
+  // Don't poll mid-send — sloanChatSend renders locally and realigns the
+  // counter when it's done. Polling in the gap would double-render.
+  if (__sloanchatSending) return;
   try {
     const iconId = sloanChatIconId();
     const r = await fetch(SUPABASE_URL + '/rest/v1/icon_chats?icon_id=eq.' + encodeURIComponent(iconId) + '&select=messages', {
@@ -7124,9 +7150,11 @@ async function sloanChatSend() {
   const attachedImageUrl = attachment && attachment.kind === 'image' ? attachment.dataUrl : null;
   const attachedDocName = attachment && attachment.kind === 'document' ? attachment.name : null;
   appendSloanChatMessage('nate', text, attachedImageUrl, attachedDocName, Date.now());
-  // Server persists the user turn to icon_chats — keep the poll counter
-  // in lockstep so a tick firing mid-send doesn't re-render this bubble.
-  __sloanchatLastHistoryLength += 1;
+  // Pause the auto-poll for the duration of this send. The single
+  // realign at the end of finally syncs the counter to whatever the
+  // server actually persisted, so we don't have to track turn counts
+  // by hand here.
+  __sloanchatSending = true;
   input.value = '';
   sloanChatClearAttachment();
   btn.disabled = true;
@@ -7183,20 +7211,14 @@ async function sloanChatSend() {
     } catch (_) {
       reply = 'non-JSON response (HTTP ' + r.status + '): ' + rawBody.slice(0, 300);
     }
-    // Only successful (no-error) responses persist an assistant turn to
-    // icon_chats, so only those should bump the poll counter.
-    const persistsToIconChats = !(typeof reply === 'string' && reply.indexOf('error: ') === 0)
-      && !(typeof reply === 'string' && reply.indexOf('non-JSON response') === 0);
     if (replies && replies.length) {
       for (let i = 0; i < replies.length; i++) {
         const isLast = i === replies.length - 1;
         appendSloanChatMessage('sloan', replies[i], isLast ? mediaUrl : null, null, Date.now());
-        if (persistsToIconChats) __sloanchatLastHistoryLength += 1;
         if (!isLast) await new Promise(function(resolve) { setTimeout(resolve, 400); });
       }
     } else {
       appendSloanChatMessage('sloan', reply, mediaUrl, null, Date.now());
-      if (persistsToIconChats) __sloanchatLastHistoryLength += 1;
     }
     if (figmaQueued) {
       appendSloanChatMessage('system', '✦ Sloan queued a Figma task', null, null, Date.now());
@@ -7206,6 +7228,11 @@ async function sloanChatSend() {
     if (stillThere) stillThere.remove();
     appendSloanChatMessage('sloan', 'connection error: ' + (e && e.message), null, null, Date.now());
   } finally {
+    // Sync the counter to whatever was actually persisted to icon_chats
+    // — covers the user turn, every assistant reply, and any out-of-band
+    // writes that landed during the send. Then resume polling.
+    await sloanchatRealignCounter();
+    __sloanchatSending = false;
     btn.disabled = false;
     btn.textContent = 'Send';
     input.focus();
