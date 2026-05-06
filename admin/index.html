@@ -5507,20 +5507,50 @@ async function loadPersonalTasks() {
       + '?section=eq.' + encodeURIComponent(PERSONAL_TASKS_SECTION)
       + '&label=eq.' + encodeURIComponent(PERSONAL_TASKS_LABEL)
       + '&select=id,value';
+    console.log('[personal-tasks] fetching', url);
     const r = await fetch(url, {
       headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
     });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
+    console.log('[personal-tasks] response status:', r.status);
+    if (!r.ok) {
+      const errBody = await r.text().catch(function() { return ''; });
+      console.warn('[personal-tasks] fetch error body:', errBody);
+      throw new Error('HTTP ' + r.status);
+    }
     const rows = await r.json();
+    console.log('[personal-tasks] response rows:', rows);
     if (rows && rows.length) {
-      // Existing data — never overwrite.
       personalTasksRowId = rows[0].id;
-      try { personalTasks = JSON.parse(rows[0].value || '[]'); }
-      catch (_) { personalTasks = []; }
-      if (!Array.isArray(personalTasks)) personalTasks = [];
+      let parsed = [];
+      try { parsed = JSON.parse(rows[0].value || '[]'); }
+      catch (_) { parsed = []; }
+      if (!Array.isArray(parsed)) parsed = [];
+      if (parsed.length === 0) {
+        // Row exists but has no tasks — backfill the seed. Nothing to
+        // overwrite, so this is safe and only fires once.
+        const seeded = buildPersonalTasksSeed();
+        console.log('[personal-tasks] row exists but empty — seeding', seeded.length, 'tasks');
+        const upd = await fetch(SUPABASE_URL + '/rest/v1/system_config?id=eq.' + encodeURIComponent(personalTasksRowId), {
+          method: 'PATCH',
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal',
+          },
+          body: JSON.stringify({ value: JSON.stringify(seeded) }),
+        });
+        if (!upd.ok) {
+          const t = await upd.text().catch(function() { return ''; });
+          console.warn('[personal-tasks] seed backfill PATCH failed:', upd.status, t);
+        }
+        personalTasks = seeded;
+      } else {
+        personalTasks = parsed;
+      }
     } else {
-      // First-load seed — only when the row truly doesn't exist yet.
       const seeded = buildPersonalTasksSeed();
+      console.log('[personal-tasks] no row — inserting', seeded.length, 'seeded tasks');
       const ins = await fetch(SUPABASE_URL + '/rest/v1/system_config', {
         method: 'POST',
         headers: {
@@ -5540,7 +5570,8 @@ async function loadPersonalTasks() {
         const created = await ins.json();
         if (Array.isArray(created) && created[0]) personalTasksRowId = created[0].id;
       } else {
-        console.warn('[personal-tasks] seed insert failed:', ins.status);
+        const t = await ins.text().catch(function() { return ''; });
+        console.warn('[personal-tasks] seed insert failed:', ins.status, t);
       }
       personalTasks = seeded;
     }
@@ -5548,6 +5579,7 @@ async function loadPersonalTasks() {
     console.warn('[personal-tasks] load failed:', e.message);
     personalTasks = [];
   }
+  console.log('[personal-tasks] rendering', personalTasks.length, 'tasks');
   renderPersonalTasks();
 }
 
