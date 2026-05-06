@@ -5302,6 +5302,18 @@ function mergeLocalPersonas() {
 const CHECKLIST_KEY = 'mirage-checklist-v2';
 
 const CHECKLIST_SECTIONS = [
+  { title: 'SLOAN — BUILD PIPELINE', items: [
+    { id:'sln-bp1', text:'Proactive messaging — scheduled + spontaneous outbound SMS', tag:'sloan' },
+    { id:'sln-bp2', text:'Image pipeline — SEND_IMAGE/SEND_WORLD autonomous from conversation', tag:'sloan' },
+    { id:'sln-bp3', text:'SAVE_DETAIL behavioral coaching', tag:'sloan' },
+    { id:'sln-bp4', text:'Web tools — Are.na fix, BROWSER_FETCH/SCREENSHOT behavioral coaching', tag:'sloan' },
+    { id:'sln-bp5', text:'GOOGLE_DOC_READ — build so she can read her own docs', tag:'sloan' },
+    { id:'sln-bp6', text:'Full Google Workspace — doc/slides share, Drive open/edit, slides image/element tools', tag:'sloan' },
+    { id:'sln-bp7', text:'LoRA retrain — images 94, 96, 98, 100, 102 for face consistency', tag:'sloan' },
+    { id:'sln-bp8', text:'Vera persona build', tag:'sloan' },
+    { id:'sln-bp9', text:'Aria persona build', tag:'sloan' },
+    { id:'sln-bp10', text:'First week choreography — day 1/3/7 subscriber experience', tag:'sloan' },
+  ]},
   { title: 'SECURITY — URGENT', items: [
     { id:'sec-u1', text:'Rotate Flux API key at dashboard.bfl.ai (mirage-prod was exposed)', tag:'urgent' },
     { id:'sec-u2', text:'Add Twilio webhook signature validation to proxy', tag:'urgent' },
