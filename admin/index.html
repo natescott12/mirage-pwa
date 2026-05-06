@@ -2600,8 +2600,12 @@ button { color: inherit; }
             <div class="page-title">Sloan Chat</div>
             <div class="page-sub">Direct line to Sloan — bypasses SMS, routes through the proxy</div>
           </div>
-          <span class="chat-status-dot" id="sloanchat-status-dot" data-status-target="sloanchat" title="Proxy connection status"></span>
+          <div style="display:flex;align-items:center;gap:10px">
+            <button type="button" id="nudge-sloan-btn" onclick="nudgeSloan()" title="POST /sloan/proactive — fires the proactive-outreach gate" style="background:transparent;border:1px solid var(--border);color:var(--ink-dim);font-size:11px;letter-spacing:0.04em;text-transform:uppercase;padding:5px 10px;border-radius:3px;cursor:pointer;line-height:1">Nudge Sloan</button>
+            <span class="chat-status-dot" id="sloanchat-status-dot" data-status-target="sloanchat" title="Proxy connection status"></span>
+          </div>
         </div>
+        <div id="nudge-sloan-result" style="display:none;margin:0 0 16px;padding:10px 12px;border:1px solid var(--border);border-radius:3px;background:rgba(255,255,255,0.02);font-size:12px;color:var(--ink-mid);line-height:1.5"></div>
         <div class="sloanchat-wrap">
           <div id="sloanchat-messages" class="sloanchat-messages"></div>
           <div id="sloanchat-preview" class="sloanchat-preview" style="display:none"></div>
@@ -6696,6 +6700,54 @@ const SLOAN_CHAT_MIRAGE_KEY = 'mirage-int-2026';
 function sloanChatIconId() {
   const user = (typeof getAdminUser === 'function' && getAdminUser()) || 'nate';
   return 'admin:' + user;
+}
+
+// ── Nudge Sloan — debug trigger for /sloan/proactive ─────────────────────
+// Fires the proactive-outreach gate on demand. Always renders the
+// generated message even when Twilio send fails so we can verify Claude
+// voice quality before TFN verification clears.
+async function nudgeSloan() {
+  const btn = document.getElementById('nudge-sloan-btn');
+  const out = document.getElementById('nudge-sloan-result');
+  if (!out) return;
+  if (btn) { btn.disabled = true; btn.textContent = 'Nudging…'; btn.style.opacity = '0.6'; }
+  out.style.display = 'block';
+  out.innerHTML = '<span style="color:var(--ink-dim)">Calling /sloan/proactive…</span>';
+  try {
+    const r = await fetch(SLOAN_CHAT_PROXY + '/sloan/proactive', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-mirage-key': SLOAN_CHAT_MIRAGE_KEY,
+      },
+      body: '{}',
+    });
+    const data = await r.json().catch(function() { return null; });
+    if (!r.ok) {
+      out.innerHTML = '<span style="color:rgba(232,120,100,0.85)">HTTP ' + r.status + '</span> ' +
+        '<span style="color:var(--ink-dim)">' + ptEsc((data && data.error) || 'request failed') + '</span>';
+      return;
+    }
+    const sent = data && data.sent;
+    const reason = (data && data.reason) || '(no reason)';
+    const message = (data && data.message) || '';
+    let html = '<div style="display:flex;gap:10px;align-items:baseline;margin-bottom:6px">' +
+      '<span style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:' + (sent ? 'var(--accent)' : 'var(--ink-dim)') + '">' +
+      (sent ? 'sent' : 'skipped') +
+      '</span>' +
+      '<span style="color:var(--ink-dim);font-size:11px">' + ptEsc(reason) + '</span>' +
+      '</div>';
+    if (message) {
+      html += '<div style="color:var(--ink);font-size:13px;line-height:1.55;white-space:pre-wrap">' + ptEsc(message) + '</div>';
+    } else {
+      html += '<div style="color:var(--ink-dim);font-size:12px;font-style:italic">no message generated</div>';
+    }
+    out.innerHTML = html;
+  } catch (e) {
+    out.innerHTML = '<span style="color:rgba(232,120,100,0.85)">Network error:</span> <span style="color:var(--ink-dim)">' + ptEsc(e.message) + '</span>';
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Nudge Sloan'; btn.style.opacity = '1'; }
+  }
 }
 
 // ── Chat time / day-separator helpers ────────────────────────────────────
