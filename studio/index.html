@@ -1218,6 +1218,10 @@ console.log('[studio-auth] mirage-admin-user on page load:', JSON.stringify(loca
           <span class="prompt-char-count" id="prompt-char-count">0 chars</span>
         </div>
       </div>
+      <div style="margin-bottom:14px">
+        <div class="section-label" style="margin-bottom:6px">Reference image (optional)</div>
+        <input id="ps-reference" type="text" placeholder="https://…" style="width:100%;padding:8px 10px;background:rgba(26,23,20,0.05);border:1px solid var(--border-md);border-radius:2px;font-size:var(--text-xs);color:var(--text);outline:none;font-family:var(--font)" />
+      </div>
       <button id="btn-generate" onclick="handleGenerate()">Generate · <span id="btn-name">Sloan</span> · Flux Pro</button>
     </div>
     <div class="panel-right">
@@ -1958,6 +1962,14 @@ $("lightbox").addEventListener("click",function(e){if(e.target===this)closeLight
 function notify(msg,type="success") { const el=$("notification");if(!el)return;el.textContent=msg;el.className=type;el.style.display="block";clearTimeout(el._t);el._t=setTimeout(()=>{el.style.display="none";},3500); }
 function updateQueueCount() { const c=queue.length;setText("queue-count",c);setText("queue-count-nav",c);setText("queue-sub",`${c} ${c===1?"drop":"drops"} scheduled`); }
 function updateLibCount() { const c=getTotalCount();setText("lib-total",c);setText("lib-subtitle",`${c} total images · saved automatically per icon`); }
+var SLOAN_CANONICAL_REFERENCE_URL = 'https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/sloan_edited_1778083958646.jpg';
+function syncReferenceImageInput(icon) {
+  var inp = document.getElementById('ps-reference');
+  if (!inp) return;
+  var isSloan = icon && (String(icon.id) === '1' || (icon.name && icon.name.toLowerCase().indexOf('sloan') > -1));
+  inp.value = isSloan ? SLOAN_CANONICAL_REFERENCE_URL : '';
+}
+
 function selectIcon(id) {
   var target = ICONS_DATA.find(function(i){ return i.id === id; });
   // Anna is walled off from Sloan. If she clicks Sloan (or deep-lands on
@@ -1981,6 +1993,7 @@ function selectIcon(id) {
   renderParams();
   refreshPrompt();
   syncIconProfileInputs();
+  syncReferenceImageInput(selectedIcon);
   if(typeof loadPersonaForIcon==="function") loadPersonaForIcon();
   if(typeof loadWardrobeForIcon==="function") loadWardrobeForIcon();
   if(typeof resetVoicePreview==="function") resetVoicePreview();
@@ -2576,6 +2589,7 @@ function init() {
   renderSceneTabs();
   renderParams();
   syncIconProfileInputs();
+  syncReferenceImageInput(selectedIcon);
   if (selectedIcon && typeof loadPersonaIntoStudio === 'function') loadPersonaIntoStudio(selectedIcon.id);
   loadPersonaForIcon();
   loadWardrobeForIcon();
@@ -3810,6 +3824,9 @@ window.generateFlux = function(prompt) {
   var body = MG.ref
     ? Object.assign({prompt:prompt,model:'flux-kontext-pro',width:768,height:1024}, MG.ref.startsWith('http')?{image_url:MG.ref}:{input_image:MG.ref.includes(',')?MG.ref.split(',')[1]:MG.ref})
     : {prompt:prompt,model:'flux-pro-1.1',width:768,height:1024};
+  var refInput = document.getElementById('ps-reference');
+  var refUrl = refInput && refInput.value ? refInput.value.trim() : '';
+  if (refUrl) body.reference_image_url = refUrl;
   console.log('[generateFlux] -> /flux/generate body:', body);
   return fetch(PX+'/flux/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.error||'Submit failed');});return r.json();})
