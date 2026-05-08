@@ -4723,6 +4723,17 @@ function buildPersonaForm(p, icon) {
     <div class="field-group-title">Physical Description (for Flux)</div>
 
     <div class="field-row single">
+      <div class="field"><label>Gender</label>
+        <select id="f-gender">
+          <option value=""${!p.gender ? ' selected' : ''}>— select —</option>
+          <option value="Female"${p.gender === 'Female' ? ' selected' : ''}>Female</option>
+          <option value="Male"${p.gender === 'Male' ? ' selected' : ''}>Male</option>
+          <option value="Non-binary"${p.gender === 'Non-binary' ? ' selected' : ''}>Non-binary</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-row single">
       <div class="field"><label>Ethnicity / Heritage</label><input id="f-ethnicity" value="${p.ethnicity || ''}" placeholder="e.g. East Asian, Afro-Caribbean, Southern European..."></div>
     </div>
 
@@ -5008,6 +5019,7 @@ function collectPersonaData() {
     aesthetic: document.getElementById('f-aesthetic')?.value || '',
     interests: document.getElementById('f-interests')?.value || '',
     scene_tags: getSelectedChips('scene_tags'),
+    gender: document.getElementById('f-gender')?.value || '',
     ethnicity: document.getElementById('f-ethnicity')?.value || '',
     eye_color: pbGetChip('eye_color'),
     eye_shape: pbGetChip('eye_shape'),
