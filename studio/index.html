@@ -2083,6 +2083,25 @@ function loadPersonaIntoStudio(iconId) {
       else if (entryArchetype)       currentPersona.femaleArchetype = entryArchetype;
       if (p.cluster)                 currentPersona.cluster = p.cluster;
       else if (p.communication_style) currentPersona.cluster = p.communication_style;
+      // Extended persona fields — surfaced into the Converse system
+      // prompt so the creative director sees the full Persona Builder
+      // record, not just voice + archetype + cluster.
+      if (p.location)                  currentPersona.location = p.location;
+      if (p.occupation)                currentPersona.occupation = p.occupation;
+      if (p.age_range)                 currentPersona.ageRange = p.age_range;
+      if (p.signature_style)           currentPersona.signatureStyle = p.signature_style;
+      if (p.typical_setting)           currentPersona.typicalSetting = p.typical_setting;
+      if (p.interests)                 currentPersona.interests = p.interests;
+      if (Array.isArray(p.scene_tags) && p.scene_tags.length) currentPersona.sceneTags = p.scene_tags.slice(0);
+      if (p.aesthetic)                 currentPersona.aesthetic = p.aesthetic;
+      if (p.desires)                   currentPersona.desires = p.desires;
+      if (p.fears)                     currentPersona.fears = p.fears;
+      if (p.flux_notes)                currentPersona.fluxNotes = p.flux_notes;
+      if (p.car)                       currentPersona.car = p.car;
+      if (Array.isArray(p.canon_images) && p.canon_images.length) {
+        var __hero = p.canon_images.find(function(c) { return c && c.is_hero; }) || p.canon_images[0];
+        if (__hero && __hero.url) currentPersona.heroImageUrl = __hero.url;
+      }
       try {
         var saved = JSON.parse(localStorage.getItem(PERSONA_KEY) || '{}');
         saved[iconId] = currentPersona;
@@ -4356,14 +4375,29 @@ function cloudTrainLora() {
     personaLines.push(si.name+(si.archetype?' — '+si.archetype:''));
     if(si.vibe)      personaLines.push('Vibe: '+si.vibe);
     if(si.energy)    personaLines.push('Energy: '+si.energy);
-    if(si.aesthetic) personaLines.push('Aesthetic: '+si.aesthetic);
-    if(si.setting)   personaLines.push('Typical setting: '+si.setting);
-    if(si.style)     personaLines.push('Style: '+si.style);
+    // Persona-builder values override / extend the hardcoded ICONS_DATA
+    // defaults. Fall back to the icon-card field if persona_data is empty.
+    var _aesthetic = cp.aesthetic || si.aesthetic;
+    var _setting   = cp.typicalSetting || si.setting;
+    var _style     = cp.signatureStyle || si.style;
+    if(_aesthetic) personaLines.push('Aesthetic: '+_aesthetic);
+    if(_setting)   personaLines.push('Typical setting: '+_setting);
+    if(_style)     personaLines.push('Style / wardrobe: '+_style);
+    if(cp.location)    personaLines.push('Location: '+cp.location);
+    if(cp.occupation)  personaLines.push('Occupation: '+cp.occupation);
+    if(cp.ageRange)    personaLines.push('Age range: '+cp.ageRange);
     if(charDesc)     personaLines.push('Physical: '+charDesc);
     if(cp.smsDesc)   personaLines.push('Voice: '+cp.smsDesc);
     if(cp.femaleArchetype&&cp.femaleArchetype!==si.archetype) personaLines.push('Persona archetype: '+cp.femaleArchetype);
     if(cp.cluster)   personaLines.push('Communication: '+cp.cluster);
     if(cp.contentPillars&&cp.contentPillars.length) personaLines.push('Traits: '+cp.contentPillars.join(', '));
+    if(cp.interests)   personaLines.push('Interests: '+cp.interests);
+    if(cp.sceneTags&&cp.sceneTags.length) personaLines.push('Scene tags: '+cp.sceneTags.join(', '));
+    if(cp.desires)     personaLines.push('Desires: '+cp.desires);
+    if(cp.fears)       personaLines.push('Fears: '+cp.fears);
+    if(cp.car)         personaLines.push('Car: '+cp.car);
+    if(cp.fluxNotes)   personaLines.push('Flux notes: '+cp.fluxNotes);
+    if(cp.heroImageUrl) personaLines.push('Canonical hero image: '+cp.heroImageUrl);
     var personaBlock='\n\n<persona>\n'+personaLines.join('\n')+'\n</persona>';
 
     var sysPrompt='You are a creative director for Mirage, an editorial AI platform. You are briefing a scene for '+(si.name||'the icon')+'. Use the <persona> block below to stay true to who she is — her aesthetic, voice, and setting should shape every suggestion you make. Help the user develop a scene through natural conversation: ask questions, explore ideas, suggest directions — be a collaborator not a form. There is no limit on how many turns you take. Only output the <brief> JSON when you have clear, confident answers for all four fields (scene, wardrobe, shot, light). If anything is ambiguous, keep asking. When you do output the brief, values must be SHORT Flux-ready visual keywords — max 10 words per field, comma separated, no sentences.'+personaBlock+briefContext+'\n\n<editorial-framing>\nAll generated Flux prompts must include editorial framing to signal artistic intent. Always append to the STYLE row: "editorial fashion photography, 35mm film grain, published magazine aesthetic, Corinne Day, Juergen Teller, early i-D magazine, documentary, natural light, not posed".\n\nUse this vocabulary — it passes moderation: unbuttoned, collarbone visible, off shoulder, natural skin, oversized, relaxed, just woken up, unmade bed, crop top, midriff, sheer fabric backlit, caught in a moment.\n\nAvoid these words — they trigger moderation: revealing, exposed, intimate, see-through, undressed, nudity.\n</editorial-framing>\n\nExample brief output:\n<brief>{"scene":"quiet city overlook, dark Mercedes, late afternoon","wardrobe":"black blazer unbuttoned, tailored trousers, leather boots","shot":"full body, sideways driver seat, one leg out","light":"soft golden hour, long shadows"}</brief>';
