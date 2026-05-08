@@ -7247,11 +7247,20 @@ async function sloanchatPollTick() {
     const rows = await r.json();
     const history = (rows[0] && rows[0].messages) || [];
     if (history.length <= __sloanchatLastHistoryLength) {
-      // Counter ahead of icon_chats — usually a local-only error bubble
-      // bumped past truth. Clamp so a recovery message can still land.
+      // Counter ahead of icon_chats. Two cases:
+      //   1) Same length — local-only error bubble bumped past truth.
+      //      Clamp the counter so a recovery message can still land.
+      //   2) Strictly shorter — the row was reset / truncated server-side
+      //      (DB wipe, manual edit). The DOM still holds bubbles that no
+      //      longer exist in icon_chats; appending the delta won't help
+      //      because there is no delta. Hand off to loadSloanChat() so
+      //      the message list clears and re-renders from the current
+      //      (possibly empty) Supabase state.
       if (__sloanchatLastHistoryLength > history.length) {
-        __sloanchatLastHistoryLength = history.length;
+        loadSloanChat();
+        return;
       }
+      __sloanchatLastHistoryLength = history.length;
       return;
     }
     const newOnes = history.slice(__sloanchatLastHistoryLength);
