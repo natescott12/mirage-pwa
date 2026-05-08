@@ -5316,121 +5316,94 @@ function mergeLocalPersonas() {
 }
 
 // ── CHECKLIST ─────────────────────────────────────────────────────────────────
-const CHECKLIST_KEY = 'mirage-checklist-v2';
+const CHECKLIST_KEY = 'mirage-checklist-v3';
 
+// Drop state from prior schema versions — IDs and groupings changed enough
+// that old saved booleans would map to nothing or to the wrong items.
+try {
+  localStorage.removeItem('mirage-checklist');
+  localStorage.removeItem('mirage-checklist-v1');
+  localStorage.removeItem('mirage-checklist-v2');
+} catch(_) {}
+
+// Status icons live as a literal prefix on item.text (✅ ⚠️ ❌ ⬜). The
+// checkbox tracks "done" only — ✅ items get done:true (or doneByDefault on
+// all-✅ sections) so the box is pre-checked; ⚠️/❌/⬜ items stay unchecked
+// until manually toggled.
 const CHECKLIST_SECTIONS = [
-  { title: 'SLOAN — BUILD PIPELINE', items: [
-    { id:'sln-bp1', text:'Proactive messaging — scheduled + spontaneous outbound SMS', tag:'sloan' },
-    { id:'sln-bp2', text:'Image pipeline — SEND_IMAGE/SEND_WORLD autonomous from conversation', tag:'sloan' },
-    { id:'sln-bp3', text:'SAVE_DETAIL behavioral coaching', tag:'sloan' },
-    { id:'sln-bp4', text:'Web tools — Are.na fix, BROWSER_FETCH/SCREENSHOT behavioral coaching', tag:'sloan' },
-    { id:'sln-bp5', text:'GOOGLE_DOC_READ — build so she can read her own docs', tag:'sloan' },
-    { id:'sln-bp6', text:'Full Google Workspace — doc/slides share, Drive open/edit, slides image/element tools', tag:'sloan' },
-    { id:'sln-bp7', text:'LoRA retrain — images 94, 96, 98, 100, 102 for face consistency', tag:'sloan' },
-    { id:'sln-bp8', text:'Vera persona build', tag:'sloan' },
-    { id:'sln-bp9', text:'Aria persona build', tag:'sloan' },
-    { id:'sln-bp10', text:'First week choreography — day 1/3/7 subscriber experience', tag:'sloan' },
+  { title: 'SLOAN — FOUNDATION', doneByDefault: true, items: [
+    { id:'foundation-1', text:'✅ Character Bible v3', tag:'sloan' },
+    { id:'foundation-2', text:'✅ Voice calibration — 1-2 sentences, periods, no em dashes', tag:'sloan' },
+    { id:'foundation-3', text:'✅ Persona Builder — 100% complete, Arts District loft', tag:'sloan' },
+    { id:'foundation-4', text:'✅ Nuclear restore principle — subtraction not addition', tag:'sloan' },
+    { id:'foundation-5', text:'✅ Oliver Framework — ethical guardrails, LWT S13E9', tag:'sloan' },
+    { id:'foundation-6', text:"✅ \"Don't be boring\" mantra", tag:'sloan' },
   ]},
-  { title: 'SECURITY — URGENT', items: [
-    { id:'sec-u1', text:'Rotate Flux API key at dashboard.bfl.ai (mirage-prod was exposed)', tag:'urgent' },
-    { id:'sec-u2', text:'Add Twilio webhook signature validation to proxy', tag:'urgent' },
-    { id:'sec-u3', text:'Namecheap account unlock — ticket NC-ADC-4832, need bank payment descriptor', tag:'urgent' },
-    { id:'sec-u4', text:'Guardrail framework (moderation, hard stops, escalation, age verification)', tag:'urgent' },
-    { id:'sec-u5', text:'Flux 2 Pro upgrade (replace Flux Pro 1.1)', tag:'urgent' },
-    { id:'sec-u6', text:'Prompt sanitization layer (moderation fix)', tag:'urgent' },
-    { id:'sec-u7', text:'Sloan re-connect to Learning Log and audit viewer', tag:'urgent' },
-    { id:'sec-u8', text:'Add timestamps to Sloan and Andie chat messages', tag:'urgent' },
-    { id:'sec-u9', text:'Twilio toll-free +1 855 533-0518 Twilio verification (deadline May 8 — call support 1-888-898-4567)', tag:'urgent' },
-    { id:'sec-u10', text:'Rotate Supabase legacy service_role key in git history', tag:'urgent' },
-    { id:'sec-u11', text:'Railway webhook reliability — broke twice, fix before next session', tag:'urgent' },
-    { id:'sec-u12', text:'Credential rotation — GitHub PAT, Replicate, Anthropic key, Supabase service key', tag:'urgent' },
-    { id:'sec-u13', text:'icon_chats RLS — no row-level security, fix before real subscribers', tag:'urgent' },
+  { title: 'SLOAN — MEMORY', items: [
+    { id:'memory-1', text:'✅ Daily synthesis — 6am PT', tag:'sloan', done:true },
+    { id:'memory-2', text:'✅ sloan_memory — learning log, synthesis entries', tag:'sloan', done:true },
+    { id:'memory-3', text:'✅ icon_conversations — episodic memory, 10 sessions summarized', tag:'sloan', done:true },
+    { id:'memory-4', text:'✅ /sloan/recall — built and wired', tag:'sloan', done:true },
+    { id:'memory-5', text:'✅ Proactive memory — live in sloan-test.js', tag:'sloan', done:true },
+    { id:'memory-6', text:'✅ subscriber_details + sloan_places — injecting at session start', tag:'sloan', done:true },
+    { id:'memory-7', text:'⚠️ sloan-test.js sync with Persona Builder — NOT done', tag:'sloan' },
   ]},
-  { title: 'INFRASTRUCTURE — DONE', doneByDefault: true, items: [
-    { id:'inf-d1', text:'Proxy v3.6.3 stable on Railway', tag:'infra' },
-    { id:'inf-d2', text:'Sloan Chat live in admin', tag:'infra' },
-    { id:'inf-d3', text:'Andie Chat live in admin', tag:'infra' },
-    { id:'inf-d4', text:'Image pipeline: Flux → Supabase → auto-audit', tag:'infra' },
-    { id:'inf-d5', text:'Daily synthesis 9am PT via node-cron', tag:'infra' },
-    { id:'inf-d6', text:'Reply delay re-enabled (tiered logic + late-night penalty)', tag:'infra' },
-    { id:'inf-d7', text:'Prompt caching active', tag:'infra' },
-    { id:'inf-d8', text:'mirage.is purchased from ISNIC', tag:'infra' },
-    { id:'inf-d9', text:'Directive leak prevention (FIGMA_CODE / FIGMA_IMAGE / SEND_IMAGE)', tag:'infra' },
-    { id:'inf-d10', text:'FIGMA_IMAGE smart cell-fill into moodboard placeholders', tag:'infra' },
-    { id:'inf-d11', text:'mirageicons.com domain purchased and DNS configured', tag:'infra' },
-    { id:'inf-d12', text:'Persona Builder save working for all icons', tag:'infra' },
-    { id:'inf-d13', text:'Separate chat threads per user (nate / anna)', tag:'infra' },
-    { id:'inf-d14', text:'Anna nav access — full SLOAN section', tag:'infra' },
-    { id:'inf-d15', text:'Icon Studio deep-link from Persona Builder', tag:'infra' },
-    { id:'inf-d16', text:'Persona lock system', tag:'infra' },
-    { id:'inf-d17', text:'Image counts on icon cards', tag:'infra' },
-    { id:'inf-d18', text:'Completion percentage on icon cards', tag:'infra' },
+  { title: 'SLOAN — TOOLS (WORKING)', doneByDefault: true, items: [
+    { id:'tools-w-1', text:'✅ Learning Log', tag:'sloan' },
+    { id:'tools-w-2', text:'✅ Image Audit', tag:'sloan' },
+    { id:'tools-w-3', text:'✅ YouTube transcript injection', tag:'sloan' },
+    { id:'tools-w-4', text:'✅ Web Search', tag:'sloan' },
+    { id:'tools-w-5', text:'✅ Save Image', tag:'sloan' },
+    { id:'tools-w-6', text:'✅ Gmail Send', tag:'sloan' },
+    { id:'tools-w-7', text:'✅ Google Drive list', tag:'sloan' },
+    { id:'tools-w-8', text:'✅ Google Doc Create', tag:'sloan' },
+    { id:'tools-w-9', text:'✅ Browser Fetch', tag:'sloan' },
+    { id:'tools-w-10', text:'✅ Browser Screenshot', tag:'sloan' },
+    { id:'tools-w-11', text:'✅ SEND_IMAGE directive', tag:'sloan' },
+    { id:'tools-w-12', text:'✅ SEND_WORLD directive', tag:'sloan' },
   ]},
-  { title: 'INFRASTRUCTURE — PENDING', items: [
-    { id:'inf-p1', text:'SUPABASE_SERVICE_KEY missing from Railway proxy env vars', tag:'infra' },
-    { id:'inf-p2', text:'Sloan-test.js sync with Persona Builder — Persona Builder is now source of truth', tag:'infra' },
-    { id:'inf-p3', text:'Admin timestamps render PT not UTC', tag:'infra' },
-    { id:'inf-p4', text:'GOOGLE_DOC_READ — not built', tag:'infra' },
-    { id:'inf-p5', text:'GOOGLE_DOC_SHARE — not built', tag:'infra' },
+  { title: 'SLOAN — TOOLS (BROKEN / NOT BUILT)', items: [
+    { id:'tools-b-1', text:'❌ Image pipeline — LoRA not loading, wrong output', tag:'sloan' },
+    { id:'tools-b-2', text:'❌ Gmail Read (open individual emails)', tag:'sloan' },
+    { id:'tools-b-3', text:'⬜ GOOGLE_DOC_READ — not built', tag:'sloan' },
+    { id:'tools-b-4', text:'⬜ Oliver Framework §13 in sloan-knowledge.js — not built', tag:'sloan' },
+    { id:'tools-b-5', text:'⬜ Directive model — not built', tag:'sloan' },
+    { id:'tools-b-6', text:'⬜ Are.na — 401, parked', tag:'sloan' },
+    { id:'tools-b-7', text:'⬜ Google Slides — suspended', tag:'sloan' },
+    { id:'tools-b-8', text:'⬜ Figma directive — suspended', tag:'sloan' },
   ]},
-  { title: 'STUDIO — DONE', doneByDefault: true, items: [
-    { id:'stu-d1', text:'LoRA toggle — per-icon, localStorage, ON/OFF gates Flux payload', tag:'infra' },
-    { id:'stu-d2', text:'Character Builder merged into Persona Builder', tag:'infra' },
-    { id:'stu-d3', text:'Voice & Identity merged into Persona Builder', tag:'infra' },
-    { id:'stu-d4', text:'Moodboard removed from Studio', tag:'infra' },
-    { id:'stu-d5', text:'CHARACTER row pulls all 10 fields from Persona Builder', tag:'infra' },
-    { id:'stu-d6', text:'Converse tab persona auto-populated from Supabase', tag:'infra' },
-    { id:'stu-d7', text:'Persona Builder sticky save bar + Icon Studio nav button', tag:'infra' },
-    { id:'stu-d8', text:'Persona Builder accordion sections + unique icon colors', tag:'infra' },
-    { id:'stu-d9', text:'Content Library — Lightroom suite (browse + edit + save pipeline)', tag:'infra' },
-    { id:'stu-d10', text:'Content table: edited_from, edit_preset, edit_adjustments columns', tag:'infra' },
+  { title: 'SLOAN — BEHAVIOR', items: [
+    { id:'behavior-1', text:'✅ SEND_IMAGE fires autonomously', tag:'sloan', done:true },
+    { id:'behavior-2', text:'✅ SEND_WORLD fires autonomously', tag:'sloan', done:true },
+    { id:'behavior-3', text:'✅ Proactive return confirmed working', tag:'sloan', done:true },
+    { id:'behavior-4', text:'✅ Voice coaching working through conversation', tag:'sloan', done:true },
+    { id:'behavior-5', text:'⚠️ SAVE_DETAIL — built, behavioral adoption unconfirmed', tag:'sloan' },
+    { id:'behavior-6', text:'⚠️ Timeline fabrication — recurring, needs coaching', tag:'sloan' },
+    { id:'behavior-7', text:"⚠️ Overcorrection on images — fires when moment doesn't call for it", tag:'sloan' },
   ]},
-  { title: 'STUDIO — PENDING', items: [
-    { id:'stu-p1', text:'Sloan voice rewrite live (pending cache expiry — test in morning)', tag:'infra' },
-    { id:'stu-p2', text:'FIGMA_CODE scanner tighten (fallback active, need Railway warn log)', tag:'infra' },
-    { id:'stu-p3', text:'SVG feColorMatrix filter patch', tag:'infra' },
-    { id:'stu-p4', text:'Content Library: duplicate Sloan tabs + button cleanup + B&W filter', tag:'infra' },
-    { id:'stu-p5', text:'Sloan markdown rendering fix (messages showing as one block)', tag:'infra' },
-    { id:'stu-p6', text:'Visual refresh pass', tag:'infra' },
-    { id:'stu-p7', text:'LoRA retrain — images 94, 96, 98, 100, 102', tag:'infra' },
+  { title: 'PLATFORM — LAUNCH BLOCKERS', items: [
+    { id:'platform-l-1', text:'❌ Marketing site — Figma done, needs build (May 13 Twilio deadline)', tag:'urgent' },
+    { id:'platform-l-2', text:'❌ Twilio toll-free — 3rd rejection, resubmit by May 13', tag:'urgent' },
+    { id:'platform-l-3', text:'❌ Segpay — not started', tag:'urgent' },
+    { id:'platform-l-4', text:'❌ First-week choreography — undefined', tag:'urgent' },
+    { id:'platform-l-5', text:'❌ Vera — not built', tag:'urgent' },
+    { id:'platform-l-6', text:'❌ Aria — not built', tag:'urgent' },
   ]},
-  { title: 'DESIGN — PENDING', items: [
-    { id:'des-p1', text:'Site experience: Landing, World Intro, Features, Free Preview', tag:'infra' },
-    { id:'des-p2', text:'Magazine site wireframes', tag:'infra' },
+  { title: 'PLATFORM — WORKING', doneByDefault: true, items: [
+    { id:'platform-w-1', text:'✅ PWA — all screens built, mirageicons.com live', tag:'infra' },
+    { id:'platform-w-2', text:'✅ Admin panel — full suite live', tag:'infra' },
+    { id:'platform-w-3', text:'✅ Icon Studio — generate + converse working', tag:'infra' },
+    { id:'platform-w-4', text:'✅ Proxy — stable Railway, v3.6.3', tag:'infra' },
+    { id:'platform-w-5', text:'✅ 101 Icons — Persona Builder 100% on Sloan', tag:'infra' },
+    { id:'platform-w-6', text:'✅ Content Library — 220 images, storage_path fixed', tag:'infra' },
+    { id:'platform-w-7', text:'✅ Auto-audit loop — working', tag:'infra' },
+    { id:'platform-w-8', text:'✅ SMS compliance — opt-in, STOP/HELP/START, sms-terms', tag:'infra' },
   ]},
-  { title: 'SLOAN — CONTENT', items: [
-    { id:'sln-c1', text:'Fill Sloan Persona Builder completely (7% done)', tag:'content' },
-    { id:'sln-c2', text:'Generate launch image library — 50+ approved images', tag:'content' },
-    { id:'sln-c3', text:'Territory moodboards — fill with real reference images', tag:'content' },
-    { id:'sln-c4', text:'Sloan Layer 2 knowledge documents', tag:'content' },
-    { id:'sln-c5', text:'Filter evaluation with Sloan — test all presets on real images', tag:'content' },
-    { id:'sln-c6', text:'Sloan public presence setup (Instagram, X)', tag:'content' },
-    { id:'sln-c7', text:'First-week subscriber choreography — launch blocker', tag:'content' },
-    { id:'sln-c8', text:'SEND_WORLD overcorrection fix', tag:'content' },
-    { id:'sln-c9', text:'LoRA retrain — needs 10 approved images', tag:'content' },
-  ]},
-  { title: 'SLOAN CD — PHASE 2 (IMAGE AGENT)', items: [
-    { id:'sln-cd2-1', text:'Sloan Lightroom integration — evaluate and edit images via chat', tag:'infra' },
-    { id:'sln-cd2-2', text:'Sloan FIGMA_CODE execution reliable end-to-end', tag:'infra' },
-    { id:'sln-cd2-3', text:'Cinemagraph pipeline research', tag:'content' },
-  ]},
-  { title: 'PLATFORM — PENDING', items: [
-    { id:'plat-1', text:'Segpay payment integration', tag:'infra' },
-    { id:'plat-2', text:'PWA Supabase backend (Anna)', tag:'infra' },
-    { id:'plat-3', text:'PWA screens: Landing, World Intro, Features, Free Preview', tag:'infra' },
-    { id:'plat-4', text:'Subscriber profile system', tag:'infra' },
-    { id:'plat-5', text:'Toll-free +1 855 533-0518 Twilio verification', tag:'infra' },
-    { id:'plat-6', text:'mirageicons.com redirect to mirage.is', tag:'infra' },
-  ]},
-  { title: 'ICONS — IN PROGRESS', items: [
-    { id:'ico-ip1', text:'Vera persona build (partially filled)', tag:'content' },
-    { id:'ico-ip2', text:'Aria persona rebuild (cleared today, needs refill)', tag:'content' },
-  ]},
-  { title: 'ICONS — PENDING', items: [
-    { id:'ico-1', text:'Vera build', tag:'infra' },
-    { id:'ico-2', text:'Aria build', tag:'infra' },
-    { id:'ico-3', text:"Andie build (Anna's AI)", tag:'infra' },
-    { id:'ico-4', text:'Andie Twilio number + ops alerts', tag:'infra' },
+  { title: 'PLATFORM — SECURITY', items: [
+    { id:'security-1', text:'⬜ icon_chats RLS — no row-level security', tag:'urgent' },
+    { id:'security-2', text:'⬜ SUPABASE_SERVICE_KEY missing from Railway env vars', tag:'urgent' },
+    { id:'security-3', text:'⬜ Credential rotation overdue', tag:'urgent' },
+    { id:'security-4', text:'⬜ Admin timestamps showing UTC not PT', tag:'urgent' },
   ]},
 ];
 
@@ -5449,9 +5422,11 @@ function initChecklist() {
     html += `<div style="margin-bottom:32px">
       <div class="cl-section-title">${section.title}</div>`;
     section.items.forEach(item => {
-      // Sections marked doneByDefault pre-check their items. A concrete
-      // state[id] always wins so the user can uncheck "done" items.
-      const done = state[item.id] !== undefined ? state[item.id] : !!section.doneByDefault;
+      // Per-item `done` wins over section.doneByDefault so mixed sections
+      // (some ✅, some ⚠️/❌/⬜) can pre-check the right rows. A concrete
+      // state[id] still wins over both so the user can override either.
+      const itemDefault = item.done !== undefined ? !!item.done : !!section.doneByDefault;
+      const done = state[item.id] !== undefined ? state[item.id] : itemDefault;
       html += `
         <div class="cl-task${done ? ' cl-done' : ''}" data-id="${item.id}" onclick="toggleTask('${item.id}')">
           <div class="cl-task-box">
@@ -5471,7 +5446,8 @@ function initChecklist() {
 
 function getItemDefaultDone(id) {
   for (const section of CHECKLIST_SECTIONS) {
-    if (section.items.some(i => i.id === id)) return !!section.doneByDefault;
+    const item = section.items.find(i => i.id === id);
+    if (item) return item.done !== undefined ? !!item.done : !!section.doneByDefault;
   }
   return false;
 }
