@@ -814,6 +814,29 @@ button { color: inherit; }
 }
 
 /* ── PROJECT DASHBOARD (native) — token-driven cards + labels. */
+/* Daily Brief — three collapsible panels at the top of the Project
+   Dashboard. .collapsed hides .db-panel-body and rotates the chevron. */
+.db-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 10px; overflow: hidden; }
+.db-panel-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; cursor: pointer; user-select: none; gap: 10px; }
+.db-panel-title { font-size: var(--text-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); font-weight: var(--weight-medium); }
+.db-panel-meta { font-size: var(--text-xs); color: var(--ink-dim); margin-left: 6px; }
+.db-panel-body { padding: 0 14px 14px; }
+.db-panel.collapsed .db-panel-body { display: none; }
+.db-panel-chev { display: inline-block; transition: transform 0.18s ease; color: var(--ink-dim); font-size: 12px; }
+.db-panel.collapsed .db-panel-chev { transform: rotate(-90deg); }
+.db-status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px 16px; }
+.db-status-cell { display: flex; align-items: center; padding: 5px 0; font-size: var(--text-sm); color: var(--ink); min-width: 0; }
+.db-status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 10px; flex-shrink: 0; }
+.db-status-cell .db-status-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.db-synth-text { font-size: var(--text-sm); color: var(--ink); line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+.db-synth-text.clamped { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.db-synth-toggle { display: inline-block; margin-top: 8px; font-size: var(--text-xs); color: var(--accent); cursor: pointer; background: none; border: none; padding: 0; letter-spacing: 0.06em; text-transform: uppercase; }
+.db-priority-list { list-style: none; padding: 0; margin: 0; counter-reset: dbpri; }
+.db-priority-list li { counter-increment: dbpri; display: flex; align-items: flex-start; padding: 5px 0; font-size: var(--text-sm); color: var(--ink); gap: 8px; }
+.db-priority-list li::before { content: counter(dbpri) "."; color: var(--ink-dim); min-width: 18px; flex-shrink: 0; }
+.db-priority-input { flex: 1; background: transparent; border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; color: var(--ink); font-family: inherit; font-size: var(--text-sm); }
+.db-priority-actions { margin-top: 10px; display: flex; gap: 8px; }
+
 .pd-info-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 32px; }
 .pd-info-item { background: var(--surface); border: 1px solid var(--border); padding: 14px 16px; border-radius: 4px; }
 .pd-info-label { font-size: var(--text-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 5px; }
@@ -2348,6 +2371,39 @@ button { color: inherit; }
       <div class="pane" id="pane-projdash">
         <div style="max-width:1100px;margin:0 auto;padding:16px 0 80px;">
 
+          <!-- DAILY BRIEF — three collapsible panels at the very top. Panel 1
+               (status) starts collapsed; panels 2 and 3 start expanded. All
+               three render on every projdash activation via initPriorities. -->
+          <div id="db-brief" style="margin-bottom:24px;">
+            <div class="db-panel collapsed" id="db-status">
+              <div class="db-panel-head" onclick="dbToggle('db-status')">
+                <div><span class="db-panel-title">Today's Status</span> <span class="db-panel-meta" id="db-status-meta"></span></div>
+                <span class="db-panel-chev">▾</span>
+              </div>
+              <div class="db-panel-body">
+                <div id="db-status-grid" class="db-status-grid"></div>
+              </div>
+            </div>
+            <div class="db-panel" id="db-synth">
+              <div class="db-panel-head" onclick="dbToggle('db-synth')">
+                <div><span class="db-panel-title">Sloan's Last Synthesis</span> <span class="db-panel-meta" id="db-synth-meta"></span></div>
+                <span class="db-panel-chev">▾</span>
+              </div>
+              <div class="db-panel-body">
+                <div id="db-synth-body"><div style="font-size:var(--text-sm);color:var(--ink-dim);">loading…</div></div>
+              </div>
+            </div>
+            <div class="db-panel" id="db-pri">
+              <div class="db-panel-head" onclick="dbToggle('db-pri')">
+                <div><span class="db-panel-title">Active Priorities</span> <span class="db-panel-meta" id="db-pri-meta"></span></div>
+                <span class="db-panel-chev">▾</span>
+              </div>
+              <div class="db-panel-body">
+                <div id="db-pri-body"><div style="font-size:var(--text-sm);color:var(--ink-dim);">loading…</div></div>
+              </div>
+            </div>
+          </div>
+
           <!-- Priority columns -->
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;">
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;">
@@ -3220,7 +3276,303 @@ async function pdLoadSloanActivity() {
   }
 }
 
+// ── DAILY BRIEF ─────────────────────────────────────────────────────────
+// Three collapsible panels at the top of the Project Dashboard.
+//   1. Today's Status — system_config rows under section='system_state'
+//      rendered as label + colored dot, sorted broken / pending / active.
+//   2. Sloan's Last Synthesis — most recent sloan_memory row with
+//      category='synthesis', rendered with 4-line clamp + Read more.
+//   3. Active Priorities — system_config row at (section='dashboard',
+//      label='active_priorities'), JSON-encoded array of strings,
+//      rendered as a numbered list with inline edit/save.
+const DB_DASHBOARD_SECTION = 'dashboard';
+const DB_PRIORITIES_LABEL = 'active_priorities';
+const DB_PRIORITIES_SEED = [
+  "Auto-summarization confirmed working — monitor icon_conversations",
+  "Image pipeline fix — LoRA not loading",
+  "Marketing site build — live before May 13 Twilio deadline",
+  "Oliver Framework §13 — permanent section in sloan-knowledge.js",
+  "Directive model build — after images confirmed",
+  "Security audit — RLS, credential rotation, before real subscribers",
+];
+let dbPrioritiesRowId = null;
+let dbPriorities = [];
+let dbPrioritiesEditing = false;
+
+function dbToggle(panelId) {
+  const el = document.getElementById(panelId);
+  if (el) el.classList.toggle('collapsed');
+}
+
+function dbStatusColor(status) {
+  const s = String(status || '').toLowerCase();
+  if (s === 'broken') return PD_COLOR_RED;
+  if (s === 'pending') return PD_COLOR_AMBER;
+  if (s === 'active') return PD_COLOR_GREEN;
+  return PD_COLOR_NEUTRAL;
+}
+function dbStatusRank(status) {
+  const s = String(status || '').toLowerCase();
+  if (s === 'broken') return 0;
+  if (s === 'pending') return 1;
+  if (s === 'active') return 2;
+  return 3;
+}
+
+async function dbLoadStatus() {
+  const grid = document.getElementById('db-status-grid');
+  const meta = document.getElementById('db-status-meta');
+  if (!grid) return;
+  grid.innerHTML = '<div style="font-size:var(--text-sm);color:var(--ink-dim);">loading…</div>';
+  try {
+    const url = SUPABASE_URL + '/rest/v1/system_config?section=eq.system_state&select=label,value,status&order=label.asc';
+    const r = await fetch(url, {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+    });
+    if (!r.ok) throw new Error('http ' + r.status);
+    const rows = await r.json();
+    if (!Array.isArray(rows) || !rows.length) {
+      grid.innerHTML = '<div style="font-size:var(--text-sm);color:var(--ink-dim);">no system_state rows yet</div>';
+      if (meta) meta.textContent = '';
+      return;
+    }
+    rows.sort(function(a, b) {
+      const ra = dbStatusRank(a.status), rb = dbStatusRank(b.status);
+      if (ra !== rb) return ra - rb;
+      return String(a.label || '').localeCompare(String(b.label || ''));
+    });
+    if (meta) {
+      const broken = rows.filter(function(x) { return String(x.status || '').toLowerCase() === 'broken'; }).length;
+      const pending = rows.filter(function(x) { return String(x.status || '').toLowerCase() === 'pending'; }).length;
+      meta.textContent = rows.length + ' tracked · ' + broken + ' broken · ' + pending + ' pending';
+    }
+    grid.innerHTML = rows.map(function(row) {
+      const color = dbStatusColor(row.status);
+      const label = pdEscape(row.label || '');
+      const value = pdEscape(row.value || '');
+      const tip = value ? (label + ' — ' + value) : label;
+      return '<div class="db-status-cell" title="' + tip + '">'
+        + '<span class="db-status-dot" style="background:' + color + ';"></span>'
+        + '<span class="db-status-label">' + label + '</span>'
+        + '</div>';
+    }).join('');
+  } catch (e) {
+    grid.innerHTML = '<div style="font-size:var(--text-sm);color:var(--ink-dim);">unavailable</div>';
+    if (meta) meta.textContent = '';
+  }
+}
+
+async function dbLoadSynthesis() {
+  const body = document.getElementById('db-synth-body');
+  const meta = document.getElementById('db-synth-meta');
+  if (!body) return;
+  body.innerHTML = '<div style="font-size:var(--text-sm);color:var(--ink-dim);">loading…</div>';
+  try {
+    const url = SUPABASE_URL + '/rest/v1/sloan_memory?category=eq.synthesis&select=summary,created_at&order=created_at.desc&limit=1';
+    const r = await fetch(url, {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+    });
+    if (!r.ok) throw new Error('http ' + r.status);
+    const rows = await r.json();
+    if (!Array.isArray(rows) || !rows.length) {
+      body.innerHTML = '<div style="font-size:var(--text-sm);color:var(--ink-dim);">no synthesis yet</div>';
+      if (meta) meta.textContent = '';
+      return;
+    }
+    const row = rows[0];
+    const dateLabel = (function(d) {
+      try { return new Date(d).toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles', month: 'short', day: 'numeric', year: 'numeric' }); }
+      catch (_) { return ''; }
+    })(row.created_at);
+    const rel = pdRelTime(row.created_at);
+    if (meta) meta.textContent = dateLabel + (rel ? ' · ' + rel : '');
+    body.innerHTML =
+      '<div id="db-synth-text" class="db-synth-text clamped">' + pdEscape(row.summary || '') + '</div>'
+      + '<button type="button" class="db-synth-toggle" onclick="dbToggleSynth(this)">Read more</button>';
+  } catch (e) {
+    body.innerHTML = '<div style="font-size:var(--text-sm);color:var(--ink-dim);">unavailable</div>';
+    if (meta) meta.textContent = '';
+  }
+}
+function dbToggleSynth(btn) {
+  const t = document.getElementById('db-synth-text');
+  if (!t) return;
+  t.classList.toggle('clamped');
+  if (btn) btn.textContent = t.classList.contains('clamped') ? 'Read more' : 'Read less';
+}
+
+async function dbLoadPriorities() {
+  const body = document.getElementById('db-pri-body');
+  const meta = document.getElementById('db-pri-meta');
+  if (!body) return;
+  body.innerHTML = '<div style="font-size:var(--text-sm);color:var(--ink-dim);">loading…</div>';
+  try {
+    const url = SUPABASE_URL + '/rest/v1/system_config'
+      + '?section=eq.' + encodeURIComponent(DB_DASHBOARD_SECTION)
+      + '&label=eq.' + encodeURIComponent(DB_PRIORITIES_LABEL)
+      + '&select=id,value';
+    const r = await fetch(url, {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+    });
+    if (!r.ok) throw new Error('http ' + r.status);
+    const rows = await r.json();
+    if (rows && rows.length) {
+      dbPrioritiesRowId = rows[0].id;
+      let parsed = [];
+      try { parsed = JSON.parse(rows[0].value || '[]'); } catch (_) { parsed = []; }
+      if (!Array.isArray(parsed)) parsed = [];
+      if (parsed.length === 0) {
+        // Row exists but empty — backfill the seed once.
+        dbPriorities = DB_PRIORITIES_SEED.slice();
+        await dbSavePriorities();
+      } else {
+        dbPriorities = parsed;
+      }
+    } else {
+      // First admin to load — seed the row. Mirrors the personal_tasks
+      // pattern: fire-and-keep, log on failure.
+      dbPriorities = DB_PRIORITIES_SEED.slice();
+      const ins = await fetch(SUPABASE_URL + '/rest/v1/system_config', {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation',
+        },
+        body: JSON.stringify({
+          section: DB_DASHBOARD_SECTION,
+          label: DB_PRIORITIES_LABEL,
+          value: JSON.stringify(dbPriorities),
+          status: 'active',
+        }),
+      });
+      if (ins.ok) {
+        const created = await ins.json();
+        if (Array.isArray(created) && created[0]) dbPrioritiesRowId = created[0].id;
+      } else {
+        console.warn('[db-priorities] seed insert failed:', ins.status);
+      }
+    }
+  } catch (e) {
+    body.innerHTML = '<div style="font-size:var(--text-sm);color:var(--ink-dim);">unavailable</div>';
+    if (meta) meta.textContent = '';
+    return;
+  }
+  if (meta) meta.textContent = dbPriorities.length + ' active';
+  dbRenderPriorities();
+}
+
+function dbRenderPriorities() {
+  const body = document.getElementById('db-pri-body');
+  if (!body) return;
+  let html = '';
+  if (dbPrioritiesEditing) {
+    html += '<ol class="db-priority-list">';
+    dbPriorities.forEach(function(p, idx) {
+      html += '<li><input type="text" class="db-priority-input" data-idx="' + idx + '" value="' + pdEscape(p) + '"></li>';
+    });
+    html += '</ol>';
+    html += '<div class="db-priority-actions">';
+    html += '<button type="button" class="btn btn-sm" onclick="dbAddPriority()">+ Add</button>';
+    html += '<button type="button" class="btn btn-sm" onclick="dbCommitPriorities()">Save</button>';
+    html += '<button type="button" class="btn btn-ghost btn-sm" onclick="dbCancelPriorities()">Cancel</button>';
+    html += '</div>';
+  } else {
+    if (!dbPriorities.length) {
+      html += '<div style="font-size:var(--text-sm);color:var(--ink-dim);">no priorities</div>';
+    } else {
+      html += '<ol class="db-priority-list">';
+      dbPriorities.forEach(function(p) {
+        html += '<li><span style="flex:1;min-width:0;">' + pdEscape(p) + '</span></li>';
+      });
+      html += '</ol>';
+    }
+    html += '<div class="db-priority-actions">';
+    html += '<button type="button" class="btn btn-sm" onclick="dbBeginEdit()">Edit</button>';
+    html += '</div>';
+  }
+  body.innerHTML = html;
+}
+function dbBeginEdit() { dbPrioritiesEditing = true; dbRenderPriorities(); }
+function dbCancelPriorities() { dbPrioritiesEditing = false; dbRenderPriorities(); }
+function dbReadPriorityInputs() {
+  const body = document.getElementById('db-pri-body');
+  if (!body) return [];
+  const inputs = body.querySelectorAll('.db-priority-input');
+  return Array.from(inputs).map(function(i) { return String(i.value || ''); });
+}
+function dbAddPriority() {
+  dbPriorities = dbReadPriorityInputs();
+  dbPriorities.push('');
+  dbRenderPriorities();
+  // Focus the new (empty) input so the user can type immediately.
+  const body = document.getElementById('db-pri-body');
+  if (body) {
+    const inputs = body.querySelectorAll('.db-priority-input');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  }
+}
+async function dbCommitPriorities() {
+  dbPriorities = dbReadPriorityInputs()
+    .map(function(s) { return s.trim(); })
+    .filter(function(s) { return s.length > 0; });
+  await dbSavePriorities();
+  dbPrioritiesEditing = false;
+  dbRenderPriorities();
+  const meta = document.getElementById('db-pri-meta');
+  if (meta) meta.textContent = dbPriorities.length + ' active';
+}
+async function dbSavePriorities() {
+  try {
+    if (!dbPrioritiesRowId) {
+      const ins = await fetch(SUPABASE_URL + '/rest/v1/system_config', {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation',
+        },
+        body: JSON.stringify({
+          section: DB_DASHBOARD_SECTION,
+          label: DB_PRIORITIES_LABEL,
+          value: JSON.stringify(dbPriorities),
+          status: 'active',
+        }),
+      });
+      if (ins.ok) {
+        const created = await ins.json();
+        if (Array.isArray(created) && created[0]) dbPrioritiesRowId = created[0].id;
+      } else {
+        console.warn('[db-priorities] save (insert) failed:', ins.status);
+      }
+      return;
+    }
+    const r = await fetch(SUPABASE_URL + '/rest/v1/system_config?id=eq.' + encodeURIComponent(dbPrioritiesRowId), {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify({ value: JSON.stringify(dbPriorities) }),
+    });
+    if (!r.ok) console.warn('[db-priorities] save failed:', r.status);
+  } catch (e) {
+    console.warn('[db-priorities] save error:', e.message);
+  }
+}
+
 function initPriorities() {
+  // Daily brief — three panels at the top of the dashboard. All three
+  // load every projdash activation; the editing state on Active
+  // Priorities is intentionally reset on each visit.
+  dbPrioritiesEditing = false;
+  dbLoadStatus();
+  dbLoadSynthesis();
+  dbLoadPriorities();
   pdRenderPriorities('pd-priorities-working', PD_PRIORITIES.working);
   pdRenderPriorities('pd-priorities-sloan',   PD_PRIORITIES.sloan);
   pdRenderPriorities('pd-priorities-design',  PD_PRIORITIES.design);
