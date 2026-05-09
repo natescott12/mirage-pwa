@@ -4381,6 +4381,10 @@ function refreshPersonaFromSupabase(iconName, opts) {
     setF('f-backstory', sp.backstory);
     setF('f-desires', sp.desires);
     setF('f-fears', sp.fears);
+    setF('f-living-space', sp.living_space);
+    setF('f-work-expertise', sp.work_expertise);
+    setF('f-daily-rhythm', sp.daily_rhythm);
+    setF('f-image-behavior', sp.image_behavior);
     setF('f-aesthetic', sp.aesthetic);
     setF('f-interests', sp.interests);
     setF('f-flux-notes', sp.flux_notes);
@@ -5310,6 +5314,22 @@ function buildPersonaForm(p, icon) {
   </div>
 
   <div class="field-group">
+    <div class="field-group-title">Identity & Space</div>
+    <div class="field-row single">
+      <div class="field"><label>Living Space</label><textarea id="f-living-space" placeholder="The room, the loft, the apartment — materials, light, what's on the walls, what survived the move, what she chose deliberately…">${p.living_space || ''}</textarea></div>
+    </div>
+    <div class="field-row single">
+      <div class="field"><label>Work & Expertise</label><textarea id="f-work-expertise" placeholder="What she actually does, the role and the domain, what she's good at, the work she takes seriously…">${p.work_expertise || ''}</textarea></div>
+    </div>
+    <div class="field-row single">
+      <div class="field"><label>Daily Rhythm</label><textarea id="f-daily-rhythm" placeholder="The shape of her day — when she wakes, the desk, the coffee, the walks, when she texts, when she goes quiet…">${p.daily_rhythm || ''}</textarea></div>
+    </div>
+    <div class="field-row single">
+      <div class="field"><label>Image Behavior</label><textarea id="f-image-behavior" placeholder="When she sends images and when she doesn't — the rule, not the exception. World shots vs portraits, scarcity vs availability, what an image is for…">${p.image_behavior || ''}</textarea></div>
+    </div>
+  </div>
+
+  <div class="field-group">
     <div class="field-group-title">Aesthetic & Interests</div>
     <div class="field-row single">
       <div class="field"><label>Aesthetic / Visual World</label><textarea id="f-aesthetic" placeholder="Film grain, natural light, specific colors, settings, objects, clothing, mood…">${p.aesthetic || ''}</textarea></div>
@@ -5368,6 +5388,10 @@ function collectPersonaData() {
     backstory: document.getElementById('f-backstory')?.value || '',
     desires: document.getElementById('f-desires')?.value || '',
     fears: document.getElementById('f-fears')?.value || '',
+    living_space: document.getElementById('f-living-space')?.value || '',
+    work_expertise: document.getElementById('f-work-expertise')?.value || '',
+    daily_rhythm: document.getElementById('f-daily-rhythm')?.value || '',
+    image_behavior: document.getElementById('f-image-behavior')?.value || '',
     aesthetic: document.getElementById('f-aesthetic')?.value || '',
     interests: document.getElementById('f-interests')?.value || '',
     scene_tags: getSelectedChips('scene_tags'),
