@@ -3489,7 +3489,10 @@ function dbRenderPriorities() {
       html += '</ol>';
     }
     html += '<div class="db-priority-actions">';
-    html += '<button type="button" class="btn btn-sm" onclick="dbBeginEdit()">Edit</button>';
+    // Inline color override — the parent panel's surface tone was bleeding
+    // through and rendering the button text invisibly. Explicit dark text
+    // on the ink-colored button background guarantees visibility.
+    html += '<button type="button" class="btn btn-sm" onclick="dbBeginEdit()" style="background:var(--ink);color:var(--bg);">Edit</button>';
     html += '</div>';
   }
   body.innerHTML = html;
@@ -5742,6 +5745,7 @@ const CHECKLIST_SECTIONS = [
     { id:'tools-w-10', text:'✅ Browser Screenshot', tag:'sloan' },
     { id:'tools-w-11', text:'✅ SEND_IMAGE directive', tag:'sloan' },
     { id:'tools-w-12', text:'✅ SEND_WORLD directive', tag:'sloan' },
+    { id:'tools-w-13', text:'✅ VIEW_CONTENT directive', tag:'sloan' },
   ]},
   { title: 'SLOAN — TOOLS (BROKEN / NOT BUILT)', items: [
     { id:'tools-b-1', text:'❌ Image pipeline — LoRA not loading, wrong output', tag:'sloan' },
@@ -5792,6 +5796,7 @@ const CHECKLIST_SECTIONS = [
     { id:'persona-ui-2', text:'⬜ work_expertise — Creative Director role and domain', tag:'sloan' },
     { id:'persona-ui-3', text:'⬜ daily_rhythm — desk, coffee, walks, texts on instinct', tag:'sloan' },
     { id:'persona-ui-4', text:'⬜ image_behavior — intentional scarcity, world over portraits', tag:'sloan' },
+    { id:'persona-ui-5', text:'⬜ wardrobe — Phoebe Philo aesthetic, logged', tag:'sloan' },
   ]},
 ];
 
@@ -7755,6 +7760,55 @@ function renderTrRow(item, isAdmin) {
   return row;
 }
 
+// Detect JSON-array values (active_priorities, nate_personal_tasks) and
+// render them as a readable list instead of a wall of escaped JSON text.
+// Array of strings \u2192 numbered list. Array of objects with .text \u2192 bullets,
+// with a strike-through for items where .done === true. Returns null when
+// the value isn't a parseable JSON array \u2014 caller falls through to the
+// plain-text path.
+function renderTrJsonArrayValue(value) {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!trimmed.startsWith('[')) return null;
+  let parsed;
+  try { parsed = JSON.parse(trimmed); }
+  catch (_) { return null; }
+  if (!Array.isArray(parsed) || !parsed.length) return null;
+  const wrap = document.createElement('div');
+  wrap.className = 'tr-v tr-json-list';
+  parsed.forEach(function(entry, idx) {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:flex-start;gap:8px;padding:3px 0;font-size:var(--text-sm);line-height:1.5;';
+    const marker = document.createElement('span');
+    marker.style.cssText = 'color:var(--ink-dim);min-width:20px;flex-shrink:0;';
+    const text = document.createElement('span');
+    text.style.cssText = 'flex:1;min-width:0;color:var(--ink);';
+    if (typeof entry === 'string') {
+      marker.textContent = (idx + 1) + '.';
+      text.textContent = entry;
+    } else if (entry && typeof entry === 'object') {
+      // Personal-tasks shape: { id, text, done }. Done items render with
+      // a check + dim strike-through; pending items render with an empty
+      // box. Other object shapes fall back to JSON-stringified text.
+      const isDone = entry.done === true;
+      marker.textContent = isDone ? '\u2713' : '\u25A2';
+      const t = (typeof entry.text === 'string') ? entry.text : JSON.stringify(entry);
+      text.textContent = t;
+      if (isDone) {
+        text.style.color = 'var(--ink-dim)';
+        text.style.textDecoration = 'line-through';
+      }
+    } else {
+      marker.textContent = (idx + 1) + '.';
+      text.textContent = String(entry);
+    }
+    row.appendChild(marker);
+    row.appendChild(text);
+    wrap.appendChild(row);
+  });
+  return wrap;
+}
+
 function renderTrValue(item) {
   if (item.url) {
     const link = document.createElement('a');
@@ -7782,6 +7836,23 @@ function renderTrValue(item) {
     code.className = 'tr-v tr-code';
     code.textContent = item.value || '';
     return code;
+  }
+  // JSON-array values (active_priorities, nate_personal_tasks) get a
+  // formatted list view. Falls through to plain-text when not parseable.
+  const jsonList = renderTrJsonArrayValue(item.value);
+  if (jsonList) {
+    if (item.note) {
+      const wrap = document.createElement('span');
+      wrap.className = 'tr-v';
+      wrap.appendChild(jsonList);
+      const dim = document.createElement('span');
+      dim.className = 'tr-dim';
+      dim.style.cssText = 'display:block;margin-top:6px;';
+      dim.textContent = item.note;
+      wrap.appendChild(dim);
+      return wrap;
+    }
+    return jsonList;
   }
   if (!item.value && item.note) {
     const span = document.createElement('span');
