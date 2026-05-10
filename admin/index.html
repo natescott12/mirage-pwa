@@ -4385,6 +4385,7 @@ function refreshPersonaFromSupabase(iconName, opts) {
     setF('f-work-expertise', sp.work_expertise);
     setF('f-daily-rhythm', sp.daily_rhythm);
     setF('f-image-behavior', sp.image_behavior);
+    setF('f-wardrobe', sp.wardrobe);
     setF('f-aesthetic', sp.aesthetic);
     setF('f-interests', sp.interests);
     setF('f-flux-notes', sp.flux_notes);
@@ -5327,6 +5328,9 @@ function buildPersonaForm(p, icon) {
     <div class="field-row single">
       <div class="field"><label>Image Behavior</label><textarea id="f-image-behavior" placeholder="When she sends images and when she doesn't — the rule, not the exception. World shots vs portraits, scarcity vs availability, what an image is for…">${p.image_behavior || ''}</textarea></div>
     </div>
+    <div class="field-row single">
+      <div class="field"><label>Wardrobe</label><textarea id="f-wardrobe" placeholder="what she actually wears — materials, cuts, labels, what she'd never touch">${p.wardrobe || ''}</textarea></div>
+    </div>
   </div>
 
   <div class="field-group">
@@ -5392,6 +5396,7 @@ function collectPersonaData() {
     work_expertise: document.getElementById('f-work-expertise')?.value || '',
     daily_rhythm: document.getElementById('f-daily-rhythm')?.value || '',
     image_behavior: document.getElementById('f-image-behavior')?.value || '',
+    wardrobe: document.getElementById('f-wardrobe')?.value || '',
     aesthetic: document.getElementById('f-aesthetic')?.value || '',
     interests: document.getElementById('f-interests')?.value || '',
     scene_tags: getSelectedChips('scene_tags'),
