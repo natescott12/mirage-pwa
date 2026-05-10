@@ -3492,10 +3492,11 @@ function dbRenderPriorities() {
       html += '</ol>';
     }
     html += '<div class="db-priority-actions">';
-    // Inline color override — the parent panel's surface tone was bleeding
-    // through and rendering the button text invisibly. Explicit dark text
-    // on the ink-colored button background guarantees visibility.
-    html += '<button type="button" class="btn btn-sm" onclick="dbBeginEdit()" style="background:var(--ink);color:var(--bg);">Edit</button>';
+    // Secondary action — .btn-ghost matches the design system's
+    // dark-surface treatment (transparent background, hairline border,
+    // ink-mid text that promotes to white on hover). Same shape as
+    // "Reset all" on the Checklist page.
+    html += '<button type="button" class="btn-ghost btn-sm" onclick="dbBeginEdit()">Edit</button>';
     html += '</div>';
   }
   body.innerHTML = html;
