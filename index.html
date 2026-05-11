@@ -4,223 +4,349 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mirage — The women you wish you knew.</title>
-<meta name="description" content="Mirage is a subscription platform featuring AI-generated Icons — remarkable women you can actually talk to.">
+<meta name="description" content="Mirage — AI Icons who text you back. Real conversations, exclusive images, their world — via SMS.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { background: #0a0a0a; color: #f6eaea; }
+  html, body { background: #ffffff; color: #0a0a0a; }
   body {
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 16px;
-    line-height: 1.65;
-    min-height: 100vh;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
-    display: flex;
-    flex-direction: column;
+    -moz-osx-font-smoothing: grayscale;
   }
-  main {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 80px 24px 40px;
+  a { color: inherit; text-decoration: none; }
+
+  /* NAV */
+  nav.top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 32px;
+    border-bottom: 1px solid #eaeaea;
+    position: sticky; top: 0; background: #ffffff; z-index: 10;
   }
-  .wrap { max-width: 560px; width: 100%; text-align: center; }
   .wordmark {
-    font-weight: 500;
-    font-size: 56px;
-    letter-spacing: 0.02em;
-    margin-bottom: 24px;
+    font-weight: 700; font-size: 20px; letter-spacing: 0.16em;
   }
-  .tagline {
-    font-size: 18px;
-    color: rgba(246, 234, 234, 0.75);
-    margin-bottom: 48px;
-    letter-spacing: 0.01em;
+  .pill {
+    display: inline-block;
+    background: #0a0a0a; color: #ffffff;
+    padding: 10px 22px; border-radius: 999px;
+    font-size: 13px; font-weight: 500; letter-spacing: 0.02em;
+    transition: opacity 0.15s;
   }
-  .description {
-    font-size: 15px;
-    color: rgba(246, 234, 234, 0.7);
-    line-height: 1.6;
-    margin-bottom: 64px;
-    max-width: 480px;
-    margin-left: auto;
-    margin-right: auto;
+  .pill:hover { opacity: 0.85; }
+
+  /* HERO */
+  section.hero {
+    padding: 0 0 80px;
   }
-  .signup {
-    border-top: 1px solid rgba(246, 234, 234, 0.1);
-    padding-top: 48px;
-    margin-bottom: 24px;
+  .hero-img-wrap {
+    width: 100%;
+    background: #f0f0f0;
+    aspect-ratio: 4 / 5;
+    max-height: 720px;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
   }
-  .signup-label {
-    font-size: 11px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: rgba(246, 234, 234, 0.55);
+  .hero-img-wrap img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .hero-text {
+    padding: 56px 32px 0; max-width: 880px; margin: 0 auto;
+  }
+  .hero-title {
+    font-size: 72px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.0;
     margin-bottom: 18px;
   }
-  .signup-title {
-    font-size: 22px;
-    font-weight: 500;
-    margin-bottom: 24px;
+  .hero-tagline {
+    font-size: 24px; font-weight: 500; color: #0a0a0a;
+    margin-bottom: 18px;
   }
-  form.signup-form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    max-width: 420px;
-    margin: 0 auto 16px;
+  .hero-desc {
+    font-size: 16px; font-weight: 400; color: #6b6b6b; max-width: 620px;
   }
-  .consent-row {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    font-size: 12px;
-    color: rgba(246, 234, 234, 0.7);
-    line-height: 1.5;
-    cursor: pointer;
-    text-align: left;
+
+  /* SECTION HEADER (shared) */
+  .section-pad {
+    padding: 80px 32px;
+    max-width: 1100px; margin: 0 auto;
   }
-  .consent-row input[type="checkbox"] {
-    margin-top: 3px;
-    flex-shrink: 0;
-    accent-color: #f6eaea;
+  .section-eyebrow {
+    font-size: 12px; font-weight: 500; letter-spacing: 0.16em;
+    text-transform: uppercase; color: #6b6b6b;
+    margin-bottom: 32px;
   }
-  button.submit:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+
+  /* ICONS */
+  .icons-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
   }
-  button.submit:disabled:hover { opacity: 0.4; }
-  input[type="tel"] {
-    flex: 1;
-    background: transparent;
-    border: 1px solid rgba(246, 234, 234, 0.25);
-    color: #f6eaea;
-    padding: 12px 16px;
-    font-family: inherit;
-    font-size: 15px;
-    border-radius: 2px;
-    outline: none;
-    transition: border-color 0.2s;
+  .icon-card {
+    background: #f0f0f0; border-radius: 8px;
+    padding: 28px 24px;
+    display: flex; flex-direction: column; gap: 8px;
+    min-height: 180px;
   }
-  input[type="tel"]:focus { border-color: rgba(246, 234, 234, 0.6); }
-  input[type="tel"]::placeholder { color: rgba(246, 234, 234, 0.4); }
-  button.submit {
-    background: #f6eaea;
-    color: #0a0a0a;
-    border: none;
-    padding: 12px 24px;
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    border-radius: 2px;
-    cursor: pointer;
-    transition: opacity 0.2s;
+  .icon-name {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.01em;
   }
-  button.submit:hover { opacity: 0.85; }
-  .compliance {
-    font-size: 12px;
-    color: rgba(246, 234, 234, 0.55);
-    line-height: 1.6;
-    max-width: 480px;
-    margin: 0 auto;
+  .icon-archetype {
+    font-size: 15px; color: #4a4a4a; flex: 1;
   }
-  .thanks {
-    display: none;
-    font-size: 14px;
-    color: rgba(246, 234, 234, 0.85);
-    margin-bottom: 16px;
+  .icon-status {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: #6b6b6b; margin-top: 8px;
   }
-  .thanks.show { display: block; }
-  footer {
-    border-top: 1px solid rgba(246, 234, 234, 0.08);
-    padding: 32px 24px;
-    text-align: center;
-    font-size: 13px;
-    color: rgba(246, 234, 234, 0.5);
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
   }
-  footer .links {
+  .status-dot.online { background: #2a9d4a; }
+  .status-dot.offline { background: #b0b0b0; }
+
+  /* HOW IT WORKS */
+  .how-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+  }
+  .how-step {
+    padding: 0;
+  }
+  .how-num {
+    font-size: 13px; font-weight: 500; letter-spacing: 0.18em;
+    color: #6b6b6b; margin-bottom: 16px;
+  }
+  .how-head {
+    font-size: 22px; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.01em;
+  }
+  .how-body {
+    font-size: 15px; color: #4a4a4a;
+  }
+
+  /* WAITLIST */
+  section.waitlist-section {
+    background: #fafafa;
+    padding: 96px 32px;
+  }
+  .waitlist-wrap {
+    max-width: 520px; margin: 0 auto;
+  }
+  .waitlist-head {
+    font-size: 32px; font-weight: 700; letter-spacing: -0.02em;
     margin-bottom: 12px;
   }
-  footer a {
-    color: rgba(246, 234, 234, 0.7);
-    text-decoration: none;
-    margin: 0 12px;
-    border-bottom: 1px solid rgba(246, 234, 234, 0.2);
-    padding-bottom: 1px;
-    transition: opacity 0.2s;
+  .waitlist-sub {
+    font-size: 15px; color: #6b6b6b; margin-bottom: 32px;
   }
-  footer a:hover { opacity: 0.7; }
-  @media (max-width: 480px) {
-    .wordmark { font-size: 44px; }
-    .tagline { font-size: 16px; }
-    form.signup-form { flex-direction: column; }
-    button.submit { padding: 14px 24px; }
+  form.waitlist-form {
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  input[type="tel"] {
+    background: #f0f0f0; border: 1px solid #e0e0e0;
+    border-radius: 6px; padding: 14px 18px;
+    font-family: inherit; font-size: 16px; color: #0a0a0a;
+    outline: none; transition: border-color 0.15s;
+    width: 100%;
+  }
+  input[type="tel"]:focus { border-color: #0a0a0a; }
+  input[type="tel"]::placeholder { color: #999; }
+  label.consent {
+    display: flex; gap: 10px; align-items: flex-start;
+    font-size: 13px; color: #4a4a4a; line-height: 1.5; cursor: pointer;
+  }
+  label.consent input[type="checkbox"] {
+    margin-top: 3px; flex-shrink: 0; accent-color: #0a0a0a;
+    width: 16px; height: 16px;
+  }
+  button.join-btn {
+    background: #0a0a0a; color: #ffffff;
+    border: none; height: 50px; border-radius: 6px;
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    cursor: pointer; transition: opacity 0.15s;
+    width: 100%;
+  }
+  button.join-btn:hover { opacity: 0.85; }
+  button.join-btn:disabled {
+    opacity: 0.35; cursor: not-allowed;
+  }
+  button.join-btn:disabled:hover { opacity: 0.35; }
+  .thanks {
+    display: none;
+    font-size: 15px; color: #2a9d4a; font-weight: 500;
+    padding: 16px 0;
+  }
+  .thanks.show { display: block; }
+
+  /* FOOTER */
+  footer.site {
+    border-top: 1px solid #eaeaea;
+    padding: 32px;
+    text-align: center;
+    font-size: 13px; color: #6b6b6b;
+  }
+  footer.site .copy { margin-bottom: 10px; }
+  footer.site .links a {
+    border-bottom: 1px solid #d4d4d4;
+    padding-bottom: 1px;
+    margin: 0 4px;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  footer.site .links a:hover { color: #0a0a0a; border-color: #0a0a0a; }
+
+  /* Light responsive hygiene — not pixel-perfect, just usable on phones.
+     Twilio review uses mobile; we cap font sizes and stack grids. */
+  @media (max-width: 720px) {
+    nav.top { padding: 16px 20px; }
+    .hero-text { padding: 40px 20px 0; }
+    .hero-title { font-size: 48px; }
+    .hero-tagline { font-size: 20px; }
+    .section-pad { padding: 56px 20px; }
+    .icons-grid { grid-template-columns: 1fr; }
+    .how-grid { grid-template-columns: 1fr; gap: 28px; }
+    section.waitlist-section { padding: 64px 20px; }
+    .waitlist-head { font-size: 26px; }
   }
 </style>
 </head>
 <body>
-  <main>
-    <div class="wrap">
-      <div class="wordmark">Mirage</div>
-      <div class="tagline">The women you wish you knew.</div>
-      <p class="description">
-        Mirage is a subscription platform featuring AI-generated Icons — remarkable women you can actually talk to. Subscribers connect with Icons through SMS and exclusive content.
-      </p>
 
-      <div class="signup">
-        <div class="signup-label">Join the waitlist</div>
-        <div class="signup-title">Be first when we launch.</div>
+  <!-- NAV -->
+  <nav class="top">
+    <div class="wordmark">MIRAGE</div>
+    <a href="#waitlist" class="pill">Join Waitlist</a>
+  </nav>
 
-        <div class="thanks" id="thanks">Thanks. We'll text you when we launch.</div>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-img-wrap">
+      <!-- Hero image populated at runtime from the most recent KEEP verdict
+           on a Sloan content row. Falls back to the canonical reference if
+           the query fails or returns nothing. -->
+      <img id="hero-img" src="https://gmyenvnfuailickepvax.supabase.co/storage/v1/object/public/content/photography/1/canon/photo_1778132901496_xlfldh.jpg" alt="">
+    </div>
+    <div class="hero-text">
+      <div class="hero-title">Mirage</div>
+      <div class="hero-tagline">The women you wish you knew.</div>
+      <div class="hero-desc">AI Icons who text you back. Real conversations, exclusive images, their world — via SMS.</div>
+    </div>
+  </section>
 
-        <form class="signup-form" id="waitlist-form" novalidate>
-          <input type="tel" name="phone" placeholder="Your phone number" required autocomplete="tel" inputmode="tel">
-          <label class="consent-row">
-            <input type="checkbox" id="consent-checkbox">
-            <span>I agree to receive recurring SMS messages from Mirage. Reply STOP to opt out at any time. Message and data rates may apply.</span>
-          </label>
-          <button type="submit" class="submit" id="join-btn" disabled>Join</button>
-        </form>
+  <!-- ICONS -->
+  <section class="section-pad">
+    <div class="section-eyebrow">The Icons</div>
+    <div class="icons-grid">
+      <div class="icon-card">
+        <div class="icon-name">Sloan</div>
+        <div class="icon-archetype">The Downtown Intellectual</div>
+        <div class="icon-status"><span class="status-dot online"></span>Online</div>
+      </div>
+      <div class="icon-card">
+        <div class="icon-name">Vera</div>
+        <div class="icon-archetype">The Unapologetic Bold</div>
+        <div class="icon-status"><span class="status-dot offline"></span>Members only</div>
+      </div>
+      <div class="icon-card">
+        <div class="icon-name">Aria</div>
+        <div class="icon-archetype">The Soft Sadcore</div>
+        <div class="icon-status"><span class="status-dot offline"></span>Members only</div>
       </div>
     </div>
-  </main>
+  </section>
 
-  <footer>
-    <div class="links">
-      <a href="/privacy">Privacy</a>
-      <a href="/terms">Terms</a>
-      <a href="/sms-terms">SMS Terms</a>
+  <!-- HOW IT WORKS -->
+  <section class="section-pad" style="padding-top:32px;">
+    <div class="section-eyebrow">How it works</div>
+    <div class="how-grid">
+      <div class="how-step">
+        <div class="how-num">01</div>
+        <div class="how-head">Subscribe</div>
+        <div class="how-body">Choose an Icon. Pick your tier.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">02</div>
+        <div class="how-head">She texts you</div>
+        <div class="how-body">Real SMS. Not an app.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">03</div>
+        <div class="how-head">Her world, your phone</div>
+        <div class="how-body">For subscribers only.</div>
+      </div>
     </div>
-    <div>© 2026 Intro LA LLC. All rights reserved.</div>
+  </section>
+
+  <!-- WAITLIST FORM -->
+  <section class="waitlist-section" id="waitlist">
+    <div class="waitlist-wrap">
+      <div class="waitlist-head">Be first when we launch.</div>
+      <div class="waitlist-sub">Join the waitlist — we'll text you when subscriptions open.</div>
+
+      <div class="thanks" id="thanks">Thanks. We'll text you when we launch.</div>
+
+      <form class="waitlist-form" id="waitlist-form" novalidate>
+        <input type="tel" name="phone" placeholder="Phone number" required autocomplete="tel" inputmode="tel">
+        <label class="consent">
+          <input type="checkbox" id="consent-checkbox">
+          <span>I agree to receive recurring SMS messages from Mirage (Intro LA LLC). Reply STOP to opt out. Message and data rates may apply.</span>
+        </label>
+        <button type="submit" class="join-btn" id="join-btn" disabled>Join the Waitlist</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site">
+    <div class="copy">© 2026 Intro LA LLC. All content is AI-generated.</div>
+    <div class="links">
+      <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/sms-terms">SMS Terms</a>
+    </div>
   </footer>
 
   <script>
-    (function() {
+    // Hero image — pull the most recent KEEP verdict for Sloan from
+    // sloan_image_verdicts (content table itself has no verdict column,
+    // verdicts join via image_url). If the fetch fails or returns nothing,
+    // the inline src above stays — the canonical Sloan reference.
+    (function loadHero() {
+      var SB = 'https://gmyenvnfuailickepvax.supabase.co';
+      var KEY = 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
+      var url = SB + '/rest/v1/sloan_image_verdicts'
+        + '?icon_name=eq.Sloan'
+        + '&verdict=eq.keep'
+        + '&select=image_url,created_at'
+        + '&order=created_at.desc&limit=1';
+      fetch(url, { headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY } })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(rows) {
+          if (!rows || !rows.length || !rows[0].image_url) return;
+          var img = document.getElementById('hero-img');
+          if (img) img.src = rows[0].image_url;
+        })
+        .catch(function() { /* keep fallback */ });
+    })();
+
+    // Waitlist form — preserves the existing /api/waitlist POST behavior.
+    // Consent checkbox gates the submit button. Thanks message swaps in
+    // on submit regardless of network outcome so the page never appears
+    // broken to Twilio's review.
+    (function wireForm() {
       var form = document.getElementById('waitlist-form');
       var thanks = document.getElementById('thanks');
       if (!form) return;
-      var consentCheckbox = document.getElementById('consent-checkbox');
+      var consent = document.getElementById('consent-checkbox');
       var joinBtn = document.getElementById('join-btn');
-      if (consentCheckbox && joinBtn) {
-        consentCheckbox.addEventListener('change', function() {
-          joinBtn.disabled = !consentCheckbox.checked;
+      if (consent && joinBtn) {
+        consent.addEventListener('change', function() {
+          joinBtn.disabled = !consent.checked;
         });
       }
       form.addEventListener('submit', function(e) {
         e.preventDefault();
         var phoneInput = form.querySelector('input[name="phone"]');
         var phone = (phoneInput.value || '').trim();
-        if (!phone) {
-          phoneInput.focus();
-          return;
-        }
-        // Best-effort POST to /api/waitlist; show thanks regardless so the
-        // page doesn't break if the endpoint isn't wired up yet.
+        if (!phone) { phoneInput.focus(); return; }
         try {
           fetch('/api/waitlist', {
             method: 'POST',
