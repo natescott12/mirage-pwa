@@ -6568,7 +6568,10 @@ function andieRender(opts) {
       </div>`);
     return acc;
   }, []);
-  if (opts && opts.typing) items.push('<div class="andie-typing">Andie is thinking...</div>');
+  if (opts && opts.typing) {
+    const typingMsg = (opts && typeof opts.typingText === 'string' && opts.typingText) ? opts.typingText : 'Andie is thinking...';
+    items.push('<div class="andie-typing">' + andieEscape(typingMsg) + '</div>');
+  }
   chat.innerHTML = items.join('');
   chat.scrollTop = chat.scrollHeight;
 }
@@ -6833,27 +6836,57 @@ async function andieSend() {
   if (btn) btn.disabled = true;
   andieRender({ typing: true });
 
-  try {
-    const r = await fetch(ANDIE_PROXY_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from: user,
-        messages: andieMessages,
-      }),
-    });
-    const data = await r.json();
-    if (data.error) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
-    const reply = (data.reply || '').trim() || '...';
-    andieMessages.push({ role: 'assistant', content: reply, timestamp: Date.now() });
-  } catch (e) {
-    andieMessages.push({ role: 'assistant', content: '[proxy error: ' + e.message + ']', timestamp: Date.now() });
-  } finally {
-    andieSaveHistory();
-    if (btn) btn.disabled = false;
-    andieRender();
-    if (inp) inp.focus();
+  // One-shot send with a 12s timeout. Returns the reply text on success,
+  // throws on network/timeout/HTTP-error/server-error. Caller handles retry.
+  async function _sendOnce() {
+    const ctl = new AbortController();
+    const timer = setTimeout(function() { ctl.abort(); }, 12000);
+    try {
+      const r = await fetch(ANDIE_PROXY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: user, messages: andieMessages }),
+        signal: ctl.signal,
+      });
+      let data;
+      try { data = await r.json(); }
+      catch (jsonErr) { throw new Error('non-JSON response (' + r.status + ')'); }
+      if (data && data.error) {
+        throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
+      }
+      return (data && data.reply || '').trim() || '...';
+    } finally {
+      clearTimeout(timer);
+    }
   }
+
+  let reply = null;
+  try {
+    reply = await _sendOnce();
+  } catch (firstErr) {
+    console.warn('[andie] send attempt 1 failed:', firstErr && firstErr.message);
+    // Keep the typing indicator visible but swap its text — gives the user
+    // a visible signal that we're retrying instead of looking like a silent
+    // hang or generic "Andie is thinking...".
+    andieRender({ typing: true, typingText: 'connection issue — retrying' });
+    await new Promise(function(res) { setTimeout(res, 2000); });
+    try {
+      reply = await _sendOnce();
+    } catch (secondErr) {
+      console.warn('[andie] send attempt 2 failed:', secondErr && secondErr.message);
+      reply = null;
+    }
+  }
+
+  if (reply !== null) {
+    andieMessages.push({ role: 'assistant', content: reply, timestamp: Date.now() });
+  } else {
+    andieMessages.push({ role: 'assistant', content: 'couldn’t reach Sloan — try again.', timestamp: Date.now() });
+  }
+  andieSaveHistory();
+  if (btn) btn.disabled = false;
+  andieRender();
+  if (inp) inp.focus();
 }
 
 // ── SLOAN LEARNING LOG ────────────────────────────────────────────────────
