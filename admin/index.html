@@ -3477,9 +3477,14 @@ function dbRenderPriorities() {
     });
     html += '</ol>';
     html += '<div class="db-priority-actions">';
-    html += '<button type="button" class="btn btn-sm" onclick="dbAddPriority()">+ Add</button>';
-    html += '<button type="button" class="btn btn-sm" onclick="dbCommitPriorities()">Save</button>';
-    html += '<button type="button" class="btn btn-ghost btn-sm" onclick="dbCancelPriorities()">Cancel</button>';
+    // All three buttons use .btn-ghost so they read consistently against
+    // the dark panel surface — transparent background, hairline border,
+    // ink-mid text that promotes to white on hover. Same shape as the
+    // Edit button in the readonly state above and the canonical
+    // "Reset all" button on the Checklist page.
+    html += '<button type="button" class="btn-ghost btn-sm" onclick="dbAddPriority()">+ Add</button>';
+    html += '<button type="button" class="btn-ghost btn-sm" onclick="dbCommitPriorities()">Save</button>';
+    html += '<button type="button" class="btn-ghost btn-sm" onclick="dbCancelPriorities()">Cancel</button>';
     html += '</div>';
   } else {
     if (!dbPriorities.length) {
