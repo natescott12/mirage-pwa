@@ -7290,7 +7290,10 @@ async function loadSloanChat() {
       // m.timestamp is the persisted timestamp (ms or ISO). Falls
       // through to undefined for legacy rows, which means no time
       // shown on those bubbles — honest about what we don't know.
-      if (text.trim()) appendSloanChatMessage(who, text, null, null, m.timestamp);
+      // m.mediaUrl is forwarded so any persisted image URL surfaces on
+      // reload; today the proxy strips Supabase URLs from content but
+      // a future per-message mediaUrl write would flow through here.
+      if (text.trim()) appendSloanChatMessage(who, text, m.mediaUrl || null, null, m.timestamp);
     });
     msgs.scrollTop = msgs.scrollHeight;
     sloanchatStartPolling();
@@ -7363,7 +7366,7 @@ async function sloanchatPollTick() {
         : Array.isArray(m.content)
           ? m.content.map(function(c) { return c && c.type === 'text' ? (c.text || '') : ''; }).join('')
           : '';
-      if (text.trim()) appendSloanChatMessage(who, text, null, null, m.timestamp);
+      if (text.trim()) appendSloanChatMessage(who, text, m.mediaUrl || null, null, m.timestamp);
     });
     __sloanchatLastHistoryLength = history.length;
     if (wasAtBottom && msgs) msgs.scrollTop = msgs.scrollHeight;
@@ -7411,18 +7414,27 @@ function appendSloanChatMessage(who, text, explicitImageUrl, docName, timestamp)
   const msgs = document.getElementById('sloanchat-messages');
   if (!msgs) return null;
 
+  // Strip the '[image sent]' placeholder the proxy writes into icon_chats
+  // in place of the live Supabase URL. It should never appear as readable
+  // text in the chat — the image (if any) renders separately via the
+  // mediaUrl path below.
+  let displayText = (typeof text === 'string' ? text : '')
+    .replace(/\[image sent\]/gi, '')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
+
   // Skip rendering entirely when there's nothing to show. Reply '' or
   // null with no image/doc attachment happens on the hallucinated-URL
   // path in handleAdminChat (server deliberately withholds the turn);
   // rendering a '...' placeholder there just looked like a bug.
-  const hasText = typeof text === 'string' && text.trim().length > 0;
+  const hasText = displayText.length > 0;
   if (!hasText && !explicitImageUrl && !docName) return null;
 
   // Persisted '[system correction: ...]' turns exist in icon_chats
   // purely for Claude's next-turn context — they should never surface
   // as a user-visible bubble on reload. Matches the opening-bracket
   // prefix so future correction variants stay hidden too.
-  if (hasText && text.trim().indexOf('[system correction:') === 0) return null;
+  if (hasText && displayText.indexOf('[system correction:') === 0) return null;
 
   const empty = msgs.querySelector('.sloanchat-empty');
   if (empty) empty.remove();
@@ -7449,13 +7461,32 @@ function appendSloanChatMessage(who, text, explicitImageUrl, docName, timestamp)
   // historical messages in icon_chats sometimes embed a Supabase URL
   // directly in the assistant turn.
   let imageUrl = explicitImageUrl || null;
-  let displayText = text || '';
   if (!imageUrl && displayText) {
     const sniffed = sloanChatExtractImageUrl(displayText);
     if (sniffed) {
       imageUrl = sniffed;
       displayText = displayText.replace(sniffed, '').replace(/[ \t]{2,}/g, ' ').trim();
     }
+  }
+
+  if (docName) {
+    const chip = document.createElement('div');
+    chip.className = 'sloanchat-doc-chip';
+    chip.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+    const name = document.createElement('span');
+    name.textContent = docName;
+    chip.appendChild(name);
+    el.appendChild(chip);
+  }
+
+  // Text first, image below — the image is the payload, the text is its
+  // caption. The previous order (image above text) buried Sloan's words
+  // under the picture and read as alt-text instead of conversation.
+  if (displayText) {
+    const textEl = document.createElement('div');
+    textEl.className = 'sloanchat-text';
+    textEl.innerHTML = renderSloanChatMarkdown(displayText);
+    el.appendChild(textEl);
   }
 
   if (imageUrl) {
@@ -7474,23 +7505,6 @@ function appendSloanChatMessage(who, text, explicitImageUrl, docName, timestamp)
       console.warn('[sloanchat] img failed to load:', this.src);
     };
     el.appendChild(img);
-  }
-
-  if (docName) {
-    const chip = document.createElement('div');
-    chip.className = 'sloanchat-doc-chip';
-    chip.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
-    const name = document.createElement('span');
-    name.textContent = docName;
-    chip.appendChild(name);
-    el.appendChild(chip);
-  }
-
-  if (displayText) {
-    const textEl = document.createElement('div');
-    textEl.className = 'sloanchat-text';
-    textEl.innerHTML = renderSloanChatMarkdown(displayText);
-    el.appendChild(textEl);
   }
 
   if (tsDate && !isNaN(tsDate.getTime())) {
