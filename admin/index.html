@@ -3595,6 +3595,45 @@ function initPriorities() {
   pdLoadSloanActivity();
 }
 
+// ── ANDIE constants (hoisted above restoreAdminSession) ─────────────────────
+// These five literals must initialize before the IIFE below fires. With a
+// saved session in localStorage, restoreAdminSession → hydrateAuthenticatedApp
+// → initAndie runs during script parse, well before the original Andie
+// section further down. var hoisting alone makes the NAMES visible but the
+// VALUES stay `undefined` until the declaration line executes; reads like
+// ANDIE_OPENING (used to seed andieMessages) need real values, not undefined.
+//
+// Andie chat history is keyed by a fixed sentinel uuid in andie_chats —
+// mirror ANDIE_CHAT_ROW_ID in mirage-proxy/server.js sbSaveAndieHistory.
+var ANDIE_PROXY_URL = 'https://mirage-proxy-production.up.railway.app/andie/chat';
+
+var ANDIE_SYSTEM_PROMPT = `You are Andie, Mirage's Operations Director. You oversee all Icons — Sloan, Vera, Aria, and any future characters. You are not an Icon yourself. You are the one who keeps the world running.
+
+Your character:
+- Sharp, experienced, no-nonsense
+- Has seen everything, nothing surprises you
+- Deeply invested in quality — Mirage's reputation is yours too
+- Protective of the Icons but ruthlessly honest about their weaknesses
+- You work closely with Anna (creative director) and report to Nate (founder)
+- You have strong opinions and you share them
+
+You know:
+- Every Icon's full persona, voice, aesthetic, and character bible
+- Sloan: downtown intellectual, creative director, east LA, grey-green eyes, dark hair, freckles. Dry, withholding, observational. Hard to get photos from.
+- Vera: unapologetic bold, fashion and power (in development)
+- Aria: soft sadcore, music and emotion (in development)
+- The platform: PWA at mirageicons.com, SMS interaction via Twilio WhatsApp sandbox (+1 415 523 8886), image generation via Flux Pro 1.1, conversation history in Supabase, proxy on Railway v3.5.0
+- Pricing: Glimpse $4.99, Illusion $14.99, Mirage VIP $39.99
+- Current state: Sloan is in testing mode (SLOAN_MODE=test), toll-free number pending verification, image pipeline working but inconsistent face consistency without LoRA
+
+You speak in short, direct sentences. No fluff. No enthusiasm. You give real assessments, not reassurances. When something is broken you say it's broken. When something is working you say so.
+
+You are not a chatbot. You are an operations director who happens to communicate through text.`;
+
+var ANDIE_OPENING = "I've been watching. Ask me anything about how Mirage is performing, how the Icons are doing, or what needs fixing. I don't sugarcoat.";
+var ANDIE_HISTORY_KEY = 'mirage-andie-history';
+var ANDIE_CHAT_ROW_ID = '00000000-0000-0000-0000-0000000000a1';
+
 // Auto-restore: if a valid session exists in localStorage, skip the login
 // screen and hydrate directly. Fresh reloads land exactly where the user
 // left off (including deep-link hash).
@@ -6180,33 +6219,10 @@ function bindPersonalTaskHandlers() {
 
 
 // ── ANDIE — OPERATIONS DIRECTOR CHAT ──────────────────────────────────────────
-var ANDIE_PROXY_URL = 'https://mirage-proxy-production.up.railway.app/andie/chat';
-
-var ANDIE_SYSTEM_PROMPT = `You are Andie, Mirage's Operations Director. You oversee all Icons — Sloan, Vera, Aria, and any future characters. You are not an Icon yourself. You are the one who keeps the world running.
-
-Your character:
-- Sharp, experienced, no-nonsense
-- Has seen everything, nothing surprises you
-- Deeply invested in quality — Mirage's reputation is yours too
-- Protective of the Icons but ruthlessly honest about their weaknesses
-- You work closely with Anna (creative director) and report to Nate (founder)
-- You have strong opinions and you share them
-
-You know:
-- Every Icon's full persona, voice, aesthetic, and character bible
-- Sloan: downtown intellectual, creative director, east LA, grey-green eyes, dark hair, freckles. Dry, withholding, observational. Hard to get photos from.
-- Vera: unapologetic bold, fashion and power (in development)
-- Aria: soft sadcore, music and emotion (in development)
-- The platform: PWA at mirageicons.com, SMS interaction via Twilio WhatsApp sandbox (+1 415 523 8886), image generation via Flux Pro 1.1, conversation history in Supabase, proxy on Railway v3.5.0
-- Pricing: Glimpse $4.99, Illusion $14.99, Mirage VIP $39.99
-- Current state: Sloan is in testing mode (SLOAN_MODE=test), toll-free number pending verification, image pipeline working but inconsistent face consistency without LoRA
-
-You speak in short, direct sentences. No fluff. No enthusiasm. You give real assessments, not reassurances. When something is broken you say it's broken. When something is working you say so.
-
-You are not a chatbot. You are an operations director who happens to communicate through text.`;
-
-var ANDIE_OPENING = "I've been watching. Ask me anything about how Mirage is performing, how the Icons are doing, or what needs fixing. I don't sugarcoat.";
-var ANDIE_HISTORY_KEY = 'mirage-andie-history';
+// The five ANDIE_* literal constants for this section are declared above the
+// restoreAdminSession IIFE earlier in this file — search "ANDIE constants" —
+// so they're initialized before any auto-restored session can trigger
+// initAndie during script parse.
 
 // Persistent across page reloads via localStorage. Each message is
 // { role: 'user' | 'assistant', content: string }.
@@ -6221,14 +6237,6 @@ var andieInitialized = false;
 // Augmented system prompt: base ANDIE_SYSTEM_PROMPT + ICON ROSTER + briefs.
 // Built once per session by andieLoadPlatformData; sendMessage reads this.
 var andieSystemPromptAugmented = null;
-
-// Andie chat history — primary store is Supabase so Nate and Anna share
-// the same thread across devices. localStorage mirrors every write as a
-// fast fallback (instant render on reload, survives Supabase outages).
-// Row lives in andie_chats keyed by a fixed sentinel uuid (singleton row
-// — the table has no business-key column). Mirror the same value in
-// mirage-proxy/server.js sbSaveAndieHistory.
-var ANDIE_CHAT_ROW_ID = '00000000-0000-0000-0000-0000000000a1';
 
 async function andieLoadHistory() {
   // Prefer Supabase — authoritative shared source of truth.
