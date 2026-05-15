@@ -6228,7 +6228,7 @@ var andieSystemPromptAugmented = null;
 // Row lives in andie_chats keyed by a fixed sentinel uuid (singleton row
 // — the table has no business-key column). Mirror the same value in
 // mirage-proxy/server.js sbSaveAndieHistory.
-const ANDIE_CHAT_ROW_ID = '00000000-0000-0000-0000-0000000000a1';
+var ANDIE_CHAT_ROW_ID = '00000000-0000-0000-0000-0000000000a1';
 
 async function andieLoadHistory() {
   // Prefer Supabase — authoritative shared source of truth.
