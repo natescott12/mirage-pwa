@@ -6180,9 +6180,9 @@ function bindPersonalTaskHandlers() {
 
 
 // ── ANDIE — OPERATIONS DIRECTOR CHAT ──────────────────────────────────────────
-const ANDIE_PROXY_URL = 'https://mirage-proxy-production.up.railway.app/andie/chat';
+var ANDIE_PROXY_URL = 'https://mirage-proxy-production.up.railway.app/andie/chat';
 
-const ANDIE_SYSTEM_PROMPT = `You are Andie, Mirage's Operations Director. You oversee all Icons — Sloan, Vera, Aria, and any future characters. You are not an Icon yourself. You are the one who keeps the world running.
+var ANDIE_SYSTEM_PROMPT = `You are Andie, Mirage's Operations Director. You oversee all Icons — Sloan, Vera, Aria, and any future characters. You are not an Icon yourself. You are the one who keeps the world running.
 
 Your character:
 - Sharp, experienced, no-nonsense
@@ -6205,8 +6205,8 @@ You speak in short, direct sentences. No fluff. No enthusiasm. You give real ass
 
 You are not a chatbot. You are an operations director who happens to communicate through text.`;
 
-const ANDIE_OPENING = "I've been watching. Ask me anything about how Mirage is performing, how the Icons are doing, or what needs fixing. I don't sugarcoat.";
-const ANDIE_HISTORY_KEY = 'mirage-andie-history';
+var ANDIE_OPENING = "I've been watching. Ask me anything about how Mirage is performing, how the Icons are doing, or what needs fixing. I don't sugarcoat.";
+var ANDIE_HISTORY_KEY = 'mirage-andie-history';
 
 // Persistent across page reloads via localStorage. Each message is
 // { role: 'user' | 'assistant', content: string }.
