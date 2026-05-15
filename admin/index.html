@@ -6608,7 +6608,16 @@ async function initAndie() {
   // Restore prior conversation — Supabase first (shared across devices),
   // localStorage as a fallback. If neither returns anything, seed with
   // the opening line so a first-time user still gets her intro.
-  const saved = await andieLoadHistory();
+  let saved;
+  try {
+    saved = await Promise.race([
+      andieLoadHistory(),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
+    ]);
+  } catch (e) {
+    console.warn('[andie] history load failed or timed out:', e.message);
+    saved = null;
+  }
   andieMessages = (saved && Array.isArray(saved) && saved.length > 0)
     ? saved
     : [{ role: 'assistant', content: ANDIE_OPENING }];
