@@ -6391,7 +6391,7 @@ async function andieLoadPlatformData() {
     fetch(SUPABASE_URL + '/rest/v1/andie_memory?select=summary,created_at&order=created_at.desc&limit=20', { headers: sbHeaders })
       .then(r => r.ok ? r.json() : []),
     // sloan_memory (Sloan Learning Log — everything Mirage Sloan has flagged)
-    fetch(SUPABASE_URL + '/rest/v1/sloan_memory?select=category,summary,created_at&order=created_at.desc', { headers: sbHeaders })
+    fetch(SUPABASE_URL + '/rest/v1/sloan_memory?select=category,summary,created_at&order=created_at.desc&limit=50', { headers: sbHeaders })
       .then(r => r.ok ? r.json() : []),
   ]);
 
@@ -6596,9 +6596,13 @@ async function initAndie() {
   if (chat) chat.innerHTML = '<div class="andie-typing">Loading Mirage data...</div>';
 
   try {
-    await andieLoadPlatformData();
+    await Promise.race([
+      andieLoadPlatformData(),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
+    ]);
   } catch (e) {
-    console.warn('[andie] platform data load threw:', e.message);
+    console.warn('[andie] platform data load failed or timed out:', e.message);
+    andieSystemPromptAugmented = true;
   }
 
   // Restore prior conversation — Supabase first (shared across devices),
