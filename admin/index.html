@@ -4398,6 +4398,8 @@ function refreshPersonaFromSupabase(iconName, opts) {
     setF('f-daily-rhythm', sp.daily_rhythm);
     setF('f-image-behavior', sp.image_behavior);
     setF('f-wardrobe', sp.wardrobe);
+    setF('f-visual-canon', sp.visual_canon);
+    setF('f-extension-type', sp.extension_type);
     setF('f-aesthetic', sp.aesthetic);
     setF('f-interests', sp.interests);
     setF('f-flux-notes', sp.flux_notes);
@@ -5327,21 +5329,27 @@ function buildPersonaForm(p, icon) {
   </div>
 
   <div class="field-group">
-    <div class="field-group-title">Identity & Space</div>
+    <div class="field-group-title">World & Behavior</div>
     <div class="field-row single">
-      <div class="field"><label>Living Space</label><textarea id="f-living-space" placeholder="The room, the loft, the apartment — materials, light, what's on the walls, what survived the move, what she chose deliberately…">${p.living_space || ''}</textarea></div>
+      <div class="field"><label>Living Space</label><textarea id="f-living-space" placeholder="Locked spatial description of her home. Room layout, furniture positions, light sources, materials. Specific enough that every image feels like the same place every time.">${p.living_space || ''}</textarea></div>
     </div>
     <div class="field-row single">
-      <div class="field"><label>Work & Expertise</label><textarea id="f-work-expertise" placeholder="What she actually does, the role and the domain, what she's good at, the work she takes seriously…">${p.work_expertise || ''}</textarea></div>
+      <div class="field"><label>Work & Expertise</label><textarea id="f-work-expertise" placeholder="Her professional world and domain. What she actually knows and goes deep on.">${p.work_expertise || ''}</textarea></div>
     </div>
     <div class="field-row single">
-      <div class="field"><label>Daily Rhythm</label><textarea id="f-daily-rhythm" placeholder="The shape of her day — when she wakes, the desk, the coffee, the walks, when she texts, when she goes quiet…">${p.daily_rhythm || ''}</textarea></div>
+      <div class="field"><label>Daily Rhythm</label><textarea id="f-daily-rhythm" placeholder="What a normal day looks like. When she wakes, how she works, where she goes. The texture of her actual life.">${p.daily_rhythm || ''}</textarea></div>
     </div>
     <div class="field-row single">
-      <div class="field"><label>Image Behavior</label><textarea id="f-image-behavior" placeholder="When she sends images and when she doesn't — the rule, not the exception. World shots vs portraits, scarcity vs availability, what an image is for…">${p.image_behavior || ''}</textarea></div>
+      <div class="field"><label>Image Behavior</label><textarea id="f-image-behavior" placeholder="Her image threshold and framing instincts. What earns each image type. Aspect ratio defaults: portrait 768x1024, tall portrait 1024x1280 for full body and outfits, square 1024x1024 for objects and close-ups, landscape 1024x768 for wide and environmental. Pipe prefix syntax: [SEND_WORLD: landscape | scene description].">${p.image_behavior || ''}</textarea></div>
     </div>
     <div class="field-row single">
       <div class="field"><label>Wardrobe</label><textarea id="f-wardrobe" placeholder="what she actually wears — materials, cuts, labels, what she'd never touch">${p.wardrobe || ''}</textarea></div>
+    </div>
+    <div class="field-row single">
+      <div class="field"><label>Visual Canon</label><textarea id="f-visual-canon" placeholder="Locked descriptions for recurring locations beyond home. Car if she has one. Regular spots. Anywhere that appears more than once needs a fixed description so it looks the same every time.">${p.visual_canon || ''}</textarea></div>
+    </div>
+    <div class="field-row single">
+      <div class="field"><label>Extension Type</label><input id="f-extension-type" value="${p.extension_type || ''}" placeholder="What capability module this Icon needs beyond base platform. Examples: podcast, wellness articles, fashion lookbook. Leave empty for base platform only."></div>
     </div>
   </div>
 
@@ -5409,6 +5417,8 @@ function collectPersonaData() {
     daily_rhythm: document.getElementById('f-daily-rhythm')?.value || '',
     image_behavior: document.getElementById('f-image-behavior')?.value || '',
     wardrobe: document.getElementById('f-wardrobe')?.value || '',
+    visual_canon: document.getElementById('f-visual-canon')?.value || '',
+    extension_type: document.getElementById('f-extension-type')?.value || '',
     aesthetic: document.getElementById('f-aesthetic')?.value || '',
     interests: document.getElementById('f-interests')?.value || '',
     scene_tags: getSelectedChips('scene_tags'),
