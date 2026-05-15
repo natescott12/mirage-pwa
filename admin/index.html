@@ -6605,13 +6605,9 @@ async function initAndie() {
   // localStorage as a fallback. If neither returns anything, seed with
   // the opening line so a first-time user still gets her intro.
   const saved = await andieLoadHistory();
-  if (saved) {
-    andieMessages = saved;
-    console.log('[andie] restored', saved.length, 'messages');
-  } else {
-    andieMessages = [{ role: 'assistant', content: ANDIE_OPENING }];
-    andieSaveHistory();
-  }
+  andieMessages = (saved && Array.isArray(saved) && saved.length > 0)
+    ? saved
+    : [{ role: 'assistant', content: ANDIE_OPENING }];
   andieRender();
   const inp = document.getElementById('andie-input');
   if (inp) inp.focus();
@@ -6892,7 +6888,7 @@ async function andieSend() {
   if (reply !== null) {
     andieMessages.push({ role: 'assistant', content: reply, timestamp: Date.now() });
   } else {
-    andieMessages.push({ role: 'assistant', content: 'couldn’t reach Sloan — try again.', timestamp: Date.now() });
+    andieMessages.push({ role: 'assistant', content: 'couldn’t reach Andie — try again.', timestamp: Date.now() });
   }
   andieSaveHistory();
   if (btn) btn.disabled = false;
