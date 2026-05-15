@@ -6326,19 +6326,51 @@ function andieSaveHistory() {
 // if remote has MORE messages than local" guard keeps the common case
 // clean.
 var andiePollInterval = null;
+var andiePollBackoffTimer = null;
+var andiePollFailures = 0;
 var ANDIE_POLL_MS = 5000;
+var ANDIE_POLL_BACKOFF_BASE_MS = 30000;
+var ANDIE_POLL_BACKOFF_MAX_MS = 600000;
 
 function andieStartPolling() {
   if (andiePollInterval) return;
+  andiePollFailures = 0;
+  if (andiePollBackoffTimer) { clearTimeout(andiePollBackoffTimer); andiePollBackoffTimer = null; }
   andiePollInterval = setInterval(andiePollTick, ANDIE_POLL_MS);
   console.log('[andie][poll] started (' + (ANDIE_POLL_MS / 1000) + 's interval)');
 }
 
 function andieStopPolling() {
+  if (andiePollBackoffTimer) { clearTimeout(andiePollBackoffTimer); andiePollBackoffTimer = null; }
   if (!andiePollInterval) return;
   clearInterval(andiePollInterval);
   andiePollInterval = null;
   console.log('[andie][poll] stopped');
+}
+
+// When Supabase returns non-200 (503 etc.), stop the 5s interval and
+// schedule a single retry after a backoff delay. Each consecutive failure
+// doubles the delay up to ANDIE_POLL_BACKOFF_MAX_MS. A successful tick
+// resets the counter and resumes normal polling.
+function andiePollBackoff(reason) {
+  andieStopPolling();
+  if (andiePollBackoffTimer) return; // already scheduled
+  const delay = Math.min(
+    ANDIE_POLL_BACKOFF_BASE_MS * Math.pow(2, andiePollFailures),
+    ANDIE_POLL_BACKOFF_MAX_MS
+  );
+  andiePollFailures++;
+  console.warn('[andie][poll] backing off (' + reason + ') — retry in ' + Math.round(delay / 1000) + 's (failure #' + andiePollFailures + ')');
+  andiePollBackoffTimer = setTimeout(function() {
+    andiePollBackoffTimer = null;
+    // Only restart if the pane is still active. Otherwise let andieStartPolling
+    // get called fresh next time the user navigates back.
+    const pane = document.getElementById('pane-andie');
+    if (pane && pane.classList.contains('active') && !andiePollInterval) {
+      console.log('[andie][poll] resuming after backoff');
+      andiePollInterval = setInterval(andiePollTick, ANDIE_POLL_MS);
+    }
+  }, delay);
 }
 
 async function andiePollTick() {
@@ -6358,9 +6390,20 @@ async function andiePollTick() {
     const r = await fetch(url, {
       headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
     });
-    if (!r.ok) { console.warn('[andie][poll] non-ok', r.status); return; }
+    if (!r.ok) {
+      andiePollBackoff('HTTP ' + r.status);
+      return;
+    }
     const rows = await r.json();
-    if (!Array.isArray(rows) || !rows[0] || !Array.isArray(rows[0].messages)) return;
+    if (!Array.isArray(rows) || !rows[0] || !Array.isArray(rows[0].messages)) {
+      // Empty/malformed body isn't a server failure — don't trigger backoff.
+      return;
+    }
+    // Successful poll — reset failure counter.
+    if (andiePollFailures > 0) {
+      console.log('[andie][poll] recovered after ' + andiePollFailures + ' failure(s)');
+      andiePollFailures = 0;
+    }
     const remote = rows[0].messages;
     if (remote.length > andieMessages.length) {
       console.log('[andie][poll] remote has', remote.length, 'vs local', andieMessages.length, '— syncing');
@@ -6369,7 +6412,7 @@ async function andiePollTick() {
       andieRender();
     }
   } catch (e) {
-    console.warn('[andie][poll] tick exception:', e.message);
+    andiePollBackoff('exception: ' + e.message);
   }
 }
 
@@ -6858,7 +6901,10 @@ async function andieSend() {
   }
 
   andieMessages.push({ role: 'user', content: userContent, timestamp: Date.now() });
-  andieSaveHistory();
+  // Save is fire-and-forget by design (andieSaveHistory does its own
+  // background fetch). Wrap in try/catch so a sync throw — e.g. localStorage
+  // quota exceeded — never blocks the proxy send. The send must go regardless.
+  try { andieSaveHistory(); } catch (e) { console.warn('[andie] pre-send save threw, continuing:', e && e.message); }
   andieChatClearAttachment();
   if (inp) inp.value = '';
   if (btn) btn.disabled = true;
@@ -6911,7 +6957,9 @@ async function andieSend() {
   } else {
     andieMessages.push({ role: 'assistant', content: 'couldn’t reach Andie — try again.', timestamp: Date.now() });
   }
-  andieSaveHistory();
+  // Same defensive wrap — never let a save failure prevent the reply from
+  // rendering. Local state is already updated; persistence is best-effort.
+  try { andieSaveHistory(); } catch (e) { console.warn('[andie] post-reply save threw, continuing:', e && e.message); }
   if (btn) btn.disabled = false;
   andieRender();
   if (inp) inp.focus();
