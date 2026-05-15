@@ -6909,11 +6909,13 @@ async function andieSend() {
   if (btn) btn.disabled = true;
   andieRender({ typing: true });
 
-  // One-shot send with a 12s timeout. Returns the reply text on success,
+  // One-shot send with a 30s timeout. Returns the reply text on success,
   // throws on network/timeout/HTTP-error/server-error. Caller handles retry.
+  // Andie's reply commonly takes 8–11s under load; 12s was firing aborts
+  // mid-flight and surfacing as "Failed to fetch" in the browser.
   async function _sendOnce() {
     const ctl = new AbortController();
-    const timer = setTimeout(function() { ctl.abort(); }, 12000);
+    const timer = setTimeout(function() { ctl.abort(); }, 30000);
     try {
       const r = await fetch(ANDIE_PROXY_URL, {
         method: 'POST',
