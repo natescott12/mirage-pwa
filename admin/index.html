@@ -6901,10 +6901,9 @@ async function andieSend() {
   }
 
   andieMessages.push({ role: 'user', content: userContent, timestamp: Date.now() });
-  // Save is fire-and-forget by design (andieSaveHistory does its own
-  // background fetch). Wrap in try/catch so a sync throw — e.g. localStorage
-  // quota exceeded — never blocks the proxy send. The send must go regardless.
-  try { andieSaveHistory(); } catch (e) { console.warn('[andie] pre-send save threw, continuing:', e && e.message); }
+  // No browser-side save here — the proxy /andie/chat handler persists
+  // the full updated history via sbSaveAndieHistory using the service key
+  // after each reply. Duplicate writes from anon-key clients were 503'ing.
   andieChatClearAttachment();
   if (inp) inp.value = '';
   if (btn) btn.disabled = true;
@@ -6957,9 +6956,8 @@ async function andieSend() {
   } else {
     andieMessages.push({ role: 'assistant', content: 'couldn’t reach Andie — try again.', timestamp: Date.now() });
   }
-  // Same defensive wrap — never let a save failure prevent the reply from
-  // rendering. Local state is already updated; persistence is best-effort.
-  try { andieSaveHistory(); } catch (e) { console.warn('[andie] post-reply save threw, continuing:', e && e.message); }
+  // No browser-side save here — proxy already persisted the assistant
+  // reply server-side. Polling will pick up cross-device updates.
   if (btn) btn.disabled = false;
   andieRender();
   if (inp) inp.focus();
