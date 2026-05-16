@@ -3713,6 +3713,10 @@ function showPane(id) {
   document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
   const pane = document.getElementById('pane-' + id);
   if (pane) pane.classList.add('active');
+  if (id === 'andie') {
+    console.log('[admin][showPane andie] toggled', { paneFound: !!pane, activePanes: [...document.querySelectorAll('.pane.active')].map(p => p.id) });
+    setTimeout(() => console.log('[admin][showPane andie] +500ms', { activePanes: [...document.querySelectorAll('.pane.active')].map(p => p.id) }), 500);
+  }
 
   const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', sloanchat:'Sloan Chat', sloanlog:'Sloan Learning Log', sloanaudit:'Image Audit', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', projdash:'Project Dashboard', design:'Design System', techref:'Tech Reference', andie:'Andie' };
   document.getElementById('topbar-section').textContent = labels[id] || id;
@@ -6880,6 +6884,7 @@ async function andieSend() {
   const btn = document.getElementById('andie-send-btn');
   const text = (inp && inp.value || '').trim();
   const attachment = andieChatAttachment;
+  console.log('[andie][send] called', { text, hasAttachment: !!attachment, inpExists: !!inp, rawInpValue: inp && inp.value, willReturn: !text && !attachment });
   if (!text && !attachment) return;
   const user = (typeof currentUser !== 'undefined' && currentUser) ? currentUser : 'nate';
 
