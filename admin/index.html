@@ -6912,6 +6912,7 @@ async function andieSend() {
   andieChatClearAttachment();
   if (inp) inp.value = '';
   if (btn) btn.disabled = true;
+  try {
   andieRender({ typing: true });
 
   // One-shot send with a 30s timeout. Returns the reply text on success,
@@ -6965,9 +6966,11 @@ async function andieSend() {
   }
   // No browser-side save here — proxy already persisted the assistant
   // reply server-side. Polling will pick up cross-device updates.
-  if (btn) btn.disabled = false;
   andieRender();
   if (inp) inp.focus();
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
 // ── SLOAN LEARNING LOG ────────────────────────────────────────────────────
