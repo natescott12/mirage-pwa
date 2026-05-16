@@ -1979,7 +1979,7 @@ button { color: inherit; }
     <!-- SIDEBAR -->
     <div class="sidebar" id="sidebar">
       <div class="sidebar-section">Ops</div>
-      <div class="sidebar-item active" id="nav-item-andie" onclick="showPane('andie')">
+      <div class="sidebar-item active" onclick="showPane('andie')">
         <span class="icon">♦</span> Andie
       </div>
       <div class="sidebar-section">Main</div>
@@ -3076,14 +3076,6 @@ function _openPersonaByNameFromHash(iconName, attempts) {
 // or a new tab with a hash) the admin responds even without a full reload.
 window.addEventListener('hashchange', applyPaneHash);
 
-// Defensive backup for the Andie nav: also attach a JS click listener so
-// showPane('andie') runs even if the inline onclick is being suppressed
-// by some path the diagnostics couldn't pin down. Inline onclick stays
-// in place — if both fire, showPane is idempotent (class toggle + cached
-// initAndie short-circuit), and double-logs help confirm which path won.
-const _andieNavEl = document.getElementById('nav-item-andie');
-if (_andieNavEl) _andieNavEl.addEventListener('click', function() { showPane('andie'); });
-
 document.getElementById('login-pass').addEventListener('keydown', e => {
   if (e.key === 'Enter') doLogin();
 });
@@ -3721,10 +3713,6 @@ function showPane(id) {
   document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
   const pane = document.getElementById('pane-' + id);
   if (pane) pane.classList.add('active');
-  if (id === 'andie') {
-    console.log('[admin][showPane andie] toggled', { paneFound: !!pane, activePanes: [...document.querySelectorAll('.pane.active')].map(p => p.id) });
-    setTimeout(() => console.log('[admin][showPane andie] +500ms', { activePanes: [...document.querySelectorAll('.pane.active')].map(p => p.id) }), 500);
-  }
 
   const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', sloanchat:'Sloan Chat', sloanlog:'Sloan Learning Log', sloanaudit:'Image Audit', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', projdash:'Project Dashboard', design:'Design System', techref:'Tech Reference', andie:'Andie' };
   document.getElementById('topbar-section').textContent = labels[id] || id;
@@ -6892,7 +6880,6 @@ async function andieSend() {
   const btn = document.getElementById('andie-send-btn');
   const text = (inp && inp.value || '').trim();
   const attachment = andieChatAttachment;
-  console.log('[andie][send] called', { text, hasAttachment: !!attachment, inpExists: !!inp, rawInpValue: inp && inp.value, willReturn: !text && !attachment });
   if (!text && !attachment) return;
   const user = (typeof currentUser !== 'undefined' && currentUser) ? currentUser : 'nate';
 
