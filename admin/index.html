@@ -7315,19 +7315,19 @@ function __chatDayLabel(d) {
 }
 function __chatDayKey(d) { return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(); }
 var __sloanLastDayKey = null;
-let __andieLastDayKey = null;
+var __andieLastDayKey = null;
 
 // Polling state — incremental refresh of Sloan Chat while the pane is
 // active. Tracks the last known icon_chats history length so each poll
 // can append just the delta. sloanChatSend manually bumps this counter
 // for its locally-appended turns so a poll firing mid-send won't render
 // duplicates.
-let __sloanchatLastHistoryLength = 0;
-let __sloanchatPollTimer = null;
+var __sloanchatLastHistoryLength = 0;
+var __sloanchatPollTimer = null;
 // Tripped while sloanChatSend is in flight so the poll doesn't fire
 // between the local user-bubble append and the server's icon_chats
 // save (which would re-render the same turn).
-let __sloanchatSending = false;
+var __sloanchatSending = false;
 const SLOANCHAT_POLL_INTERVAL_MS = 10000;
 
 // Single fetch that aligns the counter to the current persisted history
