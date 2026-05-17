@@ -1004,6 +1004,40 @@ button { color: inherit; }
   margin-top: 6px;
 }
 
+/* Wu-Tang specialist panes — share Andie's chat shell (.andie-chat /
+   .andie-input-row / .andie-input / .andie-send-btn / .andie-bubble are
+   reused on the markup). These rules give each pane the same flex-column
+   layout + header typography as #pane-andie without modifying the
+   pre-existing chat-pane selectors above. */
+#pane-gza.active,
+#pane-rza.active,
+#pane-methodman.active,
+#pane-inspectahdeck.active,
+#pane-raekwon.active {
+  display: flex; flex-direction: column; height: calc(100vh - 112px); min-height: 0;
+}
+#pane-gza .page-header,
+#pane-rza .page-header,
+#pane-methodman .page-header,
+#pane-inspectahdeck .page-header,
+#pane-raekwon .page-header { flex-shrink: 0; align-items: center; }
+#pane-gza .page-title,
+#pane-rza .page-title,
+#pane-methodman .page-title,
+#pane-inspectahdeck .page-title,
+#pane-raekwon .page-title {
+  font-size: var(--text-lg); font-weight: var(--weight-regular);
+  letter-spacing: -0.4px; color: var(--ink);
+}
+#pane-gza .page-sub,
+#pane-rza .page-sub,
+#pane-methodman .page-sub,
+#pane-inspectahdeck .page-sub,
+#pane-raekwon .page-sub {
+  font-size: var(--text-sm); color: var(--ink-dim);
+  margin-top: 6px;
+}
+
 .andie-header-actions { display: inline-flex; align-items: center; gap: 16px; flex-shrink: 0; }
 
 /* Single connection status dot — used in both Andie and Sloan Chat
@@ -1982,6 +2016,21 @@ button { color: inherit; }
       <div class="sidebar-item active" onclick="showPane('andie')">
         <span class="icon">♦</span> Andie
       </div>
+      <div class="sidebar-item" onclick="showPane('gza')">
+        <span class="icon">♦</span> GZA
+      </div>
+      <div class="sidebar-item" onclick="showPane('rza')">
+        <span class="icon">♦</span> RZA
+      </div>
+      <div class="sidebar-item" onclick="showPane('methodman')">
+        <span class="icon">♦</span> Method Man
+      </div>
+      <div class="sidebar-item" onclick="showPane('inspectahdeck')">
+        <span class="icon">♦</span> Inspectah Deck
+      </div>
+      <div class="sidebar-item" onclick="showPane('raekwon')">
+        <span class="icon">♦</span> Raekwon
+      </div>
       <div class="sidebar-section">Main</div>
       <div class="sidebar-item" onclick="showPane('dashboard')">
         <span class="icon">◈</span> Dashboard
@@ -2726,6 +2775,82 @@ button { color: inherit; }
               <button class="andie-modal-btn-confirm" onclick="andieConfirmNew()" id="andie-modal-confirm">Confirm</button>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- WU-TANG specialists — chat panels (same shell as Andie, in-memory history) -->
+      <div class="pane" id="pane-gza">
+        <div class="page-header">
+          <div>
+            <div class="page-title">GZA</div>
+            <div class="page-sub">Persona architect — voice, character, aesthetic</div>
+          </div>
+          <span class="chat-status-dot" data-status-target="gza" title="Proxy connection status"></span>
+        </div>
+        <div id="specialist-chat-gza" class="andie-chat"></div>
+        <div class="andie-input-row">
+          <input type="text" id="specialist-input-gza" class="andie-input" placeholder="Talk to GZA..." onkeydown="if(event.key==='Enter'){event.preventDefault();specialistSend('gza');}" />
+          <button type="button" class="btn andie-send-btn" onmousedown="event.preventDefault()" onclick="event.preventDefault(); specialistSend('gza');" id="specialist-send-gza">Send</button>
+        </div>
+      </div>
+
+      <div class="pane" id="pane-rza">
+        <div class="page-header">
+          <div>
+            <div class="page-title">RZA</div>
+            <div class="page-sub">Oversight — priorities, state, architecture</div>
+          </div>
+          <span class="chat-status-dot" data-status-target="rza" title="Proxy connection status"></span>
+        </div>
+        <div id="specialist-chat-rza" class="andie-chat"></div>
+        <div class="andie-input-row">
+          <input type="text" id="specialist-input-rza" class="andie-input" placeholder="Talk to RZA..." onkeydown="if(event.key==='Enter'){event.preventDefault();specialistSend('rza');}" />
+          <button type="button" class="btn andie-send-btn" onmousedown="event.preventDefault()" onclick="event.preventDefault(); specialistSend('rza');" id="specialist-send-rza">Send</button>
+        </div>
+      </div>
+
+      <div class="pane" id="pane-methodman">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Method Man</div>
+            <div class="page-sub">Code and deploys — proxy, server.js</div>
+          </div>
+          <span class="chat-status-dot" data-status-target="methodman" title="Proxy connection status"></span>
+        </div>
+        <div id="specialist-chat-methodman" class="andie-chat"></div>
+        <div class="andie-input-row">
+          <input type="text" id="specialist-input-methodman" class="andie-input" placeholder="Talk to Method Man..." onkeydown="if(event.key==='Enter'){event.preventDefault();specialistSend('methodman');}" />
+          <button type="button" class="btn andie-send-btn" onmousedown="event.preventDefault()" onclick="event.preventDefault(); specialistSend('methodman');" id="specialist-send-methodman">Send</button>
+        </div>
+      </div>
+
+      <div class="pane" id="pane-inspectahdeck">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Inspectah Deck</div>
+            <div class="page-sub">QA and systems audit</div>
+          </div>
+          <span class="chat-status-dot" data-status-target="inspectahdeck" title="Proxy connection status"></span>
+        </div>
+        <div id="specialist-chat-inspectahdeck" class="andie-chat"></div>
+        <div class="andie-input-row">
+          <input type="text" id="specialist-input-inspectahdeck" class="andie-input" placeholder="Talk to Inspectah Deck..." onkeydown="if(event.key==='Enter'){event.preventDefault();specialistSend('inspectahdeck');}" />
+          <button type="button" class="btn andie-send-btn" onmousedown="event.preventDefault()" onclick="event.preventDefault(); specialistSend('inspectahdeck');" id="specialist-send-inspectahdeck">Send</button>
+        </div>
+      </div>
+
+      <div class="pane" id="pane-raekwon">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Raekwon</div>
+            <div class="page-sub">Subscriber experience — PWA, content pipeline</div>
+          </div>
+          <span class="chat-status-dot" data-status-target="raekwon" title="Proxy connection status"></span>
+        </div>
+        <div id="specialist-chat-raekwon" class="andie-chat"></div>
+        <div class="andie-input-row">
+          <input type="text" id="specialist-input-raekwon" class="andie-input" placeholder="Talk to Raekwon..." onkeydown="if(event.key==='Enter'){event.preventDefault();specialistSend('raekwon');}" />
+          <button type="button" class="btn andie-send-btn" onmousedown="event.preventDefault()" onclick="event.preventDefault(); specialistSend('raekwon');" id="specialist-send-raekwon">Send</button>
         </div>
       </div>
 
@@ -3739,6 +3864,7 @@ function showPane(id) {
   if (id === 'checklist') { initChecklist(); loadPersonalTasks(); }
   if (id === 'pnl') initPnl();
   if (id === 'andie') initAndie();
+  if (typeof SPECIALISTS !== 'undefined' && SPECIALISTS && SPECIALISTS[id] && typeof initSpecialist === 'function') initSpecialist(id);
   if (id === 'sloanlog') loadSloanLog();
   if (id === 'sloanaudit') runSloanImageAudit();
   if (id === 'sloanchat') loadSloanChat();
@@ -6965,6 +7091,100 @@ async function andieSend() {
   if (inp) inp.focus();
   } finally {
     if (btn) btn.disabled = false;
+  }
+}
+
+// ── WU-TANG specialist chats ──────────────────────────────────────────────
+// Minimal per-specialist chat — same POST shape as Andie, but session-only
+// (in-memory history, starts fresh on each page load). Proxy persists turns
+// server-side via specialist_chats and captures end-of-session payloads to
+// session_captures, so Andie can read across all specialists via her
+// search_sessions / read_conversation / read_session_captures tools.
+//
+// Declared with `var` (not let/const) to dodge the TDZ trap the rest of this
+// file has — restoreAdminSession's IIFE runs the hydrate chain DURING script
+// eval, and any later `let __` is in TDZ when showPane() fires from that
+// path.
+var SPECIALIST_PROXY_BASE = 'https://mirage-proxy-production.up.railway.app';
+var SPECIALISTS = {
+  gza:           { display: 'GZA',            endpoint: '/api/gza/chat' },
+  rza:           { display: 'RZA',            endpoint: '/api/rza/chat' },
+  methodman:     { display: 'Method Man',     endpoint: '/api/methodman/chat' },
+  inspectahdeck: { display: 'Inspectah Deck', endpoint: '/api/inspectahdeck/chat' },
+  raekwon:       { display: 'Raekwon',        endpoint: '/api/raekwon/chat' },
+};
+var specialistMessages = { gza: [], rza: [], methodman: [], inspectahdeck: [], raekwon: [] };
+
+function _specialistEscape(s) {
+  var d = document.createElement('div');
+  d.textContent = (s == null) ? '' : String(s);
+  return d.innerHTML;
+}
+
+function specialistRender(name, opts) {
+  var chat = document.getElementById('specialist-chat-' + name);
+  if (!chat) return;
+  var msgs = specialistMessages[name] || [];
+  var typing = !!(opts && opts.typing);
+  var html = '';
+  if (!msgs.length && !typing) {
+    html = '<div class="andie-typing">Start the session — type a message below.</div>';
+  } else {
+    html = msgs.map(function(m) {
+      var role = m.role === 'user' ? 'user' : 'assistant';
+      return '<div class="andie-bubble ' + role + '">' + _specialistEscape(m.content) + '</div>';
+    }).join('');
+    if (typing) {
+      var displayName = (SPECIALISTS[name] && SPECIALISTS[name].display) || name;
+      html += '<div class="andie-typing">' + _specialistEscape(displayName + ' is thinking...') + '</div>';
+    }
+  }
+  chat.innerHTML = html;
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function initSpecialist(name) {
+  specialistRender(name);
+  var inp = document.getElementById('specialist-input-' + name);
+  if (inp) inp.focus();
+}
+
+async function specialistSend(name) {
+  var spec = SPECIALISTS[name];
+  if (!spec) return;
+  var inp = document.getElementById('specialist-input-' + name);
+  var btn = document.getElementById('specialist-send-' + name);
+  var text = (inp && inp.value || '').trim();
+  if (!text) return;
+  specialistMessages[name].push({ role: 'user', content: text });
+  if (inp) inp.value = '';
+  if (btn) btn.disabled = true;
+  specialistRender(name, { typing: true });
+  try {
+    // Exclude the just-pushed user turn from conversationHistory — the proxy
+    // concats the `message` field onto whatever history we send, so passing
+    // the unstripped array would duplicate the user turn.
+    var historyForProxy = specialistMessages[name].slice(0, -1);
+    var r = await fetch(SPECIALIST_PROXY_BASE + spec.endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, conversationHistory: historyForProxy }),
+    });
+    var data = null;
+    try { data = await r.json(); } catch (_) {}
+    if (!r.ok) {
+      var errMsg = 'Error ' + r.status + ((data && data.error) ? ': ' + data.error : '');
+      specialistMessages[name].push({ role: 'assistant', content: errMsg });
+    } else {
+      var reply = (data && data.reply) || '(no reply)';
+      specialistMessages[name].push({ role: 'assistant', content: reply });
+    }
+  } catch (e) {
+    specialistMessages[name].push({ role: 'assistant', content: 'Error: ' + ((e && e.message) || 'unknown') });
+  } finally {
+    if (btn) btn.disabled = false;
+    specialistRender(name);
+    if (inp) inp.focus();
   }
 }
 
