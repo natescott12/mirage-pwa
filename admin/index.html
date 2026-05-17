@@ -2535,7 +2535,10 @@ button { color: inherit; }
             <div class="page-title">Task Checklist</div>
             <div class="page-sub">May 2026 — track what's done</div>
           </div>
-          <button class="btn btn-ghost btn-sm" onclick="resetChecklist()">Reset all</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="loadChecklistSections()">Reload sections</button>
+            <button class="btn btn-ghost btn-sm" onclick="resetChecklist()">Reset all</button>
+          </div>
         </div>
         <div id="checklist-progress-wrap" style="margin-bottom:28px">
           <div style="height:3px;background:#ece9e4;border-radius:2px;overflow:hidden;">
@@ -3879,7 +3882,7 @@ function showPane(id) {
     // ~5902 has run), so a direct call would see undefined arrays
     // and TypeError on .forEach. setTimeout(_, 0) pushes execution
     // past the current eval frame.
-    setTimeout(function() { initChecklist(); loadPersonalTasks(); }, 0);
+    setTimeout(function() { initChecklist(); loadPersonalTasks(); loadChecklistSections(); }, 0);
   }
   if (id === 'pnl') initPnl();
   if (id === 'andie') initAndie();
@@ -6012,6 +6015,65 @@ var CHECKLIST_SECTIONS = [
     { id:'persona-ui-5', text:'⬜ wardrobe — Phoebe Philo aesthetic, logged', tag:'sloan' },
   ]},
 ];
+
+// Pull checklist section items from Supabase (system_config rows with
+// section='checklist'). Each row's label maps to one of the hardcoded
+// section titles via CHECKLIST_LABEL_TO_TITLE below; value is a JSON
+// array of items in the same shape as the hardcoded fallback. Mutates
+// CHECKLIST_SECTIONS in place (replaces .items on matching titles) and
+// re-renders. Fails silently to the hardcoded fallback on any error —
+// console-only warning, no UI surface.
+var CHECKLIST_LABEL_TO_TITLE = {
+  sloan_foundation:         'SLOAN — FOUNDATION',
+  sloan_memory:             'SLOAN — MEMORY',
+  sloan_tools_working:      'SLOAN — TOOLS (WORKING)',
+  sloan_tools_broken:       'SLOAN — TOOLS (BROKEN / NOT BUILT)',
+  sloan_behavior:           'SLOAN — BEHAVIOR',
+  platform_launch_blockers: 'PLATFORM — LAUNCH BLOCKERS',
+  platform_working:         'PLATFORM — WORKING',
+  platform_security:        'PLATFORM — SECURITY',
+  persona_builder_pending:  'PERSONA BUILDER — PENDING UI FIELDS',
+};
+
+async function loadChecklistSections() {
+  try {
+    const url = SUPABASE_URL + '/rest/v1/system_config'
+      + '?section=eq.checklist'
+      + '&select=label,value'
+      + '&order=label.asc';
+    const r = await fetch(url, {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+    });
+    if (!r.ok) { console.warn('[checklist] load HTTP', r.status); return; }
+    const rows = await r.json();
+    if (!Array.isArray(rows) || !rows.length) {
+      console.log('[checklist] no Supabase rows — using hardcoded sections');
+      return;
+    }
+
+    let mergedCount = 0;
+    for (const row of rows) {
+      const title = CHECKLIST_LABEL_TO_TITLE[row.label];
+      if (!title) { console.warn('[checklist] unknown label, skipping:', row.label); continue; }
+      let items = [];
+      try { items = JSON.parse(row.value || '[]'); } catch (_) { console.warn('[checklist] bad JSON for', row.label); continue; }
+      if (!Array.isArray(items)) continue;
+      const section = CHECKLIST_SECTIONS.find(function(s) { return s.title === title; });
+      if (section) {
+        section.items = items;
+        mergedCount++;
+      } else {
+        console.warn('[checklist] no matching section for title:', title);
+      }
+    }
+    if (mergedCount > 0) {
+      console.log('[checklist] merged', mergedCount, 'section(s) from Supabase — re-rendering');
+      if (typeof initChecklist === 'function') initChecklist();
+    }
+  } catch (e) {
+    console.warn('[checklist] loadChecklistSections error:', e && e.message);
+  }
+}
 
 function getChecklistState() {
   try { return JSON.parse(localStorage.getItem(CHECKLIST_KEY)) || {}; } catch { return {}; }
