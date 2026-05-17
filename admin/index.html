@@ -7401,12 +7401,17 @@ async function kfHandleFileSelect(event) {
   if (!file) return;
   kfStatus('Uploading ' + file.name + ' (' + kfFmtSize(file.size) + ')…');
   try {
-    var fd = new FormData();
-    fd.append('file', file, file.name);
-    var r = await fetch(KF_PROXY_BASE + '/admin/knowledge/upload', {
-      method: 'POST',
-      headers: { 'x-mirage-key': MIRAGE_INTERNAL_KEY },
-      body: fd,
+    // Raw PUT upload — sends the file bytes directly as the request body
+    // with Content-Type set from file.type. No FormData / multipart shape;
+    // the proxy uses express.raw() on the /admin/knowledge/upload/:filename
+    // route to capture req.body as a Buffer and pipe it to Supabase Storage.
+    var r = await fetch(KF_PROXY_BASE + '/admin/knowledge/upload/' + encodeURIComponent(file.name), {
+      method: 'PUT',
+      headers: {
+        'x-mirage-key': MIRAGE_INTERNAL_KEY,
+        'Content-Type': file.type || 'application/octet-stream',
+      },
+      body: file,
     });
     var data = null;
     try { data = await r.json(); } catch (_) {}
