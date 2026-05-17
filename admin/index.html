@@ -2041,6 +2041,9 @@ button { color: inherit; }
       <div class="sidebar-item" onclick="showPane('raekwon')">
         <span class="icon">♦</span> Raekwon
       </div>
+      <div class="sidebar-item" onclick="showPane('knowledge')">
+        <span class="icon">📁</span> Knowledge
+      </div>
       <div class="sidebar-section">Main</div>
       <div class="sidebar-item" onclick="showPane('dashboard')">
         <span class="icon">◈</span> Dashboard
@@ -2864,6 +2867,31 @@ button { color: inherit; }
         <div class="andie-input-row">
           <textarea id="specialist-input-raekwon" class="andie-input" placeholder="Talk to Raekwon... (Enter to send, Shift+Enter for newline)" rows="3" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();specialistSend('raekwon');}"></textarea>
           <button type="button" class="btn andie-send-btn" onmousedown="event.preventDefault()" onclick="event.preventDefault(); specialistSend('raekwon');" id="specialist-send-raekwon">Send</button>
+        </div>
+      </div>
+
+      <!-- KNOWLEDGE — Andie's persistent document store -->
+      <div class="pane" id="pane-knowledge" style="overflow-y:auto;height:calc(100vh - 48px)">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Knowledge Folder</div>
+            <div class="page-sub">Andie's persistent document store</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="loadKnowledgeFiles()">Refresh</button>
+        </div>
+
+        <div id="kf-upload-zone" style="margin-top:24px;padding:24px;border:1px dashed var(--border);border-radius:6px;text-align:center;cursor:pointer;transition:border-color 0.15s">
+          <input type="file" id="kf-file-input" style="display:none" onchange="kfHandleFileSelect(event)" />
+          <div id="kf-upload-label" style="color:var(--ink-dim);font-size:var(--text-sm)">
+            Click to upload — or drop a file here
+          </div>
+        </div>
+        <div id="kf-upload-status" style="margin-top:8px;font-size:var(--text-xs);color:var(--ink-dim);min-height:18px"></div>
+
+        <div id="kf-list-wrap" style="margin-top:32px">
+          <div id="kf-list" style="font-size:var(--text-sm)">
+            <div style="color:var(--ink-dim);padding:12px 0">Loading files…</div>
+          </div>
         </div>
       </div>
 
@@ -3887,6 +3915,14 @@ function showPane(id) {
   if (id === 'pnl') initPnl();
   if (id === 'andie') initAndie();
   if (typeof SPECIALISTS !== 'undefined' && SPECIALISTS && SPECIALISTS[id] && typeof initSpecialist === 'function') initSpecialist(id);
+  if (id === 'knowledge' && typeof loadKnowledgeFiles === 'function') {
+    // Deferred via setTimeout(_, 0) for the same TDZ reason as the
+    // checklist branch above — loadKnowledgeFiles closes over
+    // MIRAGE_INTERNAL_KEY (const, declared much later in the script in
+    // another section). Direct call during the restoreAdminSession
+    // hydrate chain would hit a ReferenceError before that const runs.
+    setTimeout(loadKnowledgeFiles, 0);
+  }
   if (id === 'sloanlog') loadSloanLog();
   if (id === 'sloanaudit') runSloanImageAudit();
   if (id === 'sloanchat') loadSloanChat();
@@ -7274,6 +7310,143 @@ async function specialistSend(name) {
     if (inp) inp.focus();
   }
 }
+
+// ── KNOWLEDGE FOLDER ──────────────────────────────────────────────────────
+// Andie's persistent document store, backed by Supabase Storage bucket
+// 'andie-knowledge' via four /admin/knowledge/* endpoints on mirage-proxy.
+// All requests carry the x-mirage-key header (MIRAGE_INTERNAL_KEY is
+// already declared further down in the script — we reuse that global
+// rather than re-declaring it here). UI lives in the #pane-knowledge
+// pane defined near the top of the file.
+var KF_PROXY_BASE = 'https://mirage-proxy-production.up.railway.app';
+
+function kfStatus(msg, isError) {
+  var el = document.getElementById('kf-upload-status');
+  if (!el) return;
+  el.textContent = msg || '';
+  el.style.color = isError ? '#e57373' : 'var(--ink-dim)';
+}
+
+function kfEscape(s) {
+  var d = document.createElement('div');
+  d.textContent = (s == null) ? '' : String(s);
+  return d.innerHTML;
+}
+
+function kfFmtSize(bytes) {
+  var n = Number(bytes) || 0;
+  if (n < 1024) return n + ' B';
+  if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+  return (n / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+function kfFmtDate(iso) {
+  if (!iso) return '—';
+  try { return new Date(iso).toLocaleString(); } catch (_) { return iso; }
+}
+
+async function loadKnowledgeFiles() {
+  var wrap = document.getElementById('kf-list');
+  if (!wrap) return;
+  wrap.innerHTML = '<div style="color:var(--ink-dim);padding:12px 0">Loading files…</div>';
+  try {
+    var r = await fetch(KF_PROXY_BASE + '/admin/knowledge/list', {
+      headers: { 'x-mirage-key': MIRAGE_INTERNAL_KEY },
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var data = await r.json();
+    var files = (data && data.files) || [];
+    if (!files.length) {
+      wrap.innerHTML = '<div style="color:var(--ink-dim);padding:12px 0">No files yet — upload STATE.md to get started.</div>';
+      return;
+    }
+    var rows = files.map(function(f) {
+      var safeName = kfEscape(f.name);
+      var encName = encodeURIComponent(f.name);
+      return '<div style="display:grid;grid-template-columns:1fr auto auto auto auto;gap:14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">'
+        + '<div style="font-family:ui-monospace,Menlo,monospace;color:var(--ink);word-break:break-all">' + safeName + '</div>'
+        + '<div style="color:var(--ink-dim);font-size:var(--text-xs);min-width:70px;text-align:right">' + kfFmtSize(f.size) + '</div>'
+        + '<div style="color:var(--ink-dim);font-size:var(--text-xs);min-width:130px;text-align:right">' + kfEscape(kfFmtDate(f.updated_at || f.created_at)) + '</div>'
+        + '<a href="' + KF_PROXY_BASE + '/admin/knowledge/file/' + encName + '?_key=' + encodeURIComponent(MIRAGE_INTERNAL_KEY) + '" target="_blank" class="btn btn-ghost btn-sm" style="text-decoration:none">Download</a>'
+        + '<button type="button" class="btn btn-ghost btn-sm" onclick="kfDelete(\'' + f.name.replace(/\\/g, '\\\\').replace(/\'/g, "\\\\\'") + '\')">Delete</button>'
+        + '</div>';
+    }).join('');
+    wrap.innerHTML = rows;
+  } catch (e) {
+    wrap.innerHTML = '<div style="color:#e57373;padding:12px 0">Failed to load: ' + kfEscape(e.message || 'unknown') + '</div>';
+  }
+}
+
+async function kfDelete(filename) {
+  if (!filename) return;
+  if (!confirm('Delete ' + filename + '?')) return;
+  kfStatus('Deleting ' + filename + '…');
+  try {
+    var r = await fetch(KF_PROXY_BASE + '/admin/knowledge/file/' + encodeURIComponent(filename), {
+      method: 'DELETE',
+      headers: { 'x-mirage-key': MIRAGE_INTERNAL_KEY },
+    });
+    var data = null;
+    try { data = await r.json(); } catch (_) {}
+    if (!r.ok) throw new Error((data && data.error) || ('HTTP ' + r.status));
+    kfStatus('Deleted ' + filename);
+    loadKnowledgeFiles();
+  } catch (e) {
+    kfStatus('Delete failed: ' + (e.message || 'unknown'), true);
+  }
+}
+
+async function kfHandleFileSelect(event) {
+  var file = event && event.target && event.target.files && event.target.files[0];
+  if (!file) return;
+  kfStatus('Uploading ' + file.name + ' (' + kfFmtSize(file.size) + ')…');
+  try {
+    var fd = new FormData();
+    fd.append('file', file, file.name);
+    var r = await fetch(KF_PROXY_BASE + '/admin/knowledge/upload', {
+      method: 'POST',
+      headers: { 'x-mirage-key': MIRAGE_INTERNAL_KEY },
+      body: fd,
+    });
+    var data = null;
+    try { data = await r.json(); } catch (_) {}
+    if (!r.ok) throw new Error((data && data.error) || ('HTTP ' + r.status));
+    kfStatus('Uploaded ' + file.name + ' (' + kfFmtSize(data.size || file.size) + ')');
+    loadKnowledgeFiles();
+  } catch (e) {
+    kfStatus('Upload failed: ' + (e.message || 'unknown'), true);
+  } finally {
+    // Reset the input so re-uploading the same filename re-fires change.
+    event.target.value = '';
+  }
+}
+
+// Wire upload-zone click + drag-and-drop. Click anywhere on the zone
+// opens the file picker; drag-drop reads the first dropped file and
+// re-uses the same upload path.
+(function wireKnowledgeUploadZone() {
+  window.addEventListener('load', function() {
+    var zone = document.getElementById('kf-upload-zone');
+    if (!zone) return;
+    var input = document.getElementById('kf-file-input');
+    zone.addEventListener('click', function() { if (input) input.click(); });
+    zone.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      zone.style.borderColor = 'rgba(255,255,255,0.4)';
+    });
+    zone.addEventListener('dragleave', function() {
+      zone.style.borderColor = '';
+    });
+    zone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      zone.style.borderColor = '';
+      var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!file) return;
+      // Reuse the same handler by faking the input change event shape.
+      kfHandleFileSelect({ target: { files: [file], value: '' } });
+    });
+  });
+})();
 
 // ── SLOAN LEARNING LOG ────────────────────────────────────────────────────
 const SLOAN_PROXY_URL = 'https://mirage-proxy-production.up.railway.app';
