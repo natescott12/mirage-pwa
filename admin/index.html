@@ -3861,7 +3861,16 @@ function showPane(id) {
   }
   if (id === 'subscribers') loadSubscribers();
   if (id === 'requests') loadRequests();
-  if (id === 'checklist') { initChecklist(); loadPersonalTasks(); }
+  if (id === 'checklist') {
+    // Deferred via setTimeout(_, 0) so CHECKLIST_SECTIONS + the
+    // PERSONAL_TASKS_* vars are populated before initChecklist /
+    // loadPersonalTasks read them. restoreAdminSession's hydrate chain
+    // calls showPane synchronously during script eval (before line
+    // ~5902 has run), so a direct call would see undefined arrays
+    // and TypeError on .forEach. setTimeout(_, 0) pushes execution
+    // past the current eval frame.
+    setTimeout(function() { initChecklist(); loadPersonalTasks(); }, 0);
+  }
   if (id === 'pnl') initPnl();
   if (id === 'andie') initAndie();
   if (typeof SPECIALISTS !== 'undefined' && SPECIALISTS && SPECIALISTS[id] && typeof initSpecialist === 'function') initSpecialist(id);
