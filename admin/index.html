@@ -5885,7 +5885,7 @@ function mergeLocalPersonas() {
 }
 
 // ── CHECKLIST ─────────────────────────────────────────────────────────────────
-const CHECKLIST_KEY = 'mirage-checklist-v3';
+var CHECKLIST_KEY = 'mirage-checklist-v3';
 
 // Drop state from prior schema versions — IDs and groupings changed enough
 // that old saved booleans would map to nothing or to the wrong items.
@@ -5899,7 +5899,7 @@ try {
 // checkbox tracks "done" only — ✅ items get done:true (or doneByDefault on
 // all-✅ sections) so the box is pre-checked; ⚠️/❌/⬜ items stay unchecked
 // until manually toggled.
-const CHECKLIST_SECTIONS = [
+var CHECKLIST_SECTIONS = [
   { title: 'SLOAN — FOUNDATION', doneByDefault: true, items: [
     { id:'foundation-1', text:'✅ Character Bible v3', tag:'sloan' },
     { id:'foundation-2', text:'✅ Voice calibration — 1-2 sentences, periods, no em dashes', tag:'sloan' },
@@ -6074,9 +6074,9 @@ function resetChecklist() {
 // system_config under section='personal_tasks', label='nate_personal_tasks'.
 // Value is a JSON-serialised array of { id, text, done }. Does NOT count
 // toward the main progress bar.
-const PERSONAL_TASKS_SECTION = 'personal_tasks';
-const PERSONAL_TASKS_LABEL = 'nate_personal_tasks';
-const PERSONAL_TASKS_SEED_TEXTS = [
+var PERSONAL_TASKS_SECTION = 'personal_tasks';
+var PERSONAL_TASKS_LABEL = 'nate_personal_tasks';
+var PERSONAL_TASKS_SEED_TEXTS = [
   'Tax / Financial: W2s from gambling → spreadsheet for accountant',
   'Tax / Financial: IRS — pay 2024 taxes (website access broken, months of trying)',
   'Tax / Financial: IRS Tax Protection Services — call back re: stolen refund check',
