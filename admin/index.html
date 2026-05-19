@@ -7998,7 +7998,7 @@ function appendSloanChatMessage(who, text, explicitImageUrl, docName, timestamp)
   // purely for Claude's next-turn context — they should never surface
   // as a user-visible bubble on reload. Matches the opening-bracket
   // prefix so future correction variants stay hidden too.
-  if (hasText && displayText.indexOf('[system correction:') === 0) return null;
+  if (hasText && (displayText.indexOf('[system correction:') === 0 || displayText.indexOf('[system:') === 0)) return null;
 
   const empty = msgs.querySelector('.sloanchat-empty');
   if (empty) empty.remove();
