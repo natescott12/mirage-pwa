@@ -1571,21 +1571,15 @@ async function generateFlux(prompt) {
   const body = {prompt, model, width:768, height:1024};
   if (refSrc) {
     const b64src = refSrc.includes(',') ? refSrc.split(',')[1] : refSrc;
-    // If it's a URL, pass as image_url; if base64, pass as input_image
-    if (refSrc.startsWith('http')) body.image_url = refSrc;
-    else body.input_image = b64src;
+    // Field renamed to reference_image_url to match the /flux/generate route.
+    if (refSrc.startsWith('http')) body.reference_image_url = refSrc;
+    else body.reference_image_url = b64src;
   }
   const r=await fetch(PROXY+"/flux/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
   if(!r.ok){const e=await r.json();throw new Error(e.error||"Submit failed");}
-  const {id}=await r.json();
-  for(let i=0;i<90;i++){
-    await new Promise(r=>setTimeout(r,3000));
-    const p=await fetch(PROXY+"/flux/result/"+id);
-    const d=await p.json();
-    if(d.status==="Ready") return d.result.sample;
-    if(d.status==="Error"||d.status==="Failed") throw new Error("Flux: "+d.status);
-  }
-  throw new Error("Flux timed out after 4 minutes");
+  const {url}=await r.json();
+  if(!url) throw new Error("Flux: no url returned");
+  return url;
 }
 
 // ── PROMPT ENGINE ─────────────────────────────────────────────────────────────
@@ -3549,22 +3543,11 @@ if(typeof window.updateIconField==='function'){
 window.generateFlux=function(prompt){
   var PX=typeof PROXY!=='undefined'?PROXY:'https://mirage-proxy-production.up.railway.app';
   var body=MG.ref
-    ?Object.assign({prompt:prompt,model:'flux-kontext-pro',width:768,height:1024},MG.ref.startsWith('http')?{image_url:MG.ref}:{input_image:MG.ref.includes(',')?MG.ref.split(',')[1]:MG.ref})
+    ?Object.assign({prompt:prompt,model:'flux-kontext-pro',width:768,height:1024},MG.ref.startsWith('http')?{reference_image_url:MG.ref}:{reference_image_url:MG.ref.includes(',')?MG.ref.split(',')[1]:MG.ref})
     :{prompt:prompt,model:'flux-pro-1.1',width:768,height:1024};
   return fetch(PX+'/flux/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.error||'Submit failed');});return r.json();})
-    .then(function(d){
-      return new Promise(function(resolve,reject){
-        var a=0;
-        var poll=setInterval(function(){
-          a++;if(a>90){clearInterval(poll);reject(new Error('Flux timed out'));return;}
-          fetch(PX+'/flux/result/'+d.id).then(function(r){return r.json();}).then(function(p){
-            if(p.status==='Ready'){clearInterval(poll);resolve(p.result.sample);}
-            else if(p.status==='Error'||p.status==='Failed'){clearInterval(poll);reject(new Error('Flux: '+p.status));}
-          }).catch(function(e){clearInterval(poll);reject(e);});
-        },3000);
-      });
-    });
+    .then(function(d){if(!d.url)throw new Error('Flux: no url returned');return d.url;});
 };
 
 // Hook selectIcon to reset wardrobe and refresh
@@ -3841,7 +3824,7 @@ window.generateFlux = function(prompt) {
   }
   // No LoRA — use ref if set, else fresh text-to-image
   var body = MG.ref
-    ? Object.assign({prompt:prompt,model:'flux-kontext-pro',width:768,height:1024}, MG.ref.startsWith('http')?{image_url:MG.ref}:{input_image:MG.ref.includes(',')?MG.ref.split(',')[1]:MG.ref})
+    ? Object.assign({prompt:prompt,model:'flux-kontext-pro',width:768,height:1024}, MG.ref.startsWith('http')?{reference_image_url:MG.ref}:{reference_image_url:MG.ref.includes(',')?MG.ref.split(',')[1]:MG.ref})
     : {prompt:prompt,model:'flux-pro-1.1',width:768,height:1024};
   var refInput = document.getElementById('ps-reference');
   var refUrl = refInput && refInput.value ? refInput.value.trim() : '';
@@ -3849,7 +3832,7 @@ window.generateFlux = function(prompt) {
   console.log('[generateFlux] -> /flux/generate body:', body);
   return fetch(PX+'/flux/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){if(!r.ok)return r.json().then(function(e){throw new Error(e.error||'Submit failed');});return r.json();})
-    .then(function(d){return _pollFlux(PX, d.id);});
+    .then(function(d){if(!d.url)throw new Error('Flux: no url returned');return d.url;});
 };
 
 function _pollFlux(PX, id) {
