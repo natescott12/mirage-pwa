@@ -1298,16 +1298,16 @@ button { color: inherit; }
     .sloanchat-wrap {
       display: flex; flex-direction: column;
       flex: 1; min-height: 0;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      overflow: hidden;
     }
     .sloanchat-messages {
       flex: 1; min-height: 0;
       overflow-y: auto;
+      background: transparent;
+      border: 1px solid var(--border);
       padding: 24px;
-      display: flex; flex-direction: column; gap: 14px;
+      display: flex; flex-direction: column; gap: 16px;
+      margin-bottom: 12px;
+      border-radius: 4px;
     }
     .sloanchat-messages::-webkit-scrollbar { width: 8px; }
     .sloanchat-messages::-webkit-scrollbar-track { background: transparent; }
@@ -1416,11 +1416,12 @@ button { color: inherit; }
       opacity: 0.75;
     }
     .sloanchat-input-row {
-      display: flex; gap: 8px;
+      display: flex; gap: 8px; flex-shrink: 0;
       align-items: flex-end;
-      padding: 6px 10px 10px;
-      border-top: 1px solid var(--border);
+      padding: 6px 10px;
       background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
     }
     .sloanchat-input {
       flex: 1;
