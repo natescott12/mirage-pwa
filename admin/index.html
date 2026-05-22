@@ -1367,7 +1367,12 @@ button { color: inherit; }
     }
     .sloanchat-text {
       line-height: 1.4;
-      white-space: pre-wrap;
+      /* pre-wrap removed: .sloanchat-text receives innerHTML from marked.parse().
+         white-space: pre-wrap on an innerHTML container renders the literal \n
+         between </p> and <p> tags as blank lines, causing the reflow flash.
+         Paragraph spacing is handled by .sloanchat-text p + p margin rules. */
+      white-space: normal;
+      word-wrap: break-word;
     }
     .sloanchat-text br + br {
       display: block;
@@ -8262,11 +8267,13 @@ async function sloanChatSend() {
       reply = 'non-JSON response (HTTP ' + r.status + '): ' + rawBody.slice(0, 300);
     }
     if (replies && replies.length) {
-      for (let i = 0; i < replies.length; i++) {
-        const isLast = i === replies.length - 1;
-        appendSloanChatMessage('sloan', replies[i], isLast ? mediaUrl : null, null, Date.now());
-        if (!isLast) await new Promise(function(resolve) { setTimeout(resolve, 400); });
-      }
+      // Join all reply blocks into one bubble. The previous per-item loop
+      // rendered N separate DOM nodes with a 400ms stagger, but history
+      // reconcile stores them as a single turn — causing N→1 collapse on
+      // the next poll tick (the visible flash/reflow). Single bubble matches
+      // what the DB persists, so the DOM never needs to reflow.
+      const joinedReply = replies.join('\n\n');
+      appendSloanChatMessage('sloan', joinedReply, mediaUrl, null, Date.now());
     } else {
       appendSloanChatMessage('sloan', reply, mediaUrl, null, Date.now());
     }
@@ -8280,8 +8287,10 @@ async function sloanChatSend() {
     // 1 for the user turn + N for the rendered replies (or 1 for the
     // single-reply fallback).
     if (success) {
-      const _replyCount = (replies && replies.length) ? replies.length : 1;
-      __sloanchatLastHistoryLength += 1 + _replyCount;
+      // Counter: 1 user turn + 1 assistant turn (single joined bubble).
+      // Previously counted replies.length which over-counted and caused
+      // the realign guard to skip re-renders on subsequent polls.
+      __sloanchatLastHistoryLength += 2;
     } else {
       // Server-side error path — proxy may or may not have persisted
       // the user turn. Realign to ground truth so the next poll uses
