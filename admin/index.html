@@ -2111,11 +2111,10 @@ button { color: inherit; }
           <div class="sidebar-item" onclick="showPane('icons')">Icons <span class="sidebar-badge" id="badge-icons">100</span></div>
           <div class="sidebar-item" onclick="showPane('subscribers')">Subscribers</div>
           <div class="sidebar-item" onclick="showPane('requests')">Requests</div>
-          <div class="sidebar-item nav-external" onclick="window.open('/admin/houseboard','_blank')">House Board <span class="nav-ext-arrow">↗</span></div>
+          <div class="sidebar-item nav-external" onclick="window.open('https://mirage-platform-production-6e5e.up.railway.app/admin/houseboard','_blank')">House Board <span class="nav-ext-arrow">↗</span></div>
           <div class="nav-sub-divider"></div>
           <div class="nav-sub-label">Tools</div>
           <div class="sidebar-item" onclick="showPane('pnl')">P&amp;L Dashboard</div>
-          <div class="sidebar-item" onclick="showPane('checklist')">Task Checklist</div>
           <div class="sidebar-item" onclick="showPane('projdash')">Project Dashboard</div>
           <div class="sidebar-item" onclick="showPane('design')">Design System</div>
           <div class="sidebar-item" onclick="showPane('techref')">Tech Reference</div>
@@ -2130,16 +2129,6 @@ button { color: inherit; }
         </div>
         <div class="nav-macro-body collapsed" id="nav-section-body-operation">
           <div class="sidebar-item" id="nav-item-andie" onclick="showPane('andie')">Andie</div>
-          <div class="nav-sub-toggle" onclick="toggleNavSubSection('specialists')">
-            <span>Specialists</span><span class="nav-sub-toggle-arrow" id="nav-sub-arrow-specialists">▸</span>
-          </div>
-          <div class="nav-subsection collapsed" id="nav-sub-specialists">
-            <div class="sidebar-item nav-sub-item" onclick="showPane('gza')">GZA</div>
-            <div class="sidebar-item nav-sub-item" onclick="showPane('rza')">RZA</div>
-            <div class="sidebar-item nav-sub-item" onclick="showPane('methodman')">Method Man</div>
-            <div class="sidebar-item nav-sub-item" onclick="showPane('inspectahdeck')">Inspectah Deck</div>
-            <div class="sidebar-item nav-sub-item" onclick="showPane('raekwon')">Raekwon</div>
-          </div>
           <div class="sidebar-item" onclick="showPane('knowledge')">Knowledge</div>
         </div>
       </div>
@@ -3967,9 +3956,8 @@ async function updateAmbientTtl() {
 
 window.PANE_SECTION_MAP = {
   dashboard:'main', icons:'main', subscribers:'main', requests:'main',
-  checklist:'main', pnl:'main', projdash:'main', design:'main', techref:'main',
-  andie:'operation', gza:'operation', rza:'operation', methodman:'operation',
-  inspectahdeck:'operation', raekwon:'operation', knowledge:'operation',
+  pnl:'main', projdash:'main', design:'main', techref:'main',
+  andie:'operation', knowledge:'operation',
   personas:'content-nav', content:'content-nav',
   sloanchat:'sloan-portal', sloanlog:'sloan-portal', sloanaudit:'sloan-portal'
 };
@@ -4079,16 +4067,7 @@ window.PANE_SECTION_MAP;
     body.classList.remove('collapsed');
     if (arrow) arrow.style.transform = '';
   }
-  // If the pane is a specialist, also expand the sub-section
-  var specialists = ['gza','rza','methodman','inspectahdeck','raekwon'];
-  if (specialists.indexOf(paneId) >= 0) {
-    var sub = document.getElementById('nav-sub-specialists');
-    var subArrow = document.getElementById('nav-sub-arrow-specialists');
-    if (sub && sub.classList.contains('collapsed')) {
-      sub.classList.remove('collapsed');
-      if (subArrow) subArrow.textContent = '▾';
-    }
-  }
+
 }
 
 // ── PERSONA COMPLETION CHIP ─────────────────────────────────────────────────
