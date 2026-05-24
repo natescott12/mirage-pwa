@@ -2111,7 +2111,7 @@ button { color: inherit; }
           <div class="sidebar-item" onclick="showPane('icons')">Icons <span class="sidebar-badge" id="badge-icons">100</span></div>
           <div class="sidebar-item" onclick="showPane('subscribers')">Subscribers</div>
           <div class="sidebar-item" onclick="showPane('requests')">Requests</div>
-          <div class="sidebar-item nav-external" onclick="window.open('https://mirage-platform-production-6e5e.up.railway.app/admin/houseboard','_blank')">House Board <span class="nav-ext-arrow">↗</span></div>
+          <div class="sidebar-item" onclick="showPane('houseboard')">House Board</div>
           <div class="nav-sub-divider"></div>
           <div class="nav-sub-label">Tools</div>
           <div class="sidebar-item" onclick="showPane('pnl')">P&amp;L Dashboard</div>
@@ -2163,6 +2163,23 @@ button { color: inherit; }
 
     <!-- CONTENT PANES -->
     <div class="content">
+
+      <!-- HOUSE BOARD — embedded iframe pointing to the SNS X-Ray terminal on mirage-platform -->
+      <div class="pane" id="pane-houseboard">
+        <div class="page-header">
+          <div>
+            <div class="page-title">House Board</div>
+            <div class="page-sub">SNS X-Ray — mechanical, structural, behavioral, contagion, longitudinal trends</div>
+          </div>
+          <button onclick="document.getElementById('houseboard-frame').src=document.getElementById('houseboard-frame').src" style="background:transparent;border:1px solid var(--border);color:var(--ink-dim);font-size:11px;letter-spacing:0.04em;text-transform:uppercase;padding:5px 10px;border-radius:3px;cursor:pointer">Refresh</button>
+        </div>
+        <iframe
+          id="houseboard-frame"
+          src="https://mirage-platform-production-6e5e.up.railway.app/admin/houseboard"
+          style="width:100%;height:calc(100vh - 120px);border:none;background:var(--bg);"
+          title="House Board X-Ray"
+        ></iframe>
+      </div>
 
       <!-- DASHBOARD -->
       <div class="pane" id="pane-dashboard">
@@ -3955,13 +3972,13 @@ async function updateAmbientTtl() {
 
 
 window.PANE_SECTION_MAP = {
-  dashboard:'main', icons:'main', subscribers:'main', requests:'main',
+  dashboard:'main', icons:'main', subscribers:'main', requests:'main', houseboard:'main',
   pnl:'main', projdash:'main', design:'main', techref:'main',
   andie:'operation', knowledge:'operation',
   personas:'content-nav', content:'content-nav',
   sloanchat:'sloan-portal', sloanlog:'sloan-portal', sloanaudit:'sloan-portal'
 };
-var PANE_SECTION_MAP = 
+var PANE_SECTION_MAP = window.PANE_SECTION_MAP;
 // ── AMBIENT TTL POLLER ────────────────────────────────────────────────────────
 // Polls the platform telemetry endpoint when Sloan Chat is active.
 // Updates the TTL display span in the Sloan Chat subtitle.
@@ -3996,9 +4013,6 @@ async function updateAmbientTtl() {
     el.textContent = 'TTL: --h --m Remaining';
   }
 }
-
-
-window.PANE_SECTION_MAP;
 
 function toggleNavSection(id) {
   var body = document.getElementById('nav-section-body-' + id);
@@ -4054,9 +4068,6 @@ async function updateAmbientTtl() {
     el.textContent = 'TTL: --h --m Remaining';
   }
 }
-
-
-window.PANE_SECTION_MAP;
   if (!_map) return;
   var sectionId = _map[paneId];
   if (!sectionId) return;
@@ -4134,7 +4145,7 @@ function showPane(id) {
   const pane = document.getElementById('pane-' + id);
   if (pane) pane.classList.add('active');
 
-  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', sloanchat:'Sloan Chat', sloanlog:'Sloan Learning Log', sloanaudit:'Image Audit', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Dashboard', projdash:'Project Dashboard', design:'Design System', techref:'Tech Reference', andie:'Andie' };
+  const labels = { dashboard:'Dashboard', houseboard:'House Board', icons:'Icons', personas:'Persona Builder', sloanchat:'Sloan Chat', sloanlog:'Sloan Learning Log', sloanaudit:'Image Audit', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Dashboard', projdash:'Project Dashboard', design:'Design System', techref:'Tech Reference', andie:'Andie' };
   document.getElementById('topbar-section').textContent = labels[id] || id;
 
   // highlight sidebar + expand parent nav section
