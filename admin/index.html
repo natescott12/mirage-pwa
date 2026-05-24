@@ -360,6 +360,223 @@ button { color: inherit; }
   50%     { opacity: 0.35; }
 }
 
+
+/* ── MIRAGE OS // SHELL ARCHITECTURE ───────────────────────────────────────
+   Full shell transformation — 3 envelopes, 8 environmental cognition surfaces.
+   These styles take precedence over legacy nav CSS via specificity.
+   Legacy .nav-macro, .sidebar-item, etc. are inert — no elements reference them. */
+
+/* OS Brand Block */
+.os-brand {
+  padding: 28px 24px 24px;
+  border-bottom: 1px solid var(--border-wire, #333);
+  margin-bottom: 0;
+}
+.os-brand-logotype {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  color: #EAEAEA;
+  display: block;
+  margin-bottom: 5px;
+}
+.os-brand-tag {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  color: rgba(165,165,165,0.35);
+  letter-spacing: 0.1em;
+  display: block;
+}
+
+/* OS Envelope (nav group) */
+.os-envelope {
+  padding-top: 28px;
+}
+.os-envelope-trigger {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: rgba(165,165,165,0.28);
+  text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+  padding: 0 24px 10px;
+  display: block;
+  transition: color 0.15s;
+}
+.os-envelope-trigger:hover { color: rgba(165,165,165,0.55); }
+.os-envelope-body { display: flex; flex-direction: column; }
+.os-envelope-body.collapsed { display: none; }
+
+/* OS Pane Links — the 8 numbered surfaces */
+.os-pane-link {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  color: #A5A5A5;
+  text-decoration: none;
+  padding: 8px 24px;
+  display: block;
+  cursor: pointer;
+  transition: color 0.1s;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+.os-pane-link:hover { color: #EAEAEA; }
+.os-pane-link.active { color: #78CC6E; }
+
+/* OS Surface Header — the horizon line at top of each surface */
+.os-surface-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid #333;
+  padding-bottom: 14px;
+  margin-bottom: 40px;
+}
+.os-surface-title {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: #EAEAEA;
+  font-weight: 500;
+  margin: 0;
+}
+.os-surface-meta {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  color: rgba(165,165,165,0.35);
+  letter-spacing: 0.06em;
+}
+
+/* OS Hub Grid — compound surface landing cards */
+.os-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  border-top: 1px solid #262626;
+  border-left: 1px solid #262626;
+  margin-bottom: 40px;
+}
+.os-hub-card {
+  padding: 28px 24px;
+  cursor: pointer;
+  border-right: 1px solid #262626;
+  border-bottom: 1px solid #262626;
+  transition: background 0.12s;
+  position: relative;
+}
+.os-hub-card:hover { background: rgba(255,255,255,0.025); }
+.os-hub-card.pending { opacity: 0.4; cursor: default; }
+.os-hub-card.pending:hover { background: transparent; }
+.os-hub-card-index {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  color: rgba(165,165,165,0.35);
+  letter-spacing: 0.08em;
+  margin-bottom: 14px;
+  display: block;
+}
+.os-hub-card-title {
+  font-size: 17px;
+  font-weight: 400;
+  color: #EAEAEA;
+  letter-spacing: -0.01em;
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+.os-hub-card-desc {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  color: #A5A5A5;
+  line-height: 1.65;
+}
+.os-hub-card-pending {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  color: #E6A23C;
+  margin-top: 10px;
+  display: block;
+}
+
+/* OS Section rows */
+.os-section-row { margin-bottom: 40px; }
+.os-section-label {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 9px;
+  color: rgba(165,165,165,0.35);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+/* Planner static notice */
+.os-planner-notice {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  color: #E6A23C;
+  border-left: 2px solid #E6A23C;
+  padding: 10px 16px;
+  margin-bottom: 36px;
+  line-height: 1.6;
+  opacity: 0.85;
+}
+
+/* Sloan portal sub-nav */
+.sloan-sub-nav {
+  display: flex;
+  gap: 0;
+  margin-bottom: 36px;
+  border-bottom: 1px solid #262626;
+}
+.sloan-sub-btn {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  color: rgba(165,165,165,0.5);
+  padding: 10px 20px;
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  transition: color 0.12s;
+  margin-bottom: -1px;
+}
+.sloan-sub-btn:hover { color: #EAEAEA; }
+.sloan-sub-btn.active { color: #78CC6E; border-bottom-color: #78CC6E; }
+
+/* Systems inline button */
+.os-inline-btn {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  color: rgba(165,165,165,0.5);
+  background: transparent;
+  border: 1px solid #333;
+  padding: 5px 14px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: color 0.12s, border-color 0.12s;
+}
+.os-inline-btn:hover { color: #EAEAEA; border-color: #EAEAEA; }
+.os-inline-btn.primary { color: #EAEAEA; border-color: #555; }
+
+/* Sidebar override — force new OS geometry */
+.sidebar {
+  width: 240px !important;
+  min-width: 240px !important;
+  background: #161616 !important;
+  border-right: 1px solid #333 !important;
+  padding: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex-shrink: 0 !important;
+}
+
 /* ── LOGIN ── */
 #login-screen {
   display: flex; align-items: center; justify-content: center;
@@ -2303,65 +2520,41 @@ button { color: inherit; }
 
   <div class="main">
     <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeSidebar()"></div>
-    <!-- SIDEBAR -->
+    <!-- SIDEBAR — MIRAGE OS V2 -->
     <div class="sidebar" id="sidebar">
 
-      <!-- 01 MAIN -->
-      <div class="nav-macro" id="nav-macro-main">
-        <div class="nav-macro-header" onclick="toggleNavSection('main')">
-          <span class="nav-macro-label">Main</span>
-          <span class="nav-macro-arrow" id="nav-arrow-main">▾</span>
-        </div>
-        <div class="nav-macro-body" id="nav-section-body-main">
-          <div class="sidebar-item" id="nav-dashboard" onclick="showPane('dashboard')">Dashboard</div>
-          <div class="sidebar-item" onclick="showPane('icons')">Icons <span class="sidebar-badge" id="badge-icons">100</span></div>
-          <div class="sidebar-item" onclick="showPane('subscribers')">Subscribers</div>
-          <div class="sidebar-item" onclick="showPane('requests')">Requests</div>
-          <div class="sidebar-item" onclick="showPane('houseboard')">House Board</div>
-          <div class="nav-sub-divider"></div>
-          <div class="nav-sub-label">Tools</div>
-          <div class="sidebar-item" onclick="showPane('pnl')">P&amp;L Dashboard</div>
-          <div class="sidebar-item" onclick="showPane('projdash')">Project Dashboard</div>
-          <div class="sidebar-item" onclick="showPane('design')">Design System</div>
-          <div class="sidebar-item" onclick="showPane('techref')">Tech Reference</div>
+      <!-- OS Brand -->
+      <div class="os-brand">
+        <span class="os-brand-logotype">M I R A G E  O S</span>
+        <span class="os-brand-tag">V2 // CORE</span>
+      </div>
+
+      <!-- OPERATIONS -->
+      <div class="os-envelope" id="os-env-operations">
+        <span class="os-envelope-trigger" onclick="toggleOsEnvelope('operations')">OPERATIONS</span>
+        <div class="os-envelope-body" id="os-env-body-operations">
+          <button class="os-pane-link active" onclick="showPane('dashboard')">[01] COMMAND</button>
+          <button class="os-pane-link" onclick="showPane('systems')">[02] SYSTEMS</button>
+          <button class="os-pane-link" onclick="showPane('governance')">[04] GOVERNANCE</button>
+          <button class="os-pane-link" onclick="showPane('planner')">[05] PLANNER</button>
         </div>
       </div>
 
-      <!-- 02 OPERATION -->
-      <div class="nav-macro" id="nav-macro-operation">
-        <div class="nav-macro-header" onclick="toggleNavSection('operation')">
-          <span class="nav-macro-label">Operation</span>
-          <span class="nav-macro-arrow" id="nav-arrow-operation">▾</span>
-        </div>
-        <div class="nav-macro-body collapsed" id="nav-section-body-operation">
-          <div class="sidebar-item" id="nav-item-andie" onclick="showPane('andie')">Andie</div>
-          <div class="sidebar-item" onclick="showPane('knowledge')">Knowledge</div>
+      <!-- CREATIVE PRODUCTION -->
+      <div class="os-envelope" id="os-env-creative">
+        <span class="os-envelope-trigger" onclick="toggleOsEnvelope('creative')">CREATIVE PRODUCTION</span>
+        <div class="os-envelope-body collapsed" id="os-env-body-creative">
+          <button class="os-pane-link" onclick="showPane('world')">[03] WORLD</button>
+          <button class="os-pane-link" onclick="showPane('sloan')">[06] SLOAN PORTAL</button>
         </div>
       </div>
 
-      <!-- 03 CONTENT -->
-      <div class="nav-macro" id="nav-macro-content-nav">
-        <div class="nav-macro-header" onclick="toggleNavSection('content-nav')">
-          <span class="nav-macro-label">Content</span>
-          <span class="nav-macro-arrow" id="nav-arrow-content-nav">▾</span>
-        </div>
-        <div class="nav-macro-body collapsed" id="nav-section-body-content-nav">
-          <div class="sidebar-item" onclick="showPane('personas')">Persona Builder</div>
-          <div class="sidebar-item nav-external" onclick="window.open('https://mirageicons.com/studio','_blank')">Icon Studio <span class="nav-ext-arrow">↗</span></div>
-          <div class="sidebar-item" onclick="showPane('content')">Content Library</div>
-        </div>
-      </div>
-
-      <!-- 04 SLOAN PORTAL -->
-      <div class="nav-macro" id="nav-macro-sloan-portal">
-        <div class="nav-macro-header" onclick="toggleNavSection('sloan-portal')">
-          <span class="nav-macro-label">Sloan Portal</span>
-          <span class="nav-macro-arrow" id="nav-arrow-sloan-portal">▾</span>
-        </div>
-        <div class="nav-macro-body collapsed" id="nav-section-body-sloan-portal" data-compat-id="nav-section-sloan">
-          <div class="sidebar-item" id="nav-item-sloanchat" onclick="showPane('sloanchat')">Sloan Chat</div>
-          <div class="sidebar-item" id="nav-item-sloanlog" onclick="showPane('sloanlog')">Learning Log</div>
-          <div class="sidebar-item" id="nav-item-sloanaudit" onclick="showPane('sloanaudit')">Image Audit</div>
+      <!-- ARCHIVE / STRATEGY -->
+      <div class="os-envelope" id="os-env-archive">
+        <span class="os-envelope-trigger" onclick="toggleOsEnvelope('archive')">ARCHIVE / STRATEGY</span>
+        <div class="os-envelope-body collapsed" id="os-env-body-archive">
+          <button class="os-pane-link" onclick="showPane('reference')">[07] REFERENCE</button>
+          <button class="os-pane-link" onclick="showPane('financial')">[08] FINANCIAL</button>
         </div>
       </div>
 
@@ -2393,9 +2586,9 @@ button { color: inherit; }
          <!-- ── COMMAND SURFACE ── -->
          <div class="mirage-command-surface">
 
-           <header class="command-system-header">
-             <div class="brand-monogram">MIRAGE OS // RUNTIME</div>
-             <div class="system-phase-tag">SYSTEM STATE: CANONICAL [V2]</div>
+           <header class="command-system-header" style="border-bottom:1px solid #333;padding-bottom:14px;margin-bottom:40px;display:flex;justify-content:space-between;align-items:baseline">
+             <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:12px;letter-spacing:0.14em;color:#EAEAEA;font-weight:500">[01] COMMAND</div>
+             <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:10px;color:rgba(165,165,165,0.35);letter-spacing:0.06em">SYSTEM STATE: CANONICAL [V2]</div>
            </header>
 
            <!-- 01 // CRITICAL INFRASTRUCTURE BLOCKERS -->
@@ -2544,6 +2737,297 @@ button { color: inherit; }
          </div>
 
        </div>
+
+
+      <!-- ═══ MIRAGE OS COMPOUND SURFACES ═══════════════════════════════════ -->
+
+      <!-- [02] SYSTEMS — Machine Room / Observatory -->
+      <div class="pane" id="pane-systems" style="overflow-y:auto;height:calc(100vh - 48px)">
+        <div class="os-surface-header">
+          <h1 class="os-surface-title">[02] SYSTEMS</h1>
+          <span class="os-surface-meta">Machine Room // Observatory</span>
+        </div>
+
+        <!-- Ambient pipeline status -->
+        <div class="os-section-row">
+          <div class="os-section-label">Ambient Pipeline // Redis</div>
+          <div class="sync-data-line" style="margin-bottom:10px">
+            <span class="sync-target-key">mirage:identity:sloan:ambient:nate</span>
+            <span class="sync-divider-line">──────────────────────────────────────────────────</span>
+            <span class="sync-metric-badge" id="systems-sync-status">CHECKING…</span>
+            <span class="sync-ttl-counter" id="systems-sync-ttl" style="margin-left:16px"></span>
+          </div>
+          <div class="sync-telemetry-sub" id="systems-sync-sub">Fetching Redis pipeline state…</div>
+        </div>
+
+        <!-- Andie -->
+        <div class="os-section-row">
+          <div class="os-section-label">Cognitive Operations // Andie</div>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px">
+            <span style="font-size:15px;color:#EAEAEA">Andie — Mirage Operations Director</span>
+            <button class="os-inline-btn primary" onclick="showPane('andie')">OPEN INTERFACE →</button>
+          </div>
+          <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:11px;color:rgba(165,165,165,0.55);line-height:1.75">
+            Absorbs operational stress and background complexity so Zone 1 never processes its own machinery.<br>
+            Runs andieCompactor.js — LLM compresses raw residue into ambient packet, writes to Redis (12h TTL).<br>
+            Reads platform state, fault logs, synthesis entries, active priorities.<br>
+            Dependency intercept (Raisins evaluation). Proactive heartbeat: <span style="color:#E6A23C">not started</span>.
+          </div>
+        </div>
+
+        <!-- House Board -->
+        <div class="os-section-row">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px">
+            <div class="os-section-label" style="margin:0">SNS X-Ray // House Board</div>
+            <button class="os-inline-btn" onclick="(function(){ var f=document.getElementById('systems-hb'); var b='https://mirage-platform-production-6e5e.up.railway.app/admin/houseboard?devtoken=MiragePlatform2026!'; f.src=b+'&t='+Date.now(); })()">REFRESH</button>
+          </div>
+          <iframe
+            id="systems-hb"
+            src="https://mirage-platform-production-6e5e.up.railway.app/admin/houseboard?devtoken=MiragePlatform2026!"
+            style="width:100%;height:520px;border:none;background:#121212"
+            title="SNS House Board"
+          ></iframe>
+        </div>
+
+        <!-- Knowledge -->
+        <div class="os-section-row">
+          <div class="os-section-label">Institutional Memory // Knowledge Store</div>
+          <button class="os-inline-btn primary" onclick="showPane('knowledge')">OPEN KNOWLEDGE STORE →</button>
+        </div>
+      </div>
+
+      <!-- [03] WORLD — Creative Ecosystem -->
+      <div class="pane" id="pane-world">
+        <div class="os-surface-header">
+          <h1 class="os-surface-title">[03] WORLD</h1>
+          <span class="os-surface-meta">Creative Ecosystem // Editorial Atelier</span>
+        </div>
+        <div class="os-hub-grid">
+          <div class="os-hub-card" onclick="showPane('icons')">
+            <span class="os-hub-card-index">W-01</span>
+            <div class="os-hub-card-title">Icons</div>
+            <div class="os-hub-card-desc">101 character archetypes.<br>Roster, status, completion,<br>content volume.</div>
+          </div>
+          <div class="os-hub-card" onclick="showPane('personas')">
+            <span class="os-hub-card-index">W-02</span>
+            <div class="os-hub-card-title">Persona Builder</div>
+            <div class="os-hub-card-desc">37-field persona editor.<br>Single source of truth<br>for all Icon data.</div>
+          </div>
+          <div class="os-hub-card" onclick="showPane('content')">
+            <span class="os-hub-card-index">W-03</span>
+            <div class="os-hub-card-title">Content Library</div>
+            <div class="os-hub-card-desc">941 generated images.<br>Icon tabs, lightbox,<br>audit pipeline.</div>
+          </div>
+          <div class="os-hub-card" onclick="window.open('https://mirageicons.com/studio','_blank')">
+            <span class="os-hub-card-index">W-04</span>
+            <div class="os-hub-card-title">Icon Studio ↗</div>
+            <div class="os-hub-card-desc">Generation + conversation.<br>Flux, scene control,<br>LoRA management.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- [04] GOVERNANCE — Institutional Oversight -->
+      <div class="pane" id="pane-governance">
+        <div class="os-surface-header">
+          <h1 class="os-surface-title">[04] GOVERNANCE</h1>
+          <span class="os-surface-meta">Institutional Oversight // Quiet Authority</span>
+        </div>
+        <div class="os-hub-grid">
+          <div class="os-hub-card" onclick="showPane('subscribers')">
+            <span class="os-hub-card-index">G-01</span>
+            <div class="os-hub-card-title">Subscribers</div>
+            <div class="os-hub-card-desc">Active subscriber accounts.<br>Tier, status, join date.</div>
+          </div>
+          <div class="os-hub-card" onclick="showPane('requests')">
+            <span class="os-hub-card-index">G-02</span>
+            <div class="os-hub-card-title">Requests</div>
+            <div class="os-hub-card-desc">Custom content requests.<br>Subscriber to Icon pipeline.</div>
+          </div>
+          <div class="os-hub-card pending">
+            <span class="os-hub-card-index">G-03</span>
+            <div class="os-hub-card-title">Lifecycle</div>
+            <div class="os-hub-card-desc">Icon maturity tracking.<br>BORN → LIVE state machine.<br>Room lifecycle governance.</div>
+            <span class="os-hub-card-pending">Pending build</span>
+          </div>
+          <div class="os-hub-card pending">
+            <span class="os-hub-card-index">G-04</span>
+            <div class="os-hub-card-title">Oliver Framework</div>
+            <div class="os-hub-card-desc">Ethical guardrail visibility.<br>Behavioral audit surface.<br>Named for LWT S13E9.</div>
+            <span class="os-hub-card-pending">Pending build</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- [05] PLANNER — Production Sequencing -->
+      <div class="pane" id="pane-planner" style="overflow-y:auto;height:calc(100vh - 48px)">
+        <div class="os-surface-header">
+          <h1 class="os-surface-title">[05] PLANNER</h1>
+          <span class="os-surface-meta">Production Sequencing // Institutional Priority Layer</span>
+        </div>
+
+        <div class="os-planner-notice">
+          STATIC — Live planner schema pending.<br>
+          Current priorities sourced from Mirage OS V2 handoff document. Nothing here is dynamic.<br>
+          This surface becomes the canonical V2 Planner once the data model is defined.
+        </div>
+
+        <!-- Current Phase -->
+        <div class="os-section-row">
+          <div class="os-section-label">Current Phase</div>
+          <div style="font-size:19px;font-weight:400;color:#EAEAEA;letter-spacing:-0.01em;margin-bottom:10px">Sloan Operational Completion</div>
+          <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:11px;color:#A5A5A5;line-height:1.75">
+            Started: April 2026<br>
+            Completion criteria: consistent voice, persistent memory, reliable image pipeline, zero persona drift.<br>
+            Next phase: Vera + Margot persona builds.
+          </div>
+        </div>
+
+        <!-- Active Queue -->
+        <div class="os-section-row">
+          <div class="os-section-label">Active Queue [Static — Pending Live Schema]</div>
+          <ul class="planner-monolithic-list">
+            <li class="planner-item priority-high">
+              <span class="list-index-tag">01 [HIGH]</span>
+              <span class="task-string-payload">Project Dashboard — Supabase rendering bug (items 10–18 garbled)</span>
+              <span class="task-owner-tag">Method Man</span>
+            </li>
+            <li class="planner-item priority-high">
+              <span class="list-index-tag">02 [HIGH]</span>
+              <span class="task-string-payload">Dashboard "0 Personas Complete" — completion logic broken</span>
+              <span class="task-owner-tag">Method Man</span>
+            </li>
+            <li class="planner-item priority-high">
+              <span class="list-index-tag">03 [HIGH]</span>
+              <span class="task-string-payload">Learning Log — raw JSON rendering, needs parsed output</span>
+              <span class="task-owner-tag">Method Man</span>
+            </li>
+            <li class="planner-item priority-med">
+              <span class="list-index-tag">04 [MED]</span>
+              <span class="task-string-payload">V2 Planner live schema — wire this surface to real data</span>
+              <span class="task-owner-tag">Nate</span>
+            </li>
+            <li class="planner-item priority-med">
+              <span class="list-index-tag">05 [MED]</span>
+              <span class="task-string-payload">sloan-test.js sync to Persona Builder — regenerate from source of truth</span>
+              <span class="task-owner-tag">Method Man → GZA</span>
+            </li>
+            <li class="planner-item priority-med">
+              <span class="list-index-tag">06 [MED]</span>
+              <span class="task-string-payload">Andie proactive heartbeat — cron, fault log ingestion, autonomous outreach</span>
+              <span class="task-owner-tag">Method Man</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Phase Gates -->
+        <div class="os-section-row">
+          <div class="os-section-label">Phase Gates — Sloan Operational Completion</div>
+          <ul class="planner-monolithic-list">
+            <li class="planner-item priority-high">
+              <span class="list-index-tag" style="color:#F56C6C;width:110px">[BLOCKED]</span>
+              <span class="task-string-payload">sloan-test.js in sync with Persona Builder</span>
+            </li>
+            <li class="planner-item priority-high">
+              <span class="list-index-tag" style="color:#F56C6C;width:110px">[BLOCKED]</span>
+              <span class="task-string-payload">LoRA retrained — face drift resolved (5 clean headshots needed)</span>
+            </li>
+            <li class="planner-item priority-high">
+              <span class="list-index-tag" style="color:#F56C6C;width:110px">[EXT BLOCK]</span>
+              <span class="task-string-payload">Twilio A2P approved — rejected 3×, call 1-888-898-4567</span>
+            </li>
+            <li class="planner-item priority-high">
+              <span class="list-index-tag" style="color:#E6A23C;width:110px">[NOT STARTED]</span>
+              <span class="task-string-payload">Segpay integrated — launch blocker, begin research</span>
+            </li>
+            <li class="planner-item priority-high">
+              <span class="list-index-tag" style="color:#E6A23C;width:110px">[UNDEFINED]</span>
+              <span class="task-string-payload">First-week choreography — no onboarding sequence defined</span>
+            </li>
+            <li class="planner-item priority-high">
+              <span class="list-index-tag" style="color:#E6A23C;width:110px">[PENDING]</span>
+              <span class="task-string-payload">icon_chats RLS — row-level security required before real subscribers</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- [06] SLOAN PORTAL — Atmospheric Runtime -->
+      <div class="pane" id="pane-sloan" style="overflow-y:auto;height:calc(100vh - 48px)">
+        <div class="os-surface-header" style="align-items:flex-end">
+          <div>
+            <h1 class="os-surface-title" style="font-size:22px;letter-spacing:0.32em;font-weight:300">S  L  O  A  N</h1>
+            <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:10px;color:rgba(165,165,165,0.35);margin-top:6px;letter-spacing:0.08em">[06] SLOAN PORTAL // Atmospheric Runtime</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:11px;color:#A5A5A5">
+              Active Ambient State: <span id="sloan-portal-status" style="color:#78CC6E">CHECKING…</span>
+            </div>
+            <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:10px;color:rgba(165,165,165,0.4);margin-top:3px" id="sloan-portal-ttl"></div>
+          </div>
+        </div>
+
+        <!-- Sub-nav -->
+        <div class="sloan-sub-nav">
+          <button class="sloan-sub-btn active" onclick="showPane('sloanchat');document.querySelectorAll('.sloan-sub-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">SLOAN CHAT</button>
+          <button class="sloan-sub-btn" onclick="showPane('sloanlog');document.querySelectorAll('.sloan-sub-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">LEARNING LOG</button>
+          <button class="sloan-sub-btn" onclick="showPane('sloanaudit');document.querySelectorAll('.sloan-sub-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">IMAGE AUDIT</button>
+        </div>
+
+        <!-- Runtime identity -->
+        <div class="os-section-row">
+          <div class="os-section-label">Runtime Identity</div>
+          <div style="font-size:15px;color:#EAEAEA;margin-bottom:10px;font-weight:400">Creative Director, Mirage</div>
+          <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:11px;color:#A5A5A5;line-height:1.8">
+            Arts District loft · The Downtown Intellectual<br>
+            Memory: episodic + semantic · sloan_memory, icon_conversations, subscriber_details<br>
+            Image pipeline: flux-2-pro-preview · Proxy: mirage-proxy (perpetual-patience)<br>
+            Admin chat: mirage-platform (radiant-empathy) · SMS: +1 (424) 622-1245
+          </div>
+        </div>
+
+        <!-- Open interfaces -->
+        <div class="os-section-row">
+          <div class="os-section-label">Open Interfaces</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <button class="os-inline-btn primary" onclick="showPane('sloanchat')">SLOAN CHAT →</button>
+            <button class="os-inline-btn" onclick="showPane('sloanlog')">LEARNING LOG →</button>
+            <button class="os-inline-btn" onclick="showPane('sloanaudit')">IMAGE AUDIT →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- [07] REFERENCE — Institutional Archive -->
+      <div class="pane" id="pane-reference">
+        <div class="os-surface-header">
+          <h1 class="os-surface-title">[07] REFERENCE</h1>
+          <span class="os-surface-meta">Institutional Archive // Canonical Memory</span>
+        </div>
+        <div class="os-hub-grid">
+          <div class="os-hub-card" onclick="showPane('design')">
+            <span class="os-hub-card-index">R-01</span>
+            <div class="os-hub-card-title">Design System</div>
+            <div class="os-hub-card-desc">Locked design tokens.<br>Typography, color,<br>component system.</div>
+          </div>
+          <div class="os-hub-card" onclick="showPane('techref')">
+            <span class="os-hub-card-index">R-02</span>
+            <div class="os-hub-card-title">Tech Reference</div>
+            <div class="os-hub-card-desc">URLs, repos, credentials.<br>Full infra sheet.<br>Masked at scale.</div>
+          </div>
+          <div class="os-hub-card" onclick="showPane('knowledge')">
+            <span class="os-hub-card-index">R-03</span>
+            <div class="os-hub-card-title">Knowledge</div>
+            <div class="os-hub-card-desc">Andie's document store.<br>PDFs, briefs,<br>brand strategy.</div>
+          </div>
+          <div class="os-hub-card pending">
+            <span class="os-hub-card-index">R-04</span>
+            <div class="os-hub-card-title">Mirage OS Doctrine</div>
+            <div class="os-hub-card-desc">Architecture canon.<br>V2 source of truth.<br>Operational laws.</div>
+            <span class="os-hub-card-pending">Pending build</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ END COMPOUND SURFACES ═════════════════════════════════════════ -->
 
       <!-- ICONS LIST — roster at a glance, read-only. Edits happen
            in the Persona Builder. -->
@@ -2964,12 +3448,11 @@ button { color: inherit; }
       </div>
 
       <!-- P&L DASHBOARD -->
-      <div class="pane" id="pane-pnl">
-        <div class="page-header">
-          <div>
-            <div class="page-title">P&amp;L Dashboard</div>
-            <div class="page-sub">Interactive financial projections</div>
-          </div>
+      <div class="pane" id="pane-pnl" style="overflow-y:auto;height:calc(100vh - 48px)">
+        <div class="os-surface-header">
+          <h1 class="os-surface-title">[08] FINANCIAL</h1>
+          <span class="os-surface-meta">Operational Economics // Strategic Modeling</span>
+        </div>
         </div>
         <!-- Subscriber slider -->
         <div style="background:var(--surface);border:1px solid var(--border);padding:20px;margin-bottom:16px">
@@ -4299,6 +4782,116 @@ async function updateAmbientTtl() {
 }
 
 
+
+// ── MIRAGE OS // ENVELOPE NAVIGATION ──────────────────────────────────────────
+
+const OS_PANE_ENVELOPE_MAP = {
+  // OPERATIONS
+  dashboard:'operations', systems:'operations', governance:'operations', planner:'operations',
+  andie:'operations', houseboard:'operations', knowledge:'operations',
+  subscribers:'operations', requests:'operations', checklist:'operations', projdash:'operations',
+  // CREATIVE PRODUCTION
+  world:'creative', icons:'creative', personas:'creative', content:'creative',
+  sloan:'creative', sloanchat:'creative', sloanlog:'creative', sloanaudit:'creative',
+  // ARCHIVE / STRATEGY
+  reference:'archive', design:'archive', techref:'archive',
+  financial:'archive', pnl:'archive',
+};
+
+// Maps sub-panes to their OS surface link for sidebar highlighting
+const OS_PANE_SURFACE_MAP = {
+  icons:'world', personas:'world', content:'world',
+  sloanchat:'sloan', sloanlog:'sloan', sloanaudit:'sloan',
+  andie:'systems', houseboard:'systems', knowledge:'systems',
+  subscribers:'governance', requests:'governance', checklist:'governance', projdash:'governance',
+  design:'reference', techref:'reference',
+  pnl:'financial',
+};
+
+function toggleOsEnvelope(id) {
+  var body = document.getElementById('os-env-body-' + id);
+  if (body) body.classList.toggle('collapsed');
+}
+
+function activateOsPane(paneId) {
+  var envelope = OS_PANE_ENVELOPE_MAP[paneId];
+  if (!envelope) return;
+
+  // Expand target envelope if collapsed
+  var body = document.getElementById('os-env-body-' + envelope);
+  if (body && body.classList.contains('collapsed')) {
+    body.classList.remove('collapsed');
+  }
+
+  // Clear all os-pane-link active states
+  document.querySelectorAll('.os-pane-link').forEach(function(link) {
+    link.classList.remove('active');
+  });
+
+  // Highlight: the surface link or sub-pane's parent surface link
+  var surfaceId = OS_PANE_SURFACE_MAP[paneId] || paneId;
+  document.querySelectorAll('.os-pane-link').forEach(function(link) {
+    var onclick = link.getAttribute('onclick') || '';
+    if (onclick.includes("'" + surfaceId + "'") || onclick.includes('"' + surfaceId + '"')) {
+      link.classList.add('active');
+    }
+  });
+}
+
+async function loadSystemsSync() {
+  var statusEl = document.getElementById('systems-sync-status');
+  var ttlEl    = document.getElementById('systems-sync-ttl');
+  var subEl    = document.getElementById('systems-sync-sub');
+  if (!statusEl) return;
+  try {
+    var r = await fetch(
+      'https://mirage-platform-production-6e5e.up.railway.app/api/v2/telemetry/ambient-cache-status?user_id=nate',
+      { headers: { 'x-mirage-dev-token': 'MiragePlatform2026!' } }
+    );
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var d = await r.json();
+    if (d.status === 'hit') {
+      if (statusEl) { statusEl.textContent = 'ACTIVE CACHED'; statusEl.className = 'sync-metric-badge state-cached'; }
+      if (ttlEl) ttlEl.textContent = '[TTL: ' + d.ttl_display + ' REMAINING]';
+      if (subEl) subEl.textContent = 'Source: Redis Pipeline · Generated: ' + (d.generated_at ? new Date(d.generated_at).toLocaleString('en-US',{timeZone:'America/Los_Angeles',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) + ' PT' : '—');
+    } else if (d.status === 'fallback') {
+      if (statusEl) { statusEl.textContent = 'BASELINE FALLBACK'; statusEl.className = 'sync-metric-badge state-fallback'; }
+      if (ttlEl) ttlEl.textContent = '[TTL: 12h 0m DEFAULT]';
+      if (subEl) subEl.textContent = 'Cache miss · Serving hardcoded baseline · Background refresh queued';
+    } else {
+      if (statusEl) { statusEl.textContent = 'ERROR'; statusEl.className = 'sync-metric-badge state-error'; }
+    }
+  } catch(e) {
+    if (statusEl) { statusEl.textContent = 'UNREACHABLE'; statusEl.className = 'sync-metric-badge state-error'; }
+    if (subEl) subEl.textContent = 'Platform endpoint unreachable — ' + e.message;
+  }
+}
+
+async function loadSloanPortalSync() {
+  var statusEl = document.getElementById('sloan-portal-status');
+  var ttlEl    = document.getElementById('sloan-portal-ttl');
+  if (!statusEl) return;
+  try {
+    var r = await fetch(
+      'https://mirage-platform-production-6e5e.up.railway.app/api/v2/telemetry/ambient-cache-status?user_id=nate',
+      { headers: { 'x-mirage-dev-token': 'MiragePlatform2026!' } }
+    );
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var d = await r.json();
+    if (d.status === 'hit') {
+      if (statusEl) { statusEl.textContent = 'CACHED'; statusEl.style.color = '#78CC6E'; }
+      if (ttlEl) ttlEl.textContent = 'TTL: ' + d.ttl_display + ' REMAINING';
+    } else if (d.status === 'fallback') {
+      if (statusEl) { statusEl.textContent = 'BASELINE'; statusEl.style.color = '#E6A23C'; }
+    } else {
+      if (statusEl) { statusEl.textContent = 'OFFLINE'; statusEl.style.color = '#F56C6C'; }
+    }
+  } catch(e) {
+    if (statusEl) { statusEl.textContent = 'OFFLINE'; statusEl.style.color = '#F56C6C'; }
+  }
+}
+
+
 window.PANE_SECTION_MAP = {
   dashboard:'main', icons:'main', subscribers:'main', requests:'main', houseboard:'main',
   pnl:'main', projdash:'main', design:'main', techref:'main',
@@ -4474,14 +5067,11 @@ function showPane(id) {
   const pane = document.getElementById('pane-' + id);
   if (pane) pane.classList.add('active');
 
-  const labels = { dashboard:'Dashboard', houseboard:'House Board', icons:'Icons', personas:'Persona Builder', sloanchat:'Sloan Chat', sloanlog:'Sloan Learning Log', sloanaudit:'Image Audit', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Dashboard', projdash:'Project Dashboard', design:'Design System', techref:'Tech Reference', andie:'Andie' };
+  const labels = { dashboard:'[01] Command', systems:'[02] Systems', world:'[03] World', governance:'[04] Governance', planner:'[05] Planner', sloan:'[06] Sloan Portal', reference:'[07] Reference', financial:'[08] Financial', pnl:'[08] Financial', houseboard:'House Board', icons:'Icons', personas:'Persona Builder', sloanchat:'Sloan Chat', sloanlog:'Learning Log', sloanaudit:'Image Audit', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', projdash:'Project Dashboard', design:'Design System', techref:'Tech Reference', andie:'Andie', knowledge:'Knowledge' };
   document.getElementById('topbar-section').textContent = labels[id] || id;
 
-  // highlight sidebar + expand parent nav section
-  document.querySelectorAll('.sidebar-item').forEach(item => {
-    if (item.getAttribute('onclick')?.includes(`'${id}'`)) item.classList.add('active');
-  });
-  expandNavSectionForPane(id);
+  // OS nav: expand envelope + highlight surface link
+  activateOsPane(id);
 
   // (save-bar was removed — the header Save button in the Persona Builder
   // form view is now the single save surface.)
@@ -4507,8 +5097,10 @@ function showPane(id) {
     // past the current eval frame.
     setTimeout(function() { initChecklist(); loadPersonalTasks(); loadChecklistSections(); }, 0);
   }
-  if (id === 'pnl') initPnl();
+  if (id === 'financial' || id === 'pnl') { id = 'pnl'; initPnl(); }
   if (id === 'dashboard') loadCommandSurfaceSync();
+  if (id === 'systems') loadSystemsSync();
+  if (id === 'sloan') loadSloanPortalSync();
   if (id === 'andie') initAndie();
   if (typeof SPECIALISTS !== 'undefined' && SPECIALISTS && SPECIALISTS[id] && typeof initSpecialist === 'function') initSpecialist(id);
   if (id === 'knowledge' && typeof loadKnowledgeFiles === 'function') {
