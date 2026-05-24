@@ -154,6 +154,210 @@ button { color: inherit; }
   text-align: center; padding: 6px 0 0; min-height: 20px;
 }
 
+
+/* ── MIRAGE OS V2 COMMAND SURFACE TOKENS ─────────────────────────────────────
+   Additive — do not remove existing tokens. These extend the system for the
+   cinematic command surface layer. */
+:root {
+  --background:    #121212;
+  --border-dim:    #262626;
+  --border-wire:   #333333;
+  --accent-run:    #78CC6E;
+  --accent-block:  #F56C6C;
+  --accent-drift:  #E6A23C;
+  --font-mono:     SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  --ink-bright:    #EAEAEA;
+  --ink-medium:    #A5A5A5;
+  --space-grid:    40px;
+  --space-flow:    24px;
+  --space-line:    12px;
+}
+
+/* ── COMMAND SURFACE LAYOUT ──────────────────────────────────────────────────*/
+.mirage-command-surface {
+  background: transparent;
+  font-family: var(--font-sans);
+  margin-bottom: var(--space-grid);
+}
+
+.command-system-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--border-wire);
+  padding-bottom: var(--space-line);
+  margin-bottom: var(--space-grid);
+}
+
+.brand-monogram {
+  font-family: var(--font-mono);
+  color: var(--ink-bright);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+
+.system-phase-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-dim);
+  letter-spacing: 0.04em;
+}
+
+.command-grid-row {
+  margin-bottom: var(--space-grid);
+  display: flex;
+  flex-direction: column;
+}
+
+.cs-section-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-dim);
+  letter-spacing: 0.1em;
+  margin: 0 0 var(--space-line) 0;
+  text-transform: uppercase;
+}
+
+/* Blockers */
+.blocker-payload-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-line);
+  padding: var(--space-line) 0;
+  border-bottom: 1px solid var(--border-dim);
+}
+.blocker-payload-wrapper:last-child { border-bottom: none; }
+
+.status-indicator-wire {
+  width: 3px;
+  height: 38px;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.status-indicator-wire.block-active {
+  background: var(--accent-block);
+  animation: calmPulse 3.5s cubic-bezier(0.4,0,0.2,1) infinite;
+}
+.status-indicator-wire.block-drift {
+  background: var(--accent-drift);
+}
+
+.blocker-title-string {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-bright);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+.blocker-details-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-medium);
+  margin-top: 4px;
+}
+
+/* Sync State */
+.sync-data-line {
+  display: flex;
+  align-items: baseline;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  gap: 16px;
+}
+.sync-target-key { color: var(--ink-bright); }
+.sync-divider-line {
+  color: var(--border-dim);
+  flex-grow: 1;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.sync-metric-badge { font-weight: 700; }
+.sync-metric-badge.state-cached  { color: var(--accent-run); }
+.sync-metric-badge.state-fallback { color: var(--accent-drift); }
+.sync-metric-badge.state-error   { color: var(--accent-block); }
+.sync-ttl-counter { color: var(--ink-medium); }
+.sync-telemetry-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-dim);
+  margin-top: var(--space-line);
+}
+
+/* Planner */
+.planner-monolithic-list { list-style: none; padding: 0; margin: 0; }
+.planner-item {
+  display: flex;
+  align-items: baseline;
+  padding: var(--space-line) 0;
+  border-bottom: 1px solid var(--border-dim);
+  gap: 20px;
+}
+.planner-item:last-child { border-bottom: none; }
+.list-index-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  width: 72px;
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
+}
+.priority-high   .list-index-tag { color: var(--accent-block); }
+.priority-med    .list-index-tag { color: var(--accent-drift); }
+.priority-low    .list-index-tag { color: var(--ink-dim); }
+.task-string-payload { color: var(--ink-bright); font-size: 14px; font-weight: 400; }
+.task-owner-tag {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-dim);
+  flex-shrink: 0;
+}
+
+/* Decay */
+.decay-vector-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 5px 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-dim);
+  border-bottom: 1px solid var(--border-dim);
+}
+.decay-vector-line:last-child { border-bottom: none; }
+.decay-target-label { text-decoration: line-through; }
+.decay-state-badge { font-size: 10px; letter-spacing: 0.05em; }
+
+/* Platform Inventory label */
+.platform-inventory-header {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-line);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-wire);
+}
+
+/* Command footer */
+.command-system-footer {
+  margin-top: var(--space-flow);
+  border-top: 1px solid var(--border-wire);
+  padding-top: var(--space-line);
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-dim);
+  margin-bottom: var(--space-grid);
+}
+
+@keyframes calmPulse {
+  0%,100% { opacity: 1; }
+  50%     { opacity: 0.35; }
+}
+
 /* ── LOGIN ── */
 #login-screen {
   display: flex; align-items: center; justify-content: center;
@@ -2181,41 +2385,163 @@ button { color: inherit; }
         ></iframe>
       </div>
 
-      <!-- DASHBOARD -->
+      <!-- DASHBOARD — MIRAGE OS COMMAND SURFACE -->
       <div class="pane" id="pane-dashboard">
-        <div class="page-header">
-          <div>
-            <div class="page-title">Dashboard</div>
-            <div class="page-sub">Mirage Admin · mirageicons.com</div>
-          </div>
-        </div>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-value" id="stat-icons">—</div>
-            <div class="stat-label">Total Icons</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" id="stat-personas-done">—</div>
-            <div class="stat-label">Personas Complete</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" id="stat-content">—</div>
-            <div class="stat-label">Content Items</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" id="stat-subscribers">—</div>
-            <div class="stat-label">Subscribers</div>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Icon</th><th>Archetype</th><th>Persona</th><th>Content</th><th>Status</th></tr></thead>
-            <tbody id="dashboard-table-body">
-              <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--ink-dim)">Loading…</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+
+         <!-- ── COMMAND SURFACE ── -->
+         <div class="mirage-command-surface">
+
+           <header class="command-system-header">
+             <div class="brand-monogram">MIRAGE OS // RUNTIME</div>
+             <div class="system-phase-tag">SYSTEM STATE: CANONICAL [V2]</div>
+           </header>
+
+           <!-- 01 // CRITICAL INFRASTRUCTURE BLOCKERS -->
+           <section class="command-grid-row">
+             <h2 class="cs-section-label">01 // Critical Infrastructure Blockers</h2>
+             <div class="blocker-payload-wrapper">
+               <div class="status-indicator-wire block-active"></div>
+               <div class="blocker-meta-block">
+                 <div class="blocker-title-string">Twilio A2P — Rejected 3×</div>
+                 <div class="blocker-details-sub">Local numbers active as workaround · Call 1-888-898-4567 to escalate</div>
+               </div>
+             </div>
+             <div class="blocker-payload-wrapper">
+               <div class="status-indicator-wire block-active"></div>
+               <div class="blocker-meta-block">
+                 <div class="blocker-title-string">Segpay Integration — Not Started</div>
+                 <div class="blocker-details-sub">Launch blocker · 12% processing fee · Begin research this week</div>
+               </div>
+             </div>
+             <div class="blocker-payload-wrapper">
+               <div class="status-indicator-wire block-drift"></div>
+               <div class="blocker-meta-block">
+                 <div class="blocker-title-string">sloan-test.js Diverged from Persona Builder</div>
+                 <div class="blocker-details-sub">Core persona drift vector · Runtime does not match source of truth · Owner: Method Man</div>
+               </div>
+             </div>
+             <div class="blocker-payload-wrapper">
+               <div class="status-indicator-wire block-drift"></div>
+               <div class="blocker-meta-block">
+                 <div class="blocker-title-string">First-Week Choreography — Undefined</div>
+                 <div class="blocker-details-sub">Launch blocker · No subscriber onboarding sequence defined · Owner: Nate</div>
+               </div>
+             </div>
+             <div class="blocker-payload-wrapper">
+               <div class="status-indicator-wire block-drift"></div>
+               <div class="blocker-meta-block">
+                 <div class="blocker-title-string">icon_chats RLS — No Row-Level Security</div>
+                 <div class="blocker-details-sub">Required before real subscribers · Owner: Method Man</div>
+               </div>
+             </div>
+           </section>
+
+           <!-- 02 // AMBIENT CACHE SYNCHRONIZATION -->
+           <section class="command-grid-row">
+             <h2 class="cs-section-label">02 // Ambient Cache Synchronization</h2>
+             <div class="sync-data-line">
+               <span class="sync-target-key">mirage:identity:sloan:ambient:nate</span>
+               <span class="sync-divider-line">──────────────────────────────────────────────────────</span>
+               <span class="sync-metric-badge" id="cs-sync-status">CHECKING…</span>
+               <span class="sync-ttl-counter" id="cs-sync-ttl"></span>
+             </div>
+             <div class="sync-telemetry-sub" id="cs-sync-sub">Fetching Redis pipeline state…</div>
+           </section>
+
+           <!-- 03 // ACTIVE PLATFORM QUEUE -->
+           <section class="command-grid-row">
+             <h2 class="cs-section-label">03 // Active Platform Queue</h2>
+             <ul class="planner-monolithic-list">
+               <li class="planner-item priority-high">
+                 <span class="list-index-tag">01 [HIGH]</span>
+                 <span class="task-string-payload">Project Dashboard — Supabase rendering bug (items 10–18 garbled)</span>
+                 <span class="task-owner-tag">Method Man</span>
+               </li>
+               <li class="planner-item priority-high">
+                 <span class="list-index-tag">02 [HIGH]</span>
+                 <span class="task-string-payload">Dashboard "0 Personas Complete" — completion logic broken</span>
+                 <span class="task-owner-tag">Method Man</span>
+               </li>
+               <li class="planner-item priority-high">
+                 <span class="list-index-tag">03 [HIGH]</span>
+                 <span class="task-string-payload">Learning Log — raw JSON rendering, needs parsed output</span>
+                 <span class="task-owner-tag">Method Man</span>
+               </li>
+               <li class="planner-item priority-med">
+                 <span class="list-index-tag">04 [MED]</span>
+                 <span class="task-string-payload">V2 Planner — structured 5-priority surface replacing Project Dashboard</span>
+                 <span class="task-owner-tag">Nate</span>
+               </li>
+               <li class="planner-item priority-med">
+                 <span class="list-index-tag">05 [MED]</span>
+                 <span class="task-string-payload">sloan-test.js sync to Persona Builder — regenerate from source of truth</span>
+                 <span class="task-owner-tag">Method Man → GZA</span>
+               </li>
+             </ul>
+           </section>
+
+           <!-- 04 // QUARANTINED ARCHITECTURAL DECAY -->
+           <section class="command-grid-row">
+             <h2 class="cs-section-label">04 // Quarantined Architectural Decay</h2>
+             <div class="decay-vector-line">
+               <span class="decay-target-label">Legacy Specialist Chat Panels (GZA / RZA / Method Man / Inspectah / Raekwon)</span>
+               <span class="decay-state-badge">[REMOVED]</span>
+             </div>
+             <div class="decay-vector-line">
+               <span class="decay-target-label">SUPABASE-WU Experimental Data Tab</span>
+               <span class="decay-state-badge">[FILTERED]</span>
+             </div>
+             <div class="decay-vector-line">
+               <span class="decay-target-label">Icon Studio → mirage-pwa.vercel.app (dead link)</span>
+               <span class="decay-state-badge">[FIXED]</span>
+             </div>
+             <div class="decay-vector-line">
+               <span class="decay-target-label">House Board — invisible, not in nav</span>
+               <span class="decay-state-badge">[FIXED]</span>
+             </div>
+             <div class="decay-vector-line">
+               <span class="decay-target-label">Content Library 500-row display cap</span>
+               <span class="decay-state-badge">[FIXED]</span>
+             </div>
+           </section>
+
+           <footer class="command-system-footer">
+             <div>SYSTEM READY // CORE TELEMETRY ACTIVE</div>
+             <div>ALL TIMESTAMPS: PACIFIC TIME (PT)</div>
+           </footer>
+
+         </div><!-- /mirage-command-surface -->
+
+         <!-- ── PLATFORM INVENTORY ── -->
+         <div class="platform-inventory-header">05 // Platform Inventory</div>
+         <div class="stats-grid">
+           <div class="stat-card">
+             <div class="stat-value" id="stat-icons">—</div>
+             <div class="stat-label">Total Icons</div>
+           </div>
+           <div class="stat-card">
+             <div class="stat-value" id="stat-personas-done">—</div>
+             <div class="stat-label">Personas Complete</div>
+           </div>
+           <div class="stat-card">
+             <div class="stat-value" id="stat-content">—</div>
+             <div class="stat-label">Content Items</div>
+           </div>
+           <div class="stat-card">
+             <div class="stat-value" id="stat-subscribers">—</div>
+             <div class="stat-label">Subscribers</div>
+           </div>
+         </div>
+         <div class="table-wrap">
+           <table>
+             <thead><tr><th>Icon</th><th>Archetype</th><th>Persona</th><th>Content</th><th>Status</th></tr></thead>
+             <tbody id="dashboard-table-body">
+               <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--ink-dim)">Loading…</td></tr>
+             </tbody>
+           </table>
+         </div>
+
+       </div>
 
       <!-- ICONS LIST — roster at a glance, read-only. Edits happen
            in the Persona Builder. -->
@@ -4180,6 +4506,7 @@ function showPane(id) {
     setTimeout(function() { initChecklist(); loadPersonalTasks(); loadChecklistSections(); }, 0);
   }
   if (id === 'pnl') initPnl();
+  if (id === 'dashboard') loadCommandSurfaceSync();
   if (id === 'andie') initAndie();
   if (typeof SPECIALISTS !== 'undefined' && SPECIALISTS && SPECIALISTS[id] && typeof initSpecialist === 'function') initSpecialist(id);
   if (id === 'knowledge' && typeof loadKnowledgeFiles === 'function') {
@@ -4608,6 +4935,46 @@ function showPersonaForm(idx, iconOverride) {
     if (studioLink && wrapper.name) {
       studioLink.href = '/studio?icon=' + encodeURIComponent(wrapper.name);
     }
+  }
+}
+
+
+// ── COMMAND SURFACE — AMBIENT SYNC FETCH ────────────────────────────────────
+async function loadCommandSurfaceSync() {
+  const statusEl = document.getElementById('cs-sync-status');
+  const ttlEl    = document.getElementById('cs-sync-ttl');
+  const subEl    = document.getElementById('cs-sync-sub');
+  if (!statusEl) return;
+
+  try {
+    const r = await fetch(
+      'https://mirage-platform-production-6e5e.up.railway.app/api/v2/telemetry/ambient-cache-status?user_id=nate',
+      { headers: { 'x-mirage-key': 'mirage-int-2026' } }
+    );
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+
+    if (d.status === 'hit') {
+      statusEl.textContent = 'ACTIVE CACHED';
+      statusEl.className   = 'sync-metric-badge state-cached';
+      ttlEl.textContent    = '[TTL: ' + d.ttl_display + ' REMAINING]';
+      subEl.textContent    = 'Source: Redis Pipeline · Generated: '
+        + (d.generated_at ? new Date(d.generated_at).toLocaleString('en-US',{timeZone:'America/Los_Angeles',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) + ' PT' : '—')
+        + ' · ' + (d.key || '');
+    } else if (d.status === 'fallback') {
+      statusEl.textContent = 'BASELINE FALLBACK';
+      statusEl.className   = 'sync-metric-badge state-fallback';
+      ttlEl.textContent    = '[TTL: 12h 0m DEFAULT]';
+      subEl.textContent    = 'Cache miss · Serving hardcoded baseline · Background refresh queued';
+    } else {
+      statusEl.textContent = 'ERROR';
+      statusEl.className   = 'sync-metric-badge state-error';
+      ttlEl.textContent    = '';
+      subEl.textContent    = d.error || 'Redis pipeline unavailable';
+    }
+  } catch(e) {
+    if (statusEl) { statusEl.textContent = 'UNREACHABLE'; statusEl.className = 'sync-metric-badge state-error'; }
+    if (subEl)    subEl.textContent = 'Platform endpoint unreachable — ' + e.message;
   }
 }
 
