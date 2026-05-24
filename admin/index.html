@@ -3928,7 +3928,7 @@ function closeSidebar() {
 
 // ── MACRO-NAV ACCORDION ────────────────────────────────────────────────────
 // Maps pane id → section key so showPane can auto-expand the right section.
-var PANE_SECTION_MAP = {
+window.PANE_SECTION_MAP = {
   dashboard:'main', icons:'main', subscribers:'main', requests:'main',
   checklist:'main', pnl:'main', projdash:'main', design:'main', techref:'main',
   andie:'operation', gza:'operation', rza:'operation', methodman:'operation',
@@ -3936,6 +3936,7 @@ var PANE_SECTION_MAP = {
   personas:'content-nav', content:'content-nav',
   sloanchat:'sloan-portal', sloanlog:'sloan-portal', sloanaudit:'sloan-portal'
 };
+var PANE_SECTION_MAP = window.PANE_SECTION_MAP;
 
 function toggleNavSection(id) {
   var body = document.getElementById('nav-section-body-' + id);
@@ -3956,7 +3957,9 @@ function toggleNavSubSection(id) {
 }
 
 function expandNavSectionForPane(paneId) {
-  var sectionId = PANE_SECTION_MAP[paneId];
+  var _map = (typeof PANE_SECTION_MAP !== 'undefined' && PANE_SECTION_MAP) ? PANE_SECTION_MAP : window.PANE_SECTION_MAP;
+  if (!_map) return;
+  var sectionId = _map[paneId];
   if (!sectionId) return;
   // Expand target section if collapsed
   var body = document.getElementById('nav-section-body-' + sectionId);
