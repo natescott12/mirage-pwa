@@ -4280,7 +4280,7 @@ async function updateAmbientTtl() {
   if (!el) return;
   try {
     var r = await fetch('https://mirage-platform-production-6e5e.up.railway.app/api/v2/telemetry/ambient-cache-status?user_id=nate', {
-      headers: { 'x-mirage-key': 'mirage-int-2026' }
+      headers: { 'x-mirage-dev-token': 'MiragePlatform2026!' }
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     var data = await r.json();
@@ -4324,7 +4324,7 @@ async function updateAmbientTtl() {
   if (!el) return;
   try {
     var r = await fetch('https://mirage-platform-production-6e5e.up.railway.app/api/v2/telemetry/ambient-cache-status?user_id=nate', {
-      headers: { 'x-mirage-key': 'mirage-int-2026' }
+      headers: { 'x-mirage-dev-token': 'MiragePlatform2026!' }
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     var data = await r.json();
@@ -4377,7 +4377,7 @@ async function updateAmbientTtl() {
   if (!el) return;
   try {
     var r = await fetch('https://mirage-platform-production-6e5e.up.railway.app/api/v2/telemetry/ambient-cache-status?user_id=nate', {
-      headers: { 'x-mirage-key': 'mirage-int-2026' }
+      headers: { 'x-mirage-dev-token': 'MiragePlatform2026!' }
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     var data = await r.json();
@@ -4949,7 +4949,7 @@ async function loadCommandSurfaceSync() {
   try {
     const r = await fetch(
       'https://mirage-platform-production-6e5e.up.railway.app/api/v2/telemetry/ambient-cache-status?user_id=nate',
-      { headers: { 'x-mirage-key': 'mirage-int-2026' } }
+      { headers: { 'x-mirage-dev-token': 'MiragePlatform2026!' } }
     );
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
