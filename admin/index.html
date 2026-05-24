@@ -2171,7 +2171,7 @@ button { color: inherit; }
             <div class="page-title">House Board</div>
             <div class="page-sub">SNS X-Ray — mechanical, structural, behavioral, contagion, longitudinal trends</div>
           </div>
-          <button onclick="document.getElementById('houseboard-frame').src=document.getElementById('houseboard-frame').src" style="background:transparent;border:1px solid var(--border);color:var(--ink-dim);font-size:11px;letter-spacing:0.04em;text-transform:uppercase;padding:5px 10px;border-radius:3px;cursor:pointer">Refresh</button>
+          <button onclick="(function(){ var f=document.getElementById('houseboard-frame'); var base='https://mirage-platform-production-6e5e.up.railway.app/admin/houseboard?devtoken=MiragePlatform2026!'; f.src=base+'&t='+Date.now(); })()" style="background:transparent;border:1px solid var(--border);color:var(--ink-dim);font-size:11px;letter-spacing:0.04em;text-transform:uppercase;padding:5px 10px;border-radius:3px;cursor:pointer">Refresh</button>
         </div>
         <iframe
           id="houseboard-frame"
