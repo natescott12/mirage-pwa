@@ -38,8 +38,8 @@
   /* Colours — keep literal rgba values here; do not rewrite these
      right-hand sides to var() refs (that creates self-referential
      fallbacks that browsers resolve to the initial colour). */
-  --bg: #141414;
-  --sidebar-bg: #1a1a1a;
+  --bg: #121212;
+  --sidebar-bg: #161616;
   --surface: #1f1f1f;
   --surface-2: #292929;
   --border: #333333;
@@ -63,7 +63,7 @@
 
 html, body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  background: #141414;
+  background: #121212;
   color: rgba(255,255,255,1.0);
   -webkit-font-smoothing: antialiased;
 }
@@ -92,9 +92,10 @@ button { color: inherit; }
 .nav-macro { border-bottom: 1px solid rgba(255,255,255,0.05); }
 .nav-macro-header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 20px 10px;
-  font-size: var(--text-xs); letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--ink-dim); cursor: pointer; user-select: none;
+  padding: 11px 20px 9px;
+  font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: rgba(255,255,255,0.28); cursor: pointer; user-select: none;
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
   transition: color 0.15s;
 }
 .nav-macro-header:hover { color: var(--ink-mid); }
@@ -106,7 +107,8 @@ button { color: inherit; }
 .nav-sub-label {
   padding: 6px 20px 4px;
   font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
-  color: rgba(255,255,255,0.22); pointer-events: none;
+  color: rgba(255,255,255,0.18); pointer-events: none;
+  font-family: SFMono-Regular, Consolas, monospace;
 }
 .nav-sub-toggle {
   display: flex; align-items: center; justify-content: space-between;
@@ -450,9 +452,9 @@ button { color: inherit; }
 .sidebar-section:first-child { margin-top: 16px; }
 .sidebar-item {
   display: flex; align-items: center;
-  padding: 6px 20px; font-size: var(--text-base); color: var(--ink-mid);
+  padding: 8px 20px; font-size: 13px; color: rgba(255,255,255,0.50);
   cursor: pointer; transition: color 0.12s, background 0.12s;
-  letter-spacing: 0; position: relative; box-sizing: border-box;
+  letter-spacing: 0.01em; position: relative; box-sizing: border-box;
 }
 .sidebar-item::before {
   content: ""; position: absolute; left: 0; top: 0; bottom: 0;
@@ -460,7 +462,7 @@ button { color: inherit; }
 }
 .sidebar-item:hover { color: rgba(255,255,255,0.85); }
 .sidebar-item.active {
-  color: var(--ink); background: rgba(119,204,110,0.08); font-weight: var(--weight-regular);
+  color: #78CC6E; background: rgba(120,204,110,0.07); font-weight: 500;
 }
 .sidebar-item.active::before { background: var(--accent); }
 /* Retired icon glyphs — the wireframe is text-only nav. Markup kept
@@ -2345,7 +2347,7 @@ button { color: inherit; }
         </div>
         <div class="nav-macro-body collapsed" id="nav-section-body-content-nav">
           <div class="sidebar-item" onclick="showPane('personas')">Persona Builder</div>
-          <div class="sidebar-item nav-external" onclick="window.location.href='https://mirageicons.com/studio'">Icon Studio <span class="nav-ext-arrow">↗</span></div>
+          <div class="sidebar-item nav-external" onclick="window.open('https://mirageicons.com/studio','_blank')">Icon Studio <span class="nav-ext-arrow">↗</span></div>
           <div class="sidebar-item" onclick="showPane('content')">Content Library</div>
         </div>
       </div>
