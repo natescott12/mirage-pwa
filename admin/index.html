@@ -87,6 +87,73 @@ a { color: inherit; }
 button { color: inherit; }
 .card, .panel, .pane, .field-group, .editor-main { color: var(--ink); }
 
+
+/* ── MACRO-NAV ACCORDION ──────────────────────────────────────────────────── */
+.nav-macro { border-bottom: 1px solid rgba(255,255,255,0.05); }
+.nav-macro-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px 10px;
+  font-size: var(--text-xs); letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-dim); cursor: pointer; user-select: none;
+  transition: color 0.15s;
+}
+.nav-macro-header:hover { color: var(--ink-mid); }
+.nav-macro-label { font-weight: var(--weight-medium); }
+.nav-macro-arrow { font-size: 10px; transition: transform 0.2s; }
+.nav-macro-body { overflow: hidden; }
+.nav-macro-body.collapsed { display: none; }
+.nav-sub-divider { height: 1px; background: rgba(255,255,255,0.04); margin: 6px 16px; }
+.nav-sub-label {
+  padding: 6px 20px 4px;
+  font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: rgba(255,255,255,0.22); pointer-events: none;
+}
+.nav-sub-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 20px; font-size: var(--text-sm);
+  color: var(--ink-dim); cursor: pointer; user-select: none;
+  transition: color 0.15s;
+}
+.nav-sub-toggle:hover { color: var(--ink-mid); }
+.nav-sub-toggle-arrow { font-size: 10px; transition: transform 0.2s; }
+.nav-subsection { overflow: hidden; }
+.nav-subsection.collapsed { display: none; }
+.sidebar-item.nav-sub-item { padding-left: 32px; }
+.nav-external { color: var(--ink-dim); }
+.nav-ext-arrow { font-size: 10px; opacity: 0.6; }
+/* Credential masking */
+.tr-credential-wrap { display: flex; align-items: center; gap: 8px; }
+.tr-credential-input {
+  background: transparent; border: none; color: var(--ink-mid);
+  font-family: monospace; font-size: 12px; width: 260px;
+  outline: none; cursor: default;
+}
+.tr-credential-toggle {
+  font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--ink-dim); background: transparent;
+  border: 1px solid var(--border); padding: 2px 8px; border-radius: 2px;
+  cursor: pointer; transition: color 0.15s, border-color 0.15s;
+}
+.tr-credential-toggle:hover { color: var(--ink); border-color: var(--ink-mid); }
+/* Persona completion chip */
+.persona-chip-complete {
+  display: inline-block; padding: 3px 9px;
+  background: rgba(120,204,110,0.12); color: #78cc6e;
+  border: 1px solid rgba(120,204,110,0.28); border-radius: 2px;
+  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+}
+.persona-chip-partial {
+  display: inline-block; padding: 3px 9px;
+  background: rgba(212,130,10,0.1); color: #d4820a;
+  border: 1px solid rgba(212,130,10,0.24); border-radius: 2px;
+  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+}
+/* Save timestamp */
+#persona-save-ts {
+  font-size: 11px; color: var(--ink-dim); letter-spacing: 0.03em;
+  text-align: center; padding: 6px 0 0; min-height: 20px;
+}
+
 /* ── LOGIN ── */
 #login-screen {
   display: flex; align-items: center; justify-content: center;
@@ -2032,79 +2099,77 @@ button { color: inherit; }
     <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeSidebar()"></div>
     <!-- SIDEBAR -->
     <div class="sidebar" id="sidebar">
-      <div class="sidebar-section">Ops</div>
-      <div class="sidebar-item active" onclick="showPane('andie')">
-        <span class="icon">♦</span> Andie
+
+      <!-- 01 MAIN -->
+      <div class="nav-macro" id="nav-macro-main">
+        <div class="nav-macro-header" onclick="toggleNavSection('main')">
+          <span class="nav-macro-label">Main</span>
+          <span class="nav-macro-arrow" id="nav-arrow-main">▾</span>
+        </div>
+        <div class="nav-macro-body" id="nav-section-body-main">
+          <div class="sidebar-item" id="nav-dashboard" onclick="showPane('dashboard')">Dashboard</div>
+          <div class="sidebar-item" onclick="showPane('icons')">Icons <span class="sidebar-badge" id="badge-icons">100</span></div>
+          <div class="sidebar-item" onclick="showPane('subscribers')">Subscribers</div>
+          <div class="sidebar-item" onclick="showPane('requests')">Requests</div>
+          <div class="sidebar-item nav-external" onclick="window.open('/admin/houseboard','_blank')">House Board <span class="nav-ext-arrow">↗</span></div>
+          <div class="nav-sub-divider"></div>
+          <div class="nav-sub-label">Tools</div>
+          <div class="sidebar-item" onclick="showPane('pnl')">P&amp;L Dashboard</div>
+          <div class="sidebar-item" onclick="showPane('checklist')">Task Checklist</div>
+          <div class="sidebar-item" onclick="showPane('projdash')">Project Dashboard</div>
+          <div class="sidebar-item" onclick="showPane('design')">Design System</div>
+          <div class="sidebar-item" onclick="showPane('techref')">Tech Reference</div>
+        </div>
       </div>
-      <div class="sidebar-item" onclick="showPane('gza')">
-        <span class="icon">♦</span> GZA
+
+      <!-- 02 OPERATION -->
+      <div class="nav-macro" id="nav-macro-operation">
+        <div class="nav-macro-header" onclick="toggleNavSection('operation')">
+          <span class="nav-macro-label">Operation</span>
+          <span class="nav-macro-arrow" id="nav-arrow-operation">▾</span>
+        </div>
+        <div class="nav-macro-body collapsed" id="nav-section-body-operation">
+          <div class="sidebar-item" id="nav-item-andie" onclick="showPane('andie')">Andie</div>
+          <div class="nav-sub-toggle" onclick="toggleNavSubSection('specialists')">
+            <span>Specialists</span><span class="nav-sub-toggle-arrow" id="nav-sub-arrow-specialists">▸</span>
+          </div>
+          <div class="nav-subsection collapsed" id="nav-sub-specialists">
+            <div class="sidebar-item nav-sub-item" onclick="showPane('gza')">GZA</div>
+            <div class="sidebar-item nav-sub-item" onclick="showPane('rza')">RZA</div>
+            <div class="sidebar-item nav-sub-item" onclick="showPane('methodman')">Method Man</div>
+            <div class="sidebar-item nav-sub-item" onclick="showPane('inspectahdeck')">Inspectah Deck</div>
+            <div class="sidebar-item nav-sub-item" onclick="showPane('raekwon')">Raekwon</div>
+          </div>
+          <div class="sidebar-item" onclick="showPane('knowledge')">Knowledge</div>
+        </div>
       </div>
-      <div class="sidebar-item" onclick="showPane('rza')">
-        <span class="icon">♦</span> RZA
+
+      <!-- 03 CONTENT -->
+      <div class="nav-macro" id="nav-macro-content-nav">
+        <div class="nav-macro-header" onclick="toggleNavSection('content-nav')">
+          <span class="nav-macro-label">Content</span>
+          <span class="nav-macro-arrow" id="nav-arrow-content-nav">▾</span>
+        </div>
+        <div class="nav-macro-body collapsed" id="nav-section-body-content-nav">
+          <div class="sidebar-item" onclick="showPane('personas')">Persona Builder</div>
+          <div class="sidebar-item nav-external" onclick="window.location.href='https://mirageicons.com/studio'">Icon Studio <span class="nav-ext-arrow">↗</span></div>
+          <div class="sidebar-item" onclick="showPane('content')">Content Library</div>
+        </div>
       </div>
-      <div class="sidebar-item" onclick="showPane('methodman')">
-        <span class="icon">♦</span> Method Man
+
+      <!-- 04 SLOAN PORTAL -->
+      <div class="nav-macro" id="nav-macro-sloan-portal">
+        <div class="nav-macro-header" onclick="toggleNavSection('sloan-portal')">
+          <span class="nav-macro-label">Sloan Portal</span>
+          <span class="nav-macro-arrow" id="nav-arrow-sloan-portal">▾</span>
+        </div>
+        <div class="nav-macro-body collapsed" id="nav-section-body-sloan-portal" data-compat-id="nav-section-sloan">
+          <div class="sidebar-item" id="nav-item-sloanchat" onclick="showPane('sloanchat')">Sloan Chat</div>
+          <div class="sidebar-item" id="nav-item-sloanlog" onclick="showPane('sloanlog')">Learning Log</div>
+          <div class="sidebar-item" id="nav-item-sloanaudit" onclick="showPane('sloanaudit')">Image Audit</div>
+        </div>
       </div>
-      <div class="sidebar-item" onclick="showPane('inspectahdeck')">
-        <span class="icon">♦</span> Inspectah Deck
-      </div>
-      <div class="sidebar-item" onclick="showPane('raekwon')">
-        <span class="icon">♦</span> Raekwon
-      </div>
-      <div class="sidebar-item" onclick="showPane('knowledge')">
-        <span class="icon">📁</span> Knowledge
-      </div>
-      <div class="sidebar-section">Main</div>
-      <div class="sidebar-item" onclick="showPane('dashboard')">
-        <span class="icon">◈</span> Dashboard
-      </div>
-      <div class="sidebar-item" onclick="showPane('icons')">
-        <span class="icon">◉</span> Icons
-        <span class="sidebar-badge" id="badge-icons">100</span>
-      </div>
-      <div class="sidebar-section">Content</div>
-      <div class="sidebar-item" onclick="showPane('personas')">
-        <span class="icon">◎</span> Persona Builder
-      </div>
-      <div class="sidebar-item" onclick="window.location.href='https://mirage-pwa.vercel.app/studio'">
-        <span class="icon">⚡</span> Icon Studio
-      </div>
-      <div class="sidebar-item" onclick="showPane('content')">
-        <span class="icon">▣</span> Content Library
-      </div>
-      <div class="sidebar-section" id="nav-section-sloan">Sloan</div>
-      <div class="sidebar-item" id="nav-item-sloanchat" onclick="showPane('sloanchat')">
-        <span class="icon">✦</span> Sloan Chat
-      </div>
-      <div class="sidebar-item" id="nav-item-sloanlog" onclick="showPane('sloanlog')">
-        <span class="icon">✎</span> Sloan Learning Log
-      </div>
-      <div class="sidebar-item" id="nav-item-sloanaudit" onclick="showPane('sloanaudit')">
-        <span class="icon">◐</span> Image Audit
-      </div>
-      <div class="sidebar-section">Platform</div>
-      <div class="sidebar-item" onclick="showPane('subscribers')">
-        <span class="icon">○</span> Subscribers
-      </div>
-      <div class="sidebar-item" onclick="showPane('requests')">
-        <span class="icon">◇</span> Requests
-      </div>
-      <div class="sidebar-section">Tools</div>
-      <div class="sidebar-item" onclick="showPane('checklist')">
-        <span class="icon">✓</span> Task Checklist
-      </div>
-      <div class="sidebar-item" onclick="showPane('pnl')">
-        <span class="icon">$</span> P&amp;L Dashboard
-      </div>
-      <div class="sidebar-item" onclick="showPane('projdash')">
-        <span class="icon">◈</span> Project Dashboard
-      </div>
-      <div class="sidebar-item" onclick="showPane('design')">
-        <span class="icon">◈</span> Design System
-      </div>
-      <div class="sidebar-item" onclick="showPane('techref')">
-        <span class="icon">⌘</span> Tech Reference
-      </div>
+
     </div>
 
     <!-- CONTENT PANES -->
@@ -2235,6 +2300,7 @@ button { color: inherit; }
           <!-- Sticky save bar — full-width, fixed to viewport bottom. -->
           <div class="persona-save-bar">
             <button id="save-btn" class="persona-save-wide" onclick="savePersona()">Save Character Profile</button>
+            <div id="persona-save-ts"></div>
           </div>
         </div>
       </div>
@@ -2567,7 +2633,7 @@ button { color: inherit; }
       <div class="pane" id="pane-pnl">
         <div class="page-header">
           <div>
-            <div class="page-title">P&amp;L Model</div>
+            <div class="page-title">P&amp;L Dashboard</div>
             <div class="page-sub">Interactive financial projections</div>
           </div>
         </div>
@@ -2731,7 +2797,7 @@ button { color: inherit; }
         <div class="page-header">
           <div>
             <div class="page-title">Sloan Chat</div>
-            <div class="page-sub">Direct line to Sloan — bypasses SMS, routes through the proxy</div>
+            <div class="page-sub">Active Ambient State: Cached &nbsp;<span id="sloan-ambient-ttl" style="color:var(--ink-dim);font-size:11px;letter-spacing:0.04em;font-family:monospace">TTL: --h --m Remaining</span></div>
           </div>
           <div style="display:flex;align-items:center;gap:10px">
             <button type="button" id="nudge-sloan-btn" onclick="nudgeSloan()" title="POST /sloan/proactive — fires the proactive-outreach gate" style="background:transparent;border:1px solid var(--border);color:var(--ink-dim);font-size:11px;letter-spacing:0.04em;text-transform:uppercase;padding:5px 10px;border-radius:3px;cursor:pointer;line-height:1">Nudge Sloan</button>
@@ -3178,7 +3244,7 @@ function hydrateAuthenticatedApp(user) {
 // (Sloan Chat + Sloan Learning Log). Per-user chat threading keeps each
 // of them on their own conversation row in icon_chats.
 function applyUserVisibility(user) {
-  const section = document.getElementById('nav-section-sloan');
+  const section = document.getElementById('nav-section-body-sloan-portal');
   const item = document.getElementById('nav-item-sloanlog');
   if (section) section.style.display = '';
   if (item) item.style.display = '';
@@ -3218,7 +3284,7 @@ const PANE_HASH_ALIASES = {
 
 function applyPaneHash() {
   const raw = (window.location.hash || '').replace(/^#/, '').trim();
-  if (!raw) return;
+  if (!raw) { showPane('dashboard'); return; }
   // Hash may carry deep-link query params (e.g. #personas?icon=Sloan).
   // Split before alias lookup so '?icon=...' doesn't break pane resolution.
   const qIdx = raw.indexOf('?');
@@ -3859,12 +3925,97 @@ function closeSidebar() {
 }
 
 // ── NAVIGATION ───────────────────────────────────────────────────────────────
+
+// ── MACRO-NAV ACCORDION ────────────────────────────────────────────────────
+// Maps pane id → section key so showPane can auto-expand the right section.
+var PANE_SECTION_MAP = {
+  dashboard:'main', icons:'main', subscribers:'main', requests:'main',
+  checklist:'main', pnl:'main', projdash:'main', design:'main', techref:'main',
+  andie:'operation', gza:'operation', rza:'operation', methodman:'operation',
+  inspectahdeck:'operation', raekwon:'operation', knowledge:'operation',
+  personas:'content-nav', content:'content-nav',
+  sloanchat:'sloan-portal', sloanlog:'sloan-portal', sloanaudit:'sloan-portal'
+};
+
+function toggleNavSection(id) {
+  var body = document.getElementById('nav-section-body-' + id);
+  var arrow = document.getElementById('nav-arrow-' + id);
+  if (!body) return;
+  var isCollapsed = body.classList.contains('collapsed');
+  body.classList.toggle('collapsed');
+  if (arrow) arrow.style.transform = isCollapsed ? '' : 'rotate(-90deg)';
+}
+
+function toggleNavSubSection(id) {
+  var el = document.getElementById('nav-sub-' + id);
+  var arrow = document.getElementById('nav-sub-arrow-' + id);
+  if (!el) return;
+  var isCollapsed = el.classList.contains('collapsed');
+  el.classList.toggle('collapsed');
+  if (arrow) arrow.textContent = isCollapsed ? '▾' : '▸';
+}
+
+function expandNavSectionForPane(paneId) {
+  var sectionId = PANE_SECTION_MAP[paneId];
+  if (!sectionId) return;
+  // Expand target section if collapsed
+  var body = document.getElementById('nav-section-body-' + sectionId);
+  var arrow = document.getElementById('nav-arrow-' + sectionId);
+  if (body && body.classList.contains('collapsed')) {
+    body.classList.remove('collapsed');
+    if (arrow) arrow.style.transform = '';
+  }
+  // If the pane is a specialist, also expand the sub-section
+  var specialists = ['gza','rza','methodman','inspectahdeck','raekwon'];
+  if (specialists.indexOf(paneId) >= 0) {
+    var sub = document.getElementById('nav-sub-specialists');
+    var subArrow = document.getElementById('nav-sub-arrow-specialists');
+    if (sub && sub.classList.contains('collapsed')) {
+      sub.classList.remove('collapsed');
+      if (subArrow) subArrow.textContent = '▾';
+    }
+  }
+}
+
+// ── PERSONA COMPLETION CHIP ─────────────────────────────────────────────────
+function updatePersonaProgressChip(pct) {
+  var el = document.getElementById('persona-progress-label');
+  if (!el) return;
+  if (pct >= 80) {
+    el.innerHTML = '<span class="persona-chip-complete">Complete</span>';
+  } else if (pct > 0) {
+    el.innerHTML = '<span class="persona-chip-partial">' + pct + '% · Partial</span>';
+  } else {
+    el.innerHTML = '';
+  }
+}
+
+// ── SAVE TIMESTAMP ──────────────────────────────────────────────────────────
+function stampPersonaSaveTime() {
+  var ts = document.getElementById('persona-save-ts');
+  if (!ts) return;
+  var now = new Date();
+  try {
+    var parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Los_Angeles',
+      month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', hour12: false
+    }).formatToParts(now);
+    var p = {};
+    parts.forEach(function(x) { p[x.type] = x.value; });
+    ts.textContent = 'Last Saved: ' + p.month + '/' + p.day + ' ' + p.hour + ':' + p.minute + ' PT';
+  } catch(e) {
+    ts.textContent = 'Last Saved: ' + now.toLocaleString();
+  }
+}
+
+
 function showPane(id) {
   // Any pane switch closes the mobile drawer so content is visible.
   closeSidebar();
   // Icon Studio is no longer embedded — it navigates away to the Vercel
   // deployment via the sidebar item's onclick. Guard against legacy calls.
-  if (id === 'studio') { window.location.href = 'https://mirage-pwa.vercel.app/studio'; return; }
+  if (id === 'studio') { window.location.href = 'https://mirageicons.com/studio'; return; }
 
   // Keep the URL hash in sync with the active pane. replaceState (not a
   // plain hash assignment) avoids stacking history entries and avoids
@@ -3890,13 +4041,14 @@ function showPane(id) {
   const pane = document.getElementById('pane-' + id);
   if (pane) pane.classList.add('active');
 
-  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', sloanchat:'Sloan Chat', sloanlog:'Sloan Learning Log', sloanaudit:'Image Audit', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Model', projdash:'Project Dashboard', design:'Design System', techref:'Tech Reference', andie:'Andie' };
+  const labels = { dashboard:'Dashboard', icons:'Icons', personas:'Persona Builder', sloanchat:'Sloan Chat', sloanlog:'Sloan Learning Log', sloanaudit:'Image Audit', content:'Content Library', subscribers:'Subscribers', requests:'Requests', checklist:'Task Checklist', pnl:'P&L Dashboard', projdash:'Project Dashboard', design:'Design System', techref:'Tech Reference', andie:'Andie' };
   document.getElementById('topbar-section').textContent = labels[id] || id;
 
-  // highlight sidebar
+  // highlight sidebar + expand parent nav section
   document.querySelectorAll('.sidebar-item').forEach(item => {
     if (item.getAttribute('onclick')?.includes(`'${id}'`)) item.classList.add('active');
   });
+  expandNavSectionForPane(id);
 
   // (save-bar was removed — the header Save button in the Persona Builder
   // form view is now the single save surface.)
@@ -5861,9 +6013,10 @@ function savePersona() {
       }
       const pct = getPersonaCompletion(icon);
       if (document.getElementById('persona-progress-label')) {
-        document.getElementById('persona-progress-label').textContent = pct + '% complete';
+        updatePersonaProgressChip(pct);
       }
       updateDashboard();
+      stampPersonaSaveTime();
     });
   } else {
     if (btn) { btn.innerHTML = originalLabel; btn.disabled = false; }
@@ -5871,9 +6024,8 @@ function savePersona() {
     setSaveStatus('Saved locally (Supabase offline)', 'saved');
     toast('Saved locally');
     const pct = getPersonaCompletion(icon);
-    if (document.getElementById('persona-progress-label')) {
-      document.getElementById('persona-progress-label').textContent = pct + '% complete';
-    }
+    updatePersonaProgressChip(pct);
+    stampPersonaSaveTime();
     updateDashboard();
   }
 }
@@ -5903,7 +6055,7 @@ async function loadSubscribers() {
   body.innerHTML = data.map(s => `<tr>
     <td>${s.email || '—'}</td>
     <td style="text-transform:capitalize">${s.tier || '—'}</td>
-    <td style="color:var(--ink-dim)">${s.created_at ? new Date(s.created_at).toLocaleDateString() : '—'}</td>
+    <td style="color:var(--ink-dim)">${s.created_at ? new Date(s.created_at).toLocaleDateString('en-US',{timeZone:'America/Los_Angeles',month:'short',day:'numeric',year:'numeric'}) : '—'}</td>
     <td><span style="font-size: var(--text-xs);color:#2a7a4a;text-transform:uppercase;letter-spacing:0.1em">${s.status || 'active'}</span></td>
   </tr>`).join('');
 }
@@ -7352,7 +7504,7 @@ function kfFmtSize(bytes) {
 
 function kfFmtDate(iso) {
   if (!iso) return '—';
-  try { return new Date(iso).toLocaleString(); } catch (_) { return iso; }
+  try { return new Date(iso).toLocaleString('en-US', { timeZone:'America/Los_Angeles', month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit' }) + ' PT'; } catch (_) { return iso; }
 }
 
 async function loadKnowledgeFiles() {
@@ -7504,7 +7656,7 @@ function renderSloanLog(rows) {
   const esc = function(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
   list.innerHTML = rows.map(function(r) {
     const d = r.created_at ? new Date(r.created_at) : null;
-    const dateStr = d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' \u00b7 ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '';
+    const dateStr = d ? d.toLocaleDateString('en-US', { timeZone:'America/Los_Angeles', month: 'short', day: 'numeric', year: 'numeric' }) + ' \u00b7 ' + d.toLocaleTimeString('en-US', { timeZone:'America/Los_Angeles', hour: 'numeric', minute: '2-digit' }) + ' PT' : '';
     return '' +
       '<div style="background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:16px 18px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start">' +
         '<div style="flex:1;min-width:0">' +
@@ -7626,7 +7778,7 @@ function renderSloanAudit(rows) {
 
   list.innerHTML = rows.map(function(r) {
     const dt = r.created_at ? new Date(r.created_at) : null;
-    const dateStr = dt && !isNaN(dt) ? dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    const dateStr = dt && !isNaN(dt) ? dt.toLocaleDateString('en-US', { timeZone:'America/Los_Angeles', month:'short', day:'numeric' }) + ' ' + dt.toLocaleTimeString('en-US', { timeZone:'America/Los_Angeles', hour:'2-digit', minute:'2-digit' }) + ' PT' : '';
     return ''
       + '<div style="display:grid;grid-template-columns:72px 90px 1fr auto;gap:14px;align-items:start;padding:12px 0;border-bottom:1px solid var(--border)">'
       +   (r.image_url ? '<img src="' + esc(r.image_url) + '" alt="" style="width:72px;height:96px;object-fit:cover;border-radius:2px;background:var(--bg)">' : '<div style="width:72px;height:96px;background:var(--bg);border:1px solid var(--border);border-radius:2px"></div>')
@@ -8525,6 +8677,27 @@ function renderTrValue(item) {
     span.textContent = item.note;
     return span;
   }
+  // Mask credential values with show/hide toggle
+  if (item.section === 'credentials' && item.value) {
+    const wrap = document.createElement('span');
+    wrap.className = 'tr-credential-wrap';
+    const inp = document.createElement('input');
+    inp.type = 'password';
+    inp.value = item.value;
+    inp.readOnly = true;
+    inp.className = 'tr-credential-input';
+    const tog = document.createElement('button');
+    tog.type = 'button';
+    tog.className = 'tr-credential-toggle';
+    tog.textContent = 'Show';
+    tog.addEventListener('click', function() {
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+      tog.textContent = inp.type === 'password' ? 'Show' : 'Hide';
+    });
+    wrap.appendChild(inp);
+    wrap.appendChild(tog);
+    return wrap;
+  }
   const span = document.createElement('span');
   span.className = 'tr-v';
   if (item.value) span.appendChild(document.createTextNode(item.value));
@@ -9024,7 +9197,7 @@ async function clLoadBrowse() {
   } else {
     // All-view stays capped at 500 rows so the grid stays responsive.
     url = SUPABASE_URL + '/rest/v1/content?select=' + CL_BROWSE_SELECT
-      + '&order=created_at.desc&limit=500';
+      + '&order=created_at.desc&limit=5000'; // raised from 500 — use icon tabs for performance on large sets
   }
   console.log('[content-library] fetch →', url);
   try {
@@ -9067,7 +9240,9 @@ function clRenderFilters() {
   // Tabs are sourced from the icon_id index, not the currently-loaded
   // clItems — otherwise selecting an icon tab would shrink the tab list
   // because clItems is now per-icon.
-  const names = ['all'].concat(clAllIconNames);
+  // Filter out test artifacts from the tab strip (data stays in DB)
+  var CL_HIDDEN_TABS = ['supabase-wu'];
+  const names = ['all'].concat(clAllIconNames.filter(function(n) { return CL_HIDDEN_TABS.indexOf(n.toLowerCase()) < 0; }));
   if (names.indexOf(clActiveIcon) < 0) clActiveIcon = 'all';
   row.innerHTML = names.map(function(n) {
     const count = n === 'all' ? clTotalCount : (clCountByName[n] || 0);
