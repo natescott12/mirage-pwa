@@ -4032,8 +4032,6 @@ function toggleNavSubSection(id) {
   if (arrow) arrow.textContent = isCollapsed ? '▾' : '▸';
 }
 
-function expandNavSectionForPane(paneId) {
-  var _map = (typeof PANE_SECTION_MAP !== 'undefined' && PANE_SECTION_MAP) ? PANE_SECTION_MAP : 
 // ── AMBIENT TTL POLLER ────────────────────────────────────────────────────────
 // Polls the platform telemetry endpoint when Sloan Chat is active.
 // Updates the TTL display span in the Sloan Chat subtitle.
@@ -4068,6 +4066,9 @@ async function updateAmbientTtl() {
     el.textContent = 'TTL: --h --m Remaining';
   }
 }
+
+function expandNavSectionForPane(paneId) {
+  var _map = (typeof PANE_SECTION_MAP !== 'undefined' && PANE_SECTION_MAP) ? PANE_SECTION_MAP : window.PANE_SECTION_MAP;
   if (!_map) return;
   var sectionId = _map[paneId];
   if (!sectionId) return;
