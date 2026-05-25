@@ -409,6 +409,27 @@ button { color: inherit; }
 .os-envelope-body { display: flex; flex-direction: column; }
 .os-envelope-body.collapsed { display: none; }
 
+
+/* OS Sub-items — direct destination links under surface labels */
+.os-sub-item {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  color: rgba(165,165,165,0.5);
+  text-decoration: none;
+  padding: 5px 24px 5px 36px;
+  display: block;
+  cursor: pointer;
+  transition: color 0.1s;
+  letter-spacing: 0.02em;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  line-height: 1.2;
+}
+.os-sub-item:hover { color: #EAEAEA; }
+.os-sub-item.active { color: #78CC6E; }
+
 /* OS Pane Links — the 8 numbered surfaces */
 .os-pane-link {
   font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
@@ -2520,10 +2541,9 @@ button { color: inherit; }
 
   <div class="main">
     <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeSidebar()"></div>
-    <!-- SIDEBAR — MIRAGE OS V2 -->
+    <!-- SIDEBAR — MIRAGE OS V2 — DIRECT ACCESS -->
     <div class="sidebar" id="sidebar">
 
-      <!-- OS Brand -->
       <div class="os-brand">
         <span class="os-brand-logotype">M I R A G E  O S</span>
         <span class="os-brand-tag">V2 // CORE</span>
@@ -2535,7 +2555,12 @@ button { color: inherit; }
         <div class="os-envelope-body" id="os-env-body-operations">
           <button class="os-pane-link active" onclick="showPane('dashboard')">[01] COMMAND</button>
           <button class="os-pane-link" onclick="showPane('systems')">[02] SYSTEMS</button>
+          <button class="os-sub-item" onclick="showPane('houseboard')">House Board</button>
+          <button class="os-sub-item" onclick="showPane('andie')">Andie</button>
+          <button class="os-sub-item" onclick="showPane('knowledge')">Knowledge</button>
           <button class="os-pane-link" onclick="showPane('governance')">[04] GOVERNANCE</button>
+          <button class="os-sub-item" onclick="showPane('subscribers')">Subscribers</button>
+          <button class="os-sub-item" onclick="showPane('requests')">Requests</button>
           <button class="os-pane-link" onclick="showPane('planner')">[05] PLANNER</button>
         </div>
       </div>
@@ -2545,7 +2570,14 @@ button { color: inherit; }
         <span class="os-envelope-trigger" onclick="toggleOsEnvelope('creative')">CREATIVE PRODUCTION</span>
         <div class="os-envelope-body collapsed" id="os-env-body-creative">
           <button class="os-pane-link" onclick="showPane('world')">[03] WORLD</button>
+          <button class="os-sub-item" onclick="showPane('icons')">Icons</button>
+          <button class="os-sub-item" onclick="showPane('personas')">Persona Builder</button>
+          <button class="os-sub-item" onclick="showPane('content')">Content Library</button>
+          <button class="os-sub-item" onclick="window.open('https://mirageicons.com/studio','_blank')">Icon Studio ↗</button>
           <button class="os-pane-link" onclick="showPane('sloan')">[06] SLOAN PORTAL</button>
+          <button class="os-sub-item" onclick="showPane('sloanchat')">Sloan Chat</button>
+          <button class="os-sub-item" onclick="showPane('sloanlog')">Learning Log</button>
+          <button class="os-sub-item" onclick="showPane('sloanaudit')">Image Audit</button>
         </div>
       </div>
 
@@ -2554,7 +2586,11 @@ button { color: inherit; }
         <span class="os-envelope-trigger" onclick="toggleOsEnvelope('archive')">ARCHIVE / STRATEGY</span>
         <div class="os-envelope-body collapsed" id="os-env-body-archive">
           <button class="os-pane-link" onclick="showPane('reference')">[07] REFERENCE</button>
-          <button class="os-pane-link" onclick="showPane('financial')">[08] FINANCIAL</button>
+          <button class="os-sub-item" onclick="showPane('design')">Design System</button>
+          <button class="os-sub-item" onclick="showPane('techref')">Tech Reference</button>
+          <button class="os-sub-item" onclick="showPane('knowledge')">Knowledge</button>
+          <button class="os-pane-link" onclick="showPane('pnl')">[08] FINANCIAL</button>
+          <button class="os-sub-item" onclick="showPane('pnl')">P&amp;L Model</button>
         </div>
       </div>
 
@@ -2748,55 +2784,72 @@ button { color: inherit; }
           <span class="os-surface-meta">Machine Room // Observatory</span>
         </div>
 
-        <!-- Ambient pipeline status -->
+        <!-- Ambient pipeline -->
         <div class="os-section-row">
           <div class="os-section-label">Ambient Pipeline // Redis</div>
           <div class="sync-data-line" style="margin-bottom:10px">
             <span class="sync-target-key">mirage:identity:sloan:ambient:nate</span>
-            <span class="sync-divider-line">──────────────────────────────────────────────────</span>
+            <span class="sync-divider-line">──────────────────────────────────────────────</span>
             <span class="sync-metric-badge" id="systems-sync-status">CHECKING…</span>
             <span class="sync-ttl-counter" id="systems-sync-ttl" style="margin-left:16px"></span>
           </div>
           <div class="sync-telemetry-sub" id="systems-sync-sub">Fetching Redis pipeline state…</div>
         </div>
 
+        <!-- Infrastructure status -->
+        <div class="os-section-row">
+          <div class="os-section-label">Infrastructure // Services</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;border:1px solid #262626;margin-bottom:0">
+            <div style="padding:16px 20px;border-right:1px solid #262626">
+              <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:10px;color:rgba(165,165,165,0.4);letter-spacing:0.1em;margin-bottom:8px">MIRAGE-PLATFORM</div>
+              <div style="font-size:13px;color:#EAEAEA">radiant-empathy</div>
+              <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:11px;color:#78CC6E;margin-top:4px">LIVE — Admin + Ambient Pipeline</div>
+            </div>
+            <div style="padding:16px 20px">
+              <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:10px;color:rgba(165,165,165,0.4);letter-spacing:0.1em;margin-bottom:8px">MIRAGE-PROXY</div>
+              <div style="font-size:13px;color:#EAEAEA">perpetual-patience</div>
+              <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:11px;color:#E6A23C;margin-top:4px">READ-ONLY — All subscriber SMS</div>
+            </div>
+            <div style="padding:16px 20px;border-top:1px solid #262626;border-right:1px solid #262626">
+              <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:10px;color:rgba(165,165,165,0.4);letter-spacing:0.1em;margin-bottom:8px">SUPABASE</div>
+              <div style="font-size:13px;color:#EAEAEA">gmyenvnfuailickepvax</div>
+              <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:11px;color:#78CC6E;margin-top:4px">LIVE — Shared tables</div>
+            </div>
+            <div style="padding:16px 20px;border-top:1px solid #262626">
+              <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:10px;color:rgba(165,165,165,0.4);letter-spacing:0.1em;margin-bottom:8px">VERCEL / PWA</div>
+              <div style="font-size:13px;color:#EAEAEA">mirageicons.com</div>
+              <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:11px;color:#78CC6E;margin-top:4px">LIVE — Frontend + Admin</div>
+            </div>
+          </div>
+        </div>
+
         <!-- Andie -->
         <div class="os-section-row">
           <div class="os-section-label">Cognitive Operations // Andie</div>
-          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px">
-            <span style="font-size:15px;color:#EAEAEA">Andie — Mirage Operations Director</span>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px">
+            <span style="font-size:15px;color:#EAEAEA;font-weight:400">Andie — Mirage Operations Director</span>
             <button class="os-inline-btn primary" onclick="showPane('andie')">OPEN INTERFACE →</button>
           </div>
           <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:11px;color:rgba(165,165,165,0.55);line-height:1.75">
-            Absorbs operational stress and background complexity so Zone 1 never processes its own machinery.<br>
-            Runs andieCompactor.js — LLM compresses raw residue into ambient packet, writes to Redis (12h TTL).<br>
+            andieCompactor.js — LLM compresses residue into ambient packet, writes to Redis (12h TTL).<br>
             Reads platform state, fault logs, synthesis entries, active priorities.<br>
-            Dependency intercept (Raisins evaluation). Proactive heartbeat: <span style="color:#E6A23C">not started</span>.
+            Dependency intercept active. Proactive heartbeat: <span style="color:#E6A23C">not started</span>.
           </div>
         </div>
 
-        <!-- House Board -->
+        <!-- SNS link -->
         <div class="os-section-row">
-          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px">
-            <div class="os-section-label" style="margin:0">SNS X-Ray // House Board</div>
-            <button class="os-inline-btn" onclick="(function(){ var f=document.getElementById('systems-hb'); var b='https://mirage-platform-production-6e5e.up.railway.app/admin/houseboard?devtoken=MiragePlatform2026!'; f.src=b+'&t='+Date.now(); })()">REFRESH</button>
+          <div class="os-section-label">SNS X-Ray // House Board</div>
+          <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:11px;color:rgba(165,165,165,0.55);margin-bottom:14px;line-height:1.75">
+            Mechanical layer, structural layer, behavioral sensors, contagion matrix, longitudinal trends.<br>
+            Icon room lifecycle controls. Drift detection. Pearson R cross-room correlation.
           </div>
-          <iframe
-            id="systems-hb"
-            src="https://mirage-platform-production-6e5e.up.railway.app/admin/houseboard?devtoken=MiragePlatform2026!"
-            style="width:100%;height:520px;border:none;background:#121212"
-            title="SNS House Board"
-          ></iframe>
+          <button class="os-inline-btn primary" onclick="showPane('houseboard')">OPEN HOUSE BOARD →</button>
         </div>
 
-        <!-- Knowledge -->
-        <div class="os-section-row">
-          <div class="os-section-label">Institutional Memory // Knowledge Store</div>
-          <button class="os-inline-btn primary" onclick="showPane('knowledge')">OPEN KNOWLEDGE STORE →</button>
-        </div>
       </div>
 
-      <!-- [03] WORLD — Creative Ecosystem -->
+      <!-- [03] WORLD<!-- [03] WORLD — Creative Ecosystem -->
       <div class="pane" id="pane-world">
         <div class="os-surface-header">
           <h1 class="os-surface-title">[03] WORLD</h1>
@@ -2843,18 +2896,7 @@ button { color: inherit; }
             <div class="os-hub-card-title">Requests</div>
             <div class="os-hub-card-desc">Custom content requests.<br>Subscriber to Icon pipeline.</div>
           </div>
-          <div class="os-hub-card pending">
-            <span class="os-hub-card-index">G-03</span>
-            <div class="os-hub-card-title">Lifecycle</div>
-            <div class="os-hub-card-desc">Icon maturity tracking.<br>BORN → LIVE state machine.<br>Room lifecycle governance.</div>
-            <span class="os-hub-card-pending">Pending build</span>
-          </div>
-          <div class="os-hub-card pending">
-            <span class="os-hub-card-index">G-04</span>
-            <div class="os-hub-card-title">Oliver Framework</div>
-            <div class="os-hub-card-desc">Ethical guardrail visibility.<br>Behavioral audit surface.<br>Named for LWT S13E9.</div>
-            <span class="os-hub-card-pending">Pending build</span>
-          </div>
+
         </div>
       </div>
 
@@ -3018,12 +3060,7 @@ button { color: inherit; }
             <div class="os-hub-card-title">Knowledge</div>
             <div class="os-hub-card-desc">Andie's document store.<br>PDFs, briefs,<br>brand strategy.</div>
           </div>
-          <div class="os-hub-card pending">
-            <span class="os-hub-card-index">R-04</span>
-            <div class="os-hub-card-title">Mirage OS Doctrine</div>
-            <div class="os-hub-card-desc">Architecture canon.<br>V2 source of truth.<br>Operational laws.</div>
-            <span class="os-hub-card-pending">Pending build</span>
-          </div>
+
         </div>
       </div>
 
@@ -4822,17 +4859,16 @@ function activateOsPane(paneId) {
     body.classList.remove('collapsed');
   }
 
-  // Clear all os-pane-link active states
-  document.querySelectorAll('.os-pane-link').forEach(function(link) {
-    link.classList.remove('active');
+  // Clear all active states on surface links AND sub-items
+  document.querySelectorAll('.os-pane-link, .os-sub-item').forEach(function(el) {
+    el.classList.remove('active');
   });
 
-  // Highlight: the surface link or sub-pane's parent surface link
-  var surfaceId = OS_PANE_SURFACE_MAP[paneId] || paneId;
-  document.querySelectorAll('.os-pane-link').forEach(function(link) {
-    var onclick = link.getAttribute('onclick') || '';
-    if (onclick.includes("'" + surfaceId + "'") || onclick.includes('"' + surfaceId + '"')) {
-      link.classList.add('active');
+  // Highlight the exact item matching this paneId
+  document.querySelectorAll('.os-pane-link, .os-sub-item').forEach(function(el) {
+    var onclick = el.getAttribute('onclick') || '';
+    if (onclick.includes("'" + paneId + "'") || onclick.includes('"' + paneId + '"')) {
+      el.classList.add('active');
     }
   });
 }
