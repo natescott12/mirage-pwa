@@ -59,11 +59,12 @@
 
   /* Layout */
   --sidebar: 220px;
+  --border-dim: #262626; /* sub-surface row separators */
 }
 
 html, body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  background: #121212;
+  background: var(--bg);
   color: rgba(255,255,255,1.0);
   -webkit-font-smoothing: antialiased;
 }
@@ -95,7 +96,7 @@ button { color: inherit; }
   padding: 11px 20px 9px;
   font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
   color: rgba(255,255,255,0.28); cursor: pointer; user-select: none;
-  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-family: var(--font);
   transition: color 0.15s;
 }
 .nav-macro-header:hover { color: var(--ink-mid); }
@@ -157,28 +158,23 @@ button { color: inherit; }
 }
 
 
-/* ── MIRAGE OS V2 COMMAND SURFACE TOKENS ─────────────────────────────────────
-   Additive — do not remove existing tokens. These extend the system for the
-   cinematic command surface layer. */
+/* ── MIRAGE OS OPERATIONAL ACCENT TOKENS (additive, non-conflicting) ─────────
+   These extend the system for status communication without overriding the
+   monochromatic base. Use sparingly — only on hard-blocked/active-state signals. */
 :root {
-  --background:    #121212;
-  --border-dim:    #262626;
-  --border-wire:   #333333;
-  --accent-run:    #78CC6E;
-  --accent-block:  #F56C6C;
-  --accent-drift:  #E6A23C;
-  --font-mono:     SFMono-Regular, Consolas, "Liberation Mono", monospace;
-  --ink-bright:    #EAEAEA;
-  --ink-medium:    #A5A5A5;
+  --accent-active: var(--accent);        /* running / cached / nominal */
+  --accent-warn:   var(--ink-mid);       /* soft risk / drift / pending */
+  --accent-block:  var(--ink);           /* hard blocked — bright white urgency */
   --space-grid:    40px;
   --space-flow:    24px;
-  --space-line:    12px;
+  --space-compact: 12px;
 }
+
 
 /* ── COMMAND SURFACE LAYOUT ──────────────────────────────────────────────────*/
 .mirage-command-surface {
   background: transparent;
-  font-family: var(--font-sans);
+  font-family: var(--font);
   margin-bottom: var(--space-grid);
 }
 
@@ -186,21 +182,21 @@ button { color: inherit; }
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  border-bottom: 1px solid var(--border-wire);
-  padding-bottom: var(--space-line);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: var(--space-compact);
   margin-bottom: var(--space-grid);
 }
 
 .brand-monogram {
-  font-family: var(--font-mono);
-  color: var(--ink-bright);
+  font-family: var(--font);
+  color: var(--ink);
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 0.06em;
 }
 
 .system-phase-tag {
-  font-family: var(--font-mono);
+  font-family: var(--font);
   font-size: 11px;
   color: var(--ink-dim);
   letter-spacing: 0.04em;
@@ -213,11 +209,11 @@ button { color: inherit; }
 }
 
 .cs-section-label {
-  font-family: var(--font-mono);
+  font-family: var(--font);
   font-size: 10px;
   color: var(--ink-dim);
   letter-spacing: 0.1em;
-  margin: 0 0 var(--space-line) 0;
+  margin: 0 0 var(--space-compact) 0;
   text-transform: uppercase;
 }
 
@@ -225,8 +221,8 @@ button { color: inherit; }
 .blocker-payload-wrapper {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-line);
-  padding: var(--space-line) 0;
+  gap: var(--space-compact);
+  padding: var(--space-compact) 0;
   border-bottom: 1px solid var(--border-dim);
 }
 .blocker-payload-wrapper:last-child { border-bottom: none; }
@@ -238,24 +234,24 @@ button { color: inherit; }
   margin-top: 3px;
 }
 .status-indicator-wire.block-active {
-  background: var(--accent-block);
+  background: var(--ink);
   animation: calmPulse 3.5s cubic-bezier(0.4,0,0.2,1) infinite;
 }
 .status-indicator-wire.block-drift {
-  background: var(--accent-drift);
+  background: var(--accent);
 }
 
 .blocker-title-string {
   font-size: 15px;
   font-weight: 500;
-  color: var(--ink-bright);
+  color: var(--ink);
   letter-spacing: -0.01em;
   line-height: 1.3;
 }
 .blocker-details-sub {
-  font-family: var(--font-mono);
+  font-family: var(--font);
   font-size: 11px;
-  color: var(--ink-medium);
+  color: var(--ink-mid);
   margin-top: 4px;
 }
 
@@ -263,11 +259,11 @@ button { color: inherit; }
 .sync-data-line {
   display: flex;
   align-items: baseline;
-  font-family: var(--font-mono);
+  font-family: var(--font);
   font-size: 13px;
   gap: 16px;
 }
-.sync-target-key { color: var(--ink-bright); }
+.sync-target-key { color: var(--ink); }
 .sync-divider-line {
   color: var(--border-dim);
   flex-grow: 1;
@@ -275,15 +271,15 @@ button { color: inherit; }
   white-space: nowrap;
 }
 .sync-metric-badge { font-weight: 700; }
-.sync-metric-badge.state-cached  { color: var(--accent-run); }
-.sync-metric-badge.state-fallback { color: var(--accent-drift); }
-.sync-metric-badge.state-error   { color: var(--accent-block); }
-.sync-ttl-counter { color: var(--ink-medium); }
+.sync-metric-badge.state-cached  { color: var(--accent); }
+.sync-metric-badge.state-fallback { color: var(--accent); }
+.sync-metric-badge.state-error   { color: var(--accent); }
+.sync-ttl-counter { color: var(--ink-mid); }
 .sync-telemetry-sub {
-  font-family: var(--font-mono);
+  font-family: var(--font);
   font-size: 11px;
   color: var(--ink-dim);
-  margin-top: var(--space-line);
+  margin-top: var(--space-compact);
 }
 
 /* Planner */
@@ -291,25 +287,25 @@ button { color: inherit; }
 .planner-item {
   display: flex;
   align-items: baseline;
-  padding: var(--space-line) 0;
+  padding: var(--space-compact) 0;
   border-bottom: 1px solid var(--border-dim);
   gap: 20px;
 }
 .planner-item:last-child { border-bottom: none; }
 .list-index-tag {
-  font-family: var(--font-mono);
+  font-family: var(--font);
   font-size: 10px;
   width: 72px;
   flex-shrink: 0;
   letter-spacing: 0.04em;
 }
-.priority-high   .list-index-tag { color: var(--accent-block); }
-.priority-med    .list-index-tag { color: var(--accent-drift); }
+.priority-high   .list-index-tag { color: var(--ink); }
+.priority-med    .list-index-tag { color: var(--ink-mid); }
 .priority-low    .list-index-tag { color: var(--ink-dim); }
-.task-string-payload { color: var(--ink-bright); font-size: 14px; font-weight: 400; }
+.task-string-payload { color: var(--ink); font-size: 14px; font-weight: 400; }
 .task-owner-tag {
   margin-left: auto;
-  font-family: var(--font-mono);
+  font-family: var(--font);
   font-size: 10px;
   color: var(--ink-dim);
   flex-shrink: 0;
@@ -321,7 +317,7 @@ button { color: inherit; }
   justify-content: space-between;
   align-items: baseline;
   padding: 5px 0;
-  font-family: var(--font-mono);
+  font-family: var(--font);
   font-size: 11px;
   color: var(--ink-dim);
   border-bottom: 1px solid var(--border-dim);
@@ -332,24 +328,24 @@ button { color: inherit; }
 
 /* Platform Inventory label */
 .platform-inventory-header {
-  font-family: var(--font-mono);
+  font-family: var(--font);
   font-size: 10px;
   color: var(--ink-dim);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  margin-bottom: var(--space-line);
+  margin-bottom: var(--space-compact);
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-wire);
+  border-bottom: 1px solid var(--border);
 }
 
 /* Command footer */
 .command-system-footer {
   margin-top: var(--space-flow);
-  border-top: 1px solid var(--border-wire);
-  padding-top: var(--space-line);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-compact);
   display: flex;
   justify-content: space-between;
-  font-family: var(--font-mono);
+  font-family: var(--font);
   font-size: 10px;
   color: var(--ink-dim);
   margin-bottom: var(--space-grid);
@@ -373,18 +369,18 @@ button { color: inherit; }
   margin-bottom: 0;
 }
 .os-brand-logotype {
-  font-family: var(--font-sans);
+  font-family: var(--font);
   font-weight: 700;
   font-size: 12px;
   letter-spacing: 0.22em;
-  color: #EAEAEA;
+  color: var(--ink);
   display: block;
   margin-bottom: 5px;
 }
 .os-brand-tag {
-  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-family: var(--font);
   font-size: 10px;
-  color: rgba(165,165,165,0.35);
+  color: var(--ink-dim);
   letter-spacing: 0.1em;
   display: block;
 }
@@ -394,10 +390,10 @@ button { color: inherit; }
   padding-top: 28px;
 }
 .os-envelope-trigger {
-  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
-  font-size: 9px;
+  font-family: var(--font);
+  font-size: var(--text-xs);
   letter-spacing: 0.16em;
-  color: rgba(165,165,165,0.28);
+  color: var(--ink-dim);
   text-transform: uppercase;
   cursor: pointer;
   user-select: none;
@@ -405,16 +401,16 @@ button { color: inherit; }
   display: block;
   transition: color 0.15s;
 }
-.os-envelope-trigger:hover { color: rgba(165,165,165,0.55); }
+.os-envelope-trigger:hover { color: var(--ink-mid); }
 .os-envelope-body { display: flex; flex-direction: column; }
 .os-envelope-body.collapsed { display: none; }
 
 
 /* OS Sub-items — direct destination links under surface labels */
 .os-sub-item {
-  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-family: var(--font);
   font-size: 11px;
-  color: rgba(165,165,165,0.5);
+  color: var(--ink-mid);
   text-decoration: none;
   padding: 5px 24px 5px 36px;
   display: block;
@@ -427,14 +423,14 @@ button { color: inherit; }
   text-align: left;
   line-height: 1.2;
 }
-.os-sub-item:hover { color: #EAEAEA; }
-.os-sub-item.active { color: #78CC6E; }
+.os-sub-item:hover { color: var(--ink); }
+.os-sub-item.active { color: var(--accent); }
 
 /* OS Pane Links — the 8 numbered surfaces */
 .os-pane-link {
-  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-family: var(--font);
   font-size: 12px;
-  color: #A5A5A5;
+  color: var(--ink-mid);
   text-decoration: none;
   padding: 8px 24px;
   display: block;
@@ -447,30 +443,30 @@ button { color: inherit; }
   width: 100%;
   text-align: left;
 }
-.os-pane-link:hover { color: #EAEAEA; }
-.os-pane-link.active { color: #78CC6E; }
+.os-pane-link:hover { color: var(--ink); }
+.os-pane-link.active { color: var(--accent); }
 
 /* OS Surface Header — the horizon line at top of each surface */
 .os-surface-header {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--border);
   padding-bottom: 14px;
   margin-bottom: 40px;
 }
 .os-surface-title {
-  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
-  font-size: 12px;
+  font-family: var(--font);
+  font-size: var(--text-xs);
   letter-spacing: 0.14em;
-  color: #EAEAEA;
-  font-weight: 500;
+  color: var(--ink);
+  font-weight: var(--weight-medium);
   margin: 0;
 }
 .os-surface-meta {
-  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-family: var(--font);
   font-size: 10px;
-  color: rgba(165,165,165,0.35);
+  color: var(--ink-dim);
   letter-spacing: 0.06em;
 }
 
@@ -478,47 +474,47 @@ button { color: inherit; }
 .os-hub-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  border-top: 1px solid #262626;
-  border-left: 1px solid #262626;
+  border-top: 1px solid var(--border-dim);
+  border-left: 1px solid var(--border-dim);
   margin-bottom: 40px;
 }
 .os-hub-card {
   padding: 28px 24px;
   cursor: pointer;
-  border-right: 1px solid #262626;
-  border-bottom: 1px solid #262626;
+  border-right: 1px solid var(--border-dim);
+  border-bottom: 1px solid var(--border-dim);
   transition: background 0.12s;
   position: relative;
 }
-.os-hub-card:hover { background: rgba(255,255,255,0.025); }
+.os-hub-card:hover { background: rgba(255,255,255,0.03); }
 .os-hub-card.pending { opacity: 0.4; cursor: default; }
 .os-hub-card.pending:hover { background: transparent; }
 .os-hub-card-index {
-  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-family: var(--font);
   font-size: 10px;
-  color: rgba(165,165,165,0.35);
+  color: var(--ink-dim);
   letter-spacing: 0.08em;
   margin-bottom: 14px;
   display: block;
 }
 .os-hub-card-title {
-  font-size: 17px;
+  font-size: var(--text-base);
   font-weight: 400;
-  color: #EAEAEA;
+  color: var(--ink);
   letter-spacing: -0.01em;
   margin-bottom: 10px;
   line-height: 1.2;
 }
 .os-hub-card-desc {
-  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-family: var(--font);
   font-size: 11px;
-  color: #A5A5A5;
+  color: var(--ink-mid);
   line-height: 1.65;
 }
 .os-hub-card-pending {
-  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-family: var(--font);
   font-size: 10px;
-  color: #E6A23C;
+  color: var(--ink-mid);
   margin-top: 10px;
   display: block;
 }
@@ -526,9 +522,9 @@ button { color: inherit; }
 /* OS Section rows */
 .os-section-row { margin-bottom: 40px; }
 .os-section-label {
-  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
-  font-size: 9px;
-  color: rgba(165,165,165,0.35);
+  font-family: var(--font);
+  font-size: var(--text-xs);
+  color: var(--ink-dim);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   margin-bottom: 16px;
@@ -536,10 +532,10 @@ button { color: inherit; }
 
 /* Planner static notice */
 .os-planner-notice {
-  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-family: var(--font);
   font-size: 11px;
-  color: #E6A23C;
-  border-left: 2px solid #E6A23C;
+  color: var(--ink-mid);
+  border-left: 2px solid var(--border);
   padding: 10px 16px;
   margin-bottom: 36px;
   line-height: 1.6;
@@ -551,45 +547,45 @@ button { color: inherit; }
   display: flex;
   gap: 0;
   margin-bottom: 36px;
-  border-bottom: 1px solid #262626;
+  border-bottom: 1px solid var(--border-dim);
 }
 .sloan-sub-btn {
-  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-family: var(--font);
   font-size: 10px;
   background: transparent;
   border: none;
   border-bottom: 1px solid transparent;
-  color: rgba(165,165,165,0.5);
+  color: var(--ink-mid);
   padding: 10px 20px;
   cursor: pointer;
   letter-spacing: 0.08em;
   transition: color 0.12s;
   margin-bottom: -1px;
 }
-.sloan-sub-btn:hover { color: #EAEAEA; }
-.sloan-sub-btn.active { color: #78CC6E; border-bottom-color: #78CC6E; }
+.sloan-sub-btn:hover { color: var(--ink); }
+.sloan-sub-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
 
 /* Systems inline button */
 .os-inline-btn {
-  font-family: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-family: var(--font);
   font-size: 11px;
-  color: rgba(165,165,165,0.5);
+  color: var(--ink-mid);
   background: transparent;
-  border: 1px solid #333;
+  border: 1px solid var(--border);
   padding: 5px 14px;
   cursor: pointer;
   letter-spacing: 0.04em;
   transition: color 0.12s, border-color 0.12s;
 }
-.os-inline-btn:hover { color: #EAEAEA; border-color: #EAEAEA; }
-.os-inline-btn.primary { color: #EAEAEA; border-color: #555; }
+.os-inline-btn:hover { color: var(--ink); border-color: var(--ink); }
+.os-inline-btn.primary { color: var(--ink); border-color: var(--ink-dim); }
 
 /* Sidebar override — force new OS geometry */
 .sidebar {
   width: 240px !important;
   min-width: 240px !important;
-  background: #161616 !important;
-  border-right: 1px solid #333 !important;
+  background: var(--sidebar-bg) !important;
+  border-right: 1px solid var(--border) !important;
   padding: 0 !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
@@ -700,7 +696,7 @@ button { color: inherit; }
 }
 .sidebar-item:hover { color: rgba(255,255,255,0.85); }
 .sidebar-item.active {
-  color: #78CC6E; background: rgba(120,204,110,0.07); font-weight: 500;
+  color: var(--accent); background: rgba(120,204,110,0.07); font-weight: 500;
 }
 .sidebar-item.active::before { background: var(--accent); }
 /* Retired icon glyphs — the wireframe is text-only nav. Markup kept
@@ -830,7 +826,7 @@ button { color: inherit; }
   user-select: none; gap: 16px;
   transition: background 0.12s;
 }
-.field-group-header:hover { background: rgba(255,255,255,0.02); }
+.field-group-header:hover { background: rgba(255,255,255,0.03); }
 .field-group-header .field-group-title { margin: 0; padding: 0; border: none; flex-shrink: 0; }
 .field-group-summary {
   flex: 1; min-width: 0;
@@ -878,7 +874,7 @@ button { color: inherit; }
   transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 .photo-upload-zone:hover {
-  background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.35);
   color: var(--ink-mid);
 }
 .photo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
@@ -1050,7 +1046,7 @@ button { color: inherit; }
 /* ── TABLE — canonical treatment driven by the design tokens ──
    Header row sits on --surface; cells are transparent, --ink-mid
    text, with a --border hairline between rows. Hover lifts the row
-   to rgba(255,255,255,0.02). Scoped to .table-wrap so legacy
+   to rgba(255,255,255,0.03). Scoped to .table-wrap so legacy
    inline tables keep their old look until they migrate. */
 .table-wrap {
   background: transparent; border: 1px solid var(--border);
@@ -1071,7 +1067,7 @@ button { color: inherit; }
   border-bottom: 1px solid var(--border);
 }
 .table-wrap tbody tr:last-child td { border-bottom: none; }
-.table-wrap tbody tr:hover td { background: rgba(255,255,255,0.02); color: var(--ink); }
+.table-wrap tbody tr:hover td { background: rgba(255,255,255,0.03); color: var(--ink); }
 
 /* ── MISC ── */
 .empty-state { padding: 60px; text-align: center; color: var(--ink-dim); }
@@ -1291,7 +1287,7 @@ button { color: inherit; }
   padding: 14px 0; border-bottom: 1px solid var(--border);
   cursor: pointer; user-select: none; transition: background 0.12s;
 }
-.cl-task:hover { background: rgba(255,255,255,0.02); }
+.cl-task:hover { background: rgba(255,255,255,0.03); }
 .cl-task-box {
   width: 16px; height: 16px;
   border: 1px solid var(--border); border-radius: 3px;
@@ -1731,7 +1727,7 @@ button { color: inherit; }
     }
     .icon-status-badge.in-progress { background: rgba(119,204,110,0.2); color: var(--accent); }
     .icon-status-badge.draft { background: rgba(255,255,255,0.08); color: var(--ink-mid); }
-    .icon-status-badge.live { background: var(--green); color: #fff; }
+    .icon-status-badge.live { background: var(--accent); color: #fff; }
     .icon-card {
       display: flex;
       align-items: center;
@@ -2623,8 +2619,8 @@ button { color: inherit; }
          <div class="mirage-command-surface">
 
            <header class="command-system-header" style="border-bottom:1px solid #333;padding-bottom:14px;margin-bottom:40px;display:flex;justify-content:space-between;align-items:baseline">
-             <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:12px;letter-spacing:0.14em;color:#EAEAEA;font-weight:500">[01] COMMAND</div>
-             <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:10px;color:rgba(165,165,165,0.35);letter-spacing:0.06em">SYSTEM STATE: CANONICAL [V2]</div>
+             <div style="font-family:var(--font);font-size:12px;letter-spacing:0.14em;color:var(--ink);font-weight:500">[01] COMMAND</div>
+             <div style="font-family:var(--font);font-size:10px;color:var(--ink-dim);letter-spacing:0.06em">SYSTEM STATE: CANONICAL [V2]</div>
            </header>
 
            <!-- 01 // CRITICAL INFRASTRUCTURE BLOCKERS -->
@@ -2799,26 +2795,26 @@ button { color: inherit; }
         <!-- Infrastructure status -->
         <div class="os-section-row">
           <div class="os-section-label">Infrastructure // Services</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;border:1px solid #262626;margin-bottom:0">
-            <div style="padding:16px 20px;border-right:1px solid #262626">
-              <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:10px;color:rgba(165,165,165,0.4);letter-spacing:0.1em;margin-bottom:8px">MIRAGE-PLATFORM</div>
-              <div style="font-size:13px;color:#EAEAEA">radiant-empathy</div>
-              <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:11px;color:#78CC6E;margin-top:4px">LIVE — Admin + Ambient Pipeline</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;border:1px solid var(--border-dim);margin-bottom:0">
+            <div style="padding:16px 20px;border-right:1px solid var(--border-dim)">
+              <div style="font-family:var(--font);font-size:10px;color:var(--ink-dim);letter-spacing:0.1em;margin-bottom:8px">MIRAGE-PLATFORM</div>
+              <div style="font-size:13px;color:var(--ink)">radiant-empathy</div>
+              <div style="font-family:var(--font);font-size:11px;color:var(--accent);margin-top:4px">LIVE — Admin + Ambient Pipeline</div>
             </div>
             <div style="padding:16px 20px">
-              <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:10px;color:rgba(165,165,165,0.4);letter-spacing:0.1em;margin-bottom:8px">MIRAGE-PROXY</div>
-              <div style="font-size:13px;color:#EAEAEA">perpetual-patience</div>
-              <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:11px;color:#E6A23C;margin-top:4px">READ-ONLY — All subscriber SMS</div>
+              <div style="font-family:var(--font);font-size:10px;color:var(--ink-dim);letter-spacing:0.1em;margin-bottom:8px">MIRAGE-PROXY</div>
+              <div style="font-size:13px;color:var(--ink)">perpetual-patience</div>
+              <div style="font-family:var(--font);font-size:11px;color:var(--ink-mid);margin-top:4px">READ-ONLY — All subscriber SMS</div>
             </div>
-            <div style="padding:16px 20px;border-top:1px solid #262626;border-right:1px solid #262626">
-              <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:10px;color:rgba(165,165,165,0.4);letter-spacing:0.1em;margin-bottom:8px">SUPABASE</div>
-              <div style="font-size:13px;color:#EAEAEA">gmyenvnfuailickepvax</div>
-              <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:11px;color:#78CC6E;margin-top:4px">LIVE — Shared tables</div>
+            <div style="padding:16px 20px;border-top:1px solid var(--border-dim);border-right:1px solid var(--border-dim)">
+              <div style="font-family:var(--font);font-size:10px;color:var(--ink-dim);letter-spacing:0.1em;margin-bottom:8px">SUPABASE</div>
+              <div style="font-size:13px;color:var(--ink)">gmyenvnfuailickepvax</div>
+              <div style="font-family:var(--font);font-size:11px;color:var(--accent);margin-top:4px">LIVE — Shared tables</div>
             </div>
-            <div style="padding:16px 20px;border-top:1px solid #262626">
-              <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:10px;color:rgba(165,165,165,0.4);letter-spacing:0.1em;margin-bottom:8px">VERCEL / PWA</div>
-              <div style="font-size:13px;color:#EAEAEA">mirageicons.com</div>
-              <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:11px;color:#78CC6E;margin-top:4px">LIVE — Frontend + Admin</div>
+            <div style="padding:16px 20px;border-top:1px solid var(--border-dim)">
+              <div style="font-family:var(--font);font-size:10px;color:var(--ink-dim);letter-spacing:0.1em;margin-bottom:8px">VERCEL / PWA</div>
+              <div style="font-size:13px;color:var(--ink)">mirageicons.com</div>
+              <div style="font-family:var(--font);font-size:11px;color:var(--accent);margin-top:4px">LIVE — Frontend + Admin</div>
             </div>
           </div>
         </div>
@@ -2827,20 +2823,20 @@ button { color: inherit; }
         <div class="os-section-row">
           <div class="os-section-label">Cognitive Operations // Andie</div>
           <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px">
-            <span style="font-size:15px;color:#EAEAEA;font-weight:400">Andie — Mirage Operations Director</span>
+            <span style="font-size:15px;color:var(--ink);font-weight:400">Andie — Mirage Operations Director</span>
             <button class="os-inline-btn primary" onclick="showPane('andie')">OPEN INTERFACE →</button>
           </div>
-          <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:11px;color:rgba(165,165,165,0.55);line-height:1.75">
+          <div style="font-family:var(--font);font-size:11px;color:var(--ink-mid);line-height:1.75">
             andieCompactor.js — LLM compresses residue into ambient packet, writes to Redis (12h TTL).<br>
             Reads platform state, fault logs, synthesis entries, active priorities.<br>
-            Dependency intercept active. Proactive heartbeat: <span style="color:#E6A23C">not started</span>.
+            Dependency intercept active. Proactive heartbeat: <span style="color:var(--ink-mid)">not started</span>.
           </div>
         </div>
 
         <!-- SNS link -->
         <div class="os-section-row">
           <div class="os-section-label">SNS X-Ray // House Board</div>
-          <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:11px;color:rgba(165,165,165,0.55);margin-bottom:14px;line-height:1.75">
+          <div style="font-family:var(--font);font-size:11px;color:var(--ink-mid);margin-bottom:14px;line-height:1.75">
             Mechanical layer, structural layer, behavioral sensors, contagion matrix, longitudinal trends.<br>
             Icon room lifecycle controls. Drift detection. Pearson R cross-room correlation.
           </div>
@@ -2916,8 +2912,8 @@ button { color: inherit; }
         <!-- Current Phase -->
         <div class="os-section-row">
           <div class="os-section-label">Current Phase</div>
-          <div style="font-size:19px;font-weight:400;color:#EAEAEA;letter-spacing:-0.01em;margin-bottom:10px">Sloan Operational Completion</div>
-          <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:11px;color:#A5A5A5;line-height:1.75">
+          <div style="font-size:19px;font-weight:400;color:var(--ink);letter-spacing:-0.01em;margin-bottom:10px">Sloan Operational Completion</div>
+          <div style="font-family:var(--font);font-size:11px;color:var(--ink-mid);line-height:1.75">
             Started: April 2026<br>
             Completion criteria: consistent voice, persistent memory, reliable image pipeline, zero persona drift.<br>
             Next phase: Vera + Margot persona builds.
@@ -2978,15 +2974,15 @@ button { color: inherit; }
               <span class="task-string-payload">Twilio A2P approved — rejected 3×, call 1-888-898-4567</span>
             </li>
             <li class="planner-item priority-high">
-              <span class="list-index-tag" style="color:#E6A23C;width:110px">[NOT STARTED]</span>
+              <span class="list-index-tag" style="color:var(--ink-mid);width:110px">[NOT STARTED]</span>
               <span class="task-string-payload">Segpay integrated — launch blocker, begin research</span>
             </li>
             <li class="planner-item priority-high">
-              <span class="list-index-tag" style="color:#E6A23C;width:110px">[UNDEFINED]</span>
+              <span class="list-index-tag" style="color:var(--ink-mid);width:110px">[UNDEFINED]</span>
               <span class="task-string-payload">First-week choreography — no onboarding sequence defined</span>
             </li>
             <li class="planner-item priority-high">
-              <span class="list-index-tag" style="color:#E6A23C;width:110px">[PENDING]</span>
+              <span class="list-index-tag" style="color:var(--ink-mid);width:110px">[PENDING]</span>
               <span class="task-string-payload">icon_chats RLS — row-level security required before real subscribers</span>
             </li>
           </ul>
@@ -2998,13 +2994,13 @@ button { color: inherit; }
         <div class="os-surface-header" style="align-items:flex-end">
           <div>
             <h1 class="os-surface-title" style="font-size:22px;letter-spacing:0.32em;font-weight:300">S  L  O  A  N</h1>
-            <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:10px;color:rgba(165,165,165,0.35);margin-top:6px;letter-spacing:0.08em">[06] SLOAN PORTAL // Atmospheric Runtime</div>
+            <div style="font-family:var(--font);font-size:10px;color:var(--ink-dim);margin-top:6px;letter-spacing:0.08em">[06] SLOAN PORTAL // Atmospheric Runtime</div>
           </div>
           <div style="text-align:right">
-            <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:11px;color:#A5A5A5">
-              Active Ambient State: <span id="sloan-portal-status" style="color:#78CC6E">CHECKING…</span>
+            <div style="font-family:var(--font);font-size:11px;color:var(--ink-mid)">
+              Active Ambient State: <span id="sloan-portal-status" style="color:var(--accent)">CHECKING…</span>
             </div>
-            <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:10px;color:rgba(165,165,165,0.4);margin-top:3px" id="sloan-portal-ttl"></div>
+            <div style="font-family:var(--font);font-size:10px;color:var(--ink-dim);margin-top:3px" id="sloan-portal-ttl"></div>
           </div>
         </div>
 
@@ -3018,8 +3014,8 @@ button { color: inherit; }
         <!-- Runtime identity -->
         <div class="os-section-row">
           <div class="os-section-label">Runtime Identity</div>
-          <div style="font-size:15px;color:#EAEAEA;margin-bottom:10px;font-weight:400">Creative Director, Mirage</div>
-          <div style="font-family:SFMono-Regular,Consolas,monospace;font-size:11px;color:#A5A5A5;line-height:1.8">
+          <div style="font-size:15px;color:var(--ink);margin-bottom:10px;font-weight:400">Creative Director, Mirage</div>
+          <div style="font-family:var(--font);font-size:11px;color:var(--ink-mid);line-height:1.8">
             Arts District loft · The Downtown Intellectual<br>
             Memory: episodic + semantic · sloan_memory, icon_conversations, subscriber_details<br>
             Image pipeline: flux-2-pro-preview · Proxy: mirage-proxy (perpetual-patience)<br>
@@ -3657,7 +3653,7 @@ button { color: inherit; }
             <span class="chat-status-dot" id="sloanchat-status-dot" data-status-target="sloanchat" title="Proxy connection status"></span>
           </div>
         </div>
-        <div id="nudge-sloan-result" style="display:none;margin:0 0 16px;padding:10px 12px;border:1px solid var(--border);border-radius:3px;background:rgba(255,255,255,0.02);font-size:12px;color:var(--ink-mid);line-height:1.5"></div>
+        <div id="nudge-sloan-result" style="display:none;margin:0 0 16px;padding:10px 12px;border:1px solid var(--border);border-radius:3px;background:rgba(255,255,255,0.03);font-size:12px;color:var(--ink-mid);line-height:1.5"></div>
         <div class="sloanchat-wrap">
           <div id="sloanchat-messages" class="sloanchat-messages"><div class="sloanchat-empty">Loading history…</div></div>
           <div id="sloanchat-preview" class="sloanchat-preview" style="display:none"></div>
