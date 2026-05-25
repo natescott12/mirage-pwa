@@ -391,15 +391,15 @@ button { color: inherit; }
 }
 .os-envelope-trigger {
   font-family: var(--font);
-  font-size: var(--text-xs);
-  letter-spacing: 0.16em;
-  color: var(--ink-dim);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: rgba(255,255,255,0.2);
   text-transform: uppercase;
   cursor: pointer;
   user-select: none;
-  padding: 0 24px 10px;
+  padding: 4px 24px 8px;
   display: block;
-  transition: color 0.15s;
+  transition: color 0.12s;
 }
 .os-envelope-trigger:hover { color: var(--ink-mid); }
 .os-envelope-body { display: flex; flex-direction: column; }
@@ -409,8 +409,8 @@ button { color: inherit; }
 /* OS Sub-items — direct destination links under surface labels */
 .os-sub-item {
   font-family: var(--font);
-  font-size: 11px;
-  color: var(--ink-mid);
+  font-size: var(--text-xs);
+  color: var(--ink-dim);
   text-decoration: none;
   padding: 5px 24px 5px 36px;
   display: block;
@@ -423,13 +423,14 @@ button { color: inherit; }
   text-align: left;
   line-height: 1.2;
 }
-.os-sub-item:hover { color: var(--ink); }
+.os-sub-item:hover { color: var(--ink-mid); }
 .os-sub-item.active { color: var(--accent); }
 
 /* OS Pane Links — the 8 numbered surfaces */
 .os-pane-link {
   font-family: var(--font);
-  font-size: 12px;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
   color: var(--ink-mid);
   text-decoration: none;
   padding: 8px 24px;
@@ -3006,9 +3007,9 @@ button { color: inherit; }
 
         <!-- Sub-nav -->
         <div class="sloan-sub-nav">
-          <button class="sloan-sub-btn active" onclick="showPane('sloanchat');document.querySelectorAll('.sloan-sub-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">SLOAN CHAT</button>
-          <button class="sloan-sub-btn" onclick="showPane('sloanlog');document.querySelectorAll('.sloan-sub-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">LEARNING LOG</button>
-          <button class="sloan-sub-btn" onclick="showPane('sloanaudit');document.querySelectorAll('.sloan-sub-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">IMAGE AUDIT</button>
+          <button class="sloan-sub-btn active" onclick="showPane('sloanchat')">SLOAN CHAT</button>
+          <button class="sloan-sub-btn" onclick="showPane('sloanlog')">LEARNING LOG</button>
+          <button class="sloan-sub-btn" onclick="showPane('sloanaudit')">IMAGE AUDIT</button>
         </div>
 
         <!-- Runtime identity -->
@@ -4686,6 +4687,116 @@ function initPriorities() {
   pdLoadSloanActivity();
 }
 
+// ── MIRAGE OS // ENVELOPE NAVIGATION ──────────────────────────────────────────
+
+const OS_PANE_ENVELOPE_MAP = {
+  // OPERATIONS
+  dashboard:'operations', systems:'operations', governance:'operations', planner:'operations',
+  andie:'operations', houseboard:'operations', knowledge:'operations',
+  subscribers:'operations', requests:'operations', checklist:'operations', projdash:'operations',
+  // CREATIVE PRODUCTION
+  world:'creative', icons:'creative', personas:'creative', content:'creative',
+  sloan:'creative', sloanchat:'creative', sloanlog:'creative', sloanaudit:'creative',
+  // ARCHIVE / STRATEGY
+  reference:'archive', design:'archive', techref:'archive',
+  financial:'archive', pnl:'archive',
+};
+
+// Maps sub-panes to their OS surface link for sidebar highlighting
+const OS_PANE_SURFACE_MAP = {
+  icons:'world', personas:'world', content:'world',
+  sloanchat:'sloan', sloanlog:'sloan', sloanaudit:'sloan',
+  andie:'systems', houseboard:'systems', knowledge:'systems',
+  subscribers:'governance', requests:'governance', checklist:'governance', projdash:'governance',
+  design:'reference', techref:'reference',
+  pnl:'financial',
+};
+
+function toggleOsEnvelope(id) {
+  // Expand only — nav envelopes never collapse once opened.
+  // Persistent tree state: user opens, it stays open.
+  var body = document.getElementById('os-env-body-' + id);
+  if (body) body.classList.remove('collapsed');
+}
+
+function activateOsPane(paneId) {
+  var envelope = OS_PANE_ENVELOPE_MAP[paneId];
+  if (!envelope) return;
+
+  // Expand target envelope if collapsed
+  var body = document.getElementById('os-env-body-' + envelope);
+  if (body && body.classList.contains('collapsed')) {
+    body.classList.remove('collapsed');
+  }
+
+  // Clear all active states on surface links AND sub-items
+  document.querySelectorAll('.os-pane-link, .os-sub-item').forEach(function(el) {
+    el.classList.remove('active');
+  });
+
+  // Highlight the exact item matching this paneId
+  document.querySelectorAll('.os-pane-link, .os-sub-item').forEach(function(el) {
+    var onclick = el.getAttribute('onclick') || '';
+    if (onclick.includes("'" + paneId + "'") || onclick.includes('"' + paneId + '"')) {
+      el.classList.add('active');
+    }
+  });
+}
+
+async function loadSystemsSync() {
+  var statusEl = document.getElementById('systems-sync-status');
+  var ttlEl    = document.getElementById('systems-sync-ttl');
+  var subEl    = document.getElementById('systems-sync-sub');
+  if (!statusEl) return;
+  try {
+    var r = await fetch(
+      'https://mirage-platform-production-6e5e.up.railway.app/api/v2/telemetry/ambient-cache-status?user_id=nate',
+      { headers: { 'x-mirage-dev-token': 'MiragePlatform2026!' } }
+    );
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var d = await r.json();
+    if (d.status === 'hit') {
+      if (statusEl) { statusEl.textContent = 'ACTIVE CACHED'; statusEl.className = 'sync-metric-badge state-cached'; }
+      if (ttlEl) ttlEl.textContent = '[TTL: ' + d.ttl_display + ' REMAINING]';
+      if (subEl) subEl.textContent = 'Source: Redis Pipeline · Generated: ' + (d.generated_at ? new Date(d.generated_at).toLocaleString('en-US',{timeZone:'America/Los_Angeles',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) + ' PT' : '—');
+    } else if (d.status === 'fallback') {
+      if (statusEl) { statusEl.textContent = 'BASELINE FALLBACK'; statusEl.className = 'sync-metric-badge state-fallback'; }
+      if (ttlEl) ttlEl.textContent = '[TTL: 12h 0m DEFAULT]';
+      if (subEl) subEl.textContent = 'Cache miss · Serving hardcoded baseline · Background refresh queued';
+    } else {
+      if (statusEl) { statusEl.textContent = 'ERROR'; statusEl.className = 'sync-metric-badge state-error'; }
+    }
+  } catch(e) {
+    if (statusEl) { statusEl.textContent = 'UNREACHABLE'; statusEl.className = 'sync-metric-badge state-error'; }
+    if (subEl) subEl.textContent = 'Platform endpoint unreachable — ' + e.message;
+  }
+}
+
+async function loadSloanPortalSync() {
+  var statusEl = document.getElementById('sloan-portal-status');
+  var ttlEl    = document.getElementById('sloan-portal-ttl');
+  if (!statusEl) return;
+  try {
+    var r = await fetch(
+      'https://mirage-platform-production-6e5e.up.railway.app/api/v2/telemetry/ambient-cache-status?user_id=nate',
+      { headers: { 'x-mirage-dev-token': 'MiragePlatform2026!' } }
+    );
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var d = await r.json();
+    if (d.status === 'hit') {
+      if (statusEl) { statusEl.textContent = 'CACHED'; statusEl.style.color = '#78CC6E'; }
+      if (ttlEl) ttlEl.textContent = 'TTL: ' + d.ttl_display + ' REMAINING';
+    } else if (d.status === 'fallback') {
+      if (statusEl) { statusEl.textContent = 'BASELINE'; statusEl.style.color = '#E6A23C'; }
+    } else {
+      if (statusEl) { statusEl.textContent = 'OFFLINE'; statusEl.style.color = '#F56C6C'; }
+    }
+  } catch(e) {
+    if (statusEl) { statusEl.textContent = 'OFFLINE'; statusEl.style.color = '#F56C6C'; }
+  }
+}
+
+
 // ── ANDIE constants (hoisted above restoreAdminSession) ─────────────────────
 // These five literals must initialize before the IIFE below fires. With a
 // saved session in localStorage, restoreAdminSession → hydrateAuthenticatedApp
@@ -4813,114 +4924,6 @@ async function updateAmbientTtl() {
   }
 }
 
-
-
-// ── MIRAGE OS // ENVELOPE NAVIGATION ──────────────────────────────────────────
-
-const OS_PANE_ENVELOPE_MAP = {
-  // OPERATIONS
-  dashboard:'operations', systems:'operations', governance:'operations', planner:'operations',
-  andie:'operations', houseboard:'operations', knowledge:'operations',
-  subscribers:'operations', requests:'operations', checklist:'operations', projdash:'operations',
-  // CREATIVE PRODUCTION
-  world:'creative', icons:'creative', personas:'creative', content:'creative',
-  sloan:'creative', sloanchat:'creative', sloanlog:'creative', sloanaudit:'creative',
-  // ARCHIVE / STRATEGY
-  reference:'archive', design:'archive', techref:'archive',
-  financial:'archive', pnl:'archive',
-};
-
-// Maps sub-panes to their OS surface link for sidebar highlighting
-const OS_PANE_SURFACE_MAP = {
-  icons:'world', personas:'world', content:'world',
-  sloanchat:'sloan', sloanlog:'sloan', sloanaudit:'sloan',
-  andie:'systems', houseboard:'systems', knowledge:'systems',
-  subscribers:'governance', requests:'governance', checklist:'governance', projdash:'governance',
-  design:'reference', techref:'reference',
-  pnl:'financial',
-};
-
-function toggleOsEnvelope(id) {
-  var body = document.getElementById('os-env-body-' + id);
-  if (body) body.classList.toggle('collapsed');
-}
-
-function activateOsPane(paneId) {
-  var envelope = OS_PANE_ENVELOPE_MAP[paneId];
-  if (!envelope) return;
-
-  // Expand target envelope if collapsed
-  var body = document.getElementById('os-env-body-' + envelope);
-  if (body && body.classList.contains('collapsed')) {
-    body.classList.remove('collapsed');
-  }
-
-  // Clear all active states on surface links AND sub-items
-  document.querySelectorAll('.os-pane-link, .os-sub-item').forEach(function(el) {
-    el.classList.remove('active');
-  });
-
-  // Highlight the exact item matching this paneId
-  document.querySelectorAll('.os-pane-link, .os-sub-item').forEach(function(el) {
-    var onclick = el.getAttribute('onclick') || '';
-    if (onclick.includes("'" + paneId + "'") || onclick.includes('"' + paneId + '"')) {
-      el.classList.add('active');
-    }
-  });
-}
-
-async function loadSystemsSync() {
-  var statusEl = document.getElementById('systems-sync-status');
-  var ttlEl    = document.getElementById('systems-sync-ttl');
-  var subEl    = document.getElementById('systems-sync-sub');
-  if (!statusEl) return;
-  try {
-    var r = await fetch(
-      'https://mirage-platform-production-6e5e.up.railway.app/api/v2/telemetry/ambient-cache-status?user_id=nate',
-      { headers: { 'x-mirage-dev-token': 'MiragePlatform2026!' } }
-    );
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    var d = await r.json();
-    if (d.status === 'hit') {
-      if (statusEl) { statusEl.textContent = 'ACTIVE CACHED'; statusEl.className = 'sync-metric-badge state-cached'; }
-      if (ttlEl) ttlEl.textContent = '[TTL: ' + d.ttl_display + ' REMAINING]';
-      if (subEl) subEl.textContent = 'Source: Redis Pipeline · Generated: ' + (d.generated_at ? new Date(d.generated_at).toLocaleString('en-US',{timeZone:'America/Los_Angeles',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) + ' PT' : '—');
-    } else if (d.status === 'fallback') {
-      if (statusEl) { statusEl.textContent = 'BASELINE FALLBACK'; statusEl.className = 'sync-metric-badge state-fallback'; }
-      if (ttlEl) ttlEl.textContent = '[TTL: 12h 0m DEFAULT]';
-      if (subEl) subEl.textContent = 'Cache miss · Serving hardcoded baseline · Background refresh queued';
-    } else {
-      if (statusEl) { statusEl.textContent = 'ERROR'; statusEl.className = 'sync-metric-badge state-error'; }
-    }
-  } catch(e) {
-    if (statusEl) { statusEl.textContent = 'UNREACHABLE'; statusEl.className = 'sync-metric-badge state-error'; }
-    if (subEl) subEl.textContent = 'Platform endpoint unreachable — ' + e.message;
-  }
-}
-
-async function loadSloanPortalSync() {
-  var statusEl = document.getElementById('sloan-portal-status');
-  var ttlEl    = document.getElementById('sloan-portal-ttl');
-  if (!statusEl) return;
-  try {
-    var r = await fetch(
-      'https://mirage-platform-production-6e5e.up.railway.app/api/v2/telemetry/ambient-cache-status?user_id=nate',
-      { headers: { 'x-mirage-dev-token': 'MiragePlatform2026!' } }
-    );
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    var d = await r.json();
-    if (d.status === 'hit') {
-      if (statusEl) { statusEl.textContent = 'CACHED'; statusEl.style.color = '#78CC6E'; }
-      if (ttlEl) ttlEl.textContent = 'TTL: ' + d.ttl_display + ' REMAINING';
-    } else if (d.status === 'fallback') {
-      if (statusEl) { statusEl.textContent = 'BASELINE'; statusEl.style.color = '#E6A23C'; }
-    } else {
-      if (statusEl) { statusEl.textContent = 'OFFLINE'; statusEl.style.color = '#F56C6C'; }
-    }
-  } catch(e) {
-    if (statusEl) { statusEl.textContent = 'OFFLINE'; statusEl.style.color = '#F56C6C'; }
-  }
-}
 
 
 window.PANE_SECTION_MAP = {
