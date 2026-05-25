@@ -2570,7 +2570,7 @@ button { color: inherit; }
           <button class="os-sub-item" onclick="showPane('icons')">Icons</button>
           <button class="os-sub-item" onclick="showPane('personas')">Persona Builder</button>
           <button class="os-sub-item" onclick="showPane('content')">Content Library</button>
-          <button class="os-sub-item" onclick="showPane('studio')">Icon Studio</button>
+          <button class="os-sub-item" onclick="window.location.href='https://mirageicons.com/studio'">Icon Studio ↗</button>
           <button class="os-pane-link" onclick="showPane('sloan')">[06] SLOAN PORTAL</button>
           <button class="os-sub-item" onclick="showPane('sloanchat')">Sloan Chat</button>
           <button class="os-sub-item" onclick="showPane('sloanlog')">Learning Log</button>
@@ -3062,17 +3062,6 @@ button { color: inherit; }
       </div>
 
       <!-- ═══ END COMPOUND SURFACES ═════════════════════════════════════════ -->
-
-
-      <!-- [03] WORLD — ICON STUDIO (iframe pane) -->
-      <div class="pane" id="pane-studio" style="overflow:hidden;height:calc(100vh - 48px);padding:0">
-        <iframe
-          id="studio-frame"
-          src="https://mirageicons.com/studio"
-          style="width:100%;height:100%;border:none;display:block"
-          title="Icon Studio"
-        ></iframe>
-      </div>
 
       <!-- ICONS LIST — roster at a glance, read-only. Edits happen
            in the Persona Builder. -->
@@ -4706,7 +4695,7 @@ const OS_PANE_ENVELOPE_MAP = {
   andie:'operations', houseboard:'operations', knowledge:'operations',
   subscribers:'operations', requests:'operations', checklist:'operations', projdash:'operations',
   // CREATIVE PRODUCTION
-  world:'creative', icons:'creative', personas:'creative', content:'creative', studio:'creative',
+  world:'creative', icons:'creative', personas:'creative', content:'creative',
   sloan:'creative', sloanchat:'creative', sloanlog:'creative', sloanaudit:'creative',
   // ARCHIVE / STRATEGY
   reference:'archive', design:'archive', techref:'archive',
@@ -5144,10 +5133,6 @@ function showPane(id) {
   }
   if (id === 'financial' || id === 'pnl') { id = 'pnl'; initPnl(); }
   if (id === 'dashboard') loadCommandSurfaceSync();
-  if (id === 'studio') {
-    var sf = document.getElementById('studio-frame');
-    if (sf && !sf.src) sf.src = 'https://mirageicons.com/studio';
-  }
   if (id === 'systems') loadSystemsSync();
   if (id === 'sloan') loadSloanPortalSync();
   if (id === 'andie') initAndie();
