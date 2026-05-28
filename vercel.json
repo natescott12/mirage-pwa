@@ -1,16 +1,40 @@
 {
   "cleanUrls": true,
   "crons": [
-    { "path": "/api/sloan-figma-executor", "schedule": "0 16 * * 0" }
+    {
+      "path": "/api/sloan-figma-executor",
+      "schedule": "0 16 * * 0"
+    }
   ],
   "rewrites": [
-    { "source": "/admin", "destination": "/admin/index.html" },
-    { "source": "/admin/(.*)", "destination": "/admin/$1" },
-    { "source": "/studio", "destination": "/studio/index.html" },
-    { "source": "/studio/(.*)", "destination": "/studio/$1" },
-    { "source": "/prototype", "destination": "/pwa" },
-    { "source": "/audit", "destination": "/audit.html" },
-    { "source": "/audit/", "destination": "/audit.html" }
+    {
+      "source": "/admin",
+      "destination": "/admin/index.html"
+    },
+    {
+      "source": "/admin/(.*)",
+      "destination": "/admin/$1"
+    },
+    {
+      "source": "/studio",
+      "destination": "/studio/index.html"
+    },
+    {
+      "source": "/studio/(.*)",
+      "destination": "/studio/$1"
+    },
+    {
+      "source": "/prototype",
+      "destination": "/pwa"
+    },
+    {
+      "source": "/audit",
+      "destination": "/audit.html"
+    },
+    {
+      "source": "/audit/",
+      "destination": "/audit.html"
+    }
   ],
   "headers": [
     {
@@ -92,6 +116,13 @@
           "value": "noindex"
         }
       ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/privacy-policy",
+      "destination": "/privacy",
+      "permanent": true
     }
   ]
 }
