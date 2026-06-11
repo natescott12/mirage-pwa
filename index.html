@@ -350,8 +350,9 @@
   </footer>
 
   <script>
-    // Waitlist form — POST { phone, consent: true } to /api/waitlist.
-    // Consent checkbox gates the submit button. Basic phone validation
+    // Waitlist form — POST { phone, consent: bool } to /api/waitlist.
+    // Consent checkbox is optional — SMS consent cannot be a required condition
+    // for service. Basic phone validation
     // (≥7 digits after stripping non-digits) before allowing submit.
     // Success message swaps in regardless of API outcome so Twilio's
     // review never sees a broken state — the request is still attempted.
@@ -362,11 +363,7 @@
       if (!form) return;
       var consent = document.getElementById('consent-checkbox');
       var joinBtn = document.getElementById('join-btn');
-      if (consent && joinBtn) {
-        consent.addEventListener('change', function() {
-          joinBtn.disabled = !consent.checked;
-        });
-      }
+      // Consent is optional — button always enabled
       form.addEventListener('submit', function(e) {
         e.preventDefault();
         if (formError) formError.classList.remove('show');
@@ -382,7 +379,7 @@
           fetch('/api/waitlist', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone: phone, consent: true })
+            body: JSON.stringify({ phone: phone, consent: consent ? consent.checked : false })
           }).catch(function() {});
         } catch (e) {}
         form.style.display = 'none';
