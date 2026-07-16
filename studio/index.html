@@ -2687,23 +2687,7 @@ function _cloudLbKey(e) {
   if (e.key === 'Escape') cloudCloseLb();
 }
 function cloudLbDelete() {
-  var item = window._clbItem;
-  if (!item) return;
-  if (!confirm('Delete this image from cloud?')) return;
-  var name = (item.image_url || item.url || '').split('/').pop();
-  var SB_DEL = 'https://gmyenvnfuailickepvax.supabase.co';
-  var SK_DEL = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdteWVudm5mdWFpbGlja2VwdmF4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTQzMTIwMywiZXhwIjoyMDkxMDA3MjAzfQ.oY14ULMhWOUVHLklxGtz8Sjm35kjcy35p4qx1cnjrIk';
-  fetch(SB_DEL + '/storage/v1/object/content', {
-    method: 'DELETE',
-    headers: {'Authorization': 'Bearer ' + SK_DEL, 'apikey': SK_DEL, 'Content-Type': 'application/json'},
-    body: JSON.stringify({prefixes: [name]})
-  }).then(function() {
-    if (typeof notify === 'function') notify('Deleted ' + name);
-    cloudCloseLb();
-    if (typeof loadCloudLibrary === 'function') loadCloudLibrary();
-  }).catch(function(e) {
-    if (typeof notify === 'function') notify('Delete failed: ' + e.message);
-  });
+  if (typeof notify === 'function') notify('Content deletion has moved to the current Mirage admin.');
 }
 function cloudOpenLb(item) {
   var lb = document.getElementById('lightbox');
@@ -2726,37 +2710,7 @@ function cloudOpenLb(item) {
 
 
 async function clearCloudLibrary() {
-  if (!confirm('Delete ALL images from the cloud library? This cannot be undone.')) return;
-  var JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdteWVudm5mdWFpbGlja2VwdmF4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTQzMTIwMywiZXhwIjoyMDkxMDA3MjAzfQ.oY14ULMhWOUVHLklxGtz8Sjm35kjcy35p4qx1cnjrIk';
-  var SUPA = 'https://gmyenvnfuailickepvax.supabase.co';
-  var KEY = 'sb_publishable_a_5MuHV2aP8yvDOEYM_hvg_gQ-yRN1D';
-  try {
-    // Delete all DB rows
-    await fetch(SUPA + '/rest/v1/content?id=neq.00000000-0000-0000-0000-000000000000', {
-      method: 'DELETE',
-      headers: { 'Authorization': 'Bearer ' + JWT, 'apikey': KEY }
-    });
-    // List and delete storage files
-    var r = await fetch(SUPA + '/storage/v1/object/list/content', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + JWT, 'apikey': KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prefix: '', limit: 200 })
-    });
-    var files = await r.json();
-    if (files && files.length) {
-      var names = files.map(function(f) { return f.name; }).filter(Boolean);
-      await fetch(SUPA + '/storage/v1/object/content', {
-        method: 'DELETE',
-        headers: { 'Authorization': 'Bearer ' + JWT, 'apikey': KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prefixes: names })
-      });
-    }
-    _cloudItems = [];
-    renderCloud();
-    notify('Cloud library cleared');
-  } catch(e) {
-    notify('Error: ' + e.message);
-  }
+  notify('Bulk clear is retired. Use the current Mirage admin for reviewed deletion.');
 }
 
 </script>
@@ -2840,62 +2794,6 @@ window.addEventListener('load', function() {
     //   });
     // } catch(e) { console.warn('Push sync failed', e); }
   }, 2000);
-});
-
-// ── ONE-TIME SLOANE→SLOAN MIGRATION ──────────────────────────────────────────
-// Renames sloane_*.jpg files in the content bucket to sloan_*.jpg and updates
-// the content table to match. Runs once per browser, gated by localStorage.
-async function migrateSloanImages() {
-  if (localStorage.getItem('sloane_migration_done')) return;
-  if (!window.sbStudio) { console.warn('[migrate] no Supabase client, skipping'); return; }
-  const sb = window.sbStudio;
-  console.log('[migrate] starting sloane_ → sloan_ migration');
-
-  try {
-    const { data: files, error: listErr } = await sb.storage.from('content').list('', { limit: 1000 });
-    if (listErr) { console.error('[migrate] list error:', listErr); return; }
-    const targets = (files || []).filter(function(f) { return f.name && f.name.startsWith('sloane_'); });
-    if (!targets.length) {
-      console.log('[migrate] no sloane_ files found — nothing to migrate');
-      localStorage.setItem('sloane_migration_done', '1');
-      return;
-    }
-    console.log('[migrate] found', targets.length, 'files to rename');
-
-    var success = 0, fail = 0;
-    for (var i = 0; i < targets.length; i++) {
-      var oldName = targets[i].name;
-      var newName = oldName.replace(/^sloane_/, 'sloan_');
-      console.log('[migrate] (' + (i + 1) + '/' + targets.length + ') moving', oldName, '→', newName);
-
-      var moveResult = await sb.storage.from('content').move(oldName, newName);
-      if (moveResult.error) {
-        console.error('[migrate] move failed for', oldName, ':', moveResult.error);
-        fail++;
-        continue;
-      }
-
-      var { error: updateErr } = await sb.rpc('', undefined).then(function() { return { error: null }; }).catch(function() { return { error: 'rpc-skip' }; });
-      var updateResult = await sb.from('content')
-        .update({ image_url: sb.storage.from('content').getPublicUrl(newName).data.publicUrl, icon_name: 'Sloan' })
-        .like('image_url', '%' + oldName + '%');
-      if (updateResult.error) {
-        console.warn('[migrate] content table update failed for', oldName, ':', updateResult.error);
-      }
-      success++;
-      console.log('[migrate] ✓', oldName, '→', newName);
-    }
-
-    console.log('[migrate] complete —', success, 'moved,', fail, 'failed');
-    localStorage.setItem('sloane_migration_done', '1');
-  } catch (e) {
-    console.error('[migrate] exception:', e.message);
-  }
-}
-
-// Kick off migration after load sync completes (3s delay to stay out of the way)
-window.addEventListener('load', function() {
-  setTimeout(function() { migrateSloanImages(); }, 3000);
 });
 
 // ?icon= deep-link Supabase fallback. The init-time URL handler at
@@ -3567,8 +3465,6 @@ setTimeout(function(){MG.renderChips();MG.refresh();},1500);
 
 // ── LORA TRAINING ────────────────────────────────────────────────────────────
 var PROXY_URL = typeof PROXY !== 'undefined' ? PROXY : 'https://mirage-proxy-production.up.railway.app';
-var SB_URL = 'https://gmyenvnfuailickepvax.supabase.co';
-var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdteWVudm5mdWFpbGlja2VwdmF4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTQzMTIwMywiZXhwIjoyMDkxMDA3MjAzfQ.oY14ULMhWOUVHLklxGtz8Sjm35kjcy35p4qx1cnjrIk';
 
 function showLoraPanel() {
   /* LoRA trainer UI is disabled — the inline panel, Cloud Library
@@ -3735,16 +3631,7 @@ function checkLoraStatus() {
 }
 
 function saveLoraToSupabase(iconId, finetuneId, status) {
-  fetch(SB_URL + '/rest/v1/personas?icon_id=eq.' + iconId, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + SB_KEY,
-      'apikey': SB_KEY,
-      'Prefer': 'return=minimal'
-    },
-    body: JSON.stringify({finetune_id: finetuneId, finetune_status: status})
-  }).catch(function(e) { console.log('Supabase LoRA save failed:', e); });
+  console.warn('Legacy LoRA persistence is retired; use the current Mirage admin.');
 }
 
 // ── LoRA toggle ──────────────────────────────────────────────────────────────
@@ -3870,8 +3757,6 @@ setTimeout(showLoraPanel, 1000);
 var _cloudSelectMode = false;
 var _cloudSelected = new Set();
 var PX_CLOUD = 'https://mirage-proxy-production.up.railway.app';
-var SB_CLOUD = 'https://gmyenvnfuailickepvax.supabase.co';
-var SK_CLOUD = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdteWVudm5mdWFpbGlja2VwdmF4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTQzMTIwMywiZXhwIjoyMDkxMDA3MjAzfQ.oY14ULMhWOUVHLklxGtz8Sjm35kjcy35p4qx1cnjrIk';
 
 function cloudToggleSelectMode() {
   _cloudSelectMode = !_cloudSelectMode;
@@ -3946,36 +3831,12 @@ function cloudSelNone() {
 
 function cloudDeleteOne(idx) {
   if (!window._clist || !window._clist[idx]) return;
-  var img = window._clist[idx];
-  if (!confirm('Delete this image from cloud?')) return;
-  var name = img.file_name || img.image_url.split('/').pop();
-  fetch(SB_CLOUD + '/storage/v1/object/content', {
-    method: 'DELETE',
-    headers: {'Authorization': 'Bearer ' + SK_CLOUD, 'apikey': SK_CLOUD, 'Content-Type': 'application/json'},
-    body: JSON.stringify({prefixes: [name]})
-  }).then(function() {
-    if (typeof notify === 'function') notify('Deleted');
-    if (typeof renderCloud === 'function') renderCloud();
-  }).catch(function(e) { if (typeof notify === 'function') notify('Delete failed: ' + e.message); });
+  if (typeof notify === 'function') notify('Content deletion has moved to the current Mirage admin.');
 }
 
 function cloudDeleteSelected() {
   if (!_cloudSelected.size) return;
-  if (!confirm('Delete ' + _cloudSelected.size + ' selected images from cloud? Cannot be undone.')) return;
-  var names = Array.from(_cloudSelected).map(function(i) {
-    var img = window._clist[i];
-    return img ? (img.file_name || img.image_url.split('/').pop()) : null;
-  }).filter(Boolean);
-  fetch(SB_CLOUD + '/storage/v1/object/content', {
-    method: 'DELETE',
-    headers: {'Authorization': 'Bearer ' + SK_CLOUD, 'apikey': SK_CLOUD, 'Content-Type': 'application/json'},
-    body: JSON.stringify({prefixes: names})
-  }).then(function() {
-    if (typeof notify === 'function') notify('Deleted ' + names.length + ' images');
-    _cloudSelected.clear();
-    cloudToggleSelectMode(); // exit select mode
-    if (typeof renderCloud === 'function') renderCloud();
-  }).catch(function(e) { if (typeof notify === 'function') notify('Delete failed: ' + e.message); });
+  if (typeof notify === 'function') notify('Content deletion has moved to the current Mirage admin.');
 }
 
 function cloudQueueSelected() {
