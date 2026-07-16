@@ -1,10 +1,10 @@
 -- studio_filters
--- Library of named CSS-filter presets used by the Studio post-generation
--- pipeline. Shared across users — both Nate and Anna see/use the same
--- library. Edits via the Studio filter editor upsert into this table;
--- deletes remove. Seeded with the 8 defaults the UI ships with.
+-- Historical numeric preset schema from the earlier Studio implementation.
+-- The active Studio editor now uses its bundled preset definitions and does
+-- not read or write this table. Retained as lineage only.
 --
--- Run once against the Mirage Supabase project.
+-- If this bootstrap is ever used in a new environment, the table remains
+-- server-only. Do not restore anon/authenticated access here.
 
 create table if not exists public.studio_filters (
   id uuid primary key default gen_random_uuid(),
@@ -23,26 +23,22 @@ create table if not exists public.studio_filters (
 -- Names are unique — editor upserts on name rather than id.
 create unique index if not exists studio_filters_name_idx on public.studio_filters (name);
 
--- RLS: open reads + writes for anon. Gating is client-side in Studio;
--- the publishable key is public anyway, so DB-level restrictions
--- wouldn't add real security. Matches system_config's approach.
+-- RLS: server-only historical data.
 alter table public.studio_filters enable row level security;
 
+revoke all privileges on table public.studio_filters from anon, authenticated;
+
 drop policy if exists studio_filters_select_anon on public.studio_filters;
-create policy studio_filters_select_anon on public.studio_filters
-  for select to anon using (true);
-
 drop policy if exists studio_filters_insert_anon on public.studio_filters;
-create policy studio_filters_insert_anon on public.studio_filters
-  for insert to anon with check (true);
-
 drop policy if exists studio_filters_update_anon on public.studio_filters;
-create policy studio_filters_update_anon on public.studio_filters
-  for update to anon using (true) with check (true);
-
 drop policy if exists studio_filters_delete_anon on public.studio_filters;
-create policy studio_filters_delete_anon on public.studio_filters
-  for delete to anon using (true);
+drop policy if exists "Public filter preset read" on public.studio_filters;
+drop policy if exists "Service role full access" on public.studio_filters;
+
+create policy "Service role full access" on public.studio_filters
+  as permissive for all to service_role using (true) with check (true);
+
+grant all privileges on table public.studio_filters to service_role;
 
 -- ── SEED ─────────────────────────────────────────────────────────────
 -- Upsert so re-running this is safe. Values are on the 0-200 scale
