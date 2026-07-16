@@ -9868,10 +9868,8 @@ function beginEditRow(rowEl, item) {
 // then bakes through a self-contained SVG-data-URL so the same primitives
 // run in every modern browser.
 //
-// Preset definitions live in the Supabase `studio_filters` table as jsonb,
-// so new presets can be added without code changes. The hardcoded list
-// below is a fallback for offline / table-missing cases and matches the
-// rows seeded into studio_filters.
+// Preset definitions are bundled with Studio. This list is the canonical
+// source used by the editor and keeps the visual result stable across loads.
 const CL_ADJUST_DEFS = [
   { key:'exposure',    label:'Exposure',   min:-100, max:100 },
   { key:'contrast',    label:'Contrast',   min:-100, max:100 },
@@ -9900,8 +9898,8 @@ const CL_IDENTITY_MATRIX = [
 // Hand-authored signature color matrices per preset. The slider base values
 // carry the tonal personality; the matrix carries the color cast / channel
 // character that a pure adjustment stack can't produce (warm skin, cyan
-// highlights, magenta shadows, etc.). Both live in one jsonb definition.
-const CL_PRESETS_FALLBACK = [
+// highlights, magenta shadows, etc.). Both live in one preset definition.
+const CL_PRESETS = [
   {
     slug: 'none', label: 'None', sort_order: 0,
     definition: {
@@ -10032,8 +10030,7 @@ function clResolveIconName(iconId) {
 let clFilterId = 'none';
 let clAdjust = {};             // current live adjustment values (slider state)
 let clCompare = 'edited';      // 'original' | 'edited'
-let clPresets = CL_PRESETS_FALLBACK.slice();
-let _clPresetsFetched = false;
+let clPresets = CL_PRESETS.slice();
 
 function clResetAdjust() {
   clAdjust = {};
@@ -10187,37 +10184,6 @@ function clSeedPresetFilters() {
     const adj = Object.assign({}, (p.definition && p.definition.adjustments) || {});
     f.innerHTML = clBuildFilterPrimitives(p, adj, 1, 7);
   });
-}
-
-// Pull presets from studio_filters (jsonb definition). Keeps the fallback
-// if the table is missing, empty, or unreachable.
-async function clFetchPresets() {
-  try {
-    const r = await fetch(SUPABASE_URL + '/rest/v1/studio_filters?select=slug,label,sort_order,definition&order=sort_order.asc', {
-      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
-    });
-    if (!r.ok) return;
-    const rows = await r.json();
-    if (!Array.isArray(rows) || !rows.length) return;
-    clPresets = rows.map(function(row) {
-      return {
-        slug: row.slug,
-        label: row.label || row.slug,
-        sort_order: row.sort_order || 0,
-        definition: row.definition || { adjustments: {}, colorMatrix: CL_IDENTITY_MATRIX.slice() }
-      };
-    });
-    if (!clPresets.some(function(p){ return p.slug === 'none'; })) {
-      clPresets.unshift(CL_PRESETS_FALLBACK[0]);
-    }
-  } catch (e) {
-    console.warn('[content-library] studio_filters fetch failed, using fallback:', e && e.message);
-  }
-}
-async function clFetchPresetsOnce() {
-  if (_clPresetsFetched) return;
-  _clPresetsFetched = true;
-  await clFetchPresets();
 }
 
 // ── Browse view ──────────────────────────────────────────────────────────────
@@ -10559,7 +10525,7 @@ async function clDeleteSelected() {
 }
 
 // ── Edit view ────────────────────────────────────────────────────────────────
-async function clOpenEdit(id) {
+function clOpenEdit(id) {
   const item = clItems.find(function(x){ return String(x.id) === String(id); });
   if (!item) return;
   clCurrent = item;
@@ -10584,7 +10550,6 @@ async function clOpenEdit(id) {
     img.crossOrigin = 'anonymous';
     img.src = proxifyImageUrl(item.image_url || '');
   }
-  await clFetchPresetsOnce();
   clSeedPresetFilters();
   clSetCompare('edited');
   clRenderFilterStrip();
