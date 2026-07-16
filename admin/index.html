@@ -6339,51 +6339,7 @@ function photoApplyDescription(idx) {
 }
 
 async function photoUpload(kind, files) {
-  const iconId = window.currentIconId;
-  if (!iconId) { toast('Select an icon first.'); return; }
-  for (const file of Array.from(files)) {
-    try {
-      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
-      const filename = 'photo_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8) + '.' + (ext || 'jpg');
-      const path = 'photography/' + iconId + '/' + kind + '/' + filename;
-      const upR = await fetch(SUPABASE_URL + '/storage/v1/object/content/' + encodeURI(path), {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-          'Content-Type': file.type || 'image/jpeg',
-          'x-upsert': 'true',
-        },
-        body: file,
-      });
-      if (!upR.ok) throw new Error('Upload HTTP ' + upR.status);
-      const publicUrl = SUPABASE_URL + '/storage/v1/object/public/content/' + encodeURI(path);
-      const entry = kind === 'inspiration'
-        ? { url: publicUrl, caption: '', description: '', extract_status: 'pending' }
-        : { url: publicUrl, is_hero: false };
-      window.__photoState[kind].push(entry);
-      // Inspiration uploads fire a Claude vision extract in parallel.
-      // The closure captures the entry object reference so even if the
-      // array shifts (e.g. user deletes another entry mid-extract), the
-      // resolution mutates the right entry. If the entry was deleted
-      // before resolve, the mutation hits an orphan and is harmless.
-      if (kind === 'inspiration') {
-        photoExtractDescription(publicUrl).then(function(desc) {
-          if (desc) {
-            entry.description = desc;
-            entry.extract_status = 'done';
-          } else {
-            entry.extract_status = 'failed';
-          }
-          photoRender('inspiration');
-        });
-      }
-    } catch (e) {
-      console.warn('[photo] upload failed:', e && e.message);
-      toast('Upload failed: ' + (e && e.message ? e.message : 'unknown'));
-    }
-  }
-  photoRender(kind);
+  toast('Content uploads have moved to the current Mirage admin.');
 }
 
 function photoUploadHandler(kind, ev) {
@@ -10457,71 +10413,7 @@ function clItemStoragePath(item) {
 
 async function clDeleteSelected() {
   if (clSelected.size === 0) return;
-  const n = clSelected.size;
-  const msg = 'Delete ' + n + ' image' + (n === 1 ? '' : 's') + ' from Supabase? This removes the row AND the storage object. Cannot be undone.';
-  if (!window.confirm(msg)) return;
-  const ids = Array.from(clSelected);
-  const headers = {
-    'apikey': SUPABASE_ANON_KEY,
-    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-    'Prefer': 'return=minimal'
-  };
-  const results = await Promise.all(ids.map(async function(id) {
-    const item = clItems.find(function(x) { return String(x.id) === String(id); });
-    const path = clItemStoragePath(item);
-    // Row delete first — table is the source of truth for the UI.
-    // Override Prefer from minimal → representation so the response
-    // body returns the deleted row(s). Empty array = RLS silently
-    // blocked or no row matched, both of which look like 204 success
-    // under return=minimal but should be treated as failures here.
-    const rowHeaders = Object.assign({}, headers, { 'Prefer': 'return=representation' });
-    const rowR = await fetch(SUPABASE_URL + '/rest/v1/content?id=eq.' + encodeURIComponent(id), {
-      method: 'DELETE', headers: rowHeaders
-    }).catch(function(err){ return { ok: false, status: 0, _err: err && err.message }; });
-    let rowBody = null;
-    let rowsAffected = null;
-    if (rowR && typeof rowR.json === 'function') {
-      try { rowBody = await rowR.json(); } catch (_) { rowBody = null; }
-    }
-    if (Array.isArray(rowBody)) rowsAffected = rowBody.length;
-    const statusOk = rowR.status === 200 || rowR.status === 204;
-    const rowOk = statusOk && (rowsAffected === null ? true : rowsAffected > 0);
-    console.log('[content-library] delete row', id, 'status:', rowR.status, 'rowsAffected:', rowsAffected, 'ok:', rowOk);
-    if (!rowOk) {
-      console.warn('[content-library] row delete did not affect any rows', { id: id, status: rowR.status, body: rowBody });
-    }
-    // Storage delete. Best-effort: a 4xx here doesn't fail the whole op
-    // (orphaned object is recoverable; lost row plus orphan storage is
-    // the worst case, and that's the path we already had pre-fix).
-    let storageOk = true;
-    if (path && rowOk) {
-      const storeR = await fetch(SUPABASE_URL + '/storage/v1/object/content/' + encodeURIComponent(path), {
-        method: 'DELETE', headers
-      }).catch(function(){ return { ok: false }; });
-      storageOk = !!(storeR && storeR.ok);
-      console.log('[content-library] delete storage', path, 'status:', storeR && storeR.status, 'ok:', storageOk);
-      if (!storageOk) console.warn('[content-library] storage delete failed for', path, storeR && storeR.status);
-    } else if (path && !rowOk) {
-      // Skip storage delete when the row delete didn't take — keeps
-      // storage and table in sync rather than orphaning the row by
-      // removing its file.
-      storageOk = false;
-    }
-    return { id: id, ok: rowOk, status: rowR.status, rowsAffected: rowsAffected, storageOk: storageOk, path: path };
-  }));
-  const failed = results.filter(function(r){ return !r.ok; });
-  const orphaned = results.filter(function(r){ return r.ok && r.path && !r.storageOk; });
-  if (failed.length) {
-    console.error('[content-library] delete failures:', failed);
-    if (typeof toast === 'function') toast('Deleted ' + (results.length - failed.length) + ' · ' + failed.length + ' failed');
-  } else if (orphaned.length) {
-    if (typeof toast === 'function') toast('Deleted ' + results.length + ' rows · ' + orphaned.length + ' storage cleanup failed');
-  } else if (typeof toast === 'function') {
-    toast('Deleted ' + results.length + ' image' + (results.length === 1 ? '' : 's'));
-  }
-  clSelected.clear();
-  clUpdateSelectBar();
-  await clLoadBrowse();
+  toast('Content deletion has moved to the current Mirage admin.');
 }
 
 // ── Edit view ────────────────────────────────────────────────────────────────
@@ -10720,75 +10612,7 @@ async function clBakeToBlob() {
 
 async function clSaveEdited() {
   if (!clCurrent) return;
-  const btns = document.querySelectorAll('.cl-action-btn');
-  btns.forEach(function(b){ b.disabled = true; });
-  try {
-    const blob = await clBakeToBlob();
-    // Upload to the `content` storage bucket with a deterministic filename.
-    const iconSlug = (clCurrent._iconName || 'icon').toLowerCase().replace(/\s+/g,'-');
-    const filename = iconSlug + '_edited_' + Date.now() + '.jpg';
-    const uploadRes = await fetch(SUPABASE_URL + '/storage/v1/object/content/' + encodeURIComponent(filename), {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-        'Content-Type': 'image/jpeg',
-        'x-upsert': 'true'
-      },
-      body: blob
-    });
-    if (!uploadRes.ok) throw new Error('Upload HTTP ' + uploadRes.status);
-    const publicUrl = SUPABASE_URL + '/storage/v1/object/public/content/' + encodeURIComponent(filename);
-    // Insert a new row alongside the original, linking via edited_from.
-    const insertBody = {
-      image_url: publicUrl,
-      icon_id: clCurrent.icon_id || null,
-      scene: clCurrent.scene || null,
-      edited_from: clCurrent.id,
-      edit_preset: clFilterId,
-      edit_adjustments: clAdjust,
-      is_published: false,
-      created_at: new Date().toISOString()
-    };
-    const insertRes = await fetch(SUPABASE_URL + '/rest/v1/content', {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
-      },
-      body: JSON.stringify(insertBody)
-    });
-    if (!insertRes.ok) {
-      const body = await insertRes.text();
-      // If the schema doesn't have edited_from/edit_preset/edit_adjustments yet,
-      // retry with a minimal payload so at least the edited image lands.
-      if (/edited_from|edit_preset|edit_adjustments|column/i.test(body)) {
-        const minimal = { image_url: publicUrl, icon_id: clCurrent.icon_id || null, scene: clCurrent.scene || null, is_published: false, created_at: new Date().toISOString() };
-        const retry = await fetch(SUPABASE_URL + '/rest/v1/content', {
-          method: 'POST',
-          headers: {
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=representation'
-          },
-          body: JSON.stringify(minimal)
-        });
-        if (!retry.ok) { throw new Error('Insert HTTP ' + retry.status + ': ' + (await retry.text()).slice(0,200)); }
-      } else {
-        throw new Error('Insert HTTP ' + insertRes.status + ': ' + body.slice(0,200));
-      }
-    }
-    if (typeof toast === 'function') toast('Edited version saved');
-    // Refresh library in the background so the new row shows up on next browse.
-    clLoadBrowse();
-  } catch (e) {
-    alert('Save failed: ' + (e && e.message || e));
-  } finally {
-    btns.forEach(function(b){ b.disabled = false; });
-  }
+  toast('Saving edited content has moved to the current Mirage admin.');
 }
 
 // Clear any in-editor adjustments and reset the preview to a clean 'None'
