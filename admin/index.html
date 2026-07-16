@@ -7928,10 +7928,10 @@ async function andiePollTick() {
   }
 }
 
-// Phase 1 data integration — Andie reads the full platform state before her
-// first message. Pulls four sources in parallel: personas.json (roster),
-// icon_briefs (active studio briefs), image_logs (last 20 image attempts),
-// icon_chats (conversation activity summary). Each fetch degrades
+// Phase 1 data integration — Andie reads the relevant platform state before
+// her first message. Pulls five sources in parallel: personas.json (roster),
+// icon_briefs (active studio briefs), icon_chats (conversation activity),
+// andie_memory, and sloan_memory. Each fetch degrades
 // independently — a 404 or network error on one source doesn't block the
 // others. Everything folds into a prepended context block ahead of the
 // base ANDIE_SYSTEM_PROMPT.
@@ -7943,9 +7943,6 @@ async function andieLoadPlatformData() {
     fetch('https://mirage-pwa.vercel.app/personas.json').then(r => r.ok ? r.json() : []),
     // icon_briefs (all rows)
     fetch(SUPABASE_URL + '/rest/v1/icon_briefs?select=*', { headers: sbHeaders })
-      .then(r => r.ok ? r.json() : []),
-    // image_logs (last 20 desc)
-    fetch(SUPABASE_URL + '/rest/v1/image_logs?select=*&order=created_at.desc&limit=20', { headers: sbHeaders })
       .then(r => r.ok ? r.json() : []),
     // icon_chats (lightweight — enough to count + show most recent)
     fetch(SUPABASE_URL + '/rest/v1/icon_chats?select=icon_id,updated_at&order=updated_at.desc&limit=50', { headers: sbHeaders })
@@ -7961,13 +7958,12 @@ async function andieLoadPlatformData() {
   const pick = (t) => (t.status === 'fulfilled' && Array.isArray(t.value)) ? t.value : [];
   const personas    = pick(tasks[0]);
   const briefs      = pick(tasks[1]);
-  const logs        = pick(tasks[2]);
-  const chats       = pick(tasks[3]);
-  const memory      = pick(tasks[4]);
-  const sloanMemory = pick(tasks[5]);
+  const chats       = pick(tasks[2]);
+  const memory      = pick(tasks[3]);
+  const sloanMemory = pick(tasks[4]);
 
   tasks.forEach((t, i) => {
-    const name = ['personas.json', 'icon_briefs', 'image_logs', 'icon_chats', 'andie_memory', 'sloan_memory'][i];
+    const name = ['personas.json', 'icon_briefs', 'icon_chats', 'andie_memory', 'sloan_memory'][i];
     if (t.status === 'rejected') console.warn('[andie] ' + name + ' fetch failed:', t.reason && t.reason.message);
   });
 
@@ -7994,13 +7990,6 @@ async function andieLoadPlatformData() {
     })
     .filter(Boolean)
     .join('\n');
-
-  // --- RECENT IMAGE LOGS: "from=... scene=... status=... url=..."
-  const logLines = logs.map(l => {
-    const scene = (l.scene_description || '').replace(/\s+/g, ' ').trim().slice(0, 120);
-    const url   = (l.image_url || '').slice(0, 80);
-    return `- from=${l.from_number || '—'} scene=${scene || '—'} status=${l.delivery_status || '—'} url=${url || '—'}`;
-  }).join('\n');
 
   // --- CONVERSATION ACTIVITY
   let activity = '';
@@ -8048,7 +8037,6 @@ async function andieLoadPlatformData() {
   if (memoryLines)    sections.push(`ANDIE'S ACCUMULATED KNOWLEDGE (from previous sessions):\n${memoryLines}`);
   if (rosterLines)    sections.push(`ICON ROSTER (${personas.length} Icons):\n${rosterLines}`);
   if (briefLines)     sections.push(`ACTIVE BRIEFS:\n${briefLines}`);
-  if (logLines)       sections.push(`RECENT IMAGE LOGS (last ${logs.length}):\n${logLines}`);
   if (activity)       sections.push(`CONVERSATION ACTIVITY:\n${activity}`);
   if (sloanLogLines) {
     sections.push(`# SLOAN LEARNING LOG\n${sloanLogLines}`);
@@ -8061,7 +8049,7 @@ async function andieLoadPlatformData() {
 
   andieSystemPromptAugmented = augmented;
   console.log('[andie] platform data loaded — personas:', personas.length,
-    'briefs:', briefs.length, 'logs:', logs.length, 'chats:', chats.length,
+    'briefs:', briefs.length, 'chats:', chats.length,
     'memory:', memory.length, 'sloanMemory:', sloanMemory.length,
     'promptChars:', augmented.length);
 }
