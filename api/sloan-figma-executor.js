@@ -1,20 +1,15 @@
 // Vercel cron — runs every 60s. Polls sloan_figma_tasks for pending tasks,
 // posts the design brief as a Figma file comment (the REST API cannot
 // execute Plugin API code — that requires a browser-side plugin), marks the
-// task complete, and texts Nate that the work is ready for review.
+// task complete. Carrier notification is permanently retired.
 //
 // Env vars required on Vercel:
-//   SUPABASE_URL, SUPABASE_SERVICE_KEY, FIGMA_ACCESS_TOKEN,
-//   TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, SLOAN_PHONE_NUMBER, NATE_PHONE_NUMBER
+//   SUPABASE_URL, SUPABASE_SERVICE_KEY, FIGMA_ACCESS_TOKEN
 
 const SB_URL = process.env.SUPABASE_URL || 'https://gmyenvnfuailickepvax.supabase.co';
 const SB_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 const FIGMA_TOKEN = process.env.FIGMA_ACCESS_TOKEN || '';
 const FIGMA_FILE_KEY = 'OvtRCtjVRT4DveuZUZkwrc';
-const TWILIO_SID = process.env.TWILIO_ACCOUNT_SID || '';
-const TWILIO_AUTH = process.env.TWILIO_AUTH_TOKEN || '';
-const SLOAN_NUMBER = process.env.SLOAN_PHONE_NUMBER || '';
-const NATE_NUMBER = process.env.NATE_PHONE_NUMBER || '';
 
 async function sbFetch(path, opts = {}) {
   const r = await fetch(SB_URL + '/rest/v1/' + path, {
@@ -43,24 +38,6 @@ async function postFigmaComment(brief) {
   });
   if (!r.ok) { console.warn('[executor] figma comment failed:', r.status, await r.text()); return false; }
   console.log('[executor] figma comment posted');
-  return true;
-}
-
-async function sendSms(body) {
-  if (!TWILIO_SID || !TWILIO_AUTH || !SLOAN_NUMBER || !NATE_NUMBER) {
-    console.log('[executor] Twilio creds incomplete, skipping SMS');
-    return false;
-  }
-  const params = new URLSearchParams({ To: NATE_NUMBER, From: SLOAN_NUMBER, Body: body });
-  const r = await fetch('https://api.twilio.com/2010-04-01/Accounts/' + TWILIO_SID + '/Messages.json', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Basic ' + Buffer.from(TWILIO_SID + ':' + TWILIO_AUTH).toString('base64'),
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: params.toString(),
-  });
-  if (!r.ok) { console.warn('[executor] twilio send failed:', r.status); return false; }
   return true;
 }
 
@@ -102,11 +79,6 @@ export default async function handler(req, res) {
         }),
       });
       if (!patchR.ok) console.warn('[executor] patch failed for', task.id, patchR.status);
-
-      // 4. Text Nate
-      const smsBody = 'Sloan completed: ' + taskName + (taskName.length >= 80 ? '…' : '') +
-        '. Open your Figma sandbox to review.';
-      await sendSms(smsBody);
 
       results.push({ id: task.id, taskName, commented });
     }
